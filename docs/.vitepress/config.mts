@@ -5,6 +5,7 @@ export default defineConfig({
   title: '通往单片机之路',
   description: '寄存器级 STM32F407 × ESP32-S3 深度教学：C 语言精髓 · RTOS 双精讲 · 全程实物实验',
   lang: 'zh-CN',
+  head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/mcu/favicon.svg' }]],
   ignoreDeadLinks: false,
   themeConfig: {
     nav: [
