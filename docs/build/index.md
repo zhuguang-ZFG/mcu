@@ -14,7 +14,7 @@ title: B 篇导览
 | B1 | [四步构建](01-four-steps.md) | 预处理→编译→汇编→链接，逐步开盒 |
 | B2 | [ELF 解剖](02-elf.md) | readelf/objdump 实拆一个固件 |
 | B3 | [链接脚本](03-linker-script.md) | 内存布局的"建筑图纸"逐行讲 |
-| B4 | [启动过程](04-startup.md) | 上电到 main 之间的每一条指令 |
+| B4 | [启动过程](04-startup.md)【成稿】 | 上电到 main 之间的每一条指令（动画） |
 | B5 | [map 与体积](05-map-size.md) | 谁吃了你的 Flash/RAM |
 | B6 | [烧录与调试](06-flash-debug.md) | SWD 两线协议与断点的硬件实现 |
 | B7 | [构建系统](07-build-system.md) | Makefile→CMake/Ninja→IDF/scons 对照 |
@@ -22,4 +22,4 @@ title: B 篇导览
 ## 学习建议
 
 - B3+B4 是全站承上启下的枢纽：前面接 C 篇（段/符号），后面接裸机（启动文件）与 RTOS（栈/移植）；
-- 每条命令都可以在 [code/stm32/00-blink](https://github.com/) 工程上跟着敲——B 篇的全部实验零额外装备。
+- 每条命令都可以在 [code/stm32/00-blink](https://github.com/zhuguang-ZFG/mcu/tree/main/code/stm32/00-blink) 工程上跟着敲——B 篇的全部实验零额外装备。

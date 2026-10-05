@@ -12,7 +12,7 @@
 
 - `docs/.vitepress/config.mts` 是唯一导航事实源：nav 七板块、sidebar 按板块分组全量列出。
 - **新页面必须同步三处**：sidebar 对应组、本板块 `index.md` 路线表、（如涉及）`docs/lab/index.md` 实验总览。
-- `ignoreDeadLinks: false` 是验收门禁，不得为通过构建改回 true；确有外部占位链接用 `https://github.com/` 占位并在 CONTRIBUTING 注明。
+- `ignoreDeadLinks: false` 是验收门禁，不得为通过构建改回 true；仓库内链接一律用真实地址（`https://github.com/zhuguang-ZFG/mcu/...`），禁止 `https://github.com/` 空占位。
 
 ## 主题
 

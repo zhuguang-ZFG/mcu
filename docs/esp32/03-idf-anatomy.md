@@ -24,7 +24,7 @@ title: P3 IDF 工程解剖：组件化构建流水线
 
 ## 先跑起来（10 分钟 quick win）
 
-在 [code/esp32/00-hello](https://github.com/) 里执行 `idf.py menuconfig` → 改 `CONFIG_ESPTOOLPY_FLASHSIZE` 看一眼（不改回）→ `idf.py build` 观察增量重编——配置→宏→行为的链路一次走通。
+在 [code/esp32/00-hello](https://github.com/zhuguang-ZFG/mcu/tree/main/code/esp32/00-hello) 里执行 `idf.py menuconfig` → 改 `CONFIG_ESPTOOLPY_FLASHSIZE` 看一眼（不改回）→ `idf.py build` 观察增量重编——配置→宏→行为的链路一次走通。
 
 ## 小节结构
 

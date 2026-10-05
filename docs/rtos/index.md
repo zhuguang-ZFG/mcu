@@ -24,7 +24,7 @@ title: RTOS 篇导览
 |---|---|---|
 | F0 | [为什么需要 RTOS](freertos/00-why-rtos.md) | 亲手写一个必然失败的裸机调度 |
 | F1 | [任务与 TCB](freertos/01-task-tcb.md) | xTaskCreate 逐行走查 |
-| F2 | [上下文切换](freertos/02-context-switch.md) | PendSV 逐汇编指令（动画） |
+| F2 | [上下文切换](freertos/02-context-switch.md)【成稿】 | PendSV 逐汇编指令（动画+视频） |
 | F3 | [调度器](freertos/03-scheduler.md) | 位图就绪表与 tick 的真相 |
 | F4 | [队列](freertos/04-queue.md) | 环形存储+两个阻塞列表 |
 | F5 | [信号量与互斥](freertos/05-sem-mutex.md) | 优先级反转复现与继承 |

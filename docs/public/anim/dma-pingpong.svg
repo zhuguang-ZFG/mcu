@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" font-family="'Segoe UI','Microsoft YaHei',sans-serif">
+  <rect width="720" height="420" fill="#f6f8fa"/>
+  <text x="24" y="30" font-size="17" font-weight="bold" fill="#3451b2">DMA 双缓冲乒乓：搬运工与分析师的交接棒</text>
+  <text x="24" y="50" font-size="12" fill="#666">DMA 填 A 时 CPU 处理 B，填 B 时处理 A——CPU 一个字节没搬，数据照样到家</text>
+
+  <!-- ADC 外设 -->
+  <rect x="40" y="120" width="120" height="90" fill="#ffffff" stroke="#d97706" stroke-width="2" rx="8"/>
+  <text x="100" y="148" font-size="13" font-weight="bold" fill="#d97706" text-anchor="middle">ADC</text>
+  <text x="100" y="168" font-size="11" fill="#666" text-anchor="middle">采样不停</text>
+  <text x="100" y="188" font-size="10" fill="#888" text-anchor="middle">DR 寄存器</text>
+
+  <!-- DMA 控制器 -->
+  <rect x="220" y="120" width="120" height="90" fill="#ffffff" stroke="#3451b2" stroke-width="2" rx="8"/>
+  <text x="280" y="148" font-size="13" font-weight="bold" fill="#3451b2" text-anchor="middle">DMA</text>
+  <text x="280" y="168" font-size="11" fill="#666" text-anchor="middle">专职搬运工</text>
+  <text x="280" y="188" font-size="10" fill="#888" text-anchor="middle">不占 CPU</text>
+
+  <!-- ADC→DMA 数据流（常开） -->
+  <path d="M160,165 L220,165" stroke="#d97706" stroke-width="3" fill="none" marker-end="url(#arrO)"/>
+  <defs>
+    <marker id="arrO" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <polygon points="0,0 7,3 0,6" fill="#d97706"/>
+    </marker>
+    <marker id="arrB" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <polygon points="0,0 7,3 0,6" fill="#3451b2"/>
+    </marker>
+    <marker id="arrG" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <polygon points="0,0 7,3 0,6" fill="#3eaf7c"/>
+    </marker>
+  </defs>
+
+  <!-- 缓冲 A / B -->
+  <rect x="400" y="80" width="200" height="70" fill="#f8fafc" stroke="#94a3b8" rx="8"/>
+  <text x="416" y="102" font-size="12" font-weight="bold" fill="#3451b2">缓冲区 A（RAM）</text>
+  <rect x="416" y="112" width="168" height="18" fill="#e2e8f0" rx="3"/>
+  <rect x="416" y="112" width="0" height="18" fill="#d97706" rx="3">
+    <animate attributeName="width" calcMode="discrete" values="0;84;168;168;168;168;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="14s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="400" y="170" width="200" height="70" fill="#f8fafc" stroke="#94a3b8" rx="8"/>
+  <text x="416" y="192" font-size="12" font-weight="bold" fill="#3451b2">缓冲区 B（RAM）</text>
+  <rect x="416" y="202" width="168" height="18" fill="#e2e8f0" rx="3"/>
+  <rect x="416" y="202" width="0" height="18" fill="#d97706" rx="3">
+    <animate attributeName="width" calcMode="discrete" values="0;0;0;84;168;168;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="14s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- DMA→当前缓冲 箭头（A/B 切换） -->
+  <path d="M340,150 L396,115" stroke="#3451b2" stroke-width="3" fill="none" marker-end="url(#arrB)" opacity="1">
+    <animate attributeName="opacity" calcMode="discrete" values="1;1;1;0;0;0;0;1" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="14s" repeatCount="indefinite"/>
+  </path>
+  <path d="M340,180 L396,205" stroke="#3451b2" stroke-width="3" fill="none" marker-end="url(#arrB)" opacity="0">
+    <animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;1;1;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="14s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- CPU -->
+  <rect x="400" y="270" width="200" height="70" fill="#ffffff" stroke="#3eaf7c" stroke-width="2" rx="8"/>
+  <text x="500" y="298" font-size="13" font-weight="bold" fill="#3eaf7c" text-anchor="middle">CPU</text>
+  <text x="500" y="318" font-size="11" fill="#666" text-anchor="middle">只在"满了"中断里出场</text>
+
+  <!-- CPU 处理箭头（与 DMA 反相） -->
+  <path d="M500,270 L500,150" stroke="#3eaf7c" stroke-width="3" stroke-dasharray="6 4" fill="none" marker-end="url(#arrG)" opacity="0">
+    <animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;0;0;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="14s" repeatCount="indefinite"/>
+  </path>
+  <path d="M530,270 L530,240" stroke="#3eaf7c" stroke-width="3" stroke-dasharray="6 4" fill="none" marker-end="url(#arrG)" opacity="0">
+    <animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;1;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="14s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- 满中断铃铛 -->
+  <text x="620" y="120" font-size="18" opacity="0">🔔<animate attributeName="opacity" calcMode="discrete" values="0;0;1;0;0;0;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="14s" repeatCount="indefinite"/></text>
+  <text x="620" y="215" font-size="18" opacity="0">🔔<animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;1;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="14s" repeatCount="indefinite"/></text>
+
+  <!-- 阶段字幕 -->
+  <g font-size="13" font-weight="bold" fill="#3451b2">
+    <g opacity="1"><animate attributeName="opacity" calcMode="discrete" values="1;0;0;0;0;0;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="14s" repeatCount="indefinite"/>
+      <text x="36" y="382">① 开局：DMA 接过搬运活，目标缓冲区 A；CPU 去干正事</text></g>
+    <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;1;0;0;0;0;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="14s" repeatCount="indefinite"/>
+      <text x="36" y="382">② A 填到一半：全程零 CPU 参与——它甚至不知道这事在发生</text></g>
+    <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;1;0;0;0;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="14s" repeatCount="indefinite"/>
+      <text x="36" y="382">③ A 满！"传输完成"中断一响，DMA 换道填 B，无缝衔接</text></g>
+    <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;0;0;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="14s" repeatCount="indefinite"/>
+      <text x="36" y="382">④ CPU 这才出场：安心处理**整批** A 的数据（B 还在被填）</text></g>
+    <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;1;0;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="14s" repeatCount="indefinite"/>
+      <text x="36" y="382">⑤ B 也满了：CPU 换处理 B，DMA 回头再填 A——乒乓循环</text></g>
+    <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;1;1;1" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="14s" repeatCount="indefinite"/>
+      <text x="36" y="382">关键纪律：CPU 处理的缓冲，此刻 DMA 绝不能碰——乒乓就是为了这条 →</text></g>
+  </g>
+</svg>

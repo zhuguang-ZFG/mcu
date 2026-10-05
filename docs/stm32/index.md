@@ -13,7 +13,7 @@ title: S 篇导览
 | S0 | [环境搭建](00-env.md)【成稿】 | 四件工具四个文件，红灯先闪起来 |
 | S1 | [架构总览](01-arch.md) | 为什么 0x40020000 是 GPIOA |
 | S2 | [RCC 时钟树](02-rcc-clock.md) | HSE→PLL→168MHz 手算全流程 |
-| S3 | [GPIO](03-gpio.md) | 七个寄存器位级图解 |
+| S3 | [GPIO](03-gpio.md)【成稿】 | 七个寄存器位级图解（动画） |
 | S4 | [NVIC 与 EXTI](04-nvic-exti.md) | 中断现场与优先级（含动画） |
 | S5 | [SysTick](05-systick.md) | 内核定时器与精确延时 |
 | S6 | [定时器 TIM](06-tim.md) | 时基/PWM/输入捕获 |

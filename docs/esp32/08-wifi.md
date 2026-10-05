@@ -26,6 +26,17 @@ title: P8 Wi-Fi 精髓：事件循环与连接状态机
 
 menuconfig 填上 Wi-Fi 账号密码（示例工程惯例），`idf.py flash monitor`：观察日志从 `wifi:state: init` 到 `got ip` 的完整旅程——把日志与状态机逐条对号入座。
 
+## 动画：从 WiFi 握手到 TCP 三次握手
+
+先拿"小区门禁卡"（关联+DHCP 得 IP），再和服务器对暗号：SYN(seq=100) → SYN+ACK(seq=300,ack=101) → ACK(ack=301)。**三次才能证明双向耳聪目明**——序号是防迟到旧报文骗开门的。
+
+![TCP 握手动画](/anim/tcp-handshake.svg)
+
+## 配套视频
+
+<VideoEmbed type="youtube" id="gOW-B2KHvHU" title="TCP 3-Way Handshake Explained（3 分钟动画，和上图逐帧对照）" />
+
+
 ## 小节结构
 
 | 小节 | 内容 | 四件套 |

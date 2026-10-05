@@ -23,4 +23,4 @@ title: 实验中心
 
 - **先做实验再吵架**：对任何"我觉得应该是"的争议，先上板；
 - 实测记录表是实验的一部分——填上日期、板子、现象，下次复习就是财富；
-- 写新实验请复制 [实验模板](template.md)，规范见 [CONTRIBUTING](https://github.com/)。
+- 写新实验请复制 [实验模板](template.md)，规范见 [CONTRIBUTING](https://github.com/zhuguang-ZFG/mcu/blob/main/CONTRIBUTING.md)。

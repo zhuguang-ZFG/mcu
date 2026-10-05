@@ -26,6 +26,13 @@ title: F4 队列：传送带的源码解剖
 
 按键中断里 `xQueueSendFromISR` 发按键值，任务里 `xQueueReceive(..., portMAX_DELAY)` 收到就翻灯——第一个"中断→任务"的标准管道。
 
+## 动画：传值不传址的传送带
+
+生产者拷贝进 tail、消费者从 head 取走，head/tail 指针此消彼长；取空就睡、放满也睡——**睡觉不耗 CPU** 是 RTOS 通信和 while 轮询的本质区别。
+
+![队列传送动画](/anim/queue-passing.svg)
+
+
 ## 小节结构
 
 | 小节 | 内容 | 四件套 |
