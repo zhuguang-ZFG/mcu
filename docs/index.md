@@ -45,3 +45,17 @@ features:
     link: /lab/
     linkText: 进入实验
 ---
+
+<div class="mcu-start">
+
+## 从这三章开始（成稿，含动画）
+
+| 章节 | 你会带走 |
+|---|---|
+| [S3 GPIO：七个寄存器位级图解](/stm32/03-gpio.md) | 配置动画"盖四个章" + ODR 读-改-写翻车现场 |
+| [B4 启动过程：上电到 main](/build/04-startup.md) | 复位一毫秒动画 + 启动文件逐行过堂 |
+| [F2 上下文切换：PendSV 换魂术](/rtos/freertos/02-context-switch.md) | 换魂动画 + 十一条汇编逐行 + 野火内核视频 |
+
+> 每章同一个循环：**手册 → 寄存器 → 库源码 → 实物**。看不懂的那一环，就是该回去补的那一环。
+
+</div>

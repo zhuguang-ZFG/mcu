@@ -4,9 +4,78 @@
   --mcu-brand: #3451b2;
   --mcu-accent: #3eaf7c;
   --mcu-warn: #d97706;
+  /* 首页 hero 标题品牌渐变 */
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(120deg, #3451b2 35%, #3eaf7c);
 }
 
-/* 动画图：居中 + 白底卡片，适配深浅主题 */
+/* ===== 中文正文阅读节奏 ===== */
+.vp-doc p,
+.vp-doc li {
+  line-height: 1.9;
+}
+.vp-doc li + li {
+  margin-top: 2px;
+}
+.vp-doc h2 {
+  margin-top: 2.2em;
+}
+.vp-doc h3 {
+  margin-top: 1.8em;
+}
+
+/* ===== 表格：全宽 + 品牌表头 + 斑马纹 + 悬停 ===== */
+.vp-doc table {
+  width: 100%;
+  margin: 16px 0;
+}
+.vp-doc table th {
+  background: var(--mcu-brand);
+  color: #fff;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.vp-doc table tr:nth-child(even) td {
+  background: var(--vp-c-bg-soft);
+}
+.vp-doc table tr:hover td {
+  background: rgba(52, 81, 178, 0.07);
+}
+
+/* ===== 旁白 blockquote（【注】）：品牌色左侧卡 ===== */
+.vp-doc blockquote {
+  border-left: 4px solid var(--mcu-brand);
+  background: var(--vp-c-bg-soft);
+  padding: 10px 16px;
+  border-radius: 0 8px 8px 0;
+}
+.vp-doc blockquote > p {
+  color: var(--vp-c-text-1);
+}
+
+/* ===== 短自测 details/summary：折叠答题卡 ===== */
+.vp-doc details {
+  border: 1px solid var(--mcu-brand);
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin: 14px 0;
+  background: var(--vp-c-bg-soft);
+}
+.vp-doc details summary {
+  cursor: pointer;
+  color: var(--mcu-brand);
+}
+.vp-doc details summary:hover {
+  text-decoration: underline;
+}
+.vp-doc details[open] {
+  background: var(--vp-c-bg);
+}
+.vp-doc details[open] summary {
+  margin-bottom: 8px;
+}
+
+/* ===== 动画图：居中 + 白底卡片，适配深浅主题 ===== */
 .vp-doc img[src*="/anim/"] {
   display: block;
   margin: 1.2em auto;
@@ -18,7 +87,7 @@
   padding: 8px;
 }
 
-/* 记忆锚点框：本章最值得记住的一件事 */
+/* ===== 记忆锚点框：本章最值得记住的一件事 ===== */
 .vp-doc .memory-anchor {
   border-left: 4px solid var(--mcu-accent);
   background: var(--vp-c-bg-soft);
@@ -27,7 +96,7 @@
   margin: 16px 0;
 }
 
-/* "你做到了" 成就清单 */
+/* ===== "你做到了" 成就清单 ===== */
 .vp-doc .achievement {
   border: 1px dashed var(--mcu-accent);
   border-radius: 8px;
@@ -36,7 +105,7 @@
   background: var(--vp-c-bg-soft);
 }
 
-/* 实验卡片 */
+/* ===== 实验卡片 ===== */
 .vp-doc .lab-card {
   border: 1px solid var(--vp-c-divider);
   border-radius: 8px;
@@ -44,9 +113,20 @@
   margin: 12px 0;
 }
 
-/* 寄存器位域表格紧凑化 */
+/* ===== 寄存器位域表格紧凑化 ===== */
 .vp-doc table.regbits th {
-  background: var(--vp-c-bg-soft);
   font-family: var(--vp-font-family-mono);
   font-size: 0.85em;
+}
+
+/* ===== 首页"从这三章开始"引导带 ===== */
+.mcu-start {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 24px 40px;
+}
+.mcu-start h2 {
+  border-top: none;
+  padding-top: 0;
+  text-align: center;
 }
