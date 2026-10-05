@@ -1,0 +1,52 @@
+/* 通往单片机之路 自定义样式 */
+
+:root {
+  --mcu-brand: #3451b2;
+  --mcu-accent: #3eaf7c;
+  --mcu-warn: #d97706;
+}
+
+/* 动画图：居中 + 白底卡片，适配深浅主题 */
+.vp-doc img[src*="/anim/"] {
+  display: block;
+  margin: 1.2em auto;
+  max-width: 720px;
+  width: 100%;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: #f6f8fa;
+  padding: 8px;
+}
+
+/* 记忆锚点框：本章最值得记住的一件事 */
+.vp-doc .memory-anchor {
+  border-left: 4px solid var(--mcu-accent);
+  background: var(--vp-c-bg-soft);
+  padding: 12px 16px;
+  border-radius: 0 8px 8px 0;
+  margin: 16px 0;
+}
+
+/* "你做到了" 成就清单 */
+.vp-doc .achievement {
+  border: 1px dashed var(--mcu-accent);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 16px 0;
+  background: var(--vp-c-bg-soft);
+}
+
+/* 实验卡片 */
+.vp-doc .lab-card {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 12px 0;
+}
+
+/* 寄存器位域表格紧凑化 */
+.vp-doc table.regbits th {
+  background: var(--vp-c-bg-soft);
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.85em;
+}
