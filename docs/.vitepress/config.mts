@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
+  base: '/mcu/',
   title: '通往单片机之路',
   description: '寄存器级 STM32F407 × ESP32-S3 深度教学：C 语言精髓 · RTOS 双精讲 · 全程实物实验',
   lang: 'zh-CN',
@@ -166,10 +167,10 @@ export default defineConfig({
         },
       ],
     },
-    socialLinks: [{ icon: 'github', link: 'https://github.com/' }],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/zhuguang-ZFG/mcu' }],
     outline: { level: [2, 3], label: '本页目录' },
     docFooter: { prev: '上一篇', next: '下一篇' },
-    editLink: { pattern: 'https://github.com/edit/main/docs/:path', text: '在 GitHub 上编辑此页' },
+    editLink: { pattern: 'https://github.com/zhuguang-ZFG/mcu/edit/main/docs/:path', text: '在 GitHub 上编辑此页' },
     lastUpdated: { text: '最后更新' },
   },
 })
