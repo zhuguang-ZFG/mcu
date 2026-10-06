@@ -30,22 +30,22 @@
 下表与[首页学习地图](docs/index.md)同源，由 `npm run readme:sync` 扫章节 frontmatter 生成；`npm run readme:check` 会在两边数字漂移时报错。**不要手改这一块的数字。**
 
 <!-- readme:progress:start -->
-| 板块 | 成稿 / 规划 | 现在就能点进去读 |
+| 板块 | 成稿 / 规划（已建档） | 现在就能点进去读 |
 |---|---|---|
-| [C 语言精髓](docs/c/index.md) | 2 / 8 | [C1 内存模型](docs/c/01-memory-model.md) · [C3 volatile](docs/c/03-volatile.md) |
-| [构建与运行全过程](docs/build/index.md) | 3 / 8 | [B2 ELF 解剖](docs/build/02-elf.md) · [B3 链接脚本](docs/build/03-linker-script.md) · [B4 启动过程](docs/build/04-startup.md) |
-| [STM32F407 寄存器主线](docs/stm32/index.md) | 7 / 17 | [S0 环境搭建](docs/stm32/00-env.md) · [S2 RCC 时钟树](docs/stm32/02-rcc-clock.md) · [S3 GPIO](docs/stm32/03-gpio.md) · [S6 定时器 TIM](docs/stm32/06-tim.md) · [S7 USART](docs/stm32/07-usart.md) · [S8 DMA](docs/stm32/08-dma.md) · [S11 I2C](docs/stm32/11-i2c.md) |
-| [FreeRTOS 精讲](docs/rtos/index.md) | 7 / 9 | [F1 任务与 TCB](docs/rtos/freertos/01-task-tcb.md) · [F2 上下文切换](docs/rtos/freertos/02-context-switch.md) · [F3 调度器](docs/rtos/freertos/03-scheduler.md) · [F4 队列](docs/rtos/freertos/04-queue.md) · [F5 信号量与互斥量](docs/rtos/freertos/05-sem-mutex.md) · [F6 任务通知、事件组与软件定时器](docs/rtos/freertos/06-notify-event-timer.md) · [F7 内存管理](docs/rtos/freertos/07-heap.md) |
-| [RT-Thread 精讲](docs/rtos/index.md) | 0 / 8 | _骨架页已建档，正文待补_ |
-| [双 OS 对照与选型](docs/rtos/index.md) | 0 / 2 | _骨架页已建档，正文待补_ |
-| [ESP32-S3 + ESP-IDF](docs/esp32/index.md) | 4 / 13 | [P0 环境搭建](docs/esp32/00-env.md) · [P2 GPIO 与引脚矩阵](docs/esp32/02-gpio-matrix.md) · [P5 UART 驱动解析](docs/esp32/05-uart-driver.md) · [P7 定时器与 LEDC](docs/esp32/07-timer-ledc.md) |
-| [GD32 双系对照](docs/gd32/index.md) | 1 / 1 | [G1 RCU 时钟树](docs/gd32/01-rcu-clock.md) |
-| [实物实验中心](docs/lab/index.md) | 6 / 8 | [实验 E01 点亮霸天虎的 RGB 红灯](docs/lab/e01-blink.md) · [实验 E02 逻辑分析仪抓 UART 帧](docs/lab/e02-logic-uart.md) · [实验 E03 示波器看 PWM](docs/lab/e03-scope-pwm.md) · [实验 E05 I2C 抓包读 EEPROM](docs/lab/e05-i2c-eeprom.md) · [实验 E07 S3 板载姿态传感器](docs/lab/e07-qmi8658.md) · [实验 E08 S3 音频链路放音](docs/lab/e08-audio-play.md) |
+| [C 语言精髓](docs/c/index.md) | 2 / 8（8） | [C1 内存模型](docs/c/01-memory-model.md) · [C3 volatile](docs/c/03-volatile.md) |
+| [构建与运行全过程](docs/build/index.md) | 3 / 8（8） | [B2 ELF 解剖](docs/build/02-elf.md) · [B3 链接脚本](docs/build/03-linker-script.md) · [B4 启动过程](docs/build/04-startup.md) |
+| [STM32F407 寄存器主线](docs/stm32/index.md) | 7 / 17（17） | [S0 环境搭建](docs/stm32/00-env.md) · [S2 RCC 时钟树](docs/stm32/02-rcc-clock.md) · [S3 GPIO](docs/stm32/03-gpio.md) · [S6 定时器 TIM](docs/stm32/06-tim.md) · [S7 USART](docs/stm32/07-usart.md) · [S8 DMA](docs/stm32/08-dma.md) · [S11 I2C](docs/stm32/11-i2c.md) |
+| [FreeRTOS 精讲](docs/rtos/index.md) | 7 / 9（9） | [F1 任务与 TCB](docs/rtos/freertos/01-task-tcb.md) · [F2 上下文切换](docs/rtos/freertos/02-context-switch.md) · [F3 调度器](docs/rtos/freertos/03-scheduler.md) · [F4 队列](docs/rtos/freertos/04-queue.md) · [F5 信号量与互斥量](docs/rtos/freertos/05-sem-mutex.md) · [F6 任务通知、事件组与软件定时器](docs/rtos/freertos/06-notify-event-timer.md) · [F7 内存管理](docs/rtos/freertos/07-heap.md) |
+| [RT-Thread 精讲](docs/rtos/index.md) | 0 / 8（8） | _骨架页已建档，正文待补_ |
+| [双 OS 对照与选型](docs/rtos/index.md) | 0 / 2（2） | _骨架页已建档，正文待补_ |
+| [ESP32-S3 + ESP-IDF](docs/esp32/index.md) | 4 / 13（13） | [P0 环境搭建](docs/esp32/00-env.md) · [P2 GPIO 与引脚矩阵](docs/esp32/02-gpio-matrix.md) · [P5 UART 驱动解析](docs/esp32/05-uart-driver.md) · [P7 定时器与 LEDC](docs/esp32/07-timer-ledc.md) |
+| [GD32 双系对照](docs/gd32/index.md) | 1 / 10（1） | [G1 RCU 时钟树](docs/gd32/01-rcu-clock.md) |
+| [实物实验中心](docs/lab/index.md) | 6 / 8（8） | [实验 E01 点亮霸天虎的 RGB 红灯](docs/lab/e01-blink.md) · [实验 E02 逻辑分析仪抓 UART 帧](docs/lab/e02-logic-uart.md) · [实验 E03 示波器看 PWM](docs/lab/e03-scope-pwm.md) · [实验 E05 I2C 抓包读 EEPROM](docs/lab/e05-i2c-eeprom.md) · [实验 E07 S3 板载姿态传感器](docs/lab/e07-qmi8658.md) · [实验 E08 S3 音频链路放音](docs/lab/e08-audio-play.md) |
 
-- 成稿章节 **24 / 66**（上表「实物实验」那一行的 6 篇另计，不进章节数），通读约 **1025 分钟**（≈ 17.1 小时）；
+- 成稿章节 **24 / 75**（上表「实物实验」那一行的 6 篇另计，不进章节数），通读约 **1025 分钟**（≈ 17.1 小时）；
 - 实物实验 **6 / 8**（文稿成稿；完整配套工程 6 项，上板验证 0 项）；
 - 机制动画 **34** 张，在 `docs/public/anim/`，动效与版式规范见 `.trellis/spec/docs-site/animation.md`；
-- 示例工程 **19** 个，在 `code/`，与章节同构；
+- 示例工程 **20** 个，在 `code/`，与章节同构；
 - 章节 frontmatter 元数据校验已通过（缺项或非法值会阻止构建）。
 <!-- readme:progress:end -->
 

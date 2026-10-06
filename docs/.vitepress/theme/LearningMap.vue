@@ -40,17 +40,17 @@ const landing = (track) => withBase(track.landing || `/${track.dir}/index.html`)
     <div v-for="track in tracks" :key="track.key" class="mcu-track">
       <div class="mcu-track__head">
         <a class="mcu-track__name" :href="landing(track)">{{ track.name }}</a>
-        <span class="mcu-track__count">{{ track.done }}/{{ track.total }} 成稿</span>
+        <span class="mcu-track__count">{{ track.done }}/{{ track.total }} 成稿 · {{ track.built }} 已建档</span>
         <span class="mcu-track__bar">
           <i :style="{ width: (track.total ? (track.done / track.total) * 100 : 0) + '%' }" />
         </span>
       </div>
       <ul class="mcu-chips">
-        <li v-for="ch in track.chapters" :key="ch.route">
-          <a
+        <li v-for="ch in track.chapters" :key="ch.id">
+          <component :is="ch.route ? 'a' : 'span'"
             class="mcu-chip"
             :class="ch.status === 'done' ? 'is-done' : 'is-building'"
-            :href="withBase(ch.route)"
+            :href="ch.route ? withBase(ch.route) : undefined"
             :title="
               ch.status === 'done'
                 ? `${difficultyLabel(ch.difficulty)} · 约 ${ch.minutes} 分钟`
@@ -59,8 +59,8 @@ const landing = (track) => withBase(track.landing || `/${track.dir}/index.html`)
           >
             {{ ch.title }}
             <em v-if="ch.status === 'done'">{{ difficultyLabel(ch.difficulty) }} {{ ch.minutes }}′</em>
-            <em v-else>建设中</em>
-          </a>
+            <em v-else>{{ ch.route ? '建设中' : '规划中' }}</em>
+          </component>
         </li>
       </ul>
     </div>

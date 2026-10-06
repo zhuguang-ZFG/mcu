@@ -10,6 +10,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { loadCurriculum } from './curriculum.mjs'
 import { loadProjects } from './project-catalog.mjs'
 import { readMetadata, readLabMetadata } from './content-metadata.mjs'
 
@@ -33,6 +34,7 @@ const TRACKS = [
 const chapterPattern = (t) => (t.prefix ? new RegExp(`^${t.prefix}\\d\\d-`) : /^\d\d-/)
 
 const catalog = loadProjects(ROOT)
+const curriculum = loadCurriculum(ROOT)
 function readFrontmatter(file) { return readMetadata(fs.readFileSync(file, 'utf8'), path.relative(ROOT, file)) }
 
 const tracks = TRACKS.map((t) => {
@@ -43,6 +45,7 @@ const tracks = TRACKS.map((t) => {
     const fm = readFrontmatter(path.join(dir, f))
     const rel = `${t.dir}/${f.replace(/\.md$/, '')}`
     return {
+      id: curriculum.find(e => e.path === `docs/${rel}.md`)?.id || rel,
       title: fm.title,
       route: `/${rel}.html`,
       status: fm.status === 'done' ? 'done' : 'building',
@@ -51,8 +54,11 @@ const tracks = TRACKS.map((t) => {
       ...(t.key === 'lab' ? readLabMetadata(fm, catalog, DOCS, rel) : {}),
     }
   })
+  const built = chapters.length
+  for (const e of curriculum.filter(e => e.track === t.key && !e.path)) chapters.push({ id:e.id, title:e.title, route:null, status:'planned', difficulty:0, minutes:0 })
+  for (const c of chapters.filter(c => c.route)) if(t.key !== 'lab' && !curriculum.some(e => e.path === `docs${c.route.replace(/\.html$/, '.md')}`)) throw Error(`课程未登记: ${c.route}`)
   const done = chapters.filter((c) => c.status === 'done').length
-  return { ...t, chapters, done, total: chapters.length }
+  return { ...t, chapters, done, built, total: chapters.length }
 })
 
 const listFiles = (dir, filter = () => true) =>
@@ -98,11 +104,11 @@ function renderProgressBlock(trk, tot) {
     const links = doneList.length
       ? doneList.map((c) => `[${shortTitle(c.title)}](docs${c.route.replace(/\.html$/, '.md')})`).join(' · ')
       : '_骨架页已建档，正文待补_'
-    return `| [${t.name}](${landing}) | ${t.done} / ${t.total} | ${links} |`
+    return `| [${t.name}](${landing}) | ${t.done} / ${t.total}（${t.built}） | ${links} |`
   })
   const hours = (tot.minutes / 60).toFixed(1)
   return [
-    '| 板块 | 成稿 / 规划 | 现在就能点进去读 |',
+    '| 板块 | 成稿 / 规划（已建档） | 现在就能点进去读 |',
     '|---|---|---|',
     ...rows,
     '',

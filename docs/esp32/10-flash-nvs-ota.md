@@ -13,7 +13,9 @@ minutes: 45
 
 1. 分区表 CSV 逐字段：name/type/subtype/offset/size/flags——`factory`（出厂 app）、`ota_0/ota_1`（升级候选）、`nvs`（键值存储）、`phy_init`（射频校准）、`spiffs/fatfs`（文件系统）——16MB 的每一 KB 都有户口。
 2. NVS 是"磨损均衡的键值库"：nvs_set/get 背后是按页管理+CRC 校验+掉电安全的迷你文件系统——Wi-Fi 凭据、设备配置、计数器的标准住所（别再自己写 Flash 扇区了，对照 [S13](../stm32/13-flash-iap.md) 的手工方案）。
-3. OTA 双槽机制：新固件写进另一个 ota 分区→校验→otadata 指向新槽→重启→**新固件自检通过后 esp_ota_mark_app_valid**，否则下次启动自动回滚旧槽——"防变砖"不是口号，是这套状态机。
+3. OTA 双槽机制：新固件写进另一个 ota 分区→校验→otadata 指向新槽→重启→**新固件自检通过后 esp_ota_mark_app_valid_cancel_rollback**，在启用 CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE 时，否则下次启动才会回滚旧槽——"防变砖"不是口号，是这套状态机。
+
+回滚选项默认未启用；先配置 bootloader，再验证 NEW → PENDING_VERIFY → VALID/ABORTED 状态。不能将不开回滚时的行为套入此流程。
 
 ## 学习目标
 

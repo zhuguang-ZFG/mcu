@@ -11,7 +11,7 @@
  *
  * 2) 接收有两级缓冲：串口自己的移位寄存器/FIFO，DMA 搬进我们的环形数组。
  *    DMA 不理解"帧"，它只理解"搬够 N 个字节"。
- *    帧边界靠 USART 的 IDLE 标志（总线空闲一个帧时间就置位）来判断。
+ *    IDLE 只提示总线空闲；应用协议必须自行定义帧边界。
  *
  * 3) TXE 只说明"数据寄存器空出来了"，TC 才说明"停止位已经发出去"。
  *    在 RS-485 这种需要切方向的场合，漏掉 TC 就会把最后一位切掉。
@@ -25,13 +25,14 @@
  *
  * 上板自检步骤（USB-TTL 接 PA9/PA10，115200 8N1）：
  *   a. 电脑上发任意字符串；
- *   b. g_rx_bytes 与 g_frames 应同时增长，g_frames 就是 IDLE 判出的帧数；
+ *   b. g_rx_bytes 与 g_frames 应同时增长，g_frames 是 IDLE 通知次数，不是协议帧数；
  *   c. 蓝灯每收到一帧闪一次；
  *   d. 若 g_rx_bytes 始终为 0，说明 stream/channel 配错了——
  *      回查 RM0090 的 DMA2 request mapping 表，改上面两个宏重来。
  */
 
 #include <stdint.h>
+#include "../../common/behavior/circular.h"
 
 /* ============================ 板级/通道配置 ============================ */
 
@@ -144,11 +145,7 @@ volatile uint8_t  g_rx_buf[RX_BUF_LEN];
 static volatile uint32_t g_ms;
 void SysTick_Handler(void) { g_ms++; }
 
-static void delay_ms(uint32_t ms)
-{
-    uint32_t t0 = g_ms;
-    while ((g_ms - t0) < ms) { }
-}
+
 
 /* ============================ GPIO / 时钟 ============================ */
 
@@ -189,19 +186,20 @@ static void clocks_read(uint32_t hsi_hz, volatile uint32_t *hclk, volatile uint3
      * 1100=/64、1101=/128、1110=/256、1111=/512（F4 没有 /32 这一档） */
     static const uint16_t hpre_div[]  = { 1,1,1,1,1,1,1,1,2,4,8,16,64,128,256,512 };
     /* PPRE2：0xx=/1、100=/2、101=/4、110=/8、111=/16 */
-    static const uint16_t ppre_div[]  = { 1,1,1,1,1,1,1,1,2,4,8,16,16,16,16,16 };
+    static const uint16_t ppre_div[]  = { 1,1,1,1,2,4,8,16 };
 
     uint32_t cfgr = RCC_CFGR;
     uint32_t src  = hsi_hz;
 
-    if ((cfgr & 0x3UL) == 0x2UL) {
+    if (((cfgr >> 2) & 0x3UL) == 0x2UL) {
         uint32_t pll = *(volatile uint32_t *)(RCC_BASE + 0x04UL);
         uint32_t m =  pll & 0x3FUL;
         uint32_t n = (pll >> 6) & 0x1FFUL;
-        uint32_t p = ((pll >> 16) & 0x3UL) ? 4UL : 2UL;
+        uint32_t p = 2UL * (((pll >> 16) & 0x3UL) + 1UL);
         uint32_t hse = (pll & (1UL << 22)) ? HSE_VALUE_HZ : hsi_hz;
-        src = hse / m * n / p;
+        src = m ? (uint32_t)(((uint64_t)hse * n) / (m * p)) : 0;
     }
+    if (((cfgr >> 2) & 3U) == 1U) src = HSE_VALUE_HZ;
     *hclk  = src / hpre_div[(cfgr >> 4) & 0xFUL];
     *pclk2 = *hclk / ppre_div[(cfgr >> 13) & 0x7UL];
 }
@@ -227,7 +225,7 @@ static void usart1_init(uint32_t pclk2)
     USART1_CR3 = 0;
 
     /* OVER8 默认 0 = 16 倍过采样，于是 baud = PCLK2 / BRR */
-    uint32_t brr = pclk2 / BAUD;
+    uint32_t brr = (pclk2 + BAUD/2U) / BAUD;
     USART1_BRR = brr;
     g_brr = brr;
 
@@ -250,7 +248,7 @@ static void dma2_stream5_rx_init(void)
 
     DMA_S5_CR = DMA_SxCR_DIR_PeripheralToMemory
               | DMA_SxCR_CIRC | DMA_SxCR_MINC
-              | DMA_SxCR_HTIE | DMA_SxCR_TCIE
+              | DMA_SxCR_HTIE | DMA_SxCR_TCIE | (1UL << 2)
               | DMA_SxCR_PS_Byte | DMA_SxCR_MSIZE_Byte
               | ((USART1_RX_CHANNEL & 0x7UL) << 25);
 
@@ -259,61 +257,39 @@ static void dma2_stream5_rx_init(void)
 }
 
 
-/* ============================ 中断 ============================ */
-
-/** USART1 中断：只关心两类事——空闲（=一帧结束）和接收错误。 */
+/* ISR producer / main consumer. Both IRQs use the same preemption priority. */
+static dma_cursor_t rx_cursor;
+static volatile uint8_t tx_queue[1024];
+static volatile uint32_t tx_head, tx_tail;
+static void consume_rx(void)
+{
+    uint32_t flags=DMA2_HISR;
+    uint32_t pos=(RX_BUF_LEN-DMA_S5_NDTR)%RX_BUF_LEN;
+    flags |= DMA2_HISR; /* Include a boundary crossed while sampling NDTR. */
+    unsigned events=((flags&DMA_HISR_HTIF5)?1U:0U)|((flags&DMA_HISR_TCIF5)?2U:0U)|((flags&DMA_HISR_TEIF5)?4U:0U);
+    DMA2_HIFCR=flags&(DMA_HISR_HTIF5|DMA_HISR_TCIF5|DMA_HISR_TEIF5);
+    dma_span_t span=dma_consume(&rx_cursor,pos,RX_BUF_LEN,events);
+    if(flags&DMA_HISR_HTIF5) ++g_half_events;
+    if(flags&DMA_HISR_TCIF5) ++g_full_events;
+    if(span.dropped) { ++g_overruns; return; }
+    for(uint32_t i=0;i<span.count;i++) {
+        if(tx_head-tx_tail>=sizeof(tx_queue)) { ++g_overruns; break; }
+        tx_queue[tx_head%sizeof(tx_queue)]=g_rx_buf[(span.start+i)%RX_BUF_LEN];
+        __asm__ volatile("dmb":::"memory");
+        ++tx_head; ++g_rx_bytes;
+    }
+}
 void USART1_IRQHandler(void)
 {
-    uint32_t sr = USART1_SR;
-
-    if (sr & (USART_SR_ORE | USART_SR_FE | USART_SR_NE)) {
-        g_overruns++;
-        (void)USART1_DR;        /* 错误标志靠"读 SR 再读 DR"清 */
-    }
-
-    if (sr & USART_SR_IDLE) {
-        /* 关键：IDLE 不是靠写 0 清的，必须读一次 SR 再读一次 DR */
-        uint32_t ndtr = DMA_S5_NDTR;
-        uint32_t pos  = RX_BUF_LEN - ndtr;       /* 已写入的字节数 = 位置 */
-        uint32_t len  = pos;
-
-        if (pos == 0U) {
-            len = RX_BUF_LEN;                    /* 缓冲刚好绕回一圈 */
-        }
-
-        /* 把这一帧回显回去，顺带让电脑上肉眼确认收到了 */
-        for (uint32_t i = 0; i < len; i++) {
-            uint32_t byte = g_rx_buf[(pos + i) % RX_BUF_LEN];
-            while ((USART1_SR & USART_SR_TXE) == 0UL) { }
-            USART1_DR = byte;
-        }
-
-        g_rx_bytes += len;
-        g_frames++;
-
-        (void)USART1_DR;        /* 这一次读 DR 才真正清掉 IDLE */
+    uint32_t sr=USART1_SR;
+    if(sr&(USART_SR_ORE|USART_SR_FE|USART_SR_NE|USART_SR_IDLE)) {
+        (void)USART1_DR; /* SR then DR acknowledges flags; IDLE is not a protocol boundary. */
+        if(sr&(USART_SR_ORE|USART_SR_FE|USART_SR_NE)) ++g_overruns;
+        if(sr&USART_SR_IDLE) ++g_frames; /* historical name: counts IDLE notifications only */
+        consume_rx();
     }
 }
-
-/** DMA2 Stream5 中断：半缓冲/整缓冲各响一次，提醒 CPU "该处理了"。
- *  环形模式下这两个中断是周期性出现的，正好用来画"生产/消费"的水位图。 */
-void DMA2_Stream5_IRQHandler(void)
-{
-    uint32_t hisr = DMA2_HISR;
-
-    if (hisr & DMA_HISR_HTIF5) {
-        DMA2_HIFCR = DMA_HISR_HTIF5;   /* 清标志写 HIFCR，不是 HISR */
-        g_half_events++;
-    }
-    if (hisr & DMA_HISR_TCIF5) {
-        DMA2_HIFCR = DMA_HISR_TCIF5;
-        g_full_events++;
-    }
-    if (hisr & DMA_HISR_TEIF5) {
-        DMA2_HIFCR = DMA_HISR_TEIF5;
-        g_overruns++;
-    }
-}
+void DMA2_Stream5_IRQHandler(void) { consume_rx(); }
 
 /* ============================ main ============================ */
 
@@ -334,20 +310,30 @@ int main(void)
     usart1_init(g_pclk2);
     dma2_stream5_rx_init();
 
+    ((volatile uint8_t *)0xe000e400UL)[37]=0x60;
+    ((volatile uint8_t *)0xe000e400UL)[68]=0x60;
     NVIC_ISER1 |= (1UL << (37 - 32));    /* USART1_IRQn       */
     NVIC_ISER2 |= (1UL << (68 - 64));    /* DMA2_Stream5_IRQn */
 
     uart_write_blocking("uart-dma ready\r\n");
 
+    /* No sleeping while responsible for draining the transmit queue. */
     while (1) {
-        delay_ms(500);
-        led_set(LED_R_PIN, 1);
-        delay_ms(2);
-        led_set(LED_R_PIN, 0);
-
-        if (g_frames != 0U) {
-            /* 收到过数据：蓝灯跟着帧数亮，读 GDB 里的 g_rx_bytes 就能对账 */
-            led_set(LED_B_PIN, (g_frames & 1UL) ? 1UL : 0UL);
+        if(!(DMA_S5_CR&DMA_SxCR_EN)) {
+            uint32_t mask;
+            __asm__ volatile("mrs %0, primask\ncpsid i":"=r"(mask)::"memory");
+            ++g_overruns; rx_cursor.read=0;
+            DMA2_HIFCR=DMA_HISR_HTIF5|DMA_HISR_TCIF5|DMA_HISR_TEIF5;
+            dma2_stream5_rx_init();
+            __asm__ volatile("msr primask, %0"::"r"(mask):"memory");
         }
+        if(tx_tail!=tx_head && (USART1_SR&USART_SR_TXE)) {
+            __asm__ volatile("dmb":::"memory");
+            USART1_DR=tx_queue[tx_tail%sizeof(tx_queue)];
+            __asm__ volatile("dmb":::"memory");
+            ++tx_tail;
+        }
+        led_set(LED_R_PIN,(g_ms/500U)&1U);
+        led_set(LED_B_PIN,g_overruns==0 && g_rx_bytes!=0);
     }
 }

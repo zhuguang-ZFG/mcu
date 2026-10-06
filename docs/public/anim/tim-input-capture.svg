@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" font-family="'Segoe UI','Microsoft YaHei',sans-serif">
   <title>TIM 输入捕获：边沿拍照测频率</title>
-  <desc>四阶段动画：PA6 输出 1kHz 方波，跳线接到 PA7；每个上升沿硬件把 CNT 锁进 CCR2；两次拍照的差值 1000 拍 × 1µs = 1kHz；CNT 回绕时用无符号减法自动处理模差。方波被逐点画出，笔尖爬到第一个上升沿时亮拍照①、爬到第二个上升沿时亮拍照②；两个上升沿上各有一圈"快门"每 1s（方波一个周期）炸一次——边沿一到硬件就拍照，CPU 根本没在场。</desc>
+  <desc>四阶段动画：PA6 输出 1kHz 方波，跳线接到 PA0；每个上升沿硬件把 CNT 锁进 TIM2_CCR1；两次拍照的差值 1000 拍 × 1µs = 1kHz；独立 TIM2 在无丢边沿、间隔小于整圈时用 32 位模差。方波被逐点画出，笔尖爬到第一个上升沿时亮拍照①、爬到第二个上升沿时亮拍照②；两个上升沿上各有一圈"快门"每 1s（方波一个周期）炸一次——边沿一到硬件就拍照，CPU 根本没在场。</desc>
   <rect width="720" height="420" fill="#f6f8fa"/>
   <text x="24" y="30" font-size="17" font-weight="bold" fill="#3451b2">输入捕获：引脚边沿一到，硬件把 CNT 拍进 CCR</text>
-  <text x="24" y="50" font-size="12" fill="#666">PA6(PWM) → 跳线 → PA7(捕获) · CNT 1MHz 计数 · 差值 1000 拍 = 1kHz · 回绕靠无符号减法</text>
+  <text x="24" y="50" font-size="12" fill="#666">PA6(PWM) → 跳线 → PA0(捕获) · CNT 1MHz 计数 · 差值 1000 拍 = 1kHz · 独立 32 位时基</text>
 
   <!-- 方波轨道 -->
   <rect x="40" y="80" width="640" height="110" fill="#ffffff" stroke="#cbd5e1" rx="8"/>
@@ -35,7 +35,7 @@
         <animate attributeName="opacity" values="1;0" dur="1s" repeatCount="indefinite"/>
       </circle>
       <circle cx="130" cy="270" r="6" fill="#d97706"/>
-      <text x="140" y="284" fill="#d97706" font-weight="bold">拍照① CCR2=200</text>
+      <text x="140" y="284" fill="#d97706" font-weight="bold">拍照① TIM2_CCR1=200</text>
     </g>
     <g opacity="0">
       <animate attributeName="opacity" calcMode="discrete" values="0;0;1;1;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
@@ -45,14 +45,14 @@
         <animate attributeName="opacity" values="1;0" dur="1s" repeatCount="indefinite"/>
       </circle>
       <circle cx="490" cy="270" r="6" fill="#3eaf7c"/>
-      <text x="500" y="284" fill="#3eaf7c" font-weight="bold">拍照② CCR2=1200</text>
+      <text x="500" y="284" fill="#3eaf7c" font-weight="bold">拍照② TIM2_CCR1=1200</text>
     </g>
   </g>
 
-  <!-- CCR2 寄存器 -->
+  <!-- TIM2_CCR1 寄存器 -->
   <rect x="40" y="310" width="300" height="70" fill="#ffffff" stroke="#d97706" stroke-width="2" rx="8"/>
-  <text x="56" y="332" font-size="13" font-weight="bold" fill="#d97706">CCR2（硬件锁存，不要 CPU 掐表）</text>
-  <text x="56" y="354" font-size="12" font-family="Consolas,monospace" fill="#666">边沿一到：CCR2 ← CNT（同一拍）</text>
+  <text x="56" y="332" font-size="13" font-weight="bold" fill="#d97706">TIM2_CCR1（硬件锁存，不要 CPU 掐表）</text>
+  <text x="56" y="354" font-size="12" font-family="Consolas,monospace" fill="#666">边沿一到：TIM2_CCR1 ← CNT（同一拍）</text>
 
   <!-- 计算面板（阶段③点亮） -->
   <rect x="370" y="310" width="310" height="70" fill="#ffffff" stroke="#3eaf7c" stroke-width="2" rx="8"/>
@@ -63,13 +63,13 @@
   <!-- 阶段字幕 -->
   <g font-size="13" font-weight="bold" fill="#3451b2">
     <g opacity="1"><animate attributeName="opacity" calcMode="discrete" values="1;0;0;0;1" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
-      <text x="36" y="408">① 方波在 PA6 上跑，跳线送到 PA7——信号源和测量端都是我们自己</text></g>
+      <text x="36" y="408">① 方波在 PA6 上跑，跳线送到 PA0——信号源和测量端都是我们自己</text></g>
     <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;1;0;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
-      <text x="36" y="408">② 第一个上升沿：硬件把 CNT=200 锁进 CCR2——CPU 这时候在干别的</text></g>
+      <text x="36" y="408">② 第一个上升沿：硬件把 CNT=200 锁进 TIM2_CCR1——CPU 这时候在干别的</text></g>
     <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;1;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
-      <text x="36" y="408">③ 第二个上升沿：CCR2=1200。CPU 读走两次值，做一次减法</text></g>
+      <text x="36" y="408">③ 第二个上升沿：TIM2_CCR1=1200。CPU 读走两次值，做一次减法</text></g>
     <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
-      <text x="36" y="408">④ 回绕怎么办：now-last 用无符号减法，CNT 归零绕圈自动算出模差</text></g>
+      <text x="36" y="408">④ TIM2 计满 2³² 回绕；无丢边沿且间隔小于整圈，才可用模差</text></g>
   </g>
 
   <!-- 阶段指示点 -->

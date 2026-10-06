@@ -125,5 +125,11 @@
     "kind": "esp-idf",
     "entry": "CMakeLists.txt",
     "target": "esp32s3"
+  },
+  {
+    "id": "common-behavior",
+    "path": "code/common/behavior",
+    "kind": "host-probe",
+    "entry": "probe.sh"
   }
 ]

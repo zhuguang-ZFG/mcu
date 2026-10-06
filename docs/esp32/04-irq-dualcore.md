@@ -7,7 +7,7 @@ minutes: 40
 
 # P4 中断与双核：Cache 关了，你的 ISR 还能跑吗
 
-> 🎯 ESP32 最著名的事故现场：代码在 Flash 里，系统在写 Flash（NVS/OTA 常干）——Cache 一关，取指无门，中断来了直接崩。所以有了铁律：**ISR 和它的全部调用链，必须住进 IRAM**。
+> 🎯 ESP32 最著名的事故现场：代码在 Flash 里，系统在写 Flash（NVS/OTA 常干）——Cache 一关，取指无门，中断来了直接崩。所以有了铁律：**声明 ESP_INTR_FLAG_IRAM 的中断必须保证可达代码/数据均在内部存储；普通非 IRAM-safe 中断在 Flash 操作期间会被推迟**。
 
 ## 本章精髓
 
@@ -48,7 +48,7 @@ hello 工程里打印 `xPortGetCoreID()`：app_main 默认在核 0；再 `xTaskC
 
 ## 实物实验
 
-- 故意把 ISR 放 Flash（不加 IRAM_ATTR），触发一次 NVS 写+中断并发，复现 Guru Meditation 崩溃——再改回 IRAM 对比，事故教学一气呵成（日志存档）。
+- 对照合法的普通中断与完整 IRAM-safe 中断在 NVS 写入期间的响应延迟；只有错误声明 IRAM-safe 却访问 Flash 才构成缓存错误反例——再改回 IRAM 对比，事故教学一气呵成（日志存档）。
 
 ## 常见坑
 

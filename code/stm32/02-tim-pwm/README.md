@@ -15,9 +15,9 @@ TIM 只有一个核心：按固定节拍往上数的计数器 CNT。剩下的都
 | 通道 | 引脚 | 复用 | 干什么 |
 |---|---|---|---|
 | CH1 | PA6 | AF2 | 输出 1kHz PWM，呼吸灯 |
-| CH2 | PA7 | AF2 | 捕获 PA6 的方波，硬件算周期，CPU 只做减法 |
+| TIM2_CH1 | PA0 | AF1 | 捕获 PA6 的方波，硬件算周期，CPU 只做减法 |
 
-自测闭环：一根杜邦线把 **PA6 接到 PA7**。不接也能跑，只是实测频率一直是 0。
+自测闭环：一根杜邦线把 **PA6 接到 PA0**。不接也能跑，只是实测频率一直是 0。
 
 > 常见误解纠正：F407 的 Port F 上**没有 TIM3 通道**。
 > PF6/PF7/PF8 在 AF3 上分别是 TIM10_CH1 / TIM11_CH1 / TIM13_CH1（DS8626 Table 9）。
@@ -46,14 +46,14 @@ make clean
 |---|---|
 | `clocks_read()` | 从 CFGR 反推 HCLK/PCLK1，而不是相信"我以为配了什么" |
 | `timer_clock()` | APB 分频≠1 时的 ×2 规则，一行代码 |
-| `tim3_pwm_init()` | PSC/ARR 定频率，OC1M+OC1PE+CC1E 出波形，CC2S+CC2E 接捕获 |
+| `tim3_pwm_init()` | PSC/ARR 定频率，OC1M+OC1PE+CC1E 出波形，独立 TIM2 接捕获 |
 | `tim3_set_duty()` | 只改 CCR1，频率纹丝不动——"占空比和频率分家"的证据 |
 | 捕获循环 | `now - ccr_last` 用无符号减法，回绕自动处理 |
 
 ## 预期观察
 
 - PA6：1kHz 方波，占空比每 20ms 变一次，在 0%~100% 之间来回"呼吸"（约 4 秒一个来回）。
-- 接上 PA6→PA7 跳线后：蓝灯常亮，GDB 里 `g_measured_hz ≈ 1000`，`g_capture_edges` 持续增长。
+- 接上 PA6→PA0 跳线后：蓝灯常亮，GDB 里 `g_measured_hz ≈ 1000`，`g_capture_edges` 持续增长。
 - 不接跳线：蓝灯不亮，`g_measured_hz == 0`。
 - GDB 读 `g_tim_clk_before == g_tim_clk_after == 16000000`，而 `g_pclk1_before == 16000000`、`g_pclk1_after == 8000000`。
 - GDB 读 `g_pwm_hz == 1000`。
@@ -66,3 +66,4 @@ make clean
 | 频率是设定值的 1/10 或 10 倍 | 忘了两个"+1"：实际频率 = 计数时钟/(PSC+1)/(ARR+1)；再检查有没有把 PCLK 当成了 TIM 时钟 |
 | 捕获一直为 0 | 没接跳线；或 CC2E 没开；或没清 `TIM3_SR` 的 CC2IF 导致处理不及时 |
 | 呼吸灯不呼吸、而是突然跳变 | 少了 `OC1PE`（CCR 预装载），CCR 会在周期中途生效 |
+捕获现使用 TIM2 32 位自由时基与 ISR，范围 2Hz–10kHz；超时或过捕获输出无效状态。旧 PA7 接线不再适用。时钟读回已按 SWS、全部 PLLP 与 APB 分频编码修正；计数测试见 code/common/behavior。待上板实测。
