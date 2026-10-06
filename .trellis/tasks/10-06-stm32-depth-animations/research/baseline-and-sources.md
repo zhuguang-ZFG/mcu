@@ -42,7 +42,7 @@
 
 - Web 搜索工具本轮返回服务端404；直接抓取官方 GitHub 和 Espressif 文档成功。
 - ST datasheet/RM0090 下载端点返回HTTP567，尚未读取 PDF；PF6 通道、DMA 请求映射、PLL 范围、Flash/VOS 条件仍需正式资料核验。
-- .trellis/ref/spl 当前只有 V1.8.0 的 I2C 头文件/源文件；RCC/TIM/USART/DMA/SYSTEM 文件需要按真实来源补齐，不能从函数名猜实现。
+- ~~上游 RCC/UART 源未取到~~ → HAL 已补齐：2026-10-06 从 ST 官方仓库 `STMicroelectronics/stm32f4xx_hal_driver`（master @ `1f6451c`）拉取 `stm32f4xx_hal_rcc.c`（42,493 B）/ `stm32f4xx_hal_uart.c`（136,921 B），存 `.trellis/ref/st-hal/`（含 PROVENANCE.txt）。SPL（StdPeriph）未随 ST 官方 GitHub 分发，RCC/TIM/DMA/SYSTEM 仍为缺口，不能从函数名猜实现。
 - .trellis/ref/freertos 当前是上一轮片段：tasks.c、queue.c、semphr.h、port.c、portmacro.h、list.c；不足以直接构建完整 V11.1.0。
 - PATH 没发现 arm-none-eabi-gcc、objdump 或 make。实施先查本机安装路径；确实缺失则按权限安装/准备，不能降低构建验收标准。
 - IDF、CMake、Ninja 启动器存在；环境能否构建、板卡是否可访问本轮尚未验证。

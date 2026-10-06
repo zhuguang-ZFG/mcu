@@ -147,9 +147,18 @@ VOS 不在这张表里，它只决定天花板：F405/407 在 VOS='0' 时 fHCLK 
 - `clock_tree_readback()`：从 CFGR 反推真实时钟树，含"APB 分频≠1 时定时器 ×2"这条隐藏规则。
 - `mco1_init()`：把 SYSCLK 引到 PA8。
 
-## 八、上游对照：SPL/HAL 做同一件事
+## 八、上游对照：HAL 做同一件事
 
-SPL 的 `SystemInit()` / `SetSysClockTo168M()`、HAL 的 `HAL_RCC_ClockConfig()` 做的是同一串动作，只是字段名换了皮。**本轮上游 SPL/HAL 的 RCC 源文件未能取得**（见研究记录），本节以 RM0090 的位定义 + 本仓库工程为落点；后续拿到源码后补逐字段对照。
+ST 官方仓库 [`STMicroelectronics/stm32f4xx_hal_driver`](https://github.com/STMicroelectronics/stm32f4xx_hal_driver)（master @ `1f6451c`，2026-10-06 拉取）的 `HAL_RCC_OscConfig()` / `HAL_RCC_ClockConfig()` 做的是同一串动作，逐条对本工程：
+
+| 本工程 `clock_init()` | HAL 对应（hal_rcc.c 行号 @ 1f6451c） | 对照结论 |
+|---|---|---|
+| HSEON 后轮询 HSERDY，超时回退 HSI | `HAL_RCC_OscConfig()`：轮询 `RCC_FLAG_HSERDY`，`HAL_GetTick` 超时返回 `HAL_TIMEOUT`（L231-259） | 同思路：晶振可能不来，死等是 bug |
+| 先 VOS 再 LATENCY 再预取 | `HAL_RCC_ClockConfig()` 只管 LATENCY——写入后**回读校验，不符直接 `HAL_ERROR`**（L613-626）；VOS 归 PWR 模块，F4 写完即生效、无就绪位可等 | 顺序一致；HAL 多一步回读 |
+| HPRE/PPRE 直接写目标值 | 切 HPRE 前**先把 PPRE1/PPRE2 打到 /16**（L635-649，注释原文：不经过非规格相位） | 本工程 HPRE 恒 /1 无此窗口；做分频切换时 HAL 更保守 |
+| 写完 SW 轮询 SWS 回执 | 同：切 SYSCLK 后轮询 `RCC_CFGR_SWS`（L681） | 一致 |
+
+SPL（StdPeriph）未随 ST 官方 GitHub 分发，本轮仍缺一手源码；其 `SetSysClockTo168M()` 与本节序列同构，位定义以 RM0090 为准。
 
 ## 记忆锚点
 

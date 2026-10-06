@@ -73,7 +73,8 @@ void app_main(void)
     vTaskDelay(pdMS_TO_TICKS(3000));
 
     /* 约束演示：把信号往被 PSRAM 占用的脚上路由。预期 err=0——
-       ledc_set_pin 只查焊盘合法性，真正的失败发生在物理层。 */
+       ledc_set_pin 只查焊盘合法性，真正的失败发生在物理层；
+       若固件使能 octal PSRAM，往总线打 PWM 可能直接跑飞。 */
     esp_err_t err = ledc_set_pin(GPIO_NUM_35, LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
     ESP_LOGW(TAG, "route to GPIO35 (PSRAM-occupied) -> err=%d", (int)err);
 
