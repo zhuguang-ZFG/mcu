@@ -138,3 +138,16 @@ DMA2 Stream5 Channel4（RX）/ DMA2 Stream6 Channel4（TX），与既有章节�
 另以 Zephyr 等工程惯例交叉核对。同时补了两处此前漏掉的纪律：
 - 必须开 `RCC_AHB1ENR.DMA2EN`（bit22），否则流配置写了也白写；
 - DMA 标志清除要写 `HIFCR`/`LIFCR`，`HISR` 是只读状态寄存器。
+
+### ESP-IDF 环境修复（批次三实施期）
+
+本机有两个 `.espressif` 根：真正可用的是 `C:\Users\zhugu\.espressif`；
+`D:\zhugu-home\.espressif\python_env` 与 C 盘那份是 junction 同一目录。
+踩过的坑：
+- `idf5.5_py3.12_env` 的 venv 基座 python 已被卸载 → 用 scoop 的 python 3.13
+  重建为 `idf5.5_py3.13_env`（idf_tools 按解释器版本找环境名）；
+- `pip install -r requirements.core.txt` 必须带 `-c espidf.constraints.v5.5.txt`，
+  否则拉到 esptool 5.x 等不满足 v5.5 约束的新版本；
+- v5.5.2 只认 xtensa-esp-elf `esp-14.2.0_20251107`，不是更新的 20260121；
+- Windows 批处理必须 CRLF 行尾，LF 会让 set 语句解析错位。
+验证：`idf.py set-target esp32s3` + `idf.py build` 三个工程全部通过。
