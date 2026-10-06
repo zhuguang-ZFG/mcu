@@ -6,7 +6,7 @@ VitePress 站点的一切（页面、侧边栏、主题、动画、图片）。
 |---|---|
 | [structure.md](structure.md) | 目录约定、config/sidebar 纪律、frontmatter 与编号体系 |
 | [content.md](content.md) | 章节页模板执行细则、风格落地检查、动画与图片操作 |
-| [animation.md](animation.md) | 动画视觉与时间轴规范：色板/字号、SMIL 阶段槽位、三件动效武器、站点内联机制 |
+| [animation.md](animation.md) | 动画视觉与时间轴规范：色板/字号、SMIL 阶段槽位、三件动效武器、站点内联机制、`anim-audit.html` 版式审计（墨水盒判压字） |
 
 ## 快速命令
 

@@ -75,3 +75,33 @@ npm run docs:gen && npm run docs:build   # 死链门禁必须零错误
 自造十六进制色在深色模式是白块、连续动画 dur 不整除主 dur 会在回环处跳帧）。
 改完图先跑 lint，再在浏览器里确认：深色模式无白块、`svg.children.length` 没被吞、
 阶段点与字幕同步、暂停后 `svg.getCurrentTime()` 不再前进。
+
+## 7. 版式审计（出界 / 压字）——必须在浏览器里跑
+
+`anim-lint` 只看得到 SMIL 与色板，看不到"字被画到画布外"和"两行字叠在一起"。
+这两类用 `scripts/anim-audit.html` 判定：它把 29 张图按 viewBox 原尺寸内联，
+从所有 discrete 动画的 `keyTimes` 取每个阶段槽位的中点当采样时刻，
+`setCurrentTime(t)` 后用祖先链累乘 `opacity` 筛出"这一时刻真的看得见"的文字，
+再量两种违规：越过 viewBox、以及两行不同文字的墨水盒相交。
+
+```bash
+npm run docs:build
+cp scripts/anim-audit.html scripts/anim-shot.html docs/.vitepress/dist/   # dist 每次构建都被清空
+node D:/Temp/mcu-static.mjs &            # 127.0.0.1:4188 以 dist 为根（vitepress preview 不服务站外 html）
+# 打开 http://127.0.0.1:4188/anim-audit.html，标题区显示 DONE 才算跑完
+```
+
+两个坑，都踩过：
+
+- **`getBoundingClientRect()` 判压字会大量假阳性。** 它给 `<text>` 的是 em 盒（升部+降部），
+  相邻两行baseline 相距 12px 时必然"相碰" 4~10px，而读者看不出任何重叠。
+  竖向要改用 canvas `measureText()` 的 `actualBoundingBoxAscent/Descent` 折算墨水范围
+  （`baseline = emTop + fontBoundingBoxAscent`，本套图无旋转无缩放，可直接套 em 盒比例）；
+  横向 em 盒已经带 `text-anchor`，够用。阈值：横向 >3px **且** 竖向墨水重叠 >1px 才算压字。
+- **后台标签页里 `requestAnimationFrame` 是冻结的**，靠 rAF 等布局会永远卡在第一张图。
+  改成读一次 `getBoundingClientRect()` 强制刷新布局，`setCurrentTime()` 后立即量。
+
+同一时刻两行 `textContent` 完全相同的文字不算压字——那是阶段字幕在遮罩上重画同一行，刻意的。
+
+`scripts/anim-shot.html?fig=<名>&t=<秒>&z=<倍>` 用来定格复核：只画一张图并停在给定时刻。
+截图需要可见的浏览器表面，量不到时用 `evaluate_script` 读坐标即可。

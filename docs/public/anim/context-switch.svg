@@ -104,7 +104,8 @@
       <animate attributeName="x2" values="196;196;608;608" keyTimes="0;0.60;0.70;1" dur="12s" repeatCount="indefinite"/>
       <animate attributeName="y2" values="206;206;128;128" keyTimes="0;0.60;0.70;1" dur="12s" repeatCount="indefinite"/>
     </line>
-    <text x="400" y="150" font-size="11" fill="#d97706" text-anchor="middle">psp 存进 TCB_A</text>
+    <text x="434" y="150" font-size="10" fill="#d97706" text-anchor="middle">psp 存进</text>
+    <text x="434" y="176" font-size="10" fill="#d97706" text-anchor="middle" font-family="Consolas,monospace">TCB_A</text>
     <line x1="608" y1="176" x2="330" y2="226" stroke="#3eaf7c" stroke-width="2" stroke-dasharray="6 4">
       <!-- 生长：B 的栈顶从 TCB_B 被取回来 -->
       <animate attributeName="x2" values="608;608;330;330" keyTimes="0;0.64;0.74;1" dur="12s" repeatCount="indefinite"/>

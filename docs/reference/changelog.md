@@ -8,6 +8,15 @@ title: 更新日志
 
 站点统计（成稿章节 / 实验 / 动画 / 工程数）由 `npm run docs:gen` 扫描全站章节 frontmatter 得出，[首页学习地图](/)与本页同源。
 
+## 2026-10-06 · 动画可执行化 + B2/C1 成稿
+
+- **29 张教学动画全部过两道机器闸门**：`npm run anim:lint`（SMIL 槽位、色板映射、`dur` 整除、指示点越界）零告警；`scripts/anim-audit.html` 逐阶段量"出界 / 压字"零命中。规范落在 `.trellis/spec/docs-site/animation.md`。
+- **`gd32-rcu-clock.svg` 从幻灯片改成动画**：原先只有四个阶段互相切换，现在每个阶段的时钟路由被逐点爬通（IRC16M→CK_AHB、HXTAL→PLL、电压档→PLL、PLL→三个分频口、CK_AHB→CK_OUT0→PA8），晶振与电压档盒子带节拍抖动，PLL 锁定后 APB1/APB2 各有一颗节拍常驻往返；两条脚注拆进 720 画布。
+- **顺带揪出三处同排压字**：`context-switch`（`psp 存进 TCB_A` 与栈帧说明挤在同一行）、`uart-frame`（帧说明与位标注基线只差 8px）、`usart-txe-tc`（TXE 说明与反例文字重叠 34px）。只动坐标与锚点，配色与节拍未改。
+- **B2 ELF 解剖成稿**：`readelf`/`objdump`/`nm` 五刀拆 `blink.elf` 与刻意留脏的 `elf_probe.elf`，34,604 字节 ELF 与 660 字节 bin、`.data` 的 `FileSiz=0x0c` 对 `MemSiz=0x20`、91 个中断弱别名、`readelf -s` 与 `nm` 的那个 ±1 全部是量出来的；取证工程 `code/toolchain/02-elf/probe.sh` 不要开发板也不要 make。
+- **C1 内存模型成稿**：五段论 → 一个全局变量的三段旅程（源码 → ELF 双地址 → 上电搬运）→ `const` 经济学 → `nm`/map 审计，配套 `code/c/01-memory-model/probe.sh` 双工具链取证。
+- 尚开着的坑：`00-blink` 六变体的板上现象、`CK_OUT0`/`MCO1` 的示波器实测值仍待接板回填。
+
 ## 2026-10-06 · 读者侧升级
 
 - **章节元数据体系**：74 个章节页统一加 `status`（done/building）、`difficulty`（入门/进阶/硬核）、`minutes`（预计学习时长）三项 frontmatter；`scripts/gen-progress.mjs` 由此算出全站进度，取代原先散落在 README、首页与贡献指南里的手写数字（三处曾各说各话）。

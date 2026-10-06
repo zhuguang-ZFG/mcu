@@ -7,7 +7,7 @@
 
   <!-- ===== 0x41 帧 ===== -->
   <rect x="40" y="80" width="640" height="140" fill="#ffffff" stroke="#cbd5e1" rx="8"/>
-  <text x="56" y="102" font-size="13" font-weight="bold" fill="#3451b2">发 'A' = 0x41 = 0100 0001（线上 LSB 先行：1,0,0,0,0,0,1,0）</text>
+  <text x="56" y="94" font-size="13" font-weight="bold" fill="#3451b2">发 'A' = 0x41 = 0100 0001（线上 LSB 先行：1,0,0,0,0,0,1,0）</text>
 
   <!-- 波形：空闲高 | 起始低 | 1 0 0 0 0 0 1 0 | 停止高 -->
   <!-- 画成 path 而不是 polyline：pathLength 把整条线归一化成 1000，
@@ -48,7 +48,7 @@
 
   <!-- ===== 0x55 帧 ===== -->
   <rect x="40" y="240" width="640" height="140" fill="#ffffff" stroke="#cbd5e1" rx="8"/>
-  <text x="56" y="262" font-size="13" font-weight="bold" fill="#3eaf7c">发 0x55 = 0101 0101（线上 LSB 先行：1,0,1,0,1,0,1,0）——骨架一样，肉不同</text>
+  <text x="56" y="254" font-size="13" font-weight="bold" fill="#3eaf7c">发 0x55 = 0101 0101（线上 LSB 先行：1,0,1,0,1,0,1,0）——骨架一样，肉不同</text>
 
   <!-- 波形：空闲高 | 起始低 | 1 0 1 0 1 0 1 0 | 停止高 -->
   <path d="M70,280 H100 V340 H130 V280 H160 V340 H190 V280 H220 V340 H250 V280 H280 V340 H310 V280 H340 V340 H370 V280 H640"
