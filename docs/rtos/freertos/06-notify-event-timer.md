@@ -133,6 +133,10 @@ one-shot vs auto-reload：`autoReload=pdTRUE` 周期触发，`pdFALSE` 触发一
 - **场景 3（事件组）**：只发 bit0 时只有 `ANY woke`；bit0+bit1 都置上后 `ALL woke` 才出现，而且**两个等待者同时醒**——汇总清位的直接证据。
 - **场景 4（定时器）**：`slow cb` 每次磨蹭 ~50ms，你会看到紧跟其后的 `fast cb` 晚一拍——守护任务串行执行回调的直接证据。
 
+## 附录：工程完整源码
+
+<<< ../../../code/rtos/01-freertos-lab/main.c
+
 ## 记忆锚点
 
 ::: tip 一句话记住

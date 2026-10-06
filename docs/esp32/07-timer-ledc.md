@@ -112,6 +112,10 @@ ledc_channel_config_t ch = {
 
 STM32 的 TIM 一个外设包干时基+PWM+捕获；S3 拆成 GPTimer（计时）+ LEDC（PWM）。设计哲学的对照：**复用度高但配置纠缠** vs **职责单一但各司其职**。学到的东西是相通的——比较值、预装载、双缓冲、fade/渐变，只是名字换了。
 
+## 附录：工程完整源码
+
+<<< ../../code/esp32/03-ledc-fade/main/main.c
+
 ## 记忆锚点
 
 ::: tip 一句话记住

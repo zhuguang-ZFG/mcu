@@ -122,6 +122,10 @@ TIM 的编码器接口模式（`SMCR.SMS`）让 CNT 直接跟着正交编码器�
 
 SPL 的 `TIM_TimeBaseInit()` / `TIM_OC1Init()`、HAL 的 `HAL_TIM_PWM_Init()` / `HAL_TIM_IC_Init()` 做的是同一组寄存器落位。**本轮上游 SPL/HAL 源文件未能取得**（见研究记录），落点在本仓库工程与 RM0090 的位定义；拿到源码后补逐字段对照。
 
+## 附录：工程完整源码
+
+<<< ../../code/stm32/02-tim-pwm/main.c
+
 ## 记忆锚点
 
 ::: tip 一句话记住

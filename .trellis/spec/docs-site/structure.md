@@ -7,6 +7,7 @@
 - 每个 track 有 `index.md` 导览（路线表+精髓一句话），实例 `docs/rtos/index.md`。
 - 动画：`docs/public/anim/*.svg`（SMIL）；图片：`docs/public/images/{labs,boards}/`。页面一律用 **Markdown 图片语法** `![一句话描述](/anim/xx.svg)` 引用 public 内文件。原因不是风格：Markdown 图片引用会被 Vite 当作 import 处理——**构建时检查文件存在性并自动加 `/mcu/` base**（本批次构建曾因引用了不存在的 SVG 被这道门拦下）；raw `<img src="...">` 不被 Vite 解析，缺文件只在运行时 404。
 - 相对链接必须带 `.md` 后缀且深度正确：rtos 子目录（freertos/rtthread/compare）跨板块链接用 `../../<track>/`（本任务曾集体写错成 `../`，靠死链检查兜住）。
+- **工程完整源码必须站内内嵌，不许让读者跳 GitHub 读代码**：成稿章在"记忆锚点"前设 `## 附录：工程完整源码`，用 VitePress 代码导入 `<<< <相对路径>/code/<proj>/<file>`：路径相对**当前 md 文件**定位仓库根下的 code/（`docs/<track>/` 用 `../../`，`docs/rtos/freertos/` 等三层目录用 `../../../`；多一层会解析到仓库外 ENOENT，已踩过两次）。GitHub 链接只作"去仓库 star/提 issue"的附属入口，不作阅读路径。
 
 ## config.mts 纪律
 

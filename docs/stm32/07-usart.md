@@ -143,6 +143,10 @@ DMA 不理解"帧"，它只理解"搬够 N 个字节"；帧边界由 IDLE 标志
 
 SPL 的 `USART_Init()` / `USART_SendData()`、HAL 的 `HAL_UART_Init()` / `HAL_UART_Transmit()` 做的是同一组寄存器落位。**本轮上游 SPL/HAL 源文件未能取得**（见研究记录），落点在本仓库工程与 RM0090/CMSIS 的位定义；拿到源码后补逐字段对照。
 
+## 附录：工程完整源码
+
+<<< ../../code/stm32/03-uart-dma/main.c
+
 ## 记忆锚点
 
 ::: tip 一句话记住

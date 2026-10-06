@@ -134,6 +134,10 @@ DMA 和 CPU 共享 AHB 总线矩阵（回 [S1](01-arch.md)）。传输密集时 
 
 SPL 的 `DMA_Init()`、HAL 的 `HAL_DMA_Init()` / `HAL_UART_Receive_DMA()` 做的是同一组寄存器落位。**本轮上游 SPL/HAL 源文件未能取得**（见研究记录），落点在本仓库工程与 CMSIS/RM0090 的位定义；拿到源码后补逐字段对照。
 
+## 附录：工程完整源码
+
+<<< ../../code/stm32/03-uart-dma/main.c
+
 ## 记忆锚点
 
 ::: tip 一句话记住

@@ -160,6 +160,12 @@ ST 官方仓库 [`STMicroelectronics/stm32f4xx_hal_driver`](https://github.com/S
 
 SPL（StdPeriph）未随 ST 官方 GitHub 分发，本轮仍缺一手源码；其 `SetSysClockTo168M()` 与本节序列同构，位定义以 RM0090 为准。
 
+## 附录：工程完整源码
+
+不用跳 GitHub——整个 `main.c` 就在下面，滚动即达：
+
+<<< ../../code/stm32/01-rcc-clock/main.c
+
 ## 记忆锚点
 
 ::: tip 一句话记住

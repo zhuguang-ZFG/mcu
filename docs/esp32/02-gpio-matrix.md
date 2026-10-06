@@ -93,6 +93,10 @@ GPIO0（BOOT）、GPIO45、GPIO46 等在上电/复位时被采样，决定启动
 - `ledc_set_pin(GPIO_NUM_35, ...)`：往 PSRAM 占用的脚上路由——驱动返回 0（ledc.c:827 只查 `GPIO_IS_VALID_OUTPUT_GPIO`），但物理上失败；"任意引脚"的边界当场可见；
 - `SOC_LEDC_CHANNEL_NUM` / `SOC_LEDC_TIMER_BIT_WIDTH` 打印：芯片能力以 `soc_caps.h` 为准，不是凭印象。
 
+## 附录：工程完整源码
+
+<<< ../../code/esp32/01-gpio-matrix/main/main.c
+
 ## 记忆锚点
 
 ::: tip 一句话记住
