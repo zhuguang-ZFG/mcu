@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" font-family="'Segoe UI','Microsoft YaHei',sans-serif">
   <title>TIM 输入捕获：边沿拍照测频率</title>
-  <desc>四阶段动画：PA6 输出 1kHz 方波，跳线接到 PA7；每个上升沿硬件把 CNT 锁进 CCR2；两次拍照的差值 1000 拍 × 1µs = 1kHz；CNT 回绕时用无符号减法自动处理模差。</desc>
+  <desc>四阶段动画：PA6 输出 1kHz 方波，跳线接到 PA7；每个上升沿硬件把 CNT 锁进 CCR2；两次拍照的差值 1000 拍 × 1µs = 1kHz；CNT 回绕时用无符号减法自动处理模差。方波被逐点画出，笔尖爬到第一个上升沿时亮拍照①、爬到第二个上升沿时亮拍照②；两个上升沿上各有一圈"快门"每 1s（方波一个周期）炸一次——边沿一到硬件就拍照，CPU 根本没在场。</desc>
   <rect width="720" height="420" fill="#f6f8fa"/>
   <text x="24" y="30" font-size="17" font-weight="bold" fill="#3451b2">输入捕获：引脚边沿一到，硬件把 CNT 拍进 CCR</text>
   <text x="24" y="50" font-size="12" fill="#666">PA6(PWM) → 跳线 → PA7(捕获) · CNT 1MHz 计数 · 差值 1000 拍 = 1kHz · 回绕靠无符号减法</text>
@@ -8,8 +8,13 @@
   <!-- 方波轨道 -->
   <rect x="40" y="80" width="640" height="110" fill="#ffffff" stroke="#cbd5e1" rx="8"/>
   <text x="56" y="102" font-size="13" font-weight="bold" fill="#3451b2">PA6 上的 1kHz 方波（TIM3_CH1 输出）</text>
-  <polyline points="70,170 130,170 130,120 190,120 190,170 250,170 250,120 310,120 310,170 370,170 370,120 430,120 430,170 490,170 490,120 550,120 550,170 610,170 610,120 670,120"
-            stroke="#3451b2" stroke-width="3" fill="none"/>
+  <!-- 爬线：polyline → 等价 H/V path（20 个点一一对应）。笔尖在 0.25 到第一个上升沿(x=130)、
+       在 0.5 到第二个上升沿(x=490)，和下面两个"拍照"标记同一时刻到位 -->
+  <path d="M70,170 H130 V120 H190 V170 H250 V120 H310 V170 H370 V120 H430 V170 H490 V120 H550 V170 H610 V120 H670"
+        pathLength="1000" stroke="#3451b2" stroke-width="3" fill="none"
+        stroke-dasharray="1000" stroke-dashoffset="1000">
+    <animate attributeName="stroke-dashoffset" values="1000;895;314;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
+  </path>
   <text x="640" y="108" font-size="11" fill="#666" text-anchor="end">↑ 上升沿 = 拍照时刻</text>
 
   <!-- CNT 轨道 -->
@@ -24,12 +29,21 @@
     <g opacity="0">
       <animate attributeName="opacity" calcMode="discrete" values="0;1;1;1;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
       <line x1="130" y1="120" x2="130" y2="270" stroke="#d97706" stroke-width="2" stroke-dasharray="4 3"/>
+      <!-- 快门圈：1s ≈ 方波一个周期，即每个上升沿炸一次；3s/6s 两个拍照时刻正好落在一圈起点 -->
+      <circle cx="130" cy="120" r="6" fill="none" stroke="#d97706" stroke-width="3" opacity="0">
+        <animate attributeName="r" values="6;20" dur="1s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="1;0" dur="1s" repeatCount="indefinite"/>
+      </circle>
       <circle cx="130" cy="270" r="6" fill="#d97706"/>
       <text x="140" y="284" fill="#d97706" font-weight="bold">拍照① CCR2=200</text>
     </g>
     <g opacity="0">
       <animate attributeName="opacity" calcMode="discrete" values="0;0;1;1;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
       <line x1="490" y1="120" x2="490" y2="270" stroke="#3eaf7c" stroke-width="2" stroke-dasharray="4 3"/>
+      <circle cx="490" cy="120" r="6" fill="none" stroke="#3eaf7c" stroke-width="3" opacity="0">
+        <animate attributeName="r" values="6;20" dur="1s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="1;0" dur="1s" repeatCount="indefinite"/>
+      </circle>
       <circle cx="490" cy="270" r="6" fill="#3eaf7c"/>
       <text x="500" y="284" fill="#3eaf7c" font-weight="bold">拍照② CCR2=1200</text>
     </g>

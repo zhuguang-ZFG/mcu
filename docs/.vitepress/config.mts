@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress'
+import { animDuration, decorateAnim, readAnim } from './anim-decorate.mjs'
 
 export default defineConfig({
   base: '/mcu/',
@@ -7,6 +8,46 @@ export default defineConfig({
   lang: 'zh-CN',
   head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/mcu/favicon.svg' }]],
   ignoreDeadLinks: false,
+  markdown: {
+    // 作者照旧写 ![图注](/anim/x.svg)；这里把 SVG 原文内联进页面 chunk，
+    // 交给 AnimFigure 上图注、播放控件与深浅主题配色（细节见 anim-decorate.mjs）。
+    config(md: any) {
+      const emit = (name: string, caption: string) => {
+        const raw = readAnim(name)
+        const dur = animDuration(raw)
+        // 转义成属性字符串交给 v-html：让 Vue 去 diff 整棵 SVG 子树只会带来 hydration 抖动，
+        // 而这些图是构建期定死的静态内容。
+        const markup = decorateAnim(raw, name)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+        const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
+        const attrs = [caption && `caption="${esc(caption)}"`, dur && `dur="${dur}"`, `markup="${markup}"`]
+        return `<AnimFigure name="${name}" ${attrs.filter(Boolean).join(' ')} />`
+      }
+
+      // 独占一行的动画图必须从 <p> 里拿出来：figure/button 待在段落里会被浏览器
+      // 解析器挪出去，SSR 与客户端结构对不上，Vue 就报 hydration mismatch。
+      md.core.ruler.after('inline', 'anim-figure-block', (state: any) => {
+        const tokens = state.tokens
+        for (let i = 0; i < tokens.length - 2; i++) {
+          if (tokens[i].type !== 'paragraph_open' || tokens[i + 2].type !== 'paragraph_close') continue
+          const inline = tokens[i + 1]
+          if (inline.type !== 'inline' || inline.children?.length !== 1) continue
+          const child = inline.children[0]
+          if (child.type !== 'image') continue
+          const match = /^\/anim\/([\w-]+)\.svg$/.exec(child.attrGet('src') || '')
+          if (!match) continue
+          const block = new state.Token('html_block', '', 0)
+          block.content = emit(match[1], child.content || child.attrGet('alt') || '') + '\n'
+          block.map = tokens[i].map
+          tokens.splice(i, 3, block)
+          i--
+        }
+      })
+    },
+  },
   themeConfig: {
     search: {
       provider: 'local',

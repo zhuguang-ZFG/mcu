@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 460" font-family="'Segoe UI','Microsoft YaHei',sans-serif">
+  <title>RTOS 上下文切换：PendSV 的偷梁换柱</title>
+  <desc>RTOS 上下文切换：PendSV 的偷梁换柱。硬件存一半（r0–r3/r12/lr/pc/xPSR）· 软件存一半（r4–r11）· 栈顶指针藏进 TCB · 下次原样取回。图里有一个真的在跑的栈顶指针：压硬件帧时沿 A 的栈往下走，压 r4–r11 继续下移，换栈时横向跳到 B 留好的栈顶，弹栈时再一路走回栈顶；两条虚线是被逐点画出来的（存进去/取回来），pc 那一格每秒一亮、PendSV 那两段停亮，表示切换本身不干活。</desc>
   <rect width="720" height="460" fill="#f6f8fa"/>
   <text x="24" y="30" font-size="17" font-weight="bold" fill="#3451b2">RTOS 上下文切换：PendSV 的偷梁换柱</text>
   <text x="24" y="50" font-size="12" fill="#666">硬件存一半（r0–r3/r12/lr/pc/xPSR）· 软件存一半（r4–r11）· 栈顶指针藏进 TCB · 下次原样取回</text>
@@ -77,7 +79,10 @@
   <!-- ===== 阶段 1：硬件存一半 ===== -->
   <g opacity="0">
     <animate attributeName="opacity" calcMode="discrete" values="0;1;0;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
-    <rect x="44" y="130" width="152" height="56" fill="#fdf0d5" stroke="#d97706" rx="3"/>
+    <rect x="44" y="130" width="152" height="56" fill="#fdf0d5" stroke="#d97706" rx="3">
+      <!-- 8 个字是一个字一个字压下去的：琥珀底纹从帧顶长到帧底 -->
+      <animate attributeName="height" values="0;0;56;56" keyTimes="0;0.25;0.47;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
     <text x="120" y="152" font-size="10" fill="#a16207" text-anchor="middle" font-family="Consolas,monospace">硬件帧：xPSR/pc/lr/</text>
     <text x="120" y="166" font-size="10" fill="#a16207" text-anchor="middle" font-family="Consolas,monospace">r12/r3/r2/r1/r0</text>
     <text x="462" y="330" font-size="11" font-family="Consolas,monospace" fill="#d97706">PendSV 触发！</text>
@@ -88,13 +93,24 @@
   <g opacity="0">
     <animate attributeName="opacity" calcMode="discrete" values="0;0;1;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
     <rect x="44" y="130" width="152" height="56" fill="#fdf0d5" stroke="#d97706" rx="3"/>
-    <text x="120" y="152" font-size="10" fill="#a16207" text-anchor="middle" font-family="Consolas,monospace">硬件帧已就位</text>
-    <rect x="44" y="186" width="152" height="40" fill="#fdf0d5" stroke="#d97706" rx="3"/>
-    <text x="120" y="210" font-size="10" fill="#a16207" text-anchor="middle" font-family="Consolas,monospace">软件帧：r4–r11</text>
-    <line x1="196" y1="206" x2="608" y2="128" stroke="#d97706" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="120" y="140" font-size="10" fill="#a16207" text-anchor="middle" font-family="Consolas,monospace">硬件帧已就位</text>
+    <rect x="44" y="186" width="152" height="40" fill="#fdf0d5" stroke="#d97706" rx="3">
+      <!-- 软件再压 r4–r11：这一段同样是压进去的 -->
+      <animate attributeName="height" values="0;0;40;40" keyTimes="0;0.50;0.60;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+    <text x="120" y="193" font-size="10" fill="#a16207" text-anchor="middle" font-family="Consolas,monospace">软件帧：r4–r11</text>
+    <line x1="196" y1="206" x2="608" y2="128" stroke="#d97706" stroke-width="2" stroke-dasharray="6 4">
+      <!-- 生长：psp 沿这条虚线一路写进 TCB_A -->
+      <animate attributeName="x2" values="196;196;608;608" keyTimes="0;0.60;0.70;1" dur="12s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="206;206;128;128" keyTimes="0;0.60;0.70;1" dur="12s" repeatCount="indefinite"/>
+    </line>
     <text x="400" y="150" font-size="11" fill="#d97706" text-anchor="middle">psp 存进 TCB_A</text>
-    <line x1="608" y1="176" x2="330" y2="226" stroke="#3eaf7c" stroke-width="2" stroke-dasharray="6 4"/>
-    <text x="480" y="216" font-size="11" fill="#1a7f56" text-anchor="middle">从 TCB_B 取出 B 的栈顶</text>
+    <line x1="608" y1="176" x2="330" y2="226" stroke="#3eaf7c" stroke-width="2" stroke-dasharray="6 4">
+      <!-- 生长：B 的栈顶从 TCB_B 被取回来 -->
+      <animate attributeName="x2" values="608;608;330;330" keyTimes="0;0.64;0.74;1" dur="12s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="176;176;226;226" keyTimes="0;0.64;0.74;1" dur="12s" repeatCount="indefinite"/>
+    </line>
+    <text x="480" y="232" font-size="11" fill="#1a7f56" text-anchor="middle">从 TCB_B 取出 B 的栈顶</text>
     <text x="30" y="432" font-size="14" font-family="Consolas,monospace" fill="#333">▶ PendSV 软件再存 <tspan fill="#d97706" font-weight="bold">r4–r11</tspan> → 栈顶藏进 TCB_A；<tspan fill="#1a7f56" font-weight="bold">从 TCB_B 取回 TaskB 的栈顶</tspan></text>
   </g>
 
@@ -103,12 +119,25 @@
     <animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
     <rect x="254" y="130" width="152" height="56" fill="none" stroke="#94a3b8" stroke-dasharray="3 3" rx="3"/>
     <rect x="254" y="186" width="152" height="40" fill="none" stroke="#94a3b8" stroke-dasharray="3 3" rx="3"/>
-    <text x="330" y="160" font-size="10" fill="#94a3b8" text-anchor="middle" font-family="Consolas,monospace">（现场已弹回 CPU）</text>
+    <text x="330" y="180" font-size="10" fill="#94a3b8" text-anchor="middle" font-family="Consolas,monospace">（现场已弹回 CPU）</text>
     <g font-size="11" font-family="Consolas,monospace">
       <text x="462" y="330" fill="#1a7f56">pc → TaskB 代码</text>
       <text x="462" y="348" fill="#1a7f56">psp → B 栈帧顶</text>
     </g>
     <text x="30" y="432" font-size="14" font-family="Consolas,monospace" fill="#333">▶ 弹回 TaskB 的 r4–r11 + 硬件帧 → <tspan fill="#1a7f56" font-weight="bold">CPU 无缝开始跑 TaskB</tspan>（A 的现场已安睡）</text>
+  </g>
+
+  <!-- 跑动的栈顶指针：压 A 的栈时一路往下，换栈时横向跳到 B 的栈顶，弹栈时再往上走 -->
+  <g transform="translate(204,130)">
+    <animateTransform attributeName="transform" type="translate" values="204 130;204 130;204 186;204 186;204 226;204 226;413 226;413 130;413 130" keyTimes="0;0.25;0.47;0.50;0.60;0.70;0.76;0.94;1" dur="12s" repeatCount="indefinite"/>
+    <polygon points="6,-5 -4,0 6,5" fill="#3451b2"/>
+  </g>
+  <!-- CPU 真在取指：pc 那一格每秒一亮；PendSV 那两段不亮 = 切换本身不干活 -->
+  <g opacity="1">
+    <animate attributeName="opacity" calcMode="discrete" values="1;0;0;1;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
+    <rect x="462" y="198" width="96" height="26" fill="none" stroke="#3451b2" stroke-width="2" rx="3">
+      <animate attributeName="opacity" values="0.2;1;0.2" dur="1s" repeatCount="indefinite"/>
+    </rect>
   </g>
 
   <!-- 阶段指示点 -->

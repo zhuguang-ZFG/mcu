@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 430" font-family="'Segoe UI','Microsoft YaHei',sans-serif">
   <title>软件定时器：命令队列 → 守护任务 → 回调</title>
-  <desc>四阶段动画：xTimerStart 把命令写进 xTimerQueue；守护任务（configTIMER_TASK_PRIORITY=4）取出执行回调；回调串行执行——slow 回调磨蹭 50ms，排在后面的 fast 回调晚一拍。回调必须快进快出，禁止阻塞。</desc>
+  <desc>四阶段动画：xTimerStart 把命令写进 xTimerQueue；守护任务（configTIMER_TASK_PRIORITY=4）取出执行回调；回调串行执行——slow 回调磨蹭 50ms，排在后面的 fast 回调晚一拍。回调必须快进快出，禁止阻塞。命令顺着"定时器→队列→守护任务"两段爬出去的箭头走；slow 独占时琥珀条慢慢铺满回调格子、fast 的框每秒闪一次表示只能排队；最后一格改成 1.5 秒一趟的快进快出。</desc>
   <rect width="720" height="430" fill="#f6f8fa"/>
   <text x="24" y="30" font-size="17" font-weight="bold" fill="#3451b2">软件定时器：所有回调都跑在同一个守护任务里</text>
   <text x="24" y="50" font-size="12" fill="#666">命令进队列 → 守护任务串行执行回调 · 一个磨蹭，后面的全部晚一拍 · 回调里禁止 vTaskDelay</text>
@@ -30,11 +30,12 @@
   <!-- ===== 右：守护任务 ===== -->
   <rect x="490" y="80" width="200" height="180" fill="#ffffff" stroke="#3eaf7c" stroke-width="2" rx="8"/>
   <text x="506" y="102" font-size="13" font-weight="bold" fill="#3eaf7c">守护任务 prvTimerTask</text>
-  <text x="506" y="124" font-size="11" fill="#666">优先级 = configTIMER_TASK_PRIORITY（本工程 4）</text>
+  <text x="506" y="124" font-size="11" fill="#666">优先级 = configTIMER_TASK_PRIORITY</text>
   <rect x="506" y="140" width="168" height="30" fill="#ffffff" stroke="#3eaf7c" rx="4"/>
   <text x="514" y="160" font-size="11" fill="#3eaf7c">执行回调（串行）</text>
   <text x="506" y="196" font-size="11" fill="#666">回调 A 没跑完，回调 B 就得等</text>
   <text x="506" y="216" font-size="11" fill="#666">回调里 vTaskDelay = 全员停摆</text>
+  <text x="506" y="242" font-size="11" fill="#666">（本工程优先级 = 4）</text>
 
   <!-- 时间线 -->
   <rect x="30" y="280" width="660" height="80" fill="#ffffff" stroke="#cbd5e1" rx="8"/>
@@ -49,6 +50,47 @@
   <!-- 晚一拍的标记 -->
   <line x1="500" y1="312" x2="500" y2="330" stroke="#dc2626" stroke-width="3"/>
   <text x="560" y="322" font-size="11" font-weight="bold" fill="#dc2626">被推迟</text>
+
+  <!-- ===== 在跑的东西 ===== -->
+  <!-- ② 到点 → 命令爬进 xTimerQueue → 守护任务把它取走：两段生长箭头 -->
+  <g opacity="0">
+    <animate attributeName="opacity" calcMode="discrete" values="0;1;0;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
+    <line x1="214" y1="134" x2="214" y2="134" stroke="#3451b2" stroke-width="3" marker-end="url(#arrT1)">
+      <animate attributeName="x2" values="214;214;272;272" keyTimes="0;0.26;0.33;1" dur="12s" repeatCount="indefinite"/>
+    </line>
+    <line x1="452" y1="155" x2="452" y2="155" stroke="#3eaf7c" stroke-width="3" marker-end="url(#arrT2)">
+      <animate attributeName="x2" values="452;452;502;502" keyTimes="0;0.36;0.45;1" dur="12s" repeatCount="indefinite"/>
+    </line>
+  </g>
+  <!-- ③ slow 回调独占守护任务：琥珀条一路顶到格子尾，同期 fast 到点了只能闪（串行 = 排队） -->
+  <g opacity="0">
+    <animate attributeName="opacity" calcMode="discrete" values="0;0;1;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
+    <rect x="507" y="141" width="0" height="28" fill="#fdf0d5" stroke="#d97706" rx="3">
+      <animate attributeName="width" values="0;0;166;166" keyTimes="0;0.50;0.68;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+    <!-- 底纹盖住了格子，所以把同一句标签重画在上面（同款做法见上下文切换那张） -->
+    <text x="514" y="160" font-size="11" fill="#1a7f56">执行回调（串行）</text>
+    <rect x="50" y="116" width="160" height="36" fill="none" stroke="#3451b2" stroke-width="3" rx="4">
+      <animate attributeName="opacity" values="0.15;1;0.15" dur="1s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <!-- ④ 守纪律的回调：1.5 秒一趟，快进快出，格子立刻空出来给下一个 -->
+  <g opacity="0">
+    <animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
+    <rect x="507" y="141" width="0" height="28" fill="#d8f3e5" stroke="#3eaf7c" rx="3">
+      <animate attributeName="width" values="0;166;166" keyTimes="0;0.75;1" dur="1.5s" repeatCount="indefinite"/>
+    </rect>
+    <text x="514" y="160" font-size="11" fill="#1a7f56">执行回调（串行）</text>
+  </g>
+
+  <defs>
+    <marker id="arrT1" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <polygon points="0,0 7,3 0,6" fill="#3451b2"/>
+    </marker>
+    <marker id="arrT2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <polygon points="0,0 7,3 0,6" fill="#3eaf7c"/>
+    </marker>
+  </defs>
 
   <!-- 阶段字幕 -->
   <g font-size="13" font-weight="bold" fill="#3451b2">

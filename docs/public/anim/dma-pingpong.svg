@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 430" font-family="'Segoe UI','Microsoft YaHei',sans-serif">
   <title>DMA 双缓冲乒乓：交接棒与处理期限</title>
-  <desc>DMA 填 A 时 CPU 处理 B，填 B 时处理 A。修订版补充：两块缓冲的当前所有者、CPU 的处理截止线、以及"CPU 超期 → 下一块被覆盖"的反例。双缓冲只保证读写不打架，不保证 CPU 一定来得及。</desc>
+  <desc>DMA 填 A 时 CPU 处理 B，填 B 时处理 A。修订版补充：两块缓冲的当前所有者、CPU 的处理截止线、以及"CPU 超期 → 下一块被覆盖"的反例。双缓冲只保证读写不打架，不保证 CPU 一定来得及。画面里搬运是真的在动：两块缓冲的填充条按字节连续爬升（不是一半一半地跳），DMA 的箭头只指向正在被填的那一块，铃铛在填满的那一刻连响两下。</desc>
   <rect width="720" height="430" fill="#f6f8fa"/>
   <text x="24" y="30" font-size="17" font-weight="bold" fill="#3451b2">DMA 双缓冲乒乓：搬运工与分析师的交接棒</text>
   <text x="24" y="50" font-size="12" fill="#666">DMA 填 A 时 CPU 处理 B，填 B 时处理 A——但 CPU 必须在下一块被填满之前处理完，超期就覆盖</text>
@@ -41,7 +41,8 @@
   <text x="584" y="102" font-size="10" font-weight="bold" text-anchor="end" fill="#3eaf7c" opacity="0">所有者:CPU<animate attributeName="opacity" calcMode="discrete" values="0;0;1;1;0;0;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/></text>
   <rect x="416" y="112" width="168" height="18" fill="#e2e8f0" rx="3"/>
   <rect x="416" y="112" width="0" height="18" fill="#d97706" rx="3">
-    <animate attributeName="width" calcMode="discrete" values="0;84;168;168;168;168;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/>
+    <!-- 填充条改成连续爬升：DMA 是一个字节一个字节搬的，不是一半一半地跳 -->
+    <animate attributeName="width" values="0;84;168;168;168;168;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/>
   </rect>
 
   <!-- 缓冲 B -->
@@ -51,15 +52,15 @@
   <text x="584" y="192" font-size="10" font-weight="bold" text-anchor="end" fill="#3eaf7c" opacity="0">所有者:CPU<animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;1;1;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/></text>
   <rect x="416" y="202" width="168" height="18" fill="#e2e8f0" rx="3"/>
   <rect x="416" y="202" width="0" height="18" fill="#d97706" rx="3">
-    <animate attributeName="width" calcMode="discrete" values="0;0;0;84;168;168;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/>
+    <animate attributeName="width" values="0;0;0;84;168;168;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/>
   </rect>
 
-  <!-- DMA→当前缓冲 箭头 -->
+  <!-- DMA→当前缓冲 箭头：谁在被填，箭头就只指向谁（原写法 A 的箭头亮到 0.45，和 B 的填充叠在一起） -->
   <path d="M340,150 L396,115" stroke="#3451b2" stroke-width="3" fill="none" marker-end="url(#arrB)" opacity="1">
-    <animate attributeName="opacity" calcMode="discrete" values="1;1;1;0;0;0;1;1" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" calcMode="discrete" values="1;1;0;0;0;1;1;1" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/>
   </path>
   <path d="M340,180 L396,205" stroke="#3451b2" stroke-width="3" fill="none" marker-end="url(#arrB)" opacity="0">
-    <animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;1;0;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" calcMode="discrete" values="0;0;1;1;0;0;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/>
   </path>
 
   <!-- CPU -->
@@ -90,12 +91,13 @@
     <rect x="400" y="80" width="200" height="70" fill="none" stroke="#dc2626" stroke-width="3" rx="8"/>
     <path d="M340,150 L396,115" stroke="#dc2626" stroke-width="3" fill="none" marker-end="url(#arrR)"/>
     <text x="620" y="120" font-size="12" font-weight="bold" fill="#dc2626">CPU 还没读完 A</text>
-    <text x="620" y="140" font-size="12" fill="#dc2626">DMA 又写回来了 → 整块丢</text>
+    <text x="620" y="140" font-size="12" fill="#dc2626">DMA 又写回来了</text>
+    <text x="620" y="156" font-size="12" fill="#dc2626">→ 整块丢</text>
   </g>
 
-  <!-- 满中断铃铛 -->
-  <text x="616" y="140" font-size="18" opacity="0">🔔<animate attributeName="opacity" calcMode="discrete" values="0;0;1;0;0;0;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/></text>
-  <text x="616" y="230" font-size="18" opacity="0">🔔<animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;1;0;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/></text>
+  <!-- 满中断铃铛：填满那一刻连响两下（不是整段长亮），铃响=中断服务程序的入场瞬间 -->
+  <text x="616" y="140" font-size="18" opacity="0">🔔<animate attributeName="opacity" values="0;1;0;1;0;0;0" keyTimes="0;0.30;0.315;0.33;0.345;0.36;1" dur="16s" repeatCount="indefinite"/></text>
+  <text x="616" y="230" font-size="18" opacity="0">🔔<animate attributeName="opacity" values="0;1;0;1;0;0;0" keyTimes="0;0.60;0.615;0.63;0.645;0.66;1" dur="16s" repeatCount="indefinite"/></text>
 
   <!-- 阶段字幕 -->
   <g font-size="13" font-weight="bold" fill="#3451b2">
@@ -113,5 +115,16 @@
       <text x="36" y="382">⑥ 反例：CPU 没处理完 B，DMA 已经把 A 又填满了——下一圈直接盖掉 A</text></g>
     <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;0;1;1" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/>
       <text x="36" y="382">关键纪律：双缓冲保证"读写不打架"，不保证"CPU 来得及"——处理期限是硬约束 →</text></g>
+  </g>
+
+  <!-- 阶段指示点：keyTimes 照抄字幕的 7 个槽位 -->
+  <g transform="translate(576,404)" fill="#3451b2">
+    <circle cx="0" cy="0" r="5" opacity="1"><animate attributeName="opacity" calcMode="discrete" values="1;0.2;0.2;0.2;0.2;0.2;0.2;0.2" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/></circle>
+    <circle cx="18" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;1;0.2;0.2;0.2;0.2;0.2;0.2" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/></circle>
+    <circle cx="36" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;1;0.2;0.2;0.2;0.2;0.2" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/></circle>
+    <circle cx="54" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;0.2;1;0.2;0.2;0.2;0.2" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/></circle>
+    <circle cx="72" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;0.2;0.2;1;0.2;0.2;0.2" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/></circle>
+    <circle cx="90" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;0.2;0.2;0.2;1;0.2;0.2" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/></circle>
+    <circle cx="108" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;0.2;0.2;0.2;0.2;1;1" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/></circle>
   </g>
 </svg>

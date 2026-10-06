@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" font-family="'Segoe UI','Microsoft YaHei',sans-serif">
+  <title>点亮一盏灯：先开时钟，再盖四个章</title>
+  <desc>点亮一盏灯：先开时钟，再盖四个章。RCC 合闸 → MODER 选模式 → OTYPER 推挽 → OSPEEDR 低速 → PUPDR 浮空 → BSRR 一句话发令。画面里 bit5 是被绿色从下往上灌满的，导线逐点接通后一趟趟往 GPIOF 送时钟，四张表的两位一格先后落位，BSRR 发令后灯亮、光晕一圈圈外扩。</desc>
   <rect width="720" height="420" fill="#f6f8fa"/>
   <text x="24" y="30" font-size="17" font-weight="bold" fill="#3451b2">点亮一盏灯：先开时钟，再盖四个章</text>
   <text x="24" y="50" font-size="12" fill="#666">RCC 合闸 → MODER 选模式 → OTYPER 推挽 → OSPEEDR 低速 → PUPDR 浮空 → BSRR 一句话发令</text>
@@ -8,18 +10,27 @@
   <text x="52" y="90" font-size="13" font-weight="bold" fill="#3451b2">① RCC 供电所</text>
   <text x="52" y="108" font-size="10" fill="#888" font-family="Consolas,monospace">RCC_AHB1ENR</text>
   <rect x="52" y="114" width="168" height="34" fill="#f1f5f9" stroke="#94a3b8" rx="4"/>
-  <rect x="132" y="118" width="30" height="26" fill="#e2e8f0" stroke="#3451b2" rx="3">
-    <animate attributeName="fill" calcMode="discrete" values="#e2e8f0;#3eaf7c;#3eaf7c" keyTimes="0;0.04;1" dur="14s" repeatCount="indefinite"/>
+  <rect x="132" y="118" width="30" height="26" fill="#e2e8f0" stroke="#3451b2" rx="3"/>
+  <!-- 写进去的那个 1：绿色从格子底部一路灌满 bit5，而不是整格凭空变色 -->
+  <rect x="134" y="142" width="26" height="0" fill="#3eaf7c">
+    <animate attributeName="y" values="142;142;120;120" keyTimes="0;0.02;0.06;1" dur="14s" repeatCount="indefinite"/>
+    <animate attributeName="height" values="0;0;22;22" keyTimes="0;0.02;0.06;1" dur="14s" repeatCount="indefinite"/>
   </rect>
   <text x="147" y="136" font-size="11" font-weight="bold" fill="#3451b2" text-anchor="middle" font-family="Consolas,monospace">bit5</text>
   <text x="147" y="164" font-size="10" fill="#666" text-anchor="middle">GPIOFEN = 1</text>
   <text x="52" y="196" font-size="11" fill="#666">合闸 = 给 GPIOF 通电</text>
   <text x="52" y="214" font-size="11" fill="#666">不合闸，写啥都是空气</text>
 
-  <!-- 导线：RCC → GPIOF -->
-  <path d="M236,131 L292,131" stroke="#cbd5e1" stroke-width="3" fill="none">
+  <!-- 导线：RCC → GPIOF（合闸后导线被逐点接通，电流一趟趟往 GPIOF 跑） -->
+  <path d="M236,131 L292,131" stroke="#cbd5e1" stroke-width="3" fill="none"
+        pathLength="1000" stroke-dasharray="1000" stroke-dashoffset="1000">
     <animate attributeName="stroke" calcMode="discrete" values="#cbd5e1;#3eaf7c;#3eaf7c" keyTimes="0;0.04;1" dur="14s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-dashoffset" values="1000;1000;0;0" keyTimes="0;0.04;0.11;1" dur="14s" repeatCount="indefinite"/>
   </path>
+  <circle cy="131" r="3" fill="#3eaf7c" opacity="0">
+    <animate attributeName="opacity" calcMode="discrete" values="0;0;1;1" keyTimes="0;0.11;0.12;1" dur="14s" repeatCount="indefinite"/>
+    <animate attributeName="cx" values="236;292" dur="1.4s" repeatCount="indefinite"/>
+  </circle>
 
   <!-- ===== ② GPIOF 四张表 ===== -->
   <rect x="292" y="66" width="276" height="288" fill="#ffffff" stroke="#cbd5e1" rx="8"/>
@@ -32,10 +43,13 @@
     <g opacity="0">
       <animate attributeName="opacity" calcMode="discrete" values="0;1;1" keyTimes="0;0.15;1" dur="14s" repeatCount="indefinite"/>
       <rect x="462" y="114" width="26" height="26" fill="#dbe7ff" stroke="#3451b2" rx="3"/>
-      <rect x="494" y="114" width="26" height="26" fill="#dbe7ff" stroke="#3451b2" rx="3"/>
       <text x="475" y="132" font-size="13" font-weight="bold" fill="#3451b2" text-anchor="middle">0</text>
-      <text x="507" y="132" font-size="13" font-weight="bold" fill="#3451b2" text-anchor="middle">1</text>
-      <text x="528" y="132" font-size="10" fill="#888">←[13:12]</text>
+      <!-- 两位一格：高位格先落，低位格后落，中间差半拍 -->
+      <rect x="494" y="114" width="26" height="26" fill="#dbe7ff" stroke="#3451b2" rx="3" opacity="0">
+        <animate attributeName="opacity" calcMode="discrete" values="0;1;1" keyTimes="0;0.19;1" dur="14s" repeatCount="indefinite"/>
+      </rect>
+      <text x="507" y="132" font-size="13" font-weight="bold" fill="#3451b2" text-anchor="middle" opacity="0">1<animate attributeName="opacity" calcMode="discrete" values="0;1;1" keyTimes="0;0.19;1" dur="14s" repeatCount="indefinite"/></text>
+      <text x="528" y="132" font-size="10" fill="#888" opacity="0">←[13:12]<animate attributeName="opacity" calcMode="discrete" values="0;1;1" keyTimes="0;0.22;1" dur="14s" repeatCount="indefinite"/></text>
     </g>
 
     <rect x="308" y="160" width="244" height="46" fill="#f8fafc" stroke="#e2e8f0" rx="6"/>
@@ -54,9 +68,11 @@
     <g opacity="0">
       <animate attributeName="opacity" calcMode="discrete" values="0;1;1" keyTimes="0;0.45;1" dur="14s" repeatCount="indefinite"/>
       <rect x="462" y="226" width="26" height="26" fill="#dbe7ff" stroke="#3451b2" rx="3"/>
-      <rect x="494" y="226" width="26" height="26" fill="#dbe7ff" stroke="#3451b2" rx="3"/>
       <text x="475" y="244" font-size="13" font-weight="bold" fill="#3451b2" text-anchor="middle">0</text>
-      <text x="507" y="244" font-size="13" font-weight="bold" fill="#3451b2" text-anchor="middle">0</text>
+      <rect x="494" y="226" width="26" height="26" fill="#dbe7ff" stroke="#3451b2" rx="3" opacity="0">
+        <animate attributeName="opacity" calcMode="discrete" values="0;1;1" keyTimes="0;0.49;1" dur="14s" repeatCount="indefinite"/>
+      </rect>
+      <text x="507" y="244" font-size="13" font-weight="bold" fill="#3451b2" text-anchor="middle" opacity="0">0<animate attributeName="opacity" calcMode="discrete" values="0;1;1" keyTimes="0;0.49;1" dur="14s" repeatCount="indefinite"/></text>
     </g>
 
     <rect x="308" y="272" width="244" height="46" fill="#f8fafc" stroke="#e2e8f0" rx="6"/>
@@ -65,9 +81,11 @@
     <g opacity="0">
       <animate attributeName="opacity" calcMode="discrete" values="0;1;1" keyTimes="0;0.60;1" dur="14s" repeatCount="indefinite"/>
       <rect x="462" y="282" width="26" height="26" fill="#dbe7ff" stroke="#3451b2" rx="3"/>
-      <rect x="494" y="282" width="26" height="26" fill="#dbe7ff" stroke="#3451b2" rx="3"/>
       <text x="475" y="300" font-size="13" font-weight="bold" fill="#3451b2" text-anchor="middle">0</text>
-      <text x="507" y="300" font-size="13" font-weight="bold" fill="#3451b2" text-anchor="middle">0</text>
+      <rect x="494" y="282" width="26" height="26" fill="#dbe7ff" stroke="#3451b2" rx="3" opacity="0">
+        <animate attributeName="opacity" calcMode="discrete" values="0;1;1" keyTimes="0;0.64;1" dur="14s" repeatCount="indefinite"/>
+      </rect>
+      <text x="507" y="300" font-size="13" font-weight="bold" fill="#3451b2" text-anchor="middle" opacity="0">0<animate attributeName="opacity" calcMode="discrete" values="0;1;1" keyTimes="0;0.64;1" dur="14s" repeatCount="indefinite"/></text>
     </g>
   </g>
 
@@ -79,15 +97,22 @@
   </rect>
 
   <!-- ===== ③ BSRR 发令台 ===== -->
-  <path d="M568,190 L600,190" stroke="#cbd5e1" stroke-width="3" fill="none">
+  <path d="M568,190 L600,190" stroke="#cbd5e1" stroke-width="3" fill="none"
+        pathLength="1000" stroke-dasharray="1000" stroke-dashoffset="1000">
     <animate attributeName="stroke" calcMode="discrete" values="#cbd5e1;#3eaf7c;#3eaf7c" keyTimes="0;0.75;1" dur="14s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-dashoffset" values="1000;1000;0;0" keyTimes="0;0.75;0.80;1" dur="14s" repeatCount="indefinite"/>
   </path>
   <rect x="600" y="66" width="84" height="288" fill="#ffffff" stroke="#cbd5e1" rx="8"/>
   <text x="642" y="90" font-size="12" font-weight="bold" fill="#3451b2" text-anchor="middle">③ BSRR</text>
   <text x="642" y="106" font-size="10" fill="#888" text-anchor="middle">一句话发令</text>
   <circle cx="642" cy="176" r="30" fill="none" stroke="#e2e8f0" stroke-width="2"/>
   <circle cx="642" cy="176" r="23" fill="#e2e8f0">
-    <animate attributeName="fill" calcMode="discrete" values="#e2e8f0;#e11d48;#e11d48" keyTimes="0;0.75;1" dur="14s" repeatCount="indefinite"/>
+    <animate attributeName="fill" calcMode="discrete" values="#e2e8f0;#dc2626;#dc2626" keyTimes="0;0.75;1" dur="14s" repeatCount="indefinite"/>
+  </circle>
+  <!-- 亮了之后一圈圈往外扩的光晕：BSRR 之后引脚是被持续驱动的，不是一次性事件 -->
+  <circle cx="642" cy="176" r="23" fill="none" stroke="#d97706" stroke-width="2" opacity="0">
+    <animate attributeName="opacity" calcMode="discrete" values="0;1;1" keyTimes="0;0.75;1" dur="14s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="23;33" dur="1.4s" repeatCount="indefinite"/>
   </circle>
   <text x="642" y="181" font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle">PF6</text>
   <text x="642" y="226" font-size="11" fill="#666" text-anchor="middle">红灯</text>
@@ -125,5 +150,15 @@
       <text x="36" y="406">上下拉是输入的配角（按键那节用）</text></g>
     <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;1;1" keyTimes="0;0.15;0.30;0.45;0.60;0.75;1" dur="14s" repeatCount="indefinite"/>
       <text x="36" y="406">四步配好，一句话点灯——接下来去 E01 实验见真章 →</text></g>
+  </g>
+
+  <!-- 阶段指示点 -->
+  <g transform="translate(594,408)" fill="#3451b2">
+    <circle cx="0" cy="0" r="5" opacity="1"><animate attributeName="opacity" calcMode="discrete" values="1;0.2;0.2;0.2;0.2;0.2;0.2" keyTimes="0;0.15;0.30;0.45;0.60;0.75;1" dur="14s" repeatCount="indefinite"/></circle>
+    <circle cx="18" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;1;0.2;0.2;0.2;0.2;0.2" keyTimes="0;0.15;0.30;0.45;0.60;0.75;1" dur="14s" repeatCount="indefinite"/></circle>
+    <circle cx="36" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;1;0.2;0.2;0.2;0.2" keyTimes="0;0.15;0.30;0.45;0.60;0.75;1" dur="14s" repeatCount="indefinite"/></circle>
+    <circle cx="54" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;0.2;1;0.2;0.2;0.2" keyTimes="0;0.15;0.30;0.45;0.60;0.75;1" dur="14s" repeatCount="indefinite"/></circle>
+    <circle cx="72" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;0.2;0.2;1;0.2;0.2" keyTimes="0;0.15;0.30;0.45;0.60;0.75;1" dur="14s" repeatCount="indefinite"/></circle>
+    <circle cx="90" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;0.2;0.2;0.2;1;1" keyTimes="0;0.15;0.30;0.45;0.60;0.75;1" dur="14s" repeatCount="indefinite"/></circle>
   </g>
 </svg>

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" font-family="'Segoe UI','Microsoft YaHei',sans-serif">
   <title>LEDC：timer 定调，channel 发声</title>
-  <desc>四阶段动画：LEDC 两级分工——timer 定频率与分辨率（多快多细），channel 定 GPIO 与占空比（从哪出多高），fade 引擎按步进改比较值。S3 只有低速模式、8 通道、14 位位宽；ledc_get_freq 回读实际频率。</desc>
+  <desc>四阶段动画：LEDC 两级分工——timer 定频率与分辨率（多快多细），channel 定 GPIO 与占空比（从哪出多高），fade 引擎按步进改比较值。S3 只有低速模式、8 通道、14 位位宽；ledc_get_freq 回读实际频率。绑线是 channel 自己爬到 timer 上的，斜坡则是 fade_start 之后逐点画出来，比较值沿斜坡上下往返——CPU 全程旁观。</desc>
   <rect width="720" height="440" fill="#f6f8fa"/>
   <text x="24" y="30" font-size="17" font-weight="bold" fill="#3451b2">LEDC：timer 定调，channel 发声，fade 接管渐变</text>
   <text x="24" y="50" font-size="12" fill="#666">S3：仅低速模式 · 8 通道 · 14 位位宽 · f = 时钟 / 2^位数 · 改 duty 要 update（双缓冲）</text>
@@ -21,8 +21,10 @@
   <text x="396" y="174" font-size="12" fill="#666">timer_sel = TIMER_0（绑到左边）</text>
   <text x="396" y="194" font-size="12" fill="#666">hpoint = 0</text>
 
-  <!-- 连线 -->
-  <path d="M340,150 L380,150" stroke="#3451b2" stroke-width="3" fill="none" marker-end="url(#arrL)"/>
+  <!-- 连线：timer 定好频率后，channel 把绑线爬过来接上 -->
+  <line x1="340" y1="150" x2="340" y2="150" stroke="#3451b2" stroke-width="3" marker-end="url(#arrL)">
+    <animate attributeName="x2" values="340;340;380;380" keyTimes="0;0.01;0.07;1" dur="12s" repeatCount="indefinite"/>
+  </line>
   <defs>
     <marker id="arrL" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
       <polygon points="0,0 7,3 0,6" fill="#3451b2"/>
@@ -32,8 +34,17 @@
   <!-- ===== fade ===== -->
   <rect x="40" y="230" width="640" height="110" fill="#ffffff" stroke="#d97706" stroke-width="2" rx="8"/>
   <text x="56" y="252" font-size="13" font-weight="bold" fill="#d97706">fade（硬件渐变）：set_fade_with_time → fade_start</text>
-  <!-- 渐变斜坡 -->
-  <polyline points="70,310 240,270 410,310 580,270" stroke="#d97706" stroke-width="3" fill="none"/>
+  <!-- 渐变斜坡：淡灰是轨道，琥珀色那条在 fade_start 之后被逐点画出，比较值沿斜坡上下往返（CPU 不插手） -->
+  <path d="M70,310 L240,270 L410,310 L580,270" stroke="#e2e8f0" stroke-width="3" fill="none"/>
+  <path d="M70,310 L240,270 L410,310 L580,270" stroke="#d97706" stroke-width="3" fill="none"
+        pathLength="1000" stroke-dasharray="1000" stroke-dashoffset="1000">
+    <animate attributeName="stroke-dashoffset" values="1000;1000;0;0" keyTimes="0;0.50;0.66;1" dur="12s" repeatCount="indefinite"/>
+  </path>
+  <circle r="4.5" fill="#d97706" opacity="0">
+    <animate attributeName="opacity" calcMode="discrete" values="0;1;1" keyTimes="0;0.66;1" dur="12s" repeatCount="indefinite"/>
+    <animateMotion calcMode="linear" path="M70,310 L240,270 L410,310 L580,270"
+      keyPoints="0;1;0" keyTimes="0;0.5;1" dur="4s" repeatCount="indefinite"/>
+  </circle>
   <text x="70" y="332" font-size="11" fill="#666">duty=0</text>
   <text x="560" y="262" font-size="11" fill="#666">duty=1023</text>
   <text x="240" y="332" font-size="11" fill="#666">2 秒渐变完，CPU 全程旁观</text>

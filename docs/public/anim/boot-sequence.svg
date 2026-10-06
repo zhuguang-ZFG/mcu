@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" font-family="'Segoe UI','Microsoft YaHei',sans-serif">
+  <title>复位之后一毫秒：从两个地址到 main()</title>
+  <desc>复位之后一毫秒：从两个地址到 main()。硬件只读两个字（初始 MSP、复位 PC），剩下十几条指令全是软件自己干。动效承担两件事：五条工序支管被逻辑分析仪那样逐条画出来（走到哪一站，哪一站的管道才存在；①②③ 通向 Flash、⑤⑥ 通向 RAM，④ 写的 CPACR 两边都不是，所以不接线），.data 的三个方块在阶段⑤从 Flash 滑进 RAM，不是瞬移。</desc>
   <rect width="720" height="440" fill="#f6f8fa"/>
   <text x="24" y="30" font-size="17" font-weight="bold" fill="#3451b2">复位之后一毫秒：从两个地址到 main()</text>
   <text x="24" y="50" font-size="12" fill="#666">硬件只读两个字（初始 MSP、复位 PC），剩下十几条指令全是软件自己干</text>
@@ -20,6 +22,28 @@
       <text x="320" y="103">→ PC 入口</text><text x="436" y="103">CPACR</text>
       <text x="552" y="103">Flash→RAM</text><text x="668" y="103">RAM 归零</text>
     </g>
+  </g>
+
+  <!-- 工序→面板的支管：逐条爬出来（走到哪一站，哪一站的管道才存在）。
+       一条 path 的六个子路径不行——dash 会在每个子路径重新起算，几根会同时长；所以拆成几段，
+       每段 0.13 的窗口（= 一个阶段槽），最后一段在 0.65→0.78 收尾。
+       ④ 开 FPU 故意不接线：它写的 CPACR 既不在 Flash 也不在 RAM，接向哪块面板都是假话。 -->
+  <g stroke="#94a3b8" stroke-width="2" fill="none">
+    <path d="M88,114 V130" pathLength="16" stroke-dasharray="16" stroke-dashoffset="16">
+      <animate attributeName="stroke-dashoffset" values="16;0;0" keyTimes="0;0.13;1" dur="18s" repeatCount="indefinite"/>
+    </path>
+    <path d="M204,114 V130" pathLength="16" stroke-dasharray="16" stroke-dashoffset="16">
+      <animate attributeName="stroke-dashoffset" values="16;16;0;0" keyTimes="0;0.13;0.26;1" dur="18s" repeatCount="indefinite"/>
+    </path>
+    <path d="M320,114 V130" pathLength="16" stroke-dasharray="16" stroke-dashoffset="16">
+      <animate attributeName="stroke-dashoffset" values="16;16;0;0" keyTimes="0;0.26;0.39;1" dur="18s" repeatCount="indefinite"/>
+    </path>
+    <path d="M552,114 V130" pathLength="16" stroke-dasharray="16" stroke-dashoffset="16">
+      <animate attributeName="stroke-dashoffset" values="16;16;0;0" keyTimes="0;0.52;0.65;1" dur="18s" repeatCount="indefinite"/>
+    </path>
+    <path d="M668,114 V130" pathLength="16" stroke-dasharray="16" stroke-dashoffset="16">
+      <animate attributeName="stroke-dashoffset" values="16;16;0;0" keyTimes="0;0.65;0.78;1" dur="18s" repeatCount="indefinite"/>
+    </path>
   </g>
 
   <!-- 进度游标 -->
@@ -91,7 +115,8 @@
     <animate attributeName="stroke" calcMode="discrete" values="#cbd5e1;#3eaf7c;#3eaf7c" keyTimes="0;0.52;1" dur="18s" repeatCount="indefinite"/>
   </path>
   <g fill="#d97706" transform="translate(0,0)">
-    <animateTransform attributeName="transform" type="translate" calcMode="discrete"
+    <!-- 搬 .data：三个方块在阶段⑤（0.52→0.65）被逐拍滑进 RAM，不是到点了瞬移过去 -->
+    <animateTransform attributeName="transform" type="translate"
       values="0 0;0 0;0 0;0 0;0 0;52 -40;52 -40;52 -40" keyTimes="0;0.13;0.26;0.39;0.52;0.65;0.78;1" dur="18s" repeatCount="indefinite"/>
     <rect x="312" y="272" width="13" height="13" rx="2"/>
     <rect x="328" y="272" width="13" height="13" rx="2"/>
@@ -130,5 +155,16 @@
       <text x="36" y="420">漏掉这步：全局变量全是随机垃圾，bug 玄学到怀疑人生</text></g>
     <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;0;1;1" keyTimes="0;0.13;0.26;0.39;0.52;0.65;0.78;1" dur="18s" repeatCount="indefinite"/>
       <text x="36" y="420">全程十几条指令、微秒级跑完——按一下复位键，再看一遍 →</text></g>
+  </g>
+
+  <!-- 阶段指示点：keyTimes 照抄字幕的 7 个槽位（最后一格落在 [0.78,1)，不是回环槽） -->
+  <g transform="translate(576,422)" fill="#3451b2">
+    <circle cx="0" cy="0" r="5" opacity="1"><animate attributeName="opacity" calcMode="discrete" values="1;0.2;0.2;0.2;0.2;0.2;0.2;0.2" keyTimes="0;0.13;0.26;0.39;0.52;0.65;0.78;1" dur="18s" repeatCount="indefinite"/></circle>
+    <circle cx="18" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;1;0.2;0.2;0.2;0.2;0.2;0.2" keyTimes="0;0.13;0.26;0.39;0.52;0.65;0.78;1" dur="18s" repeatCount="indefinite"/></circle>
+    <circle cx="36" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;1;0.2;0.2;0.2;0.2;0.2" keyTimes="0;0.13;0.26;0.39;0.52;0.65;0.78;1" dur="18s" repeatCount="indefinite"/></circle>
+    <circle cx="54" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;0.2;1;0.2;0.2;0.2;0.2" keyTimes="0;0.13;0.26;0.39;0.52;0.65;0.78;1" dur="18s" repeatCount="indefinite"/></circle>
+    <circle cx="72" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;0.2;0.2;1;0.2;0.2;0.2" keyTimes="0;0.13;0.26;0.39;0.52;0.65;0.78;1" dur="18s" repeatCount="indefinite"/></circle>
+    <circle cx="90" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;0.2;0.2;0.2;1;0.2;0.2" keyTimes="0;0.13;0.26;0.39;0.52;0.65;0.78;1" dur="18s" repeatCount="indefinite"/></circle>
+    <circle cx="108" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;0.2;0.2;0.2;0.2;1;1" keyTimes="0;0.13;0.26;0.39;0.52;0.65;0.78;1" dur="18s" repeatCount="indefinite"/></circle>
   </g>
 </svg>

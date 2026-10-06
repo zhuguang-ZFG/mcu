@@ -8,6 +8,7 @@
     "docs:dev": "npm run docs:gen && vitepress dev docs",
     "docs:build": "npm run docs:gen && vitepress build docs",
     "docs:preview": "vitepress preview docs",
+    "anim:lint": "node scripts/anim-lint.mjs",
     "docs:gen": "node scripts/gen-progress.mjs"
   },
   "devDependencies": {

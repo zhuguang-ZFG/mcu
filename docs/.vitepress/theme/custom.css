@@ -75,6 +75,171 @@
   margin-bottom: 8px;
 }
 
+/* ===== 动画视觉令牌（AnimFigure 内联 SVG 用）=====
+   图里仍写死浅色 fill，保证 /anim/x.svg 单独打开也能看；
+   内联进站点后由下面这些类覆盖 presentation attribute，深浅主题各一套。 */
+:root {
+  --mcu-anim-bg: #f6f8fa;
+  --mcu-anim-card: #ffffff;
+  --mcu-anim-panel: #f8fafc;
+  --mcu-anim-line: #cbd5e1;
+  --mcu-anim-ink: #24292f;
+  --mcu-anim-sub: #57606a;
+  --mcu-anim-muted: #94a3b8;
+  --mcu-anim-brand: #3451b2;
+  --mcu-anim-accent: #3eaf7c;
+  --mcu-anim-accent-deep: #1a7f56;
+  --mcu-anim-warn: #d97706;
+  --mcu-anim-warn-deep: #92400e;
+  --mcu-anim-gold: #e7c54b;
+  --mcu-anim-danger: #dc2626;
+  --mcu-anim-wash-blue: #dbe7ff;
+  --mcu-anim-wash-green: #d8f3e5;
+  --mcu-anim-wash-amber: #fdf0d5;
+  --mcu-anim-font: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+}
+html.dark {
+  --mcu-anim-bg: #1e222a;
+  --mcu-anim-card: #262c36;
+  --mcu-anim-panel: #222831;
+  --mcu-anim-line: #3b4453;
+  --mcu-anim-ink: #e6eaf2;
+  --mcu-anim-sub: #a9b3c1;
+  --mcu-anim-muted: #7b8696;
+  --mcu-anim-brand: #8ab4ff;
+  --mcu-anim-accent: #4fd196;
+  --mcu-anim-accent-deep: #7ee0b4;
+  --mcu-anim-warn: #f0b45c;
+  --mcu-anim-warn-deep: #f5c97a;
+  --mcu-anim-gold: #e6c95f;
+  --mcu-anim-danger: #ff8a80;
+  --mcu-anim-wash-blue: rgba(138, 180, 255, 0.14);
+  --mcu-anim-wash-green: rgba(79, 209, 150, 0.14);
+  --mcu-anim-wash-amber: rgba(240, 180, 92, 0.14);
+}
+
+.anim-figure {
+  display: block;
+  margin: 1.6em auto;
+  max-width: 760px;
+}
+.anim-figure__stage {
+  display: block;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  background: var(--mcu-anim-bg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.anim-figure__stage:hover {
+  border-color: var(--mcu-brand);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(52, 81, 178, 0.14);
+}
+.anim-figure__stage svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: var(--mcu-anim-font);
+}
+
+/* 图内元素：类覆盖 SVG 的 presentation attribute（属性优先级最低，无需 !important） */
+.anim-figure__stage svg .a-bg { fill: var(--mcu-anim-bg); }
+.anim-figure__stage svg .a-card { fill: var(--mcu-anim-card); }
+.anim-figure__stage svg .a-panel { fill: var(--mcu-anim-panel); }
+.anim-figure__stage svg .a-line { fill: var(--mcu-anim-line); }
+.anim-figure__stage svg .a-ink { fill: var(--mcu-anim-ink); }
+.anim-figure__stage svg .a-sub { fill: var(--mcu-anim-sub); }
+.anim-figure__stage svg .a-muted { fill: var(--mcu-anim-muted); }
+.anim-figure__stage svg .a-brand { fill: var(--mcu-anim-brand); }
+.anim-figure__stage svg .a-accent { fill: var(--mcu-anim-accent); }
+.anim-figure__stage svg .a-accent-deep { fill: var(--mcu-anim-accent-deep); }
+.anim-figure__stage svg .a-warn { fill: var(--mcu-anim-warn); }
+.anim-figure__stage svg .a-warn-deep { fill: var(--mcu-anim-warn-deep); }
+.anim-figure__stage svg .a-gold { fill: var(--mcu-anim-gold); }
+.anim-figure__stage svg .a-danger { fill: var(--mcu-anim-danger); }
+.anim-figure__stage svg .a-wash-blue { fill: var(--mcu-anim-wash-blue); }
+.anim-figure__stage svg .a-wash-green { fill: var(--mcu-anim-wash-green); }
+.anim-figure__stage svg .a-wash-amber { fill: var(--mcu-anim-wash-amber); }
+.anim-figure__stage svg .s-brand { stroke: var(--mcu-anim-brand); }
+.anim-figure__stage svg .s-accent { stroke: var(--mcu-anim-accent); }
+.anim-figure__stage svg .s-accent-deep { stroke: var(--mcu-anim-accent-deep); }
+.anim-figure__stage svg .s-warn { stroke: var(--mcu-anim-warn); }
+.anim-figure__stage svg .s-danger { stroke: var(--mcu-anim-danger); }
+.anim-figure__stage svg .s-card { stroke: var(--mcu-anim-card); }
+.anim-figure__stage svg .s-line { stroke: var(--mcu-anim-line); }
+.anim-figure__stage svg .s-muted { stroke: var(--mcu-anim-muted); }
+.anim-figure__stage svg .s-sub { stroke: var(--mcu-anim-sub); }
+.anim-figure__stage svg .a-mono {
+  font-family: var(--vp-font-family-mono);
+  letter-spacing: 0;
+}
+
+.anim-figure__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  font-size: 0.78rem;
+  color: var(--vp-c-text-3);
+}
+.anim-figure__btn {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-2);
+  font-size: 0.74rem;
+  line-height: 1;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.anim-figure__btn:hover {
+  border-color: var(--mcu-brand);
+  color: var(--mcu-brand);
+}
+.anim-figure__progress {
+  flex: 1;
+  min-width: 80px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--vp-c-divider);
+  overflow: hidden;
+}
+.anim-figure__progress i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--mcu-brand), var(--mcu-accent));
+  animation: mcu-anim-timeline linear infinite;
+}
+.anim-figure.is-paused .anim-figure__progress i {
+  animation-play-state: paused;
+}
+@keyframes mcu-anim-timeline {
+  from { width: 0; }
+  to { width: 100%; }
+}
+.anim-figure__caption {
+  flex-basis: 100%;
+  color: var(--vp-c-text-3);
+  font-size: 0.8rem;
+}
+.anim-figure--missing {
+  border: 1px dashed var(--mcu-warn);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.86rem;
+  color: var(--vp-c-text-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-figure__progress i {
+    animation: none;
+    width: 100%;
+  }
+}
+
 /* ===== 动画图：居中 + 白底卡片，适配深浅主题 ===== */
 .vp-doc img[src*="/anim/"] {
   display: block;
@@ -83,7 +248,7 @@
   width: 100%;
   border: 1px solid var(--vp-c-divider);
   border-radius: 8px;
-  background: #f6f8fa;
+  background: var(--mcu-anim-bg);
   padding: 8px;
 }
 

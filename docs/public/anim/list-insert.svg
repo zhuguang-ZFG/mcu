@@ -1,7 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" font-family="'Segoe UI','Microsoft YaHei',sans-serif">
+  <title>FreeRTOS 的"链"：一条按值排序的双向链表</title>
+  <desc>FreeRTOS 的"链"：一条按值排序的双向链表。就绪/延时/阻塞，全是同一种 List_t；插入按 xItemValue 找位置，tick 一到就搬家——指针跳几次，任务就醒了。画面里查找指针沿 pxNext 从哨兵走一圈，新节点滑进 A、B 之间，两根改写的箭头从发端爬到收端，搬家箭头逐点画出并带一个在跑的数据点。</desc>
   <rect width="720" height="420" fill="#f6f8fa"/>
-  <text x="24" y="30" font-size="17" font-weight="bold" fill="#3451b2">FreeRTOS 的"链"：一条按值排序的双向链表</text>
-  <text x="24" y="50" font-size="12" fill="#666">就绪/延时/阻塞，全是同一种 List_t；插入按 xItemValue 找位置，tick 一到就搬家——指针跳几次，任务就醒了</text>
+  <text x="24" y="24" font-size="17" font-weight="bold" fill="#3451b2">FreeRTOS 的"链"：一条按值排序的双向链表</text>
+  <text x="24" y="44" font-size="12" fill="#666">就绪/延时/阻塞，全是同一种 List_t；插入按 xItemValue 找位置，tick 一到就搬家——指针跳几次，任务就醒了</text>
 
   <!-- 就绪链表 -->
   <text x="40" y="92" font-size="13" font-weight="bold" fill="#3eaf7c">就绪链表（pxReadyTasksLists）</text>
@@ -16,22 +18,33 @@
     <text x="475" y="126" fill="#888" font-weight="bold">xListEnd</text>
     <text x="475" y="144" fill="#888">哨兵（首尾一体）</text>
   </g>
-  <!-- 新节点 TCB_C 值=5 -->
-  <g transform="translate(190,30)">
-    <animateTransform attributeName="transform" type="translate" calcMode="discrete"
-      values="190 30;190 30;190 104;190 104;190 104;190 104;190 104;190 30" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/>
+  <!-- 新节点 TCB_C 值=5（0.28→0.33 之间从右上角候补位斜插进 A、B 之间：插队是"穿针"，不是凭空出现） -->
+  <g transform="translate(604,48)">
+    <animateTransform attributeName="transform" type="translate"
+      values="604 48;604 48;190 104;190 104;604 48" keyTimes="0;0.28;0.33;0.97;1" dur="15s" repeatCount="indefinite"/>
     <rect width="110" height="52" fill="#fef3c7" stroke="#d97706" stroke-width="2" rx="6"/>
-    <text x="55" y="22" font-size="11" fill="#92400e" font-weight="bold" text-anchor="middle">TCB_C（新）</text>
-    <text x="55" y="40" font-size="11" fill="#92400e" text-anchor="middle" font-family="Consolas,monospace">值=5</text>
+    <text x="45" y="32" font-size="11" fill="#92400e" font-weight="bold" text-anchor="middle">TCB_C（新）</text>
+    <text x="45" y="46" font-size="11" fill="#92400e" text-anchor="middle" font-family="Consolas,monospace">值=5</text>
   </g>
+  <!-- 查找指针：阶段②从哨兵出发沿 pxNext 走一圈（绕过顶端折返线），停在 A 后面 -->
+  <circle r="6" fill="#d97706" opacity="0">
+    <animate attributeName="opacity" calcMode="discrete" values="0;1;1;0;0;0;0;0" keyTimes="0;0.14;0.33;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/>
+    <animateMotion calcMode="linear" values="475,130;475,130;600,130;600,70;40,70;95,130;95,130"
+      keyTimes="0;0.14;0.18;0.21;0.23;0.28;1" dur="15s" repeatCount="indefinite"/>
+  </circle>
   <!-- 链接箭头（静态 + 重连高亮） -->
   <path d="M150,130 L230,130" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrG)"/>
   <path d="M340,130 L420,130" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrG)"/>
   <path d="M530,130 L600,130 L600,70 L40,70 L40,104" stroke="#cbd5e1" stroke-width="2" fill="none" stroke-dasharray="5 3"/>
   <g opacity="0" stroke="#d97706" stroke-width="2.5" fill="none">
     <animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;1;1;1;0" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/>
-    <path d="M150,130 L190,130" marker-end="url(#arrO2)"/>
-    <path d="M300,130 L340,130" marker-end="url(#arrO2)"/>
+    <!-- 改指针：两根箭头从发端爬到收端，箭头骑在尖端，表示"这一根 pxNext 刚刚被改写" -->
+    <line x1="150" y1="130" x2="150" y2="130" marker-end="url(#arrO2)">
+      <animate attributeName="x2" values="150;150;190;190" keyTimes="0;0.42;0.47;1" dur="15s" repeatCount="indefinite"/>
+    </line>
+    <line x1="300" y1="130" x2="300" y2="130" marker-end="url(#arrO2)">
+      <animate attributeName="x2" values="300;300;340;340" keyTimes="0;0.50;0.55;1" dur="15s" repeatCount="indefinite"/>
+    </line>
   </g>
   <defs>
     <marker id="arrG" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
@@ -62,11 +75,21 @@
     <text x="495" y="270" opacity="0">99<animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;0;0;0;0" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/></text>
     <text x="495" y="270" opacity="0">100<animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;1;1;1;0" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/></text>
   </g>
+  <!-- 每 1s 一闪 = 一个 tick 进队（心跳与主时间轴无关，它一直在走） -->
+  <circle cx="434" cy="244" r="4" fill="#3451b2" opacity="0.2">
+    <animate attributeName="opacity" values="0.2;1;0.2" keyTimes="0;0.5;1" dur="1s" repeatCount="indefinite"/>
+  </circle>
 
-  <!-- TCB_D 搬家箭头 -->
-  <path d="M95,228 L95,180 L150,170" stroke="#3eaf7c" stroke-width="2.5" fill="none" stroke-dasharray="6 4" opacity="0">
+  <!-- TCB_D 搬家箭头：整条路径被逐点画出来（爬线），任务真的在两条链表之间走 -->
+  <path d="M95,228 L95,180 L150,170" stroke="#3eaf7c" stroke-width="2.5" fill="none" opacity="0"
+        pathLength="1000" stroke-dasharray="1000" stroke-dashoffset="1000">
     <animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;1;1;0" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-dashoffset" values="1000;1000;0;0" keyTimes="0;0.70;0.78;1" dur="15s" repeatCount="indefinite"/>
   </path>
+  <circle r="4" fill="#3eaf7c" opacity="0">
+    <animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;1;1;0" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/>
+    <animateMotion calcMode="linear" path="M95,228 L95,180 L150,170" dur="3s" repeatCount="indefinite"/>
+  </circle>
   <text x="95" y="200" font-size="10" fill="#3eaf7c" font-weight="bold" opacity="0">搬家→就绪
     <animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;1;1;0" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/>
   </text>
@@ -85,8 +108,8 @@
       <text x="36" y="330">⑤ tick 99→100：D 的唤醒时刻到了！</text></g>
     <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;1;1;0" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/>
       <text x="36" y="330">⑥ 每个 tick 只查队首一个节点：到点就搬家到就绪链表——这就是 vTaskDelay 的真相</text></g>
-    <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;0;0;1" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/>
-      <text x="36" y="330">整条 RTOS 只有这一种数据结构在跳舞——阻塞链表、挂起链表都是它 →</text></g>
+    <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;0;1;0" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/>
+      <text x="36" y="296">整条 RTOS 只有这一种数据结构在跳舞——阻塞链表、挂起链表都是它 →</text></g>
   </g>
   <g font-size="11" fill="#666">
     <g opacity="1"><animate attributeName="opacity" calcMode="discrete" values="1;0;0;0;0;0;0;0" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/>
@@ -101,7 +124,18 @@
       <text x="36" y="350">xTaskIncrementTick 只查队首——这就是 tick 开销 O(1) 的秘密</text></g>
     <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;1;1;0" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/>
       <text x="36" y="350">醒了若优先级更高 → 置 PendSV，下一章切换现场见</text></g>
-    <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;0;0;1" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/>
-      <text x="36" y="350">动手：GDB 里 p pxReadyTasksLists[1] 展开 uxNumberOfItems 数数</text></g>
+    <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;0;1;0" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/>
+      <text x="36" y="312">动手：GDB 里 p pxReadyTasksLists[1] 展开 uxNumberOfItems 数数</text></g>
+  </g>
+
+  <!-- 阶段指示点 -->
+  <g transform="translate(576,372)" fill="#3451b2">
+    <circle cx="0" cy="0" r="5" opacity="1"><animate attributeName="opacity" calcMode="discrete" values="1;0.2;0.2;0.2;0.2;0.2;0.2;1" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/></circle>
+    <circle cx="18" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;1;0.2;0.2;0.2;0.2;0.2;0.2" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/></circle>
+    <circle cx="36" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;1;0.2;0.2;0.2;0.2;0.2" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/></circle>
+    <circle cx="54" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;0.2;1;0.2;0.2;0.2;0.2" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/></circle>
+    <circle cx="72" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;0.2;0.2;1;0.2;0.2;0.2" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/></circle>
+    <circle cx="90" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;0.2;0.2;0.2;1;1;0.2" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/></circle>
+    <circle cx="108" cy="0" r="5" opacity="0.2"><animate attributeName="opacity" calcMode="discrete" values="0.2;0.2;0.2;0.2;0.2;0.2;1;0.2" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/></circle>
   </g>
 </svg>
