@@ -8,6 +8,16 @@ title: 更新日志
 
 站点统计（成稿章节 / 实验 / 动画 / 工程数）由 `npm run docs:gen` 扫描全站章节 frontmatter 得出，[首页学习地图](/)与本页同源。
 
+## 2026-10-06 · 动画补洞：机制图从"外围"补到"体内"
+
+先盘家底：29 张动画里协议与外设时序占 9 张（`uart-frame`、`usart-txe-tc`、`i2c-timing`、`spi-timing`、`dma-circular-buffer`、`dma-pingpong`、`tim-pwm-counter`、`tim-input-capture`、`tcp-handshake`），MCU 与内核机制 8 张（`boot-sequence`、`irq-entry`、`context-switch`、`stack-frame`、`rcc-clock-tree`、`gd32-rcu-clock`、`gpio-config`、`gpio-matrix-routing`），RTOS/C 侧 12 张。**两个已"成稿"的硬核章节居然一张图都没有**——C1 讲一个变量在两地生活、B2 把同一个 ELF 翻两副目录，全靠读者自己在脑子里拼图。这一批把最该动的三处补上：
+
+- **`bus-matrix.svg`（S1，720×470，5 阶段 / 15s）**：CPU 的 ICode/DCode/System 与 DMA 同挂一张 AHB 矩阵，五条路线逐个爬通——取指打到 Flash（168MHz 下 5 个等待周期，S2 已核过的数），读 `USART1->SR` 要穿 AHB→APB2 桥再同步，DMA 自己发地址但和 CPU 抢同一块 SRAM，最后一阶段故意走不通：**CCM RAM 只接到 CPU**，红线爬到 42% 就停、✕ 每秒闪一下——放错地方就是无声失败（[S8](../stm32/08-dma.md) 有对应翻车实验）。
+- **`memory-two-homes.svg`（C1，720×452，5 阶段 / 15s）**：上电瞬间 RAM 里是随机值（虚线蚂蚁在爬）→ `Reset_Handler` 从 `_sidata=0x080002a0` 搬 12 字节到 `0x20000000`（曲线爬通 + `ldr/str/adds #4` 三圈）→ 绿光标扫过 `0x2000000c..0x2c` 清 `.bss` → 两支生长箭头立起 `_estack=0x20020000`，堆栈相向生长 → 反向路径只爬到 56% 就断，写明"永不回写"。**图里每个地址与字节数都是 `mem_probe.elf` 的实测值**，`sh probe.sh mem` 一条命令复现。
+- **`elf-two-views.svg`（B2，720×458，4 阶段 / 12s）**：中间那条带子是文件里真实的字节顺序，上面挂节表、下面挂程序头，四阶段分别演示两套目录各连到文件哪一块、`Addr` 与 `Off` 差 `0x1000`、`NOBITS` 只登记不给货、第二条 LOAD 的 `FileSiz=0x0c` 与 `MemSiz=0x20` 之差正是 `.bss`，最后 `objcopy` 那一刀把符号表与调试信息整块擦掉（换 `blink.elf` 看：`34,604 − 660 = 33,944`）。
+- **三道闸门 + 一道人眼闸门全绿**：`npm run anim:lint` 32/32 通过；`scripts/anim-audit.html` 逐阶段量"出界 / 压字"报 **32 张，有问题 0 处**；`npm run docs:build` 零死链（`ignoreDeadLinks: false` 仍开着）；`readme:check` 与 `links:check`（根文档 86 个链接）通过。三张图在站点里被构建期内联成 `<AnimFigure>`，深色主题下底色实测 `rgb(30, 34, 42)`，无硬编码白块。
+- 尚开着的坑（按缺口大小排）：MCU 体内机制还缺 **ADC 逐次逼近、Flash 擦写与等待周期、低功耗进入/唤醒、HardFault 栈溢出现场、NVIC 尾链、位带别名映射、PLL 模拟环路**；协议侧 CAN 帧与仲裁、Modbus RTU 的 T3.5、1-Wire、USB 枚举、I2S、MQTT/TLS **连章节都还没有**——图和文得一起补。
+
 ## 2026-10-06 · 动画可执行化 + B2/C1 成稿
 
 - **29 张教学动画全部过两道机器闸门**：`npm run anim:lint`（SMIL 槽位、色板映射、`dur` 整除、指示点越界）零告警；`scripts/anim-audit.html` 逐阶段量"出界 / 压字"零命中。规范落在 `.trellis/spec/docs-site/animation.md`。
