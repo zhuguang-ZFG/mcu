@@ -34,7 +34,7 @@ title: P2 GPIO 与引脚矩阵：引脚自由换岗的秘密
 
 ## 动画：信号怎么走到焊盘
 
-外设信号出发 → 到交换矩阵 → 选一个有效焊盘 → 焊盘属性（方向/上下拉）生效。盯住"被占用的脚"那一栏：PSRAM 占用的 IO35~37 直接打叉，路由请求被硬件拒绝。
+外设信号出发 → 到交换矩阵 → 选一个有效焊盘 → 焊盘属性（方向/上下拉）生效。盯住"被占用的脚"那一栏：PSRAM 占用的 IO35~37 直接打叉——驱动不拦你（它只查焊盘合法性），失败发生在物理层：波形出不来，还会干扰 PSRAM 总线。
 
 ![GPIO 矩阵路由动画](/anim/gpio-matrix-routing.svg)
 
@@ -90,7 +90,7 @@ GPIO0（BOOT）、GPIO45、GPIO46 等在上电/复位时被采样，决定启动
 
 - `ledc_channel_config(.gpio_num = PAD_A)`：LEDC 通道绑到 GPIO10；
 - `ledc_set_pin(PAD_B, ...)`：三秒后同一信号换到 GPIO11——**Matrix 重新路由，程序其余部分不动**；
-- `ledc_set_pin(GPIO_NUM_35, ...)`：往 PSRAM 占用的脚上路由，看驱动返回什么——"任意引脚"的边界当场可见；
+- `ledc_set_pin(GPIO_NUM_35, ...)`：往 PSRAM 占用的脚上路由——驱动返回 0（ledc.c:827 只查 `GPIO_IS_VALID_OUTPUT_GPIO`），但物理上失败；"任意引脚"的边界当场可见；
 - `SOC_LEDC_CHANNEL_NUM` / `SOC_LEDC_TIMER_BIT_WIDTH` 打印：芯片能力以 `soc_caps.h` 为准，不是凭印象。
 
 ## 记忆锚点

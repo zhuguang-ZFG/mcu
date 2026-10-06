@@ -8,7 +8,9 @@
  * 本工程做两件事：
  *   1. 把同一个 LEDC PWM 信号先路由到 GPIO10，再改路由到 GPIO11——
  *      程序不动、波形换脚，这就是 Matrix 的现场演示；
- *   2. 尝试把信号路由到被占用的引脚，看驱动怎么拒绝/报错——
+ *   2. 把信号路由到被 PSRAM 占用的脚：驱动照样返回 ESP_OK——它只查
+ *      GPIO_IS_VALID_OUTPUT_GPIO（ledc.c:827），对模组内部接线一无所知；
+ *      约束是物理的（没波形/干扰 PSRAM 总线），不是软件的。
  *      "任意引脚"的真实含义是"任意**有效且未被占用**的引脚"。
  *
  * 板卡：立创·实战派 ESP32-S3（ESP32-S3-WROOM-1-N16R8）。
@@ -70,7 +72,8 @@ void app_main(void)
     ESP_LOGI(TAG, "same PWM re-routed to GPIO%d", PAD_B);
     vTaskDelay(pdMS_TO_TICKS(3000));
 
-    /* 约束演示：把信号往被 PSRAM 占用的脚上路由 */
+    /* 约束演示：把信号往被 PSRAM 占用的脚上路由。预期 err=0——
+       ledc_set_pin 只查焊盘合法性，真正的失败发生在物理层。 */
     esp_err_t err = ledc_set_pin(GPIO_NUM_35, LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
     ESP_LOGW(TAG, "route to GPIO35 (PSRAM-occupied) -> err=%d", (int)err);
 

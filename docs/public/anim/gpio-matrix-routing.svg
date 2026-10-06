@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" font-family="'Segoe UI','Microsoft YaHei',sans-serif">
   <title>GPIO 交换矩阵：外设信号自由换岗</title>
-  <desc>四阶段动画：外设信号经 GPIO Matrix 路由到有效焊盘；同一 LEDC 信号先在 GPIO10、再换到 GPIO11；IO35~37 被 PSRAM 占用，路由请求被拒绝。"任意引脚"= 有效焊盘 + 没被占用 + 板卡接出来。</desc>
+  <desc>四阶段动画：外设信号经 GPIO Matrix 路由到有效焊盘；同一 LEDC 信号先在 GPIO10、再换到 GPIO11；IO35~37 被 PSRAM 占用——驱动不拦、物理上失败（没波形/干扰 PSRAM 总线）。"任意引脚"= 有效焊盘 + 没被占用 + 板卡接出来。</desc>
   <rect width="720" height="440" fill="#f6f8fa"/>
   <text x="24" y="30" font-size="17" font-weight="bold" fill="#3451b2">GPIO Matrix：外设信号先到总机，再转任意工位</text>
   <text x="24" y="50" font-size="12" fill="#666">外设信号 → GPIO Matrix → 有效焊盘 · IO_MUX 是专线（高速）· "任意"有前提</text>
@@ -56,7 +56,7 @@
     </marker>
   </defs>
 
-  <!-- 拒绝演示（阶段③点亮） -->
+  <!-- 占用演示（阶段③点亮）：驱动接受、物理失败 -->
   <g opacity="0">
     <animate attributeName="opacity" calcMode="discrete" values="0;0;1;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
     <path d="M422,180 L514,203" stroke="#dc2626" stroke-width="3" stroke-dasharray="6 4" fill="none" marker-end="url(#arrX)"/>
@@ -70,7 +70,7 @@
     <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;1;0;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
       <text x="36" y="320">② 换岗：ledc_set_pin 重新路由到 GPIO11——同一个信号，换了个工位</text></g>
     <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;1;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
-      <text x="36" y="320">③ 往 IO35（PSRAM 占用）上路由：硬件拒绝——"任意"的前提是没被占用</text></g>
+      <text x="36" y="320">③ 往 IO35（PSRAM 占用）上路由：驱动返回 0，但波形出不来——约束在物理层</text></g>
     <g opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
       <text x="36" y="320">④ 对照 STM32：AF 复用表是"专线可选工位有限"，Matrix 是"总机可转任意工位"</text></g>
   </g>

@@ -106,10 +106,11 @@ uart_config_t cfg = {
 不定长帧的接收套路（与 S7 的 IDLE 判帧是同一招）：
 
 ```c
-case UART_DATA:
+case UART_DATA: {
     int len = uart_read_bytes(UART_PORT, buf, evt.size, 0);
     // evt.timeout_flag==1 说明这次 DATA 是"超时收尾"——帧尾到了
     break;
+}
 ```
 
 `timeout_flag` 就是 IDF 版的"IDLE 标志"：RX 线空闲超过阈值，驱动认为这一帧结束了。**字节在 ring buffer 里，帧边界在事件的 timeout_flag 里**——两条路合起来就是完整答案。

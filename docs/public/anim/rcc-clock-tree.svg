@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 470" font-family="'Segoe UI','Microsoft YaHei',sans-serif">
   <title>RCC 时钟树：从 8MHz 晶振到 168MHz 主频</title>
-  <desc>四阶段动画：复位先跑 HSI 16MHz；HSE 8MHz 起振；PLL 经 M=8、N=336、P=2 锁定 168MHz（Q=7 出 48MHz 给 USB，VCO 输入限 1~2MHz）；MCO1 输出 SYSCLK/4=42MHz 实测对账。APB 分频不为 1 时定时器时钟乘 2。</desc>
+  <desc>四阶段动画：复位先跑 HSI 16MHz；HSE 8MHz 起振；PLL 经 M=8、N=336、P=2 锁定 168MHz（Q=7 出 48MHz 给 USB，VCO 输入限 1~2MHz）；MCO1 输出 SYSCLK/4=42MHz（理论值，待上板实测对账）。APB 分频不为 1 时定时器时钟乘 2。</desc>
   <rect width="720" height="470" fill="#f6f8fa"/>
   <text x="24" y="30" font-size="17" font-weight="bold" fill="#3451b2">RCC 时钟树：8MHz 晶振怎么变成 168MHz 主频</text>
   <text x="24" y="50" font-size="12" fill="#666">HSE 8MHz → PLL（M=8 / N=336 / P=2 / Q=7）→ SYSCLK 168MHz → AHB/1、APB1/4、APB2/2 → 外设</text>
@@ -50,7 +50,7 @@
   <rect x="616" y="84" width="94" height="44" fill="#ffffff" stroke="#d97706" stroke-width="2" rx="8"/>
   <text x="663" y="103" font-size="12" font-weight="bold" fill="#d97706" text-anchor="middle">MCO1 = /4</text>
   <text x="663" y="121" font-size="12" fill="#666" text-anchor="middle">引到 PA8</text>
-  <text x="663" y="146" font-size="12" font-weight="bold" fill="#d97706" text-anchor="middle">实测 42MHz</text>
+  <text x="663" y="146" font-size="12" font-weight="bold" fill="#d97706" text-anchor="middle">理论 42MHz</text>
 
   <!-- ===== 总线分频 ===== -->
   <rect x="520" y="230" width="70" height="36" fill="#ffffff" stroke="#3451b2" rx="6"/>
@@ -105,7 +105,7 @@
     <text x="340" y="186" font-size="12" font-weight="bold" fill="#3451b2" text-anchor="middle">PLL 锁定（PLLRDY）：8÷8×336÷2 = 168MHz</text>
   </g>
 
-  <!-- ===== 阶段 ④：MCO1 实测对账 ===== -->
+  <!-- ===== 阶段 ④：MCO1 理论对账（待上板实测） ===== -->
   <g opacity="0">
     <animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
     <rect x="616" y="84" width="94" height="44" fill="none" stroke="#3eaf7c" stroke-width="3" rx="8"/>

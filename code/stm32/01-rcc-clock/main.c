@@ -193,8 +193,10 @@ static uint32_t flash_latency_ws_3v3(uint32_t sysclk_hz)
 static void flash_config(uint32_t sysclk_hz, uint32_t need_scale1)
 {
     if (need_scale1 && sysclk_hz > 144000000UL) {
-        PWR_CR |= PWR_CR_VOS;        /* Scale 1：解锁 168MHz 的必要条件 */
-        while (((PWR_CR >> 14) & 1UL) == 0UL) { /* 等 VOS 生效 */ }
+        PWR_CR |= PWR_CR_VOS;        /* Scale 1：解锁 168MHz 的必要条件。
+                                          F405/407 没有 VOSRDY 就绪位（那是 F42x/43x 的）——
+                                          VOS 是普通 RW 配置位，写完即生效，没有可等待的回执；
+                                          轮询它只会读回刚写入的 1，纯属误导。 */
     }
 
     FLASH_ACR &= ~FLASH_ACR_LATENCY;
