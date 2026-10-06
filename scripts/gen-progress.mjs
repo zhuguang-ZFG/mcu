@@ -102,3 +102,58 @@ if (warnings.length) {
   console.warn(`\n⚠️ ${warnings.length} 条元数据告警：`)
   warnings.forEach((w) => console.warn('  - ' + w))
 }
+
+/* ---------------- README 进度块：与首页同源，杜绝"数字三处各说各话"复发 ---------------- */
+// README 里的成稿数/动画数/工程数与"现在能读到哪些章"必须由同一份扫描结果渲染。
+// 上一版 README 手写数字，结果写成 21/66 与 11 个工程，脚本算出来是 23/66 与 13 个。
+const MARK_START = '<!-- readme:progress:start -->'
+const MARK_END = '<!-- readme:progress:end -->'
+
+const shortTitle = (t) => t.split(/[：:]/)[0].trim()
+
+function renderProgressBlock(trk, tot, warnCount) {
+  const rows = trk.map((t) => {
+    const landing = t.landing ? t.landing.replace(/^\//, 'docs/').replace(/\.html$/, '.md') : `docs/${t.dir}/index.md`
+    const doneList = t.chapters.filter((c) => c.status === 'done')
+    const links = doneList.length
+      ? doneList.map((c) => `[${shortTitle(c.title)}](docs${c.route.replace(/\.html$/, '.md')})`).join(' · ')
+      : '_骨架页已建档，正文待补_'
+    return `| [${t.name}](${landing}) | ${t.done} / ${t.total} | ${links} |`
+  })
+  const hours = (tot.minutes / 60).toFixed(1)
+  return [
+    '| 板块 | 成稿 / 规划 | 现在就能点进去读 |',
+    '|---|---|---|',
+    ...rows,
+    '',
+    `- 成稿章节 **${tot.chaptersDone} / ${tot.chapters}**，通读约 **${tot.minutes} 分钟**（≈ ${hours} 小时）；`,
+    `- 实物实验 **${tot.experimentsDone} / ${tot.experiments}**（E01–E08 全部成稿）；`,
+    `- 机制动画 **${tot.animations}** 张，在 \`docs/public/anim/\`，动效与版式规范见 \`.trellis/spec/docs-site/animation.md\`；`,
+    `- 可构建示例工程 **${tot.projects}** 个，在 \`code/\`，与章节同构；`,
+    `- 章节 frontmatter 元数据缺项 **${warnCount}** 条告警。`,
+  ].join('\n')
+}
+
+const readmePath = path.join(ROOT, 'README.md')
+const start = process.argv.indexOf('--readme')
+if (start > -1) {
+  const src = fs.readFileSync(readmePath, 'utf8')
+  const i = src.indexOf(MARK_START)
+  const j = src.indexOf(MARK_END)
+  if (i < 0 || j < 0) {
+    console.error(`README.md 缺少 ${MARK_START} … ${MARK_END} 标记块`)
+    process.exit(1)
+  }
+  const body = renderProgressBlock(tracks, totals, warnings.length)
+  const next = src.slice(0, i + MARK_START.length) + '\n' + body + '\n' + src.slice(j)
+  if (next !== src) {
+    if (process.argv.includes('--check')) {
+      console.error('README.md 的进度块与扫描结果不一致，跑 `npm run readme:sync` 再提交。')
+      process.exit(1)
+    }
+    fs.writeFileSync(readmePath, next, 'utf8')
+    console.log('README.md 进度块已同步')
+  } else {
+    console.log('README.md 进度块已是最新')
+  }
+}

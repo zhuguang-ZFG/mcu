@@ -1,0 +1,39 @@
+name: 质量闸门（动画 / 数字 / 链接）
+
+# deploy.yml 只在 push 到 main 时跑，PR 上没有任何检查；
+# 死链、动画规范、README 数字漂移这三件事必须在 PR 阶段就拦住。
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: 站内死链（与 docs:build 同一道门禁）
+        run: npm run docs:build
+
+      - name: 动画规范：SMIL 槽位 / 色板 / dur 整除 / 指示点出界
+        run: npm run anim:lint
+
+      - name: README 进度块与扫描结果一致
+        run: npm run readme:check
+
+      - name: 仓库根 README / CONTRIBUTING 相对链接可达
+        run: npm run links:check

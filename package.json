@@ -9,7 +9,10 @@
     "docs:build": "npm run docs:gen && vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "anim:lint": "node scripts/anim-lint.mjs",
-    "docs:gen": "node scripts/gen-progress.mjs"
+    "docs:gen": "node scripts/gen-progress.mjs",
+    "readme:sync": "node scripts/gen-progress.mjs --readme",
+    "readme:check": "node scripts/gen-progress.mjs --readme --check",
+    "links:check": "node scripts/links-check.mjs"
   },
   "devDependencies": {
     "vitepress": "^1.6.3"
