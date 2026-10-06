@@ -2,7 +2,12 @@
 title: 实验 E03 示波器看 PWM
 status: done
 difficulty: 2
-minutes: 40
+minutes: 45
+code_status: ready
+hardware_status: pending
+code_note: F407 PWM 与 S3 LEDC 两个工程均有独立说明。
+projects: ["stm32-02-tim-pwm", "esp32-03-ledc-fade"]
+
 ---
 
 # 实验 E03 示波器看 PWM：占空比与呼吸灯
@@ -11,13 +16,13 @@ minutes: 40
 
 ## 实验信息卡
 
+<LabStatus />
+
 | 项 | 内容 |
 |---|---|
 | 编号 | E03 |
 | 对应章节 | [S6 TIM](../stm32/06-tim.md)、[P7 LEDC](../esp32/07-timer-ledc.md) |
 | 目标板 | 霸天虎 或 立创 S3（任选一，双做更佳） |
-| 时长 | 约 40 分钟 |
-| 难度 | ★★ |
 
 ## 实验目标
 
@@ -29,7 +34,7 @@ minutes: 40
 | 装备 | 数量 | 备注 |
 |---|---|---|
 | 示波器（或逻辑分析仪） | 1 | 示波器可看模拟特性（RC 滤波） |
-| 霸天虎（S6 PWM 固件）或 S3（P7 LEDC 固件） | 1 | 1kHz/50% 起步 |
+| 霸天虎（S6 PWM 固件）或 S3（P7 LEDC 固件） | 1 | F407 1kHz 呼吸；S3 5kHz fade |
 | 杜邦线 | 2 | 通道+地 |
 
 ## 原理一句话
@@ -42,15 +47,15 @@ PWM=周期内高电平时间占比；占空比=CCR/(ARR+1)（STM32）或 duty/2^
 
 ## 步骤
 
-1. 烧录 1kHz/50% 固件，示波器自动测量：记录频率与占空比；
-2. 改 CCR 为 1/4 满值，重测：占空比应变为 25%；
-3. 改 ARR 减半，重测：频率应翻倍；
-4. （S3）启用 LEDC 硬件 fade，记录占空比从 0→100% 的渐变时间与曲线形状；
+1. F407：进入 `code/stm32/02-tim-pwm`，`make` 后 `make flash`；默认 PA6 输出 1kHz，占空比随主循环变化。S3：进入 `code/esp32/03-ledc-fade`，执行 `idf.py set-target esp32s3`、`idf.py build`、`idf.py -p COMx flash monitor`；默认 GPIO10 输出 5kHz fade。先记录各自频率及占空比变化；
+2. （F407 固定值练习）将主循环内 `ccr` 的计算式改成 `(PWM_PERIOD_TICKS + 1U) / 4U`，仍调用 `tim3_set_duty(ccr)`，重新构建烧录，对比 25% 占空比；
+3. （F407）将 `PWM_PERIOD_TICKS` 从 999 改成 499，保持计数时钟不变，重新构建后频率应翻倍；
+4. （S3）默认已启用硬件 fade，记录 0→1023/1024 占空比的渐变时间（目标约 2 秒），最大值不是精确 100%；
 5. （进阶）输出经 RC 低通（10kΩ+100nF），示波器看"模拟电压≈VCC×占空比"——DAC 的穷人版现身。
 
 ## 预期现象
 
-- 三次测量与手算误差 <2%；
+- 比较测量值与手算结果，记录时钟源与仪器误差；不预填未测得的误差范围；
 - fade 曲线呈阶梯式渐变（硬件渐变的最小步进可辨）。
 
 ## 实测记录

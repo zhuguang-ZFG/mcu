@@ -30,3 +30,7 @@ make flash                             # OpenOCD+ST-Link 烧录（有板时）
 
 - 无板环境：至少 `arm-none-eabi-gcc` 编译链接通过 + `nm/objdump` 抽查向量表落位 0x08000000。
 - 固件未上板验证的，在工程 README 与对应章节页标注"待上板实测"。
+
+## 构建回归
+
+全工程执行 `npm run firmware:check`：检查生成 bin 的初始 SP、Thumb 复位向量与 ELF 符号一致；不能只检查链接成功。FreeRTOS 参数场景产物必须隔离在 `build/scene-N/`，切换参数不依赖手动 clean。详细合同见 [quality-contract](../docs-site/quality-contract.md)。

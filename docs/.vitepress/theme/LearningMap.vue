@@ -21,7 +21,7 @@ const landing = (track) => withBase(track.landing || `/${track.dir}/index.html`)
       </div>
       <div class="mcu-stat">
         <b>{{ totals.experimentsDone }}<i>/{{ totals.experiments }}</i></b>
-        <span>实物实验</span>
+        <span>实验文稿（非实测数）</span>
       </div>
       <div class="mcu-stat">
         <b>{{ totals.animations }}</b>
@@ -29,7 +29,7 @@ const landing = (track) => withBase(track.landing || `/${track.dir}/index.html`)
       </div>
       <div class="mcu-stat">
         <b>{{ totals.projects }}</b>
-        <span>可构建工程</span>
+        <span>示例工程</span>
       </div>
       <div class="mcu-stat">
         <b>≈{{ readTime }}<i> 小时</i></b>

@@ -1,22 +1,41 @@
-name: 质量闸门（动画 / 数字 / 链接）
-
-# deploy.yml 只在 push 到 main 时跑，PR 上没有任何检查；
-# 死链、动画规范、README 数字漂移这三件事必须在 PR 阶段就拦住。
+name: 质量闸门
 on:
   pull_request:
-  push:
-    branches: [main]
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
 
-concurrency:
-  group: quality-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   checks:
+    runs-on: ubuntu-latest
+    outputs:
+      esp-matrix: ${{ steps.catalog.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run quality
+      - name: 浏览器安装与交互回归
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:browser
+      - id: catalog
+        name: 从已校验工程清单生成 S3 矩阵
+        run: echo "matrix=$(node scripts/project-catalog.mjs --matrix)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: docs-site
+          path: docs/.vitepress/dist
+          if-no-files-found: error
+
+  arm-host:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -25,15 +44,33 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: 安装编译器
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
+          arm-none-eabi-gcc --version
+      - name: 固定 FreeRTOS 内核
+        run: git clone --depth 1 --branch V11.1.0 https://github.com/FreeRTOS/FreeRTOS-Kernel.git .trellis/ref/freertos-v11/kernel
+      - name: 全工程编译与场景切换回归
+        run: npm run firmware:check
 
-      - name: 站内死链（与 docs:build 同一道门禁）
-        run: npm run docs:build
-
-      - name: 动画规范：SMIL 槽位 / 色板 / dur 整除 / 指示点出界
-        run: npm run anim:lint
-
-      - name: README 进度块与扫描结果一致
-        run: npm run readme:check
-
-      - name: 仓库根 README / CONTRIBUTING 相对链接可达
-        run: npm run links:check
+  esp32:
+    needs: checks
+    runs-on: ubuntu-latest
+    container: espressif/idf:v5.5.2
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.checks.outputs.esp-matrix) }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: 干净构建 ESP32-S3
+        shell: bash
+        env:
+          PROJECT: ${{ matrix.path }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          . /opt/esp/idf/export.sh
+          cd "$PROJECT"
+          idf.py -B build/ci -D SDKCONFIG="$PWD/build/ci/sdkconfig" set-target "$TARGET"
+          idf.py -B build/ci -D SDKCONFIG="$PWD/build/ci/sdkconfig" build size
+          python -c 'import json; assert json.load(open("build/ci/project_description.json"))["target"] == "esp32s3"'

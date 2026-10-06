@@ -3,6 +3,11 @@ title: 实验 E01 点亮霸天虎的 RGB 红灯
 status: done
 difficulty: 1
 minutes: 30
+code_status: ready
+hardware_status: pending
+code_note: PF6 红灯工程，见下方构建步骤。
+projects: ["stm32-00-blink"]
+
 ---
 
 # 实验 E01 点亮霸天虎的 RGB 红灯（寄存器版）
@@ -11,13 +16,13 @@ minutes: 30
 
 ## 实验信息卡
 
+<LabStatus />
+
 | 项 | 内容 |
 |---|---|
 | 编号 | E01 |
 | 对应章节 | [S0 环境搭建](../stm32/00-env.md)、[S3 GPIO](../stm32/03-gpio.md) |
 | 目标板 | 野火 F407 霸天虎 |
-| 时长 | 约 30 分钟（含环境搭建则 1.5 小时） |
-| 难度 | ★☆☆☆☆ |
 
 ## 实验目标
 

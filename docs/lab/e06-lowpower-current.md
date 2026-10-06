@@ -1,8 +1,13 @@
 ---
 title: 实验 E06 低功耗电流实测
-status: done
-difficulty: 2
-minutes: 45
+status: building
+difficulty: 3
+minutes: 60
+code_status: planned
+hardware_status: pending
+code_note: 双板分档低功耗固件尚未提供；以下是测量方案。
+projects: []
+
 ---
 
 # 实验 E06 低功耗电流实测：给电池寿命算账
@@ -11,13 +16,13 @@ minutes: 45
 
 ## 实验信息卡
 
+<LabStatus />
+
 | 项 | 内容 |
 |---|---|
 | 编号 | E06 |
 | 对应章节 | [S14](../stm32/14-pwr.md)、[P11](../esp32/11-lowpower.md) |
 | 目标板 | 霸天虎 + 立创 S3（双板对比） |
-| 时长 | 约 60 分钟 |
-| 难度 | ★★★ |
 
 ## 实验目标
 
@@ -51,8 +56,8 @@ minutes: 45
 
 ## 预期现象
 
-- 霸天虎 Stop 档进入 µA 级，Standby 更低；
-- S3 Deep sleep 进入 µA 级，与 Wi-Fi 活跃期差 3~4 个数量级；
+- 比较各档电流；芯片手册的休眠电流不等于整块开发板输入电流，LDO、屏幕、codec 等负载必须计入；
+- 实际电流和数量级差异待测量，不预填 µA 结论；
 - 拔掉仿真器后睡眠电流明显下降（亲眼抓到一个偷电贼）。
 
 ## 实测记录

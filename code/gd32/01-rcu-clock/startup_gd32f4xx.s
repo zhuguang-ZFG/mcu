@@ -33,7 +33,16 @@
     .endr
 
     .section .text.Reset_Handler,"ax",%progbits
+    .type Reset_Handler, %function
+    .thumb_func
 Reset_Handler:
+    /* Cortex-M4 hard-float ABI：先开放 CP10/CP11，避免首条浮点指令 NOCP。 */
+    ldr r0, =0xE000ED88
+    ldr r1, [r0]
+    orr r1, r1, #(0xf << 20)
+    str r1, [r0]
+    dsb
+    isb
     ldr r0, =__data_load__
     ldr r1, =__data_start__
     ldr r2, =__data_end__
@@ -61,6 +70,9 @@ enter_main:
     b .
 
     .section .text.Default_Handler,"ax",%progbits
+    .weak Default_IRQHandler, NMI_Handler, HardFault_Handler, MemManage_Handler
+    .weak BusFault_Handler, UsageFault_Handler, SVC_Handler, DebugMon_Handler
+    .weak PendSV_Handler, SysTick_Handler
     .thumb_func
 Default_IRQHandler:
     b .

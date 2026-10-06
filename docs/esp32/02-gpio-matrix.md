@@ -93,7 +93,7 @@ GPIO0（BOOT）、GPIO45、GPIO46 等在上电/复位时被采样，决定启动
 
 - `ledc_channel_config(.gpio_num = PAD_A)`：LEDC 通道绑到 GPIO10；
 - `ledc_set_pin(PAD_B, ...)`：三秒后同一信号换到 GPIO11——**Matrix 重新路由，程序其余部分不动**；
-- `ledc_set_pin(GPIO_NUM_35, ...)`：往 PSRAM 占用的脚上路由——驱动返回 0（ledc.c:827 只查 `GPIO_IS_VALID_OUTPUT_GPIO`），但物理上失败；"任意引脚"的边界当场可见；
+- `gpio_reset_pin(旧引脚)`：先断开旧输出再路由新引脚，否则一个信号可同时留在两个输出脚；GPIO35/36/37 被模组占用，示例不向这些脚发送测试信号；
 - `SOC_LEDC_CHANNEL_NUM` / `SOC_LEDC_TIMER_BIT_WIDTH` 打印：芯片能力以 `soc_caps.h` 为准，不是凭印象。
 
 ## 附录：工程完整源码
@@ -109,7 +109,7 @@ GPIO0（BOOT）、GPIO45、GPIO46 等在上电/复位时被采样，决定启动
 ## 实物实验
 
 - quick win 的 PWM 换岗：示波器/逻辑分析仪先夹 GPIO10，三秒后波形消失、出现在 GPIO11；
-- 翻车实验：把信号路由到 IO35（PSRAM 占用），记录驱动的返回值与现象；
+- 资料核对：在模组资料中找出 GPIO35/36/37 的 PSRAM 用途，不通过向占用脚输出信号验证；
 - "一信号多听"（选做）：UART TX 同时路由给 UART RX 与另一外设输入，两路分析仪通道对照。
 
 ## 常见坑

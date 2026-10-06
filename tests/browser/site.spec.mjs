@@ -1,0 +1,42 @@
+import { test, expect } from '@playwright/test'
+
+test('search loads its index on demand and returns tutorial results', async ({ page }) => {
+  const requests=[]
+  page.on('request', r=>requests.push(r.url()))
+  await page.goto('./', { waitUntil: 'networkidle' })
+  expect(requests.filter(u=>u.includes('@localSearchIndex'))).toHaveLength(0)
+  await page.locator('.VPNavBarSearch button').click()
+  await page.locator('#localsearch-input').fill('I2C')
+  await expect(page.locator('#localsearch-list [role=option]').first()).toBeVisible({timeout:15000})
+  expect(requests.some(u=>u.includes('@localSearchIndex'))).toBeTruthy()
+  await page.locator('#localsearch-list a.result').first().click()
+  await expect(page.locator('.vp-doc h1')).toBeVisible()
+})
+test('animation controls and reduced motion work in both themes', async ({ page }) => {
+  const errors=[]
+  page.on('pageerror', e=>errors.push(e.message))
+  await page.goto('stm32/02-rcc-clock.html')
+  const figure=page.locator('.anim-figure').first()
+  const button=figure.locator('button')
+  await expect(button).toHaveText('暂停')
+  await button.click()
+  expect(await figure.evaluate(el=>el.querySelector('svg').animationsPaused())).toBe(true)
+  await button.click()
+  expect(await figure.evaluate(el=>el.querySelector('svg').animationsPaused())).toBe(false)
+  await page.emulateMedia({ reducedMotion:'reduce',colorScheme:'dark' })
+  await page.reload()
+  await expect(button).toHaveText('播放')
+  await expect(page.locator('html')).toHaveClass(/dark/)
+  expect(await figure.evaluate(el=>el.querySelector('svg').animationsPaused())).toBe(true)
+  expect(errors).toEqual([])
+})
+test('lab states and metadata are visible on mobile', async ({ page }) => {
+  await page.setViewportSize({width:390,height:844})
+  await page.goto('lab/')
+  await expect(page.locator('.vp-doc')).toContainText('建设中')
+  await page.goto('lab/e07-qmi8658.html')
+  await expect(page.locator('.mcu-lab-status')).toContainText('60 分钟')
+  await expect(page.locator('.mcu-lab-status')).toContainText('工程已提供')
+  await expect(page.locator('.mcu-lab-status')).toContainText('待上板实测')
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth <= window.innerWidth+1)).toBe(true)
+})

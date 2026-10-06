@@ -3,6 +3,11 @@ title: 实验 E08 S3 音频链路放音
 status: done
 difficulty: 3
 minutes: 60
+code_status: ready
+hardware_status: pending
+code_note: 独立 IDF 音频工程，含 codec 与扩展器功放控制。
+projects: ["esp32-05-audio-play"]
+
 ---
 
 # 实验 E08 让 S3 开口：从正弦"滴"到一段音乐
@@ -11,13 +16,13 @@ minutes: 60
 
 ## 实验信息卡
 
+<LabStatus />
+
 | 项 | 内容 |
 |---|---|
 | 编号 | E08 |
 | 对应章节 | [P12 音频链路](../esp32/12-audio-path.md) |
 | 目标板 | 立创实战派 S3 |
-| 时长 | 约 60 分钟 |
-| 难度 | ★★★★ |
 
 ## 实验目标
 
@@ -38,16 +43,17 @@ I2S 把内存里的 PCM 样本按"位时钟×声道帧"的节奏推给 codec，c
 
 ## 接线
 
-板载全集成，零接线；I2S/I2C 引脚与功放使能脚**以立创 wiki 原理图为准**（代码集中定义并注出处）。
+板载全集成，零接线；引脚与 PCA9557 功放控制见下面的已核对接线说明。
 
 ## 步骤
 
-1. I2C 初始化 ES8311：使能、设 16bit/左对齐或 I2S 格式、音量适中（寄存器序列以 ES8311 datasheet 为准）；
-2. 拉高功放使能脚（PA_EN，以原理图为准）；
-3. I2S 标准 TX 配置：16kHz/16bit/单声道，MCLK=256×fs；
-4. 生成 1 秒 1kHz 正弦表（const 数组）循环写 I2S 播放——第一声"滴"；
-5. 换旋律：把"do re mi..."8 个音符频率表按时长拼接播放；
-6. 进阶：逐步缩小 I2S DMA 缓冲，记录开始出现断音/爆音的临界值。
+1. 进入 `code/esp32/05-audio-play`，在 IDF 5.5.2 终端运行 `idf.py set-target esp32s3`、`idf.py build`、`idf.py -p COMx flash monitor`，COMx 换为实际串口。首次构建自动下载固定版本 esp_codec_dev 1.3.4。
+2. 工程用 GPIO1/2 的 I2C 配置 ES8311，PCA9557（0x19）的 bit1 控制功放；不是直接拉高 ESP32 的 GPIO1。
+3. I2S 使用 Philips 格式：16kHz、16bit、两个槽位各放同一份单声道样本；MCLK=4.096MHz，BCLK=512kHz。MCLK/BCLK/WS/DOUT 分别为 GPIO38/14/13/45。
+4. 程序生成 1kHz 正弦播放 1 秒，再播放 8 个音符；串口显示音符进度，结束自动关闭功放。首尾有淡入淡出，无需下载音乐文件。
+5. 完成基本验证后再研究 DMA 缓冲与断音；本示例不宣称已测出缓冲临界值。
+
+板卡控制路径依据：[立创官方音频教程](https://wiki.lckfb.com/zh-hans/szpi-esp32s3/beginner/audio-output-es8311.html)。
 
 ## 预期现象
 
@@ -78,3 +84,9 @@ I2S 把内存里的 PCM 样本按"位时钟×声道帧"的节奏推给 codec，c
 
 - 音频链路全通——立创 S3 的"灵魂功能"归你指挥；
 - 集 P 篇大成的一战：你离自己的语音终端只差应用层创意。
+
+## 附录：工程完整源码
+
+构建、接线与排查见[工程 README](https://github.com/zhuguang-ZFG/mcu/tree/main/code/esp32/05-audio-play)。
+
+<<< ../../code/esp32/05-audio-play/main/main.c

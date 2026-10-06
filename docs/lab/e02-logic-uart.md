@@ -1,8 +1,13 @@
 ---
 title: 实验 E02 逻辑分析仪抓 UART 帧
 status: done
-difficulty: 1
+difficulty: 2
 minutes: 40
+code_status: ready
+hardware_status: pending
+code_note: UART/DMA 工程；抓包需另备逻辑分析仪。
+projects: ["stm32-03-uart-dma"]
+
 ---
 
 # 实验 E02 逻辑分析仪抓 UART 帧
@@ -11,13 +16,13 @@ minutes: 40
 
 ## 实验信息卡
 
+<LabStatus />
+
 | 项 | 内容 |
 |---|---|
 | 编号 | E02 |
 | 对应章节 | [S7 USART](../stm32/07-usart.md) |
 | 目标板 | 霸天虎（TTL 串口经 USB 转 TTL 或直接测 PA9） |
-| 时长 | 约 40 分钟 |
-| 难度 | ★★ |
 
 ## 实验目标
 
@@ -39,13 +44,14 @@ UART 是异步协议：没有时钟线，收发双方靠约定的波特率切时
 ## 接线
 
 - 分析仪 CH0 → 霸天虎 PA9（USART1_TX），GND ↔ GND；
+- USB-TTL TX → PA10、RX → PA9、GND 共地，用于向固件发送待回显的字符；
 - 纪律：共地必须有，只接两根线即可，别接 3.3V。
 
 ## 步骤
 
-1. 安装 PulseView，选 24MHz 采样率（≥波特率 16 倍的原则，115200 用 1MHz 也够）；
+1. 在仓库根执行 `cd code/stm32/03-uart-dma`、`make`、`make flash`（ST-Link）；安装 PulseView，选 24MHz 采样率，按 ≥16 倍波特率留余量时 115200 至少选 2MHz；
 2. 触发方式设 CH0 下降沿（起始位就是下降沿）；
-3. 开始采集 → 复位板子 → 抓取启动打印；
+3. 开始采集；USB-TTL 串口助手设为 115200 8N1，发送单个 `A`，固件在 PA9 回显。复位时也会输出 `uart-dma ready`，但它不含大写 `A`；
 4. 添加 UART 解码器：波特率 115200、8 数据位、无校验、1 停止位；
 5. 找到字母 'A' 的帧，放大逐位数电平，对照 ASCII 0x41 = 0100 0001（注意线上是**低位先行**）。
 

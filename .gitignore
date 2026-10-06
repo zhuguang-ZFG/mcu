@@ -12,6 +12,7 @@ code/**/build/
 code/esp32/**/sdkconfig.old
 code/esp32/**/managed_components/
 code/esp32/**/dependencies.lock
+!code/esp32/05-audio-play/dependencies.lock
 
 # 由 npm run docs:gen 生成的全站进度数据（构建前置自动生成，不入库）
 docs/.vitepress/data/
@@ -21,3 +22,8 @@ code/c/03-volatile/opt_probe.O*.s
 code/c/03-volatile/opt_probe.m4.O*.s
 code/c/03-volatile/blink-variants/
 code/c/03-volatile/opt_probe.exe
+code/c/03-volatile/opt_probe
+
+# Browser regression artifacts
+test-results/
+playwright-report/

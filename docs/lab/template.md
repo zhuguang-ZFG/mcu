@@ -14,17 +14,32 @@ title: 实验模板
 - 故障排查 ≥3 条，按"出现频率"排序；
 - 思考题 2–4 个，答案藏在对应章节里。
 
+新实验 frontmatter 必须包含以下字段（标题、时长、难度填写真实值）：
+
+```yaml
+title: 实验 E 编号与标题
+status: building
+difficulty: 2
+minutes: 60
+code_status: planned
+hardware_status: pending
+code_note: 说明当前配套工程和复现条件
+projects: []
+```
+
+`status` 只表示文稿状态；提供完整工程后将 `code_status` 改成 `ready` 并在 `projects` 填 `code/projects.json` 中的 ID。`hardware_status: verified` 必须附 `evidence`（相对 docs/ 的实测记录文件路径）。时长和难度由 `<LabStatus />` 展示，不在正文重复手写。
+
 ---
 
 ## 实验信息卡
+
+复制新实验时在这里插入 `<LabStatus />`（模板页本身不实例化）。
 
 | 项 | 内容 |
 |---|---|
 | 编号 | E xx |
 | 对应章节 | [章节链接](../stm32/index.md) |
 | 目标板 | 霸天虎 / 立创 S3（或两者） |
-| 时长 | 约 xx 分钟 |
-| 难度 | ★☆☆☆☆ |
 
 ## 实验目标
 

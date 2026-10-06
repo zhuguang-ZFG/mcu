@@ -70,3 +70,7 @@ I2C 先通：读 QMI8658 WHO_AM_I（寄存器 0x00），串口打印出期望的
 <div class="achievement">
 ✅ 下一站：<a href="07-timer-ledc.html">P7 定时器与 LEDC</a>——GPTimer 和 LEDC 的分工，呼吸灯与背光调光。
 </div>
+
+## 可独立运行的最小实验
+
+[QMI8658 六轴读取](../lab/e07-qmi8658.md) 已提供独立工程、配置说明和完整源码。本章仍在建设中，最小实验不依赖本章其余内容；板上现象待实测。

@@ -6,7 +6,7 @@
 
 对照金样例 `docs/c/06-abi-stack.md` 逐段核对：
 
-1. frontmatter `title: <前缀+编号 标题>` 与 H1 一致，并带 `status`（done|building）/ `difficulty`（1|2|3）/ `minutes` 三项进度元数据——首页地图与 README 的数字全靠它们算出来，缺一项 `npm run docs:gen` 就告警；
+1. frontmatter `title: <前缀+编号 标题>` 与 H1 一致，并带 `status`（done|building）/ `difficulty`（1|2|3）/ `minutes` 三项进度元数据——首页地图与 README 的数字全靠它们算出来，缺一项或值非法，`npm run docs:gen` 就失败；
 2. `> 🎯` 钩子（≤60 字类比/反直觉问题，禁"本章将介绍"）；
 3. 本章精髓（1–3 个"为什么"）；
 4. 学习目标（可检验动词：能手算/能逐行讲清/能在板上观测）；

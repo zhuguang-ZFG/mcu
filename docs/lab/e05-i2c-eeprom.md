@@ -1,8 +1,13 @@
 ---
 title: 实验 E05 I2C 抓包读 EEPROM
 status: done
-difficulty: 2
-minutes: 50
+difficulty: 3
+minutes: 60
+code_status: ready
+hardware_status: pending
+code_note: 完整 I2C EEPROM 工程；外接 AT24C02，非假定板载接线。
+projects: ["stm32-04-i2c-eeprom"]
+
 ---
 
 # 实验 E05 I2C 抓包读 EEPROM：时序与手册逐拍对表
@@ -11,13 +16,13 @@ minutes: 50
 
 ## 实验信息卡
 
+<LabStatus />
+
 | 项 | 内容 |
 |---|---|
 | 编号 | E05 |
 | 对应章节 | [S11 I2C](../stm32/11-i2c.md) |
 | 目标板 | 霸天虎 |
-| 时长 | 约 60 分钟 |
-| 难度 | ★★★ |
 
 ## 实验目标
 
@@ -31,7 +36,7 @@ minutes: 50
 | AT24C02 模块 | 1 | 地址 0x50（A0-A2 接地） |
 | 逻辑分析仪 | 1 | 两通道：SDA/SCL |
 | 上拉电阻 4.7kΩ ×2 | 2 | 模块自带则免 |
-| 霸天虎（S11 固件） | 1 | I2C1 PB6/PB7（以原理图为准） |
+| 霸天虎（本页 EEPROM 工程） | 1 | I2C1 PB6/PB7，外接模块按下文接线 |
 
 ## 原理一句话
 
@@ -45,7 +50,7 @@ I2C 的每次交互都是"START + 地址帧 + ACK + 数据帧(+ACK) + STOP"的�
 
 ## 步骤
 
-1. 烧录 S11 固件：向地址 0x10 写 0x5A，延时 5ms，读回并串口打印；
+1. 在仓库根运行 `cd code/stm32/04-i2c-eeprom`，`make` 后 `make flash`（ST-Link）；USB-TTL RX 接 PA9、GND 共地，以 115200 8N1 观察 `read=0x5A PASS`。程序每次复位仅写一次 0x10，并用 ACK polling 等写周期完成。
 2. 分析仪 1MHz 采样抓取完整事务；
 3. 添加 I2C 解码器，核对：START→0xA0（写地址+W）→ACK→0x10（字地址）→ACK→0x5A→ACK→STOP；
 4. 再核对读事务：START→0xA0→ACK→0x10→ACK→**重复 START**→0xA1（读地址+R）→ACK→0x5A→**NACK**→STOP；
@@ -80,3 +85,9 @@ I2C 的每次交互都是"START + 地址帧 + ACK + 数据帧(+ACK) + STOP"的�
 
 - I2C 从波形到代码全链路打通；
 - 抓包对表法毕业——以后任何新协议（1-Wire/自定义）都用这把刀。
+
+## 附录：工程完整源码
+
+构建、接线与排查见[工程 README](https://github.com/zhuguang-ZFG/mcu/tree/main/code/stm32/04-i2c-eeprom)。
+
+<<< ../../code/stm32/04-i2c-eeprom/main.c

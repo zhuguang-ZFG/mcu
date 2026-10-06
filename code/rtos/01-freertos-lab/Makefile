@@ -13,9 +13,17 @@
 #   也可以用 FREERTOS_KERNEL=<你的路径> 覆盖。
 
 TARGET   := freertos-lab
-BUILD    := build
 FREERTOS_KERNEL ?= ../../../.trellis/ref/freertos-v11/kernel
 DEMO_SCENE      ?= 1
+ifneq ($(words $(DEMO_SCENE)),1)
+$(error DEMO_SCENE must be one of 1 2 3 4 5)
+endif
+ifeq ($(filter $(DEMO_SCENE),1 2 3 4 5),)
+$(error DEMO_SCENE must be one of 1 2 3 4 5)
+endif
+# 参数变化不是 make 的文件依赖；每场景独立产物，切换无需 clean。
+BUILD    := build/scene-$(DEMO_SCENE)
+.DEFAULT_GOAL := all
 
 CC       := arm-none-eabi-gcc
 OBJCOPY  := arm-none-eabi-objcopy
@@ -26,7 +34,7 @@ MCU      := -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 INC      := -I. -I$(FREERTOS_KERNEL)/include \
             -I$(FREERTOS_KERNEL)/portable/GCC/ARM_CM4F
 
-CFLAGS   := $(MCU) -O0 -g3 -Wall -Wextra $(INC) \
+CFLAGS   := $(MCU) -O0 -g3 -Wall -Wextra -MMD -MP $(INC) \
             -ffunction-sections -fdata-sections \
             -DDEMO_SCENE=$(DEMO_SCENE)
 ASFLAGS  := $(MCU) -g3
@@ -46,6 +54,11 @@ KERNEL_SRCS := $(FREERTOS_KERNEL)/tasks.c \
 
 OBJS     := $(BUILD)/startup_stm32f407xx.o $(BUILD)/main.o $(BUILD)/syscalls.o \
             $(patsubst %.c,$(BUILD)/%.o,$(notdir $(KERNEL_SRCS)))
+
+-include $(OBJS:.o=.d)
+
+# 工程配置/内核配置/规则变化都必须重建，不只观察 .c 的时间戳。
+$(OBJS): Makefile FreeRTOSConfig.h
 
 all: $(BUILD)/$(TARGET).elf $(BUILD)/$(TARGET).bin $(BUILD)/$(TARGET).hex
 	$(SIZE) $(BUILD)/$(TARGET).elf

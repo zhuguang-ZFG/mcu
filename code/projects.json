@@ -1,0 +1,129 @@
+[
+  {
+    "id": "c-01-memory-model",
+    "path": "code/c/01-memory-model",
+    "kind": "host-probe",
+    "entry": "probe.sh"
+  },
+  {
+    "id": "c-03-volatile",
+    "path": "code/c/03-volatile",
+    "kind": "host-make",
+    "entry": "Makefile"
+  },
+  {
+    "id": "esp32-00-hello",
+    "path": "code/esp32/00-hello",
+    "kind": "esp-idf",
+    "entry": "CMakeLists.txt",
+    "target": "esp32s3"
+  },
+  {
+    "id": "esp32-01-gpio-matrix",
+    "path": "code/esp32/01-gpio-matrix",
+    "kind": "esp-idf",
+    "entry": "CMakeLists.txt",
+    "target": "esp32s3"
+  },
+  {
+    "id": "esp32-02-uart-events",
+    "path": "code/esp32/02-uart-events",
+    "kind": "esp-idf",
+    "entry": "CMakeLists.txt",
+    "target": "esp32s3"
+  },
+  {
+    "id": "esp32-03-ledc-fade",
+    "path": "code/esp32/03-ledc-fade",
+    "kind": "esp-idf",
+    "entry": "CMakeLists.txt",
+    "target": "esp32s3"
+  },
+  {
+    "id": "gd32-01-rcu-clock",
+    "path": "code/gd32/01-rcu-clock",
+    "kind": "arm-make",
+    "entry": "Makefile"
+  },
+  {
+    "id": "rtos-01-freertos-lab",
+    "path": "code/rtos/01-freertos-lab",
+    "kind": "arm-make",
+    "entry": "Makefile",
+    "scenes": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "id": "stm32-00-blink",
+    "path": "code/stm32/00-blink",
+    "kind": "arm-make",
+    "entry": "Makefile"
+  },
+  {
+    "id": "stm32-01-arch",
+    "path": "code/stm32/01-arch",
+    "kind": "host-probe",
+    "entry": "probe.sh"
+  },
+  {
+    "id": "stm32-01-rcc-clock",
+    "path": "code/stm32/01-rcc-clock",
+    "kind": "arm-make",
+    "entry": "Makefile"
+  },
+  {
+    "id": "stm32-02-tim-pwm",
+    "path": "code/stm32/02-tim-pwm",
+    "kind": "arm-make",
+    "entry": "Makefile"
+  },
+  {
+    "id": "stm32-03-uart-dma",
+    "path": "code/stm32/03-uart-dma",
+    "kind": "arm-make",
+    "entry": "Makefile"
+  },
+  {
+    "id": "stm32-09-adc",
+    "path": "code/stm32/09-adc",
+    "kind": "host-probe",
+    "entry": "probe.sh"
+  },
+  {
+    "id": "toolchain-02-elf",
+    "path": "code/toolchain/02-elf",
+    "kind": "host-probe",
+    "entry": "probe.sh"
+  },
+  {
+    "id": "toolchain-03-linker",
+    "path": "code/toolchain/03-linker",
+    "kind": "host-probe",
+    "entry": "probe.sh"
+  },
+  {
+    "id": "stm32-04-i2c-eeprom",
+    "path": "code/stm32/04-i2c-eeprom",
+    "kind": "arm-make",
+    "entry": "Makefile"
+  },
+  {
+    "id": "esp32-04-qmi8658",
+    "path": "code/esp32/04-qmi8658",
+    "kind": "esp-idf",
+    "entry": "CMakeLists.txt",
+    "target": "esp32s3"
+  },
+  {
+    "id": "esp32-05-audio-play",
+    "path": "code/esp32/05-audio-play",
+    "kind": "esp-idf",
+    "entry": "CMakeLists.txt",
+    "target": "esp32s3"
+  }
+]

@@ -1,0 +1,36 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const kinds = new Set(['arm-make', 'esp-idf', 'host-probe', 'host-make'])
+
+export function loadProjects(repo = root) {
+  const projects = JSON.parse(fs.readFileSync(path.join(repo, 'code/projects.json'), 'utf8'))
+  if (!Array.isArray(projects) || !projects.length) throw new Error('工程清单必须是非空数组')
+  const ids = new Set(), paths = new Set()
+  for (const p of projects) {
+    if (typeof p.id !== 'string' || !/^[a-z0-9-]+$/.test(p.id) || ids.has(p.id) || paths.has(p.path)) throw new Error(`重复或非法工程: ${p.id}`)
+    ids.add(p.id); paths.add(p.path)
+    if (!/^code\/[a-z0-9-]+\/[a-z0-9-]+$/.test(p.path) || !kinds.has(p.kind)) throw new Error(`非法工程路径/类型: ${p.id}`)
+    const entry = { 'arm-make': 'Makefile', 'esp-idf': 'CMakeLists.txt', 'host-probe': 'probe.sh', 'host-make': 'Makefile' }[p.kind]
+    if (p.entry !== entry || !fs.statSync(path.join(repo, p.path, entry), { throwIfNoEntry: false })?.isFile()) throw new Error(`构建入口不存在: ${p.id}`)
+    if (p.kind === 'esp-idf' && p.target !== 'esp32s3') throw new Error(`目标必须为 esp32s3: ${p.id}`)
+    if (p.scenes && (p.kind !== 'arm-make' || JSON.stringify(p.scenes) !== '[1,2,3,4,5]')) throw new Error(`非法场景列表: ${p.id}`)
+  }
+  // 忽略空目录；有真实构建入口却未登记的工程必须补入清单。
+  for (const board of fs.readdirSync(path.join(repo, 'code'), { withFileTypes: true }).filter(d => d.isDirectory())) {
+    for (const dir of fs.readdirSync(path.join(repo, 'code', board.name), { withFileTypes: true }).filter(d => d.isDirectory())) {
+      const rel = `code/${board.name}/${dir.name}`
+      if (['Makefile', 'CMakeLists.txt', 'probe.sh'].some(f => fs.existsSync(path.join(repo, rel, f))) && !paths.has(rel)) throw new Error(`工程未登记: ${rel}`)
+    }
+  }
+  return projects
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const projects = loadProjects()
+  if (process.argv.includes('--matrix')) {
+    console.log(JSON.stringify({ include: projects.filter(p => p.kind === 'esp-idf').map(p => ({ path: p.path, target: p.target })) }))
+  } else console.log(`工程清单通过：${projects.length} 个示例工程（不等同于上板验证）`)
+}

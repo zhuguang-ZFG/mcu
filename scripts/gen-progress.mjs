@@ -10,6 +10,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { loadProjects } from './project-catalog.mjs'
+import { readMetadata, readLabMetadata } from './content-metadata.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const DOCS = path.join(ROOT, 'docs')
@@ -30,20 +32,9 @@ const TRACKS = [
 
 const chapterPattern = (t) => (t.prefix ? new RegExp(`^${t.prefix}\\d\\d-`) : /^\d\d-/)
 
-/** 极简 frontmatter 读取：只要顶层 `key: value`，本站章节用不到嵌套结构。 */
-function readFrontmatter(file) {
-  const text = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '')
-  const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---/)
-  if (!m) return {}
-  const out = {}
-  for (const line of m[1].split(/\r?\n/)) {
-    const kv = line.match(/^([A-Za-z_][\w-]*):\s*(.*)$/)
-    if (kv && !out[kv[1]]) out[kv[1]] = kv[2].trim().replace(/^["']|["']$/g, '')
-  }
-  return out
-}
+const catalog = loadProjects(ROOT)
+function readFrontmatter(file) { return readMetadata(fs.readFileSync(file, 'utf8'), path.relative(ROOT, file)) }
 
-const warnings = []
 const tracks = TRACKS.map((t) => {
   const dir = path.join(DOCS, t.dir)
   const pattern = chapterPattern(t)
@@ -51,16 +42,13 @@ const tracks = TRACKS.map((t) => {
   const chapters = files.map((f) => {
     const fm = readFrontmatter(path.join(dir, f))
     const rel = `${t.dir}/${f.replace(/\.md$/, '')}`
-    if (!fm.title) warnings.push(`${rel}: 缺 frontmatter title`)
-    if (!fm.status) warnings.push(`${rel}: 缺 frontmatter status（done|building）`)
-    if (!fm.difficulty) warnings.push(`${rel}: 缺 frontmatter difficulty（1|2|3）`)
-    if (!fm.minutes) warnings.push(`${rel}: 缺 frontmatter minutes`)
     return {
-      title: fm.title || f,
+      title: fm.title,
       route: `/${rel}.html`,
       status: fm.status === 'done' ? 'done' : 'building',
-      difficulty: Number(fm.difficulty) || 0,
-      minutes: Number(fm.minutes) || 0,
+      difficulty: fm.difficulty,
+      minutes: fm.minutes,
+      ...(t.key === 'lab' ? readLabMetadata(fm, catalog, DOCS, rel) : {}),
     }
   })
   const done = chapters.filter((c) => c.status === 'done').length
@@ -71,13 +59,7 @@ const listFiles = (dir, filter = () => true) =>
   fs.existsSync(dir) ? fs.readdirSync(dir).filter(filter) : []
 
 const animations = listFiles(path.join(DOCS, 'public', 'anim'), (f) => f.endsWith('.svg')).length
-const codeRoot = path.join(ROOT, 'code')
-const projects = fs.existsSync(codeRoot)
-  ? fs.readdirSync(codeRoot).reduce((n, board) => {
-      const p = path.join(codeRoot, board)
-      return n + (fs.statSync(p).isDirectory() ? listFiles(p, (f) => fs.statSync(path.join(p, f)).isDirectory()).length : 0)
-    }, 0)
-  : 0
+const projects = catalog.length
 
 const chapters = tracks.filter((t) => t.key !== 'lab')
 const experiments = tracks.find((t) => t.key === 'lab')
@@ -86,6 +68,8 @@ const totals = {
   chaptersDone: chapters.reduce((n, t) => n + t.done, 0),
   experiments: experiments.total,
   experimentsDone: experiments.done,
+  experimentsReady: experiments.chapters.filter(c => c.codeStatus === 'ready').length,
+  experimentsVerified: experiments.chapters.filter(c => c.hardwareStatus === 'verified').length,
   animations,
   projects,
   minutes: chapters.reduce((n, t) => n + t.chapters.filter((c) => c.status === 'done').reduce((s, c) => s + c.minutes, 0), 0),
@@ -98,10 +82,6 @@ console.log(
   `成稿章节 ${totals.chaptersDone}/${totals.chapters} · 实验 ${totals.experimentsDone}/${totals.experiments} · ` +
     `动画 ${totals.animations} · 示例工程 ${totals.projects}`
 )
-if (warnings.length) {
-  console.warn(`\n⚠️ ${warnings.length} 条元数据告警：`)
-  warnings.forEach((w) => console.warn('  - ' + w))
-}
 
 /* ---------------- README 进度块：与首页同源，杜绝"数字三处各说各话"复发 ---------------- */
 // README 里的成稿数/动画数/工程数与"现在能读到哪些章"必须由同一份扫描结果渲染。
@@ -111,7 +91,7 @@ const MARK_END = '<!-- readme:progress:end -->'
 
 const shortTitle = (t) => t.split(/[：:]/)[0].trim()
 
-function renderProgressBlock(trk, tot, warnCount) {
+function renderProgressBlock(trk, tot) {
   const rows = trk.map((t) => {
     const landing = t.landing ? t.landing.replace(/^\//, 'docs/').replace(/\.html$/, '.md') : `docs/${t.dir}/index.md`
     const doneList = t.chapters.filter((c) => c.status === 'done')
@@ -127,10 +107,10 @@ function renderProgressBlock(trk, tot, warnCount) {
     ...rows,
     '',
     `- 成稿章节 **${tot.chaptersDone} / ${tot.chapters}**（上表「实物实验」那一行的 ${tot.experimentsDone} 篇另计，不进章节数），通读约 **${tot.minutes} 分钟**（≈ ${hours} 小时）；`,
-    `- 实物实验 **${tot.experimentsDone} / ${tot.experiments}**（E01–E08 全部成稿）；`,
+    `- 实物实验 **${tot.experimentsDone} / ${tot.experiments}**（文稿成稿；完整配套工程 ${tot.experimentsReady} 项，上板验证 ${tot.experimentsVerified} 项）；`,
     `- 机制动画 **${tot.animations}** 张，在 \`docs/public/anim/\`，动效与版式规范见 \`.trellis/spec/docs-site/animation.md\`；`,
-    `- 可构建示例工程 **${tot.projects}** 个，在 \`code/\`，与章节同构；`,
-    `- 章节 frontmatter 元数据缺项 **${warnCount}** 条告警。`,
+    `- 示例工程 **${tot.projects}** 个，在 \`code/\`，与章节同构；`,
+    '- 章节 frontmatter 元数据校验已通过（缺项或非法值会阻止构建）。',
   ].join('\n')
 }
 
@@ -144,7 +124,7 @@ if (start > -1) {
     console.error(`README.md 缺少 ${MARK_START} … ${MARK_END} 标记块`)
     process.exit(1)
   }
-  const body = renderProgressBlock(tracks, totals, warnings.length)
+  const body = renderProgressBlock(tracks, totals)
   const next = src.slice(0, i + MARK_START.length) + '\n' + body + '\n' + src.slice(j)
   if (next !== src) {
     if (process.argv.includes('--check')) {

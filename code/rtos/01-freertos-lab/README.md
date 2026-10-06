@@ -41,9 +41,13 @@ PATH 需要 `arm-none-eabi-gcc`、`mingw32-make`，以及 Git 的 `usr\bin`。
 
 ```bash
 make DEMO_SCENE=1    # 1..5，默认 1
-make flash           # OpenOCD + ST-Link
+make DEMO_SCENE=1 flash # 场景参数同构建；OpenOCD + ST-Link
 make clean
 ```
+
+产物隔离在 `build/scene-1/` 至 `build/scene-5/`；切换场景无需 clean。`make DEMO_SCENE=2 flash` 只烧录场景 2，`make DEMO_SCENE=2 clean` 只清理场景 2。
+
+验证状态：编译可验证；板上日志与时序仍待上板实测。
 
 ## 日志与预期观察
 

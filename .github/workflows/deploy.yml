@@ -1,5 +1,4 @@
 name: 部署站点到 GitHub Pages
-
 on:
   push:
     branches: [main]
@@ -7,37 +6,35 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
-  cancel-in-progress: true # 新 push 取代旧部署,避免陈旧 run 卡住线上更新
+  cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0 # lastUpdated 需要完整 git 历史
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24 # 与本机 v24.x 一致;actions 自 2025-09 起强制跑在 Node 24
-          cache: npm
-      - run: npm ci
-      - run: npm run docs:build
-      - uses: actions/configure-pages@v6
-      - uses: actions/upload-pages-artifact@v5
-        with:
-          path: docs/.vitepress/dist
+  quality:
+    uses: ./.github/workflows/quality.yml
 
   deploy:
-    needs: build
+    # 可复用工作流的所有 jobs 成功才算 quality 成功；失败/取消/跳过均不发布。
+    needs: quality
+    if: github.ref == 'refs/heads/main' && needs.quality.result == 'success'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: docs-site
+          path: site
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
       - id: deployment
         uses: actions/deploy-pages@v5

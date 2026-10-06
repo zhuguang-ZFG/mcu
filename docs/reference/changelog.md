@@ -8,6 +8,13 @@ title: 更新日志
 
 站点统计（成稿章节 / 实验 / 动画 / 工程数）由 `npm run docs:gen` 扫描全站章节 frontmatter 得出，[首页学习地图](/)与本页同源。
 
+## 2026-10-06 · 实验复现与质量检查
+
+- E05 EEPROM、E07 六轴传感器、E08 音频放音补齐独立工程与源码；E02/E03 的命令、串口字符和默认 PWM 参数改为与工程一致。E04/E06 仍缺完整配套工程，改标建设中。
+- 实验信息卡区分文稿、配套代码与上板验证，时长和难度从元数据读取；当前板上现象仍待实测。P12 区分有效 PCM 数据率与 I2S 双槽位时钟。
+- FreeRTOS 不同场景使用独立构建目录；GD32 启动补 Thumb 复位标记和 FPU 初始化。GPIO Matrix 示例断开旧脚后再换脚，并取消向 PSRAM 占用脚输出。
+- 发布必须通过同一提交的文档、固件与浏览器检查；工程清单和元数据严格校验。补 ld/gdb 高亮，搜索索引不重复收录完整源码，保留按需加载。
+
 ## 2026-10-06 · 动画补洞：机制图从"外围"补到"体内"
 
 先盘家底：29 张动画里协议与外设时序占 9 张（`uart-frame`、`usart-txe-tc`、`i2c-timing`、`spi-timing`、`dma-circular-buffer`、`dma-pingpong`、`tim-pwm-counter`、`tim-input-capture`、`tcp-handshake`），MCU 与内核机制 8 张（`boot-sequence`、`irq-entry`、`context-switch`、`stack-frame`、`rcc-clock-tree`、`gd32-rcu-clock`、`gpio-config`、`gpio-matrix-routing`），RTOS/C 侧 12 张。**两个已"成稿"的硬核章节居然一张图都没有**——C1 讲一个变量在两地生活、B2 把同一个 ELF 翻两副目录，全靠读者自己在脑子里拼图。这一批把最该动的五处补上：

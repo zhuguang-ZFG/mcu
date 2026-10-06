@@ -32,3 +32,7 @@ idf.py set-target esp32s3 && idf.py build     # 必须零错误；有板时 idf.
 
 - 无板环境：build 通过 + `idf.py size` 记录体积；
 - 未上板验证的在工程 README 标注"待上板实测"。
+
+## 可复现检查
+
+CI 使用 `build/ci` 独立 sdkconfig，显式 `set-target esp32s3`；验收读取 project_description.json 的 target，不以旧 build 缓存证明芯片正确。依赖组件固定版本，新音频工程提交 dependencies.lock。PCA9557 bit1 才是本板 PA_EN，不是 ESP32 GPIO1。GPIO Matrix 换脚必须断开旧输出，禁止在 PSRAM 占用脚做输出实验。工程清单/CI 接口见 [quality-contract](../docs-site/quality-contract.md)。

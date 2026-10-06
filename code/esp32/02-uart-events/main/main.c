@@ -59,11 +59,22 @@ static void uart_event_task(void *arg)
         case UART_DATA:
             /* 事件的 size/timeout_flag 是元数据；字节要自己读 */
             {
-                int len = uart_read_bytes(UART_PORT, buf, evt.size, 0);
-                ESP_LOGI(TAG, "DATA size=%d timeout=%d read=%d",
-                         (int)evt.size, (int)evt.timeout_flag, len);
-                /* 回显：收到什么发回什么 */
-                uart_write_bytes(UART_PORT, buf, len);
+                size_t remaining = evt.size;
+                while (remaining > 0) {
+                    const size_t take = remaining < sizeof(buf) ? remaining : sizeof(buf);
+                    int len = uart_read_bytes(UART_PORT, buf, take, pdMS_TO_TICKS(20));
+                    if (len <= 0) {
+                        ESP_LOGW(TAG, "event payload unavailable: read=%d", len);
+                        break;
+                    }
+                    if (uart_write_bytes(UART_PORT, buf, (size_t)len) < 0) {
+                        ESP_LOGE(TAG, "echo failed");
+                        break;
+                    }
+                    remaining -= (size_t)len;
+                }
+                ESP_LOGI(TAG, "DATA size=%u timeout=%d unread=%u",
+                         (unsigned)evt.size, (int)evt.timeout_flag, (unsigned)remaining);
             }
             break;
 
@@ -102,7 +113,8 @@ void app_main(void)
     ESP_ERROR_CHECK(uart_set_pin(UART_PORT, TX_PIN, RX_PIN,
                                  UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
 
-    xTaskCreate(uart_event_task, "uart_events", 3072, NULL, 12, NULL);
+    ESP_ERROR_CHECK(xTaskCreate(uart_event_task, "uart_events", 3072, NULL, 12, NULL)
+                    == pdPASS ? ESP_OK : ESP_ERR_NO_MEM);
     ESP_LOGI(TAG, "UART%d on TX=GPIO%d RX=GPIO%d @115200 8N1 —— 发数据过来试试",
              UART_PORT, TX_PIN, RX_PIN);
 }

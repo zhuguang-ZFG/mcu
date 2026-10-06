@@ -1,8 +1,13 @@
 ---
 title: 实验 E04 优先级反转复现
-status: done
-difficulty: 2
-minutes: 45
+status: building
+difficulty: 3
+minutes: 90
+code_status: planned
+hardware_status: pending
+code_note: 尚无本实验的 FreeRTOS / RT-Thread 两版工程；以下是实验设计。
+projects: []
+
 ---
 
 # 实验 E04 优先级反转复现（FreeRTOS × RT-Thread 双跑）
@@ -11,13 +16,13 @@ minutes: 45
 
 ## 实验信息卡
 
+<LabStatus />
+
 | 项 | 内容 |
 |---|---|
 | 编号 | E04 |
 | 对应章节 | [F5](../rtos/freertos/05-sem-mutex.md)、[R2](../rtos/rtthread/02-ipc.md) |
 | 目标板 | 霸天虎（FreeRTOS 版 + RT-Thread 版各一遍） |
-| 时长 | 约 90 分钟（双版） |
-| 难度 | ★★★ |
 
 ## 实验目标
 
@@ -53,7 +58,7 @@ minutes: 45
 ## 预期现象
 
 - 信号量版：H 的完成时间被 M 显著拖延（甚至接近 L 的临界区时长）；
-- 互斥量版：H 在 L 的临界区内即被"抬级"，M 无法插足，H 及时完成；
+- 互斥量版：L 在 H 等锁时被临时"抬级"，M 无法插足，H 及时完成；
 - 两 OS 行为一致（继承机制同构），日志并排即证据。
 
 ## 实测记录

@@ -1,5 +1,7 @@
 import { defineConfig } from 'vitepress'
 import { animDuration, decorateAnim, readAnim } from './anim-decorate.mjs'
+import { codeLanguages } from './code-languages.mjs'
+import { renderSearch } from '../../scripts/search-render.mjs'
 
 export default defineConfig({
   base: '/mcu/',
@@ -9,6 +11,7 @@ export default defineConfig({
   head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/mcu/favicon.svg' }]],
   ignoreDeadLinks: false,
   markdown: {
+    languages: codeLanguages,
     // 作者照旧写 ![图注](/anim/x.svg)；这里把 SVG 原文内联进页面 chunk，
     // 交给 AnimFigure 上图注、播放控件与深浅主题配色（细节见 anim-decorate.mjs）。
     config(md: any) {
@@ -52,6 +55,7 @@ export default defineConfig({
     search: {
       provider: 'local',
       options: {
+        _render: renderSearch,
         translations: {
           button: { buttonText: '搜索', resetButtonTitle: '清空搜索' },
           noResultsText: '没有找到相关段落——换个说法再试，名词类问题去「术语速查」页查。',
