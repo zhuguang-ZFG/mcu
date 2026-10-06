@@ -1,5 +1,8 @@
 ---
 title: S16 HardFault 与排错：崩溃现场的法医技术
+status: building
+difficulty: 3
+minutes: 40
 ---
 
 # S16 HardFault：崩溃现场的法医技术

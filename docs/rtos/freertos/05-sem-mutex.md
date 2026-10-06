@@ -1,5 +1,8 @@
 ---
 title: F5 信号量与互斥量：优先级反转事件
+status: done
+difficulty: 2
+minutes: 40
 ---
 
 # F5 信号量与互斥量：复现 RTOS 最著名的灵异事件

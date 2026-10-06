@@ -1,5 +1,8 @@
 ---
 title: R0 RT-Thread 架构：万物皆对象
+status: building
+difficulty: 2
+minutes: 30
 ---
 
 # R0 RT-Thread 架构：分层与对象模型

@@ -1,5 +1,8 @@
 ---
 title: C2 指针：点灯公式的全部秘密
+status: building
+difficulty: 3
+minutes: 40
 ---
 
 # C2 指针：为什么 `*(volatile uint32_t *)0x40020014` 能点灯

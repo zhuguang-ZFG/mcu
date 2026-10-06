@@ -1,5 +1,8 @@
 ---
 title: R4 设备框架：驱动与应用的解耦术
+status: building
+difficulty: 2
+minutes: 30
 ---
 
 # R4 设备框架：RT-Thread 最灵魂的一章

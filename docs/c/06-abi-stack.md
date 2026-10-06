@@ -1,5 +1,8 @@
 ---
 title: C6 调用约定与栈帧
+status: building
+difficulty: 3
+minutes: 45
 ---
 
 # C6 调用约定与栈帧：一次函数调用的全程直播

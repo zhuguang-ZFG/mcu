@@ -1,5 +1,8 @@
 ---
 title: B7 构建系统：从手写 Makefile 到 CMake 与 scons
+status: building
+difficulty: 2
+minutes: 30
 ---
 
 # B7 构建系统：Makefile→CMake/Ninja→IDF/scons

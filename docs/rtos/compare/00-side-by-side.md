@@ -1,5 +1,8 @@
 ---
 title: 对比 0 同概念双实现对照
+status: building
+difficulty: 2
+minutes: 30
 ---
 
 # 对比 0：FreeRTOS × RT-Thread 同一张解剖台

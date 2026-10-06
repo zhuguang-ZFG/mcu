@@ -1,5 +1,8 @@
 ---
 title: P3 IDF 工程解剖：组件化构建流水线
+status: building
+difficulty: 2
+minutes: 35
 ---
 
 # P3 IDF 工程解剖：组件化 CMake 与 Kconfig

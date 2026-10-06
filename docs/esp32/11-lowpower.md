@@ -1,5 +1,8 @@
 ---
 title: P11 低功耗：睡眠矩阵与 ULP
+status: building
+difficulty: 2
+minutes: 35
 ---
 
 # P11 低功耗：Deep Sleep 之后，谁还记得你

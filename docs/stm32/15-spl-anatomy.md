@@ -1,5 +1,8 @@
 ---
 title: S15 SPL 标准库解剖：库是怎么封装寄存器的
+status: building
+difficulty: 2
+minutes: 35
 ---
 
 # S15 SPL 标准库解剖：读懂库的"封装术"

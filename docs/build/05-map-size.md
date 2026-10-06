@@ -1,5 +1,8 @@
 ---
 title: B5 map 与体积：谁吃了我的 Flash
+status: building
+difficulty: 2
+minutes: 25
 ---
 
 # B5 map 文件与体积审计：谁吃了我的 Flash/RAM

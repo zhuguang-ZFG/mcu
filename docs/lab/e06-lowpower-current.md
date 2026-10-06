@@ -1,5 +1,8 @@
 ---
 title: 实验 E06 低功耗电流实测
+status: done
+difficulty: 2
+minutes: 45
 ---
 
 # 实验 E06 低功耗电流实测：给电池寿命算账

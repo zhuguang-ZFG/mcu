@@ -1,5 +1,8 @@
 ---
 title: C5 函数指针、状态机与环形缓冲
+status: building
+difficulty: 2
+minutes: 30
 ---
 
 # C5 函数指针与状态机：中断驱动代码的基本功

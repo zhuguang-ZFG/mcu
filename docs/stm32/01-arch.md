@@ -1,5 +1,8 @@
 ---
 title: S1 F407 架构总览：地址背后的故事
+status: building
+difficulty: 2
+minutes: 30
 ---
 
 # S1 F407 架构总览：为什么 0x40020000 是 GPIOA

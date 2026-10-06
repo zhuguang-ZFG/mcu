@@ -1,5 +1,8 @@
 ---
 title: G1 RCU 时钟树：200MHz 是怎么算出来的
+status: done
+difficulty: 3
+minutes: 45
 ---
 
 # G1 RCU 时钟树：200MHz 是怎么算出来的
@@ -36,7 +39,7 @@ title: G1 RCU 时钟树：200MHz 是怎么算出来的
 | HSI 16M / HSE | **IRC16M / HXTAL** | gd32f4xx_rcu.h:812-814 |
 | FLASH_ACR.LATENCY | **FMC_WS.WSCNT**（bits[3:0]，0~11 档） | gd32f4xx_fmc.h:150-161 |
 | PWR + VOS（无回执） | **PMU + LDOVS/HDEN/HDS**（有 HDRF/HDSRF 回执） | gd32f4xx_pmu.h:59-73 |
-| MCO1（PA8，分频 2 的幂） | **CK_OUT0**（PA8，**分频 /1~/5**） | gd32f4xx_rcu.h:886-901 |
+| MCO1（PA8，/1~/5，编码 0/4/5/6/7） | **CK_OUT0**（PA8，/1~/5，编码同款） | gd32f4xx_rcu.h:886-901；HAL stm32f4xx_hal_rcc.h:314-318 |
 | PLLRDY / SWS | **PLLSTB / SCSS** | gd32f4xx_rcu.h:88,102-103 |
 
 ## 二、PLL：同布局，更激进
@@ -72,14 +75,17 @@ GD32 把"能不能上 200MHz"拆成三次握手，每一步都有硬件回执（
 
 ## 四、Flash 等待：官方不管，你来管
 
-`system_gd32f4xx.c` 全文件**没有任何 FMC 等待周期设置**（已全文检索）；官方 CKOUT 示例同样不设（example_ckout_main.c）。而 FMC 的等待档位有 0~11 共 12 档（gd32f4xx_fmc.h:150-161），档位越宽说明这颗芯片的频率天花板越高。
+`system_gd32f4xx.c` 全文件**没有任何 FMC 等待周期设置**；对官方库**全量 Examples（3295 个文件，浅克隆逐目录检索）**搜 `fmc_wscnt_set` / `FMC_WS`——**零命中**。也就是说官方示例从不设 Flash 等待。而 FMC 的等待档位有 0~11 共 12 档（gd32f4xx_fmc.h:150-161）。
+
+> 🤔 **这本身就是个值得追的问题**：官方示例不设等待却跑高频，是档位有硬件自适应、还是示例实际跑在低档频率？——答案在用户手册（UM），本页**不猜**。拿到 UM 或上板实测后再回来填这个坑。
 
 > ⚠️ 本工程策略：`FMC_WS_VALUE` 宏默认取**保守超配值**（多配等待周期只会稍慢，欠配会取指跑飞）；准确的"频率↔等待"对照表**待 UM 核验**，上板实测后回填。
 
 ## 五、CK_OUT0 对账：MCO1 的同岗同事
 
 - 引脚 **PA8，AF0**（官方 CKOUT 示例 gpio_af_set(GPIOA, GPIO_AF_0, GPIO_PIN_8)，example_ckout_main.c:135）——和 STM32 MCO1 同脚同 AF。
-- 源可选 IRC16M/LXTAL/HXTAL/**PLLP**（gd32f4xx_rcu.h:886-889），分频 **/1 /2 /3 /4 /5**（:897-901）——注意有 /3、/5，不是 STM32 的 2 的幂序列。
+- 源可选 IRC16M/LXTAL/HXTAL/**PLLP**（gd32f4xx_rcu.h:886-889），分频 **/1 /2 /3 /4 /5**（:897-901）——**与 STM32 MCO1 完全同款**：两边都不是 2 的幂序列，编码也一样（0xx=不分频、100=/2、101=/3、110=/4、111=/5；HAL `RCC_MCODIV_1..5`=0/4/5/6/7，stm32f4xx_hal_rcc.h:314-318）。"看名字以为是 STM32 的坑、其实两边一样"本身就是对照阅读的价值。
+- 编码雷区：/4 的编码是 **6**，不是 3——写成 3 会掉进"不分频"区。（S2 工程曾真踩此坑，已修。）
 - 选 PLLP + /4 → **理论 50MHz** 上 PA8，示波器一量就知时钟树对不对（**待上板实测**）。
 
 ## 六、代码分析：`code/gd32/01-rcu-clock/main.c`
@@ -91,7 +97,7 @@ GD32 把"能不能上 200MHz"拆成三次握手，每一步都有硬件回执（
 - `fmc_ws_set()`：写 FMC_WS.WSCNT。
 - `pll_start()`：按官方参数写 RCU_PLL，PLLSTB 带超时。
 - `clock_init()`：总线分频 AHB/1、APB2/2、APB1/4（与官方 200M 档一致），SCS=PLLP 后等 SCSS=PLLP。
-- `clock_tree_readback()`：从 CFG0 反推 CK_SYS/CK_AHB/CK_APB1/CK_APB2 存进 `g_clock_tree[]`，GDB 直接看。
+- `clock_tree_readback()`：从寄存器反推真实时钟树——**源按 SCSS 如实解码**、PLL 频率按 RCU_PLL 参数重算，存进 `g_clock_tree[]`；故障回退路径也报真账（不传"调用方以为的值"）。
 - `ckout0_init()`：PA8 配 AF0，CK_OUT0 = PLLP/4。
 
 ## 七、上游对照：官方 `system_gd32f4xx.c` 逐条对照（@10d02f4）
@@ -104,6 +110,7 @@ GD32 把"能不能上 200MHz"拆成三次握手，每一步都有硬件回执（
 | AHB/1、APB2/2、APB1/4（:962-966） | 同 | 一致 |
 | PLL 参数 PSC25/N400/P2/Q9（:946-948） | 同 | 一致 |
 | SCS=PLLP 后等 SCSS（:993-999） | 同 | 一致 |
+| `while(0 != (RCU_CFG0 & RCU_SCSS_IRC16M))`（:208-210） | —— | **官方小瑕疵**：`RCU_SCSS_IRC16M = CFG0_SCSS(0) = 0`（gd32f4xx_rcu.h:817），这个"等回执"恒假、一次都不等。对照 S2 里 HAL 切钟后老老实实轮询 SWS（hal_rcc.c:681）——**官方库也会有空转，读源码时要带脑子**。本工程的回读改为按 SCSS 如实解码，故障路径也不报假账。 |
 
 ## 附录：工程完整源码
 
@@ -131,7 +138,7 @@ GD32 把"能不能上 200MHz"拆成三次握手，每一步都有硬件回执（
 
 1. GD32F450 官方默认档是哪组 PLL 参数？从 25MHz 算到 200MHz 写全公式。
 2. HDEN 和 HDS 有什么区别？各自等哪个标志位？
-3. CK_OUT0 的分频为什么能出 /3、/5？这相对 STM32 MCO1 意味着什么？
+3. CK_OUT0 的 /4 编码是几？写成"分频比 − 1"会发生什么？
 
 ## 事实来源
 

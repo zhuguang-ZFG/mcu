@@ -1,5 +1,8 @@
 ---
 title: P9 蓝牙与 ESP-NOW：协议栈的另一种打开方式
+status: building
+difficulty: 2
+minutes: 40
 ---
 
 # P9 蓝牙与 ESP-NOW：无路由直连

@@ -1,5 +1,8 @@
 ---
 title: R3 RT-Thread 内存管理：确定性之美
+status: building
+difficulty: 3
+minutes: 35
 ---
 
 # R3 内存管理：memheap、slab、TLSF 与内存池

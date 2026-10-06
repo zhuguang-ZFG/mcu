@@ -1,5 +1,8 @@
 ---
 title: P10 Flash、分区表、NVS 与 OTA
+status: building
+difficulty: 3
+minutes: 45
 ---
 
 # P10 16MB 的版图：分区表、NVS 与 OTA

@@ -1,5 +1,8 @@
 ---
 title: S13 内部 Flash 与 IAP：固件给自己动手术
+status: building
+difficulty: 3
+minutes: 40
 ---
 
 # S13 内部 Flash 与 IAP：擦写规则与选项字节

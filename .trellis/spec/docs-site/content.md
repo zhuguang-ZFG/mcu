@@ -6,7 +6,7 @@
 
 对照金样例 `docs/c/06-abi-stack.md` 逐段核对：
 
-1. frontmatter `title: <前缀+编号 标题>` 与 H1 一致；
+1. frontmatter `title: <前缀+编号 标题>` 与 H1 一致，并带 `status`（done|building）/ `difficulty`（1|2|3）/ `minutes` 三项进度元数据——首页地图与 README 的数字全靠它们算出来，缺一项 `npm run docs:gen` 就告警；
 2. `> 🎯` 钩子（≤60 字类比/反直觉问题，禁"本章将介绍"）；
 3. 本章精髓（1–3 个"为什么"）；
 4. 学习目标（可检验动词：能手算/能逐行讲清/能在板上观测）；
@@ -33,6 +33,9 @@
 - ESP32-S3 的 LEDC 是 **8 通道、14 位位宽、仅低速模式**（soc_caps.h）；经典 ESP32 的 16 通道/高速模式结论不能套。S3 模组 N16R8 的八线 PSRAM 占 IO35/36/37。
 - STM32F407：Port F 没有 TIM3 通道（PF6/7/8 在 AF3 是 TIM10/11/13）；USART1 的 DMA 请求在 **DMA2**（不是 DMA1）；DMA 标志清除写 HIFCR/LIFCR（HISR/LISR 只读）；AHB 预分频没有 /32 档（HPRE 1100=/64）。
 - 链接脚本的 MEMORY 区域属性合法字母只有 r/w/x/a/i/l——老教程的 `(xrwah)` 里的 `h` 在新 binutils 下是硬错误。
+- C3 volatile 的取证在**两套工具链**上都跑过（2026-10-06）：宿主 MinGW-Builds gcc 16.1.0（x86_64）与 `D:/zhugu-home/tools/armgcc/xpack-arm-none-eabi-gcc-15.2.1-1.1/bin` 的 `arm-none-eabi-gcc 15.2.1`（`-mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard`）。命令与反汇编记录在 `code/c/03-volatile/README.md`；六变体对照由 `blink-variants.sh` 生成。
+- **板上现象仍属待实测**：写这一版时未接 F407/ST-Link，章内凡"灯闪/不闪/波形"必须标"编译期已核实、肉眼现象待回填"，不得把 objdump 结论当板上结论写。
+- **本站自己写错的结论也要实测推翻**：C3 初版照抄了流行的"去掉 `delay` 参数的 volatile，`-O2` 灯就不闪"，实测 `00-blink` 才知不成立——循环体的 `__asm__ volatile ("nop")` 是另一道独立防线（必须连 `nop` 一起删才翻车，见六变体表 B/C 行）。同类"听起来对"的说法一律先跑再写。
 
 ## 动画制作
 
@@ -43,6 +46,9 @@
 ## 提交前自检
 
 ```bash
+npm run docs:gen                                      # 零元数据告警（title/status/difficulty/minutes 齐）
 npm run docs:build                                    # 零错误（含死链）
 grep -rn "TODO\|待补充\|placeholder" docs/ --include="*.md"   # 无命中（除 template.md 的元说明）
 ```
+
+站点级数字（成稿篇数 / 实验数 / 动画数 / 工程数）只允许出现在 `progress.json` 消费链路上（首页地图、README 状态段），任何页面正文手写具体篇数都视为失真源。

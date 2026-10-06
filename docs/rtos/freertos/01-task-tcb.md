@@ -1,5 +1,8 @@
 ---
 title: F1 任务与 TCB：xTaskCreate 逐行走查
+status: done
+difficulty: 3
+minutes: 45
 ---
 
 # F1 任务与 TCB：xTaskCreate 逐行走查

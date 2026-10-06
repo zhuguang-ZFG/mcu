@@ -1,5 +1,8 @@
 ---
 title: S0 环境搭建：裸机工具链
+status: done
+difficulty: 1
+minutes: 25
 ---
 
 # S0 环境搭建：裸机工具链，四个软件看透全流程

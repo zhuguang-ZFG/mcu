@@ -1,5 +1,8 @@
 ---
 title: C4 结构体与 ABI：一个结构体罩住整组寄存器
+status: building
+difficulty: 2
+minutes: 30
 ---
 
 # C4 结构体与 ABI：GPIO_TypeDef 凭什么罩住寄存器块

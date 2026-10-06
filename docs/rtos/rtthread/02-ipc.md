@@ -1,5 +1,8 @@
 ---
 title: R2 IPC 全家桶：一套范式五种武器
+status: building
+difficulty: 2
+minutes: 35
 ---
 
 # R2 IPC：对象容器 + 挂起列表的统一范式

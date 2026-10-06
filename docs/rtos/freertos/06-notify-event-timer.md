@@ -1,5 +1,8 @@
 ---
 title: F6 任务通知、事件组与软件定时器
+status: done
+difficulty: 2
+minutes: 40
 ---
 
 # F6 任务通知、事件组与软件定时器

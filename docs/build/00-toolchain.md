@@ -1,5 +1,8 @@
 ---
 title: B0 工具链全景：四个软件一台戏
+status: building
+difficulty: 2
+minutes: 25
 ---
 
 # B0 工具链全景：交叉编译四件套各管什么

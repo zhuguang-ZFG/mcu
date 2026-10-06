@@ -1,5 +1,8 @@
 ---
 title: P4 中断与双核：IRAM 纪律与核间分工
+status: building
+difficulty: 3
+minutes: 40
 ---
 
 # P4 中断与双核：Cache 关了，你的 ISR 还能跑吗

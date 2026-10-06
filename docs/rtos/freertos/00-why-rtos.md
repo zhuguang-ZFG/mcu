@@ -1,5 +1,8 @@
 ---
 title: F0 为什么需要 RTOS：先失败一次
+status: building
+difficulty: 1
+minutes: 20
 ---
 
 # F0 为什么需要 RTOS：先失败一次

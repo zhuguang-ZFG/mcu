@@ -53,23 +53,25 @@ features:
 
 <div class="mcu-start">
 
-## 从这三章开始（成稿，含动画）
+## 先挑一条适合自己的路
 
-| 章节 | 你会带走 |
-|---|---|
-| [S3 GPIO：七个寄存器位级图解](/stm32/03-gpio.md) | 配置动画"盖四个章" + ODR 读-改-写翻车现场 |
-| [B4 启动过程：上电到 main](/build/04-startup.md) | 复位一毫秒动画 + 启动文件逐行过堂 |
-| [F2 上下文切换：PendSV 换魂术](/rtos/freertos/02-context-switch.md) | 换魂动画 + 十一条汇编逐行 + 野火内核视频 |
+同一个站点，四种上路方式——**先见现象，再挖原理**，别从最难的那章硬啃。
 
-## 最新一波成稿（每章都有动画和能跑的工程）
+| 你是谁 | 前三步 | 然后 |
+|---|---|---|
+| 零基础，板子刚到手 | [S0 环境搭建](/stm32/00-env.md) 点亮第一盏灯 → [实验 E01](/lab/e01-blink.md) → [C1 内存模型](/c/01-memory-model.md) | 按 C 篇 → B 篇 → S 篇顺序补地基 |
+| 会 C、玩过 Arduino | [B1 四步构建](/build/01-four-steps.md) → [B4 启动过程](/build/04-startup.md) → [S3 GPIO](/stm32/03-gpio.md) | 补上"构建/链接/启动"这块最常被跳过的地基 |
+| 硬件出身，代码薄 | [C2 指针](/c/02-pointer.md) → [C3 volatile](/c/03-volatile.md) → [S2 RCC 时钟树](/stm32/02-rcc-clock.md) | 每章配 [实验中心](/lab/index.md) 的观测点，眼见为实 |
+| 想做 AIoT / 语音产品 | [P0 ESP-IDF 环境](/esp32/00-env.md) → [P2 GPIO 矩阵](/esp32/02-gpio-matrix.md) → [P5 UART 驱动](/esp32/05-uart-driver.md) | 直上 [E07 姿态传感器](/lab/e07-qmi8658.md)、[E08 音频放音](/lab/e08-audio-play.md) |
+| 被 RTOS 面试/项目卡住 | [F1 任务与 TCB](/rtos/freertos/01-task-tcb.md) → [F2 上下文切换](/rtos/freertos/02-context-switch.md) → [实验 E04 优先级反转](/lab/e04-priority-inversion.md) | 回看 [双 OS 对照](/rtos/compare/00-side-by-side.md) 做选型 |
 
-| 路线 | 新成稿 |
-|---|---|
-| STM32 | [S2 RCC 时钟树](/stm32/02-rcc-clock.md) · [S6 定时器 TIM](/stm32/06-tim.md) · [S7 USART](/stm32/07-usart.md) · [S8 DMA](/stm32/08-dma.md) · [S11 I2C](/stm32/11-i2c.md) |
-| FreeRTOS | [F1 任务与 TCB](/rtos/freertos/01-task-tcb.md) · [F3 调度器](/rtos/freertos/03-scheduler.md) · [F4 队列](/rtos/freertos/04-queue.md) · [F5 信号量与互斥](/rtos/freertos/05-sem-mutex.md) · [F6 通知/事件/定时器](/rtos/freertos/06-notify-event-timer.md) · [F7 内存管理](/rtos/freertos/07-heap.md) |
-| ESP32-S3 | [P2 GPIO 矩阵](/esp32/02-gpio-matrix.md) · [P5 UART 驱动](/esp32/05-uart-driver.md) · [P7 定时器与 LEDC](/esp32/07-timer-ledc.md) |
-| GD32 | [G1 RCU 时钟树](/gd32/01-rcu-clock.md)（200MHz 对照 STM32F4） |
+## 学习地图
+
+下图的成稿数、动画数、实验数、工程数由 `npm run docs:gen` 扫全站章节 frontmatter 算出，不手写。**实心=成稿可读，虚线=骨架建设中**（结构、目标、先修都已定，正文待补）。
+
+<LearningMap />
 
 > 每章同一个循环：**手册 → 寄存器 → 库源码 → 实物**。看不懂的那一环，就是该回去补的那一环。
 
 </div>
+

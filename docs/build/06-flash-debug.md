@@ -1,5 +1,8 @@
 ---
 title: B6 烧录与调试：SWD 与断点的真相
+status: building
+difficulty: 2
+minutes: 30
 ---
 
 # B6 烧录与调试：两根线如何统治一颗芯片

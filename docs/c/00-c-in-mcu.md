@@ -1,5 +1,8 @@
 ---
 title: C0 为什么嵌入式 C 是另一种 C
+status: building
+difficulty: 1
+minutes: 20
 ---
 
 # C0 为什么嵌入式 C 是另一种 C

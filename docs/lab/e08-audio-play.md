@@ -1,5 +1,8 @@
 ---
 title: 实验 E08 S3 音频链路放音
+status: done
+difficulty: 3
+minutes: 60
 ---
 
 # 实验 E08 让 S3 开口：从正弦"滴"到一段音乐

@@ -1,5 +1,8 @@
 ---
 title: 实验 E04 优先级反转复现
+status: done
+difficulty: 2
+minutes: 45
 ---
 
 # 实验 E04 优先级反转复现（FreeRTOS × RT-Thread 双跑）

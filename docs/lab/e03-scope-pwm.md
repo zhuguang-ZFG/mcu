@@ -1,5 +1,8 @@
 ---
 title: 实验 E03 示波器看 PWM
+status: done
+difficulty: 2
+minutes: 40
 ---
 
 # 实验 E03 示波器看 PWM：占空比与呼吸灯

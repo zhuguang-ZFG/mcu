@@ -1,5 +1,8 @@
 ---
 title: C1 内存模型：一个变量的三段旅程
+status: building
+difficulty: 2
+minutes: 30
 ---
 
 # C1 内存模型：一个全局变量的三段旅程

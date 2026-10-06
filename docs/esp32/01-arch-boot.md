@@ -1,5 +1,8 @@
 ---
 title: P1 S3 架构与启动：从复位到 app_main
+status: building
+difficulty: 2
+minutes: 35
 ---
 
 # P1 S3 架构与启动：bootloader→app 的接力赛

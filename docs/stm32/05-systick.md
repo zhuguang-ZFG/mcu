@@ -1,5 +1,8 @@
 ---
 title: S5 SysTick：内核的心跳
+status: building
+difficulty: 2
+minutes: 30
 ---
 
 # S5 SysTick：内核自带的"心跳发生器"

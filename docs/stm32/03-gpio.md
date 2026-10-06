@@ -1,5 +1,8 @@
 ---
 title: S3 GPIO：七个寄存器位级图解
+status: done
+difficulty: 3
+minutes: 50
 ---
 
 # S3 GPIO：七个寄存器位级图解

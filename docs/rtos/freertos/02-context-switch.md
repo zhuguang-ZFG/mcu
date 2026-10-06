@@ -1,5 +1,8 @@
 ---
 title: F2 上下文切换：PendSV 换魂术
+status: done
+difficulty: 3
+minutes: 45
 ---
 
 # F2 上下文切换：PendSV 逐汇编指令

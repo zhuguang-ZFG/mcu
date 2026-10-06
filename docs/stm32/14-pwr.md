@@ -1,5 +1,8 @@
 ---
 title: S14 低功耗：让电池活过一年
+status: building
+difficulty: 2
+minutes: 30
 ---
 
 # S14 低功耗：三种睡眠的唤醒与代价

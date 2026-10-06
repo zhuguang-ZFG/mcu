@@ -1,5 +1,8 @@
 ---
 title: P12 音频链路：从 I2S 时序到"hello 语音"
+status: building
+difficulty: 3
+minutes: 45
 ---
 
 # P12 音频链路：小智板的看家本领

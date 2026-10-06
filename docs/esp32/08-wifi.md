@@ -1,5 +1,8 @@
 ---
 title: P8 Wi-Fi 精髓：事件循环与连接状态机
+status: building
+difficulty: 3
+minutes: 50
 ---
 
 # P8 Wi-Fi 精髓：从 esp_wifi_init 到拿到 IP

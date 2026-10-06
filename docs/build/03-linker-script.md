@@ -1,5 +1,8 @@
 ---
 title: B3 链接脚本：固件的建筑图纸
+status: building
+difficulty: 3
+minutes: 40
 ---
 
 # B3 链接脚本：内存布局的逐行讲解

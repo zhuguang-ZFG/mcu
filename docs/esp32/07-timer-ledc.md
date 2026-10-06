@@ -1,5 +1,8 @@
 ---
 title: P7 定时器与 LEDC：各管一段时间
+status: done
+difficulty: 2
+minutes: 35
 ---
 
 # P7 定时器与 LEDC：各管一段时间

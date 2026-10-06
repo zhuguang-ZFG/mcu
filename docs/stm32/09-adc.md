@@ -1,5 +1,8 @@
 ---
 title: S9 ADC：把模拟世界变成数字
+status: building
+difficulty: 2
+minutes: 35
 ---
 
 # S9 ADC：旋钮、光线与采样定理

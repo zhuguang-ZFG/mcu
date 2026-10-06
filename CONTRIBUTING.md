@@ -35,15 +35,17 @@
 文件约定：
 
 - 章节 `docs/<track>/<nn>-<slug>.md`，标题编号：C=c、B=build、S=stm32、F=FreeRTOS、R=RT-Thread、对比、P=esp32、实验 E=lab；
-- 示例代码 `code/<track>/<nn>-<slug>/`，全部逐行注释，能独立构建；
-- 新页面必须登记进 `docs/.vitepress/config.mts` 的 sidebar，并更新 `docs/lab/index.md` 或板块 index 的路线表。
+- **每章 frontmatter 必填三项**（全站进度靠它，缺项会被 `npm run docs:gen` 告警）：`status: done|building`（成稿/骨架）、`difficulty: 1|2|3`（入门/进阶/硬核）、`minutes: <int>`（预计学习时长，含动手）。`status` 判据是内容深度而不是文件长度——骨架页就算写满 300 行也是 `building`；
+- 示例代码 `code/<track>/<nn>-<slug>/`，全部逐行注释，能独立构建（宿主可构建的工程照 `code/c/03-volatile` 的写法，README 里写清取证环境与版本）；
+- 新页面必须登记进 `docs/.vitepress/config.mts` 的 sidebar，并更新 `docs/lab/index.md` 或板块 index 的路线表；`docs/reference/`（术语速查/FAQ/更新日志/关于我们与致谢）另有一组 sidebar 与 nav「资料」下拉；
+- **数字一律不手写**：成稿篇数、动画张数、实验数、工程数由 `scripts/gen-progress.mjs` 扫描生成，首页地图与 README 状态段同源。新增章节/动画不需要改数字，改 frontmatter 即可。
 
 ## 4. 动画规范
 
 - 形式：独立 `.svg` 于 `docs/public/anim/`，SMIL（`<animate>`/`<animateTransform>`，`repeatCount="indefinite"`），viewBox 宽 720；页面用 markdown 图片语法 `![一句话描述](/anim/xxx.svg)` 引用（VitePress 自动加 base，禁 raw `<img>`、禁外链播放器、禁 JS 依赖）。
 - 配色：浅底 `#f6f8fa`，主色 `#3451b2`，强调 `#3eaf7c`，警示 `#d97706`；字号 ≥12px。
 - 每个动画在 PR 描述里附"表达结论一句话"；**禁装饰性动画**——不能帮助理解的动画不如不放。
-- 现有动画（28 张）：`stack-frame`、`irq-entry`、`context-switch`、`gpio-config`、`boot-sequence`、`i2c-timing`、`queue-passing`、`semaphore-mutex`、`priority-inversion`、`dma-pingpong`、`list-insert`、`spi-timing`、`tcp-handshake`、`rcc-clock-tree`、`tim-pwm-counter`、`tim-input-capture`、`uart-frame`、`usart-txe-tc`、`dma-circular-buffer`、`task-create-stack`、`task-notification`、`event-group-wait`、`software-timer-service`、`heap4-coalesce`、`gpio-matrix-routing`、`idf-uart-events`、`ledc-timer-channel`、`gd32-rcu-clock`。新增动画必须被至少一个章节引用，并在此登记。
+- 现有动画（29 张，总数以 `npm run docs:gen` 为准）：`stack-frame`、`irq-entry`、`context-switch`、`gpio-config`、`boot-sequence`、`i2c-timing`、`queue-passing`、`semaphore-mutex`、`priority-inversion`、`dma-pingpong`、`list-insert`、`spi-timing`、`tcp-handshake`、`rcc-clock-tree`、`tim-pwm-counter`、`tim-input-capture`、`uart-frame`、`usart-txe-tc`、`dma-circular-buffer`、`task-create-stack`、`task-notification`、`event-group-wait`、`software-timer-service`、`heap4-coalesce`、`gpio-matrix-routing`、`idf-uart-events`、`ledc-timer-channel`、`gd32-rcu-clock`、`volatile-as-if`。新增动画必须被至少一个章节引用，并在此登记。
 - 视频嵌入：B 站/油管一律 `<VideoEmbed type="bilibili|youtube" id="…" title="…" />`（主题已全局注册）。**id 嵌入前必须验证真实**：B 站查 `api.bilibili.com/x/web-interface/view?bvid=<id>`、油管查 `youtube.com/oembed?url=...` 核对标题，禁止占位/猜测链接；每个视频配一句"与本章哪一段对照看"。
 
 ## 5. 实物与图片规范
@@ -56,11 +58,13 @@
 
 1. Issue 先聊：新章节/新实验先开 Issue 说清"读者能带走什么"；
 2. PR 自检清单：
-   - [ ] `npm run docs:build` 零错误；
+   - [ ] `npm run docs:gen` 零告警（每章 frontmatter 的 `status` / `difficulty` / `minutes` 齐备）；
+   - [ ] `npm run docs:build` 零错误、零死链；
    - [ ] `grep -rn "TODO|待补充|placeholder" docs/` 无命中；
    - [ ] 四件套落位、风格契约六条逐项过；
    - [ ] 事实出处已标注；
-   - [ ] 新页面已进 sidebar 与路线表；
+   - [ ] 新页面已进 sidebar；新增路线/章节后首页地图与 README 状态段自动跟随，**不要手写数字**；
+   - [ ] 新增板块时同步登记：`config.mts` 的 nav/sidebar + `scripts/gen-progress.mjs` 的 `TRACKS`；
 3.  Commit message：`<板块>: <动作> <主题>`，如 `stm32: 成稿 S3 GPIO 章`。
 
 ## License

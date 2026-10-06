@@ -1,5 +1,8 @@
 ---
 title: R1 线程与调度：256 级位图的另一种写法
+status: building
+difficulty: 2
+minutes: 35
 ---
 
 # R1 线程与调度：rt_thread 解剖

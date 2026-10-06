@@ -1,5 +1,8 @@
 ---
 title: P5 UART 驱动解析：成熟驱动长什么样
+status: done
+difficulty: 3
+minutes: 45
 ---
 
 # P5 UART 驱动解析：成熟驱动长什么样

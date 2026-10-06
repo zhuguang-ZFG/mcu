@@ -1,5 +1,8 @@
 ---
 title: B1 四步构建：从 main.c 到机器码
+status: building
+difficulty: 2
+minutes: 30
 ---
 
 # B1 四步构建：预处理→编译→汇编→链接

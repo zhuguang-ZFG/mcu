@@ -1,5 +1,8 @@
 ---
 title: S4 NVIC 与 EXTI：打断的艺术
+status: building
+difficulty: 3
+minutes: 40
 ---
 
 # S4 NVIC 与 EXTI：让按键来"打断"你

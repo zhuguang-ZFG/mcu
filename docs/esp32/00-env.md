@@ -1,5 +1,8 @@
 ---
 title: P0 环境搭建：ESP-IDF 与小智板的第一次对话
+status: done
+difficulty: 1
+minutes: 30
 ---
 
 # P0 环境搭建：ESP-IDF 与小智板的第一次对话

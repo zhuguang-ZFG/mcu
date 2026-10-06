@@ -1,5 +1,8 @@
 ---
 title: 实验 E02 逻辑分析仪抓 UART 帧
+status: done
+difficulty: 1
+minutes: 40
 ---
 
 # 实验 E02 逻辑分析仪抓 UART 帧

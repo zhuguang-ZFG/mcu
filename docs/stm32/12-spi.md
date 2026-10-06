@@ -1,5 +1,8 @@
 ---
 title: S12 SPI：全双工的移位艺术
+status: building
+difficulty: 3
+minutes: 45
 ---
 
 # S12 SPI：四根线的全双工移位

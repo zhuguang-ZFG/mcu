@@ -8,6 +8,15 @@ export default defineConfig({
   head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/mcu/favicon.svg' }]],
   ignoreDeadLinks: false,
   themeConfig: {
+    search: {
+      provider: 'local',
+      options: {
+        translations: {
+          button: { buttonText: '搜索', resetButtonTitle: '清空搜索' },
+          noResultsText: '没有找到相关段落——换个说法再试，名词类问题去「术语速查」页查。',
+        },
+      },
+    },
     nav: [
       { text: '导读', link: '/guide/' },
       { text: 'C 精髓', link: '/c/' },
@@ -17,6 +26,15 @@ export default defineConfig({
       { text: 'ESP32', link: '/esp32/' },
       { text: 'GD32', link: '/gd32/' },
       { text: '实验', link: '/lab/' },
+      {
+        text: '资料',
+        items: [
+          { text: '术语速查', link: '/reference/glossary' },
+          { text: '常见问题 FAQ', link: '/reference/faq' },
+          { text: '更新日志', link: '/reference/changelog' },
+          { text: '关于我们与致谢', link: '/reference/about' },
+        ],
+      },
     ],
     sidebar: {
       '/guide/': [
@@ -174,6 +192,17 @@ export default defineConfig({
             { text: 'E06 低功耗电流实测', link: '/lab/e06-lowpower-current' },
             { text: 'E07 S3 姿态传感器', link: '/lab/e07-qmi8658' },
             { text: 'E08 S3 音频放音', link: '/lab/e08-audio-play' },
+          ],
+        },
+      ],
+      '/reference/': [
+        {
+          text: '资料',
+          items: [
+            { text: '术语速查', link: '/reference/glossary' },
+            { text: '常见问题 FAQ', link: '/reference/faq' },
+            { text: '更新日志', link: '/reference/changelog' },
+            { text: '关于我们与致谢', link: '/reference/about' },
           ],
         },
       ],

@@ -1,5 +1,8 @@
 ---
 title: S10 DAC：芯片也能输出模拟量
+status: building
+difficulty: 2
+minutes: 30
 ---
 
 # S10 DAC：三个外设协作出一条正弦波

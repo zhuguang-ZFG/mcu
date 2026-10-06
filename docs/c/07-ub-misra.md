@@ -1,5 +1,8 @@
 ---
 title: C7 未定义行为与 MISRA-C 精要
+status: building
+difficulty: 3
+minutes: 35
 ---
 
 # C7 未定义行为：那些"能跑但会炸"的写法

@@ -1,5 +1,8 @@
 ---
 title: 对比 1 选型决策树
+status: building
+difficulty: 1
+minutes: 20
 ---
 
 # 对比 1：选型决策树——什么项目牵谁的手

@@ -130,3 +130,125 @@
   padding-top: 0;
   text-align: center;
 }
+
+/* ===== 首页学习地图（LearningMap.vue） ===== */
+.mcu-map {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 24px 8px;
+}
+
+.mcu-map__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin: 8px 0 28px;
+}
+.mcu-stat {
+  min-width: 116px;
+  padding: 10px 14px;
+  text-align: center;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  background: var(--vp-c-bg-soft);
+}
+.mcu-stat b {
+  display: block;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  color: var(--mcu-brand);
+}
+.mcu-stat b i {
+  font-style: normal;
+  font-size: 0.95rem;
+  color: var(--vp-c-text-3);
+}
+.mcu-stat span {
+  font-size: 0.78rem;
+  color: var(--vp-c-text-2);
+}
+
+.mcu-track {
+  margin: 18px 0;
+}
+.mcu-track__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.mcu-track__name {
+  font-weight: 600;
+  font-size: 1.02rem;
+  color: var(--vp-c-text-1);
+}
+.mcu-track__name:hover {
+  color: var(--mcu-brand);
+  text-decoration: none;
+}
+.mcu-track__count {
+  font-size: 0.78rem;
+  color: var(--vp-c-text-3);
+  white-space: nowrap;
+}
+.mcu-track__bar {
+  flex: 1;
+  min-width: 120px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--vp-c-divider);
+  overflow: hidden;
+}
+.mcu-track__bar i {
+  display: block;
+  height: 100%;
+  background: var(--mcu-accent);
+}
+
+/* 首页地图在 .vp-doc 内，VitePress 的 `.vp-doc ul` 与 `.vp-doc li+li` 特异性更高，
+   这里必须带上 .vp-doc 前缀才能压掉列表圆点和行距。 */
+.vp-doc .mcu-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.vp-doc .mcu-chips li {
+  margin: 0;
+}
+.mcu-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+.mcu-chip em {
+  font-style: normal;
+  font-size: 0.7rem;
+  opacity: 0.75;
+}
+.mcu-chip.is-done {
+  color: var(--mcu-brand);
+  background: rgba(52, 81, 178, 0.09);
+}
+.mcu-chip.is-done:hover {
+  background: rgba(52, 81, 178, 0.16);
+  text-decoration: none;
+}
+.mcu-chip.is-building {
+  color: var(--vp-c-text-3);
+  border-color: var(--vp-c-divider);
+  border-style: dashed;
+}
+.mcu-chip.is-building:hover {
+  color: var(--vp-c-text-2);
+  text-decoration: none;
+}

@@ -1,5 +1,8 @@
 ---
 title: R6 Env 与 menuconfig：RT-Thread 的点单系统
+status: building
+difficulty: 1
+minutes: 25
 ---
 
 # R6 Env、scons 与 menuconfig：配置即代码

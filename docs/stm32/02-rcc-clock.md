@@ -1,5 +1,8 @@
 ---
 title: S2 RCC 时钟树：168MHz 是怎么算出来的
+status: done
+difficulty: 3
+minutes: 50
 ---
 
 # S2 RCC 时钟树：168MHz 是怎么算出来的
@@ -181,6 +184,7 @@ SPL（StdPeriph）未随 ST 官方 GitHub 分发，本轮仍缺一手源码；�
 
 ## 常见坑
 
+- **MCO1PRE 编码想当然按"分频比 − 1"写**：它是 `0xx=不分频、100=/2、101=/3、110=/4、111=/5`（HAL `RCC_MCODIV_1..5` = 0/4/5/6/7）。按 `div−1` 写，/4 会落到"不分频"区，PA8 吐的是 168MHz——对账结论全部作废。
 - **忘配 Flash 等待周期就切 168MHz**：取指超时，直接跑飞——顺序：先 LATENCY，再切 SYSCLK。
 - **HSE 起振失败死等**：晶振虚焊/负载电容不对时 HSERDY 永远不来，代码要加超时回退 HSI。
 - **改了 PLL 忘更新 SystemCoreClock**：后面的延时/波特率全错——本章工程用 `g_clock_tree[]` 回读，不依赖手工维护的全局变量。

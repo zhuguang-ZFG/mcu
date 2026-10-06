@@ -1,5 +1,8 @@
 ---
 title: P6 SPI/I2C 驱动框架：板载外设当教材
+status: building
+difficulty: 3
+minutes: 50
 ---
 
 # P6 SPI/I2C 驱动框架：拿 ST7789 与 QMI8658 当活教材

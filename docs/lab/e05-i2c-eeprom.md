@@ -1,5 +1,8 @@
 ---
 title: 实验 E05 I2C 抓包读 EEPROM
+status: done
+difficulty: 2
+minutes: 50
 ---
 
 # 实验 E05 I2C 抓包读 EEPROM：时序与手册逐拍对表

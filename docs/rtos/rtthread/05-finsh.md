@@ -1,5 +1,8 @@
 ---
 title: R5 finsh 控制台：板子上的 shell
+status: building
+difficulty: 1
+minutes: 25
 ---
 
 # R5 finsh：在单片机上跑 shell 的原理

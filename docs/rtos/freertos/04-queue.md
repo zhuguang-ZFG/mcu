@@ -1,5 +1,8 @@
 ---
 title: F4 队列：传送带的源码解剖
+status: done
+difficulty: 3
+minutes: 45
 ---
 
 # F4 队列：环形存储 + 两个阻塞列表

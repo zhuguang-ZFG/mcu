@@ -1,5 +1,8 @@
 ---
 title: F3 调度器：一条 CLZ 选出下一个任务
+status: done
+difficulty: 3
+minutes: 50
 ---
 
 # F3 调度器：位图、tick 与阻塞延时
