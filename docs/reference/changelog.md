@@ -15,6 +15,7 @@ title: 更新日志
 - **顺带揪出三处同排压字**：`context-switch`（`psp 存进 TCB_A` 与栈帧说明挤在同一行）、`uart-frame`（帧说明与位标注基线只差 8px）、`usart-txe-tc`（TXE 说明与反例文字重叠 34px）。只动坐标与锚点，配色与节拍未改。
 - **B2 ELF 解剖成稿**：`readelf`/`objdump`/`nm` 五刀拆 `blink.elf` 与刻意留脏的 `elf_probe.elf`，34,604 字节 ELF 与 660 字节 bin、`.data` 的 `FileSiz=0x0c` 对 `MemSiz=0x20`、91 个中断弱别名、`readelf -s` 与 `nm` 的那个 ±1 全部是量出来的；取证工程 `code/toolchain/02-elf/probe.sh` 不要开发板也不要 make。
 - **C1 内存模型成稿**：五段论 → 一个全局变量的三段旅程（源码 → ELF 双地址 → 上电搬运）→ `const` 经济学 → `nm`/map 审计，配套 `code/c/01-memory-model/probe.sh` 双工具链取证。
+- **修掉 S2 工程里的一处真 bug**：`code/stm32/01-rcc-clock/main.c` 的 `mco1_init()` 把 `MCO1PRE` 按"分频比 − 1"编码，`/4` 写成 `0b011`——那一位落在**不分频**区，PA8 实际吐 168MHz，本章 42MHz 的对账本来不成立。改成显式映射表（/1 /2 /3 /4 /5 → 编码 0/4/5/6/7，依据 ST HAL `RCC_MCODIV_1..5`，`stm32f4xx_hal_rcc.h:314-318` @`1f6451c`）；默认与 `USE_HSE_PLL=1` 两档构建复编通过。同批把 G1 工程的 `clock_tree_readback()` 改成按 `SCSS` 如实解码时钟源、按 `RCU_PLL` 参数重算频率——回退路径不再由调用方传"自己以为的那一档"。
 - 尚开着的坑：`00-blink` 六变体的板上现象、`CK_OUT0`/`MCO1` 的示波器实测值仍待接板回填。
 
 ## 2026-10-06 · 读者侧升级

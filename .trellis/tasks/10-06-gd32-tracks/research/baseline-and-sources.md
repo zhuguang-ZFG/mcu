@@ -48,3 +48,14 @@ G1 成稿坐实的事实（行号 = 上述文件）：
 - GPIO：CTL 0x00（2bit/脚）、OCTL 0x14、BOP 0x18、AFSEL0 0x20（0-7）、AFSEL1 0x24（8-15）（gpio.h:52-61）；
 - 基准：GD32F450ZG 1MB Flash / 256KB SRAM 口径为产品选型表，**待 UM 核验**；FMC 等待对照表**待 UM 核验**（工程以 FMC_WS_VALUE=6 保守超配并已标注）。
 - IRQn 0..81（82 个外设向量，FPU_IRQn=81，gd32f4xx.h:279-284）。
+
+## 实施期补记（2026-10-06，勘误批次）
+
+1. **FMC 等待官方留白升级为全库证据**：浅克隆官方库（`git clone --depth 1` → 3295 文件）后全量检索 `fmc_wscnt_set` / `FMC_WS`，Examples/ 树**零命中**——官方示例从不设置 Flash 等待。原因（硬件自适应 or 示例跑低频）待 UM/上板核验，页面上明确标"不猜"。
+   工具教训：Windows git.exe 不认 MSYS 路径 `/d/tmp/...`，会写到 `D:\d\tmp\...`（与 curl -o 同类）；克隆命令须用 `D:/tmp/...` 或先 cd。
+2. **MCO1/CK_OUT0 编码两面坐实**（写章节时曾误称"STM32 是 2 的幂"）：
+   - ST HAL 头 `stm32f4xx_hal_rcc.h:314-318` @1f6451c：`RCC_MCODIV_1..5 = 0/4/5/6/7` → 0xx=不分频、100=/2、101=/3、110=/4、111=/5；
+   - GD32 `rcu.h:897-901` 同款 /1~/5，编码相同。**两边一致**，/4 编码均为 6。
+   - 发现并修复 S2 工程真 bug：`code/stm32/01-rcc-clock/main.c` 原以 `div-1` 编码，/4 写成 3（0b011）→ 落入"不分频"区，PA8 实为 168MHz，S2 的 42MHz 对账不成立。已改显式映射表（1/2/3/4/5 → 0/4/5/6/7）。
+3. **官方库空转 bug 坐实**：`system_gd32f4xx.c:208-210` 的 `while(0 != (RCU_CFG0 & RCU_SCSS_IRC16M))` 恒假（`RCU_SCSS_IRC16M = CFG0_SCSS(0) = 0`，rcu.h:817）——一次都不等，与 S2 中 HAL 轮询 SWS（hal_rcc.c:681）形成对照，已写入 G1 章节。
+4. **G1 工程回读改造**：`clock_tree_readback()` 改为按 SCSS 解码实际源 + 按 RCU_PLL 参数重算频率；此前三个故障分支传 `HXTAL_VALUE_HZ` 而 SCS 从未切 HXTAL，属确定性报假账（已修，全部调用点无参）。
