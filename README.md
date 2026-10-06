@@ -141,7 +141,7 @@ npm run links:check     # 仓库根 README/CONTRIBUTING 的相对链接检查（
 
 **Q3 页面上的数字可信吗？** 章节数、动画数、工程数由 `npm run docs:gen` 扫文件得出；正文里的字节数、地址、频率一律来自实测输出，能复跑。凡是没量过的现象标「待上板实测」。
 
-**Q4 动画在 GitHub 上不动？** 章节正文里的动画在**站点**是内联 SVG，打开即播；在 GitHub 上点 `docs/public/anim/xxx.svg` 也能播（浏览器直接渲染 SVG 文档）。想批量检查版式，用 [scripts/anim-audit.html](scripts/anim-audit.html)，用法见 [动画规范 §7](.trellis/spec/docs-site/animation.md)。
+**Q4 动画怎么看？** 章节正文里的动画在**站点**上是内联 SVG（构建期由 `![…](/anim/xxx.svg)` 自动内联成 `<AnimFigure>`），打开即播，随深浅主题换色：<https://zhuguang-zfg.github.io/mcu/>。本地单独看某一张，用浏览器直接打开 `docs/public/anim/xxx.svg` 即可。想批量检查版式（出界/压字），用 [scripts/anim-audit.html](scripts/anim-audit.html)，用法见 [动画规范 §7](.trellis/spec/docs-site/animation.md)。
 
 **Q5 发现写错了怎么办？** 欢迎提 [Issue](https://github.com/zhuguang-ZFG/mcu/issues) 或按 [CONTRIBUTING.md](CONTRIBUTING.md) 直接提 PR——注明文件与小节、原文、应为、依据。本站自己的勘误记录在 [更新日志](docs/reference/changelog.md)，不偷偷改掉。
 
