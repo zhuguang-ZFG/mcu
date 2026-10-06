@@ -42,7 +42,7 @@
 | [GD32 双系对照](docs/gd32/index.md) | 1 / 1 | [G1 RCU 时钟树](docs/gd32/01-rcu-clock.md) |
 | [实物实验中心](docs/lab/index.md) | 8 / 8 | [实验 E01 点亮霸天虎的 RGB 红灯](docs/lab/e01-blink.md) · [实验 E02 逻辑分析仪抓 UART 帧](docs/lab/e02-logic-uart.md) · [实验 E03 示波器看 PWM](docs/lab/e03-scope-pwm.md) · [实验 E04 优先级反转复现](docs/lab/e04-priority-inversion.md) · [实验 E05 I2C 抓包读 EEPROM](docs/lab/e05-i2c-eeprom.md) · [实验 E06 低功耗电流实测](docs/lab/e06-lowpower-current.md) · [实验 E07 S3 板载姿态传感器](docs/lab/e07-qmi8658.md) · [实验 E08 S3 音频链路放音](docs/lab/e08-audio-play.md) |
 
-- 成稿章节 **23 / 66**，通读约 **980 分钟**（≈ 16.3 小时）；
+- 成稿章节 **23 / 66**（上表「实物实验」那一行的 8 篇另计，不进章节数），通读约 **980 分钟**（≈ 16.3 小时）；
 - 实物实验 **8 / 8**（E01–E08 全部成稿）；
 - 机制动画 **29** 张，在 `docs/public/anim/`，动效与版式规范见 `.trellis/spec/docs-site/animation.md`；
 - 可构建示例工程 **13** 个，在 `code/`，与章节同构；

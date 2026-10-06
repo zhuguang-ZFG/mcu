@@ -126,7 +126,7 @@ function renderProgressBlock(trk, tot, warnCount) {
     '|---|---|---|',
     ...rows,
     '',
-    `- 成稿章节 **${tot.chaptersDone} / ${tot.chapters}**，通读约 **${tot.minutes} 分钟**（≈ ${hours} 小时）；`,
+    `- 成稿章节 **${tot.chaptersDone} / ${tot.chapters}**（上表「实物实验」那一行的 ${tot.experimentsDone} 篇另计，不进章节数），通读约 **${tot.minutes} 分钟**（≈ ${hours} 小时）；`,
     `- 实物实验 **${tot.experimentsDone} / ${tot.experiments}**（E01–E08 全部成稿）；`,
     `- 机制动画 **${tot.animations}** 张，在 \`docs/public/anim/\`，动效与版式规范见 \`.trellis/spec/docs-site/animation.md\`；`,
     `- 可构建示例工程 **${tot.projects}** 个，在 \`code/\`，与章节同构；`,
