@@ -44,7 +44,7 @@
 
 - 成稿章节 **23 / 66**（上表「实物实验」那一行的 8 篇另计，不进章节数），通读约 **980 分钟**（≈ 16.3 小时）；
 - 实物实验 **8 / 8**（E01–E08 全部成稿）；
-- 机制动画 **29** 张，在 `docs/public/anim/`，动效与版式规范见 `.trellis/spec/docs-site/animation.md`；
+- 机制动画 **32** 张，在 `docs/public/anim/`，动效与版式规范见 `.trellis/spec/docs-site/animation.md`；
 - 可构建示例工程 **13** 个，在 `code/`，与章节同构；
 - 章节 frontmatter 元数据缺项 **0** 条告警。
 <!-- readme:progress:end -->
@@ -107,7 +107,7 @@ docs/                        VitePress 站点（全部教程内容，base 为 /m
 ├── gd32/                    GD32 双系对照（G 篇 ARM / V 篇 RISC-V）
 ├── lab/                     实物实验中心（模板 + 8 个实验）
 ├── reference/               术语速查 / FAQ / 更新日志 / 关于我们与致谢
-└── public/anim/             29 张 SMIL 机制动画（构建期内联进页面）
+└── public/anim/             32 张 SMIL 机制动画（构建期内联进页面）
 code/                        与章节同构的示例工程（寄存器版，全部逐行注释）
 ├── stm32/ esp32/ rtos/ c/ gd32/
 └── toolchain/               不需要开发板的取证工程（如 02-elf）

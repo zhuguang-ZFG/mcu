@@ -56,7 +56,7 @@
 ## 5. 站点侧会发生什么（改图前先知道）
 
 - `config.mts` 的 `anim-figure-block` 规则把独占一行的 `![](/anim/x.svg)` 换成 `<AnimFigure>`，
-  并把 SVG 原文转义后作为属性内联进该页 chunk（不进共享 chunk，避免每页都背 29 张图）。
+  并把 SVG 原文转义后作为属性内联进该页 chunk（不进共享 chunk，避免每页都背 32 张图）。
   段落里塞 `<figure>` 会被 HTML 解析器挪走 → hydration mismatch，所以必须拆出 `<p>`。
 - `decorateAnim()` 给每个 `id` 加 `af-<slug>-` 前缀（同页多图时 `url(#arr)` 会串到上一张图的箭头），
   并保留自闭合 `/`（少了它 `<rect/>` 会把后面的兄弟节点吞成子节点）。
@@ -79,7 +79,7 @@ npm run docs:gen && npm run docs:build   # 死链门禁必须零错误
 ## 7. 版式审计（出界 / 压字）——必须在浏览器里跑
 
 `anim-lint` 只看得到 SMIL 与色板，看不到"字被画到画布外"和"两行字叠在一起"。
-这两类用 `scripts/anim-audit.html` 判定：它把 29 张图按 viewBox 原尺寸内联，
+这两类用 `scripts/anim-audit.html` 判定：它把 32 张图按 viewBox 原尺寸内联，
 从所有 discrete 动画的 `keyTimes` 取每个阶段槽位的中点当采样时刻，
 `setCurrentTime(t)` 后用祖先链累乘 `opacity` 筛出"这一时刻真的看得见"的文字，
 再量两种违规：越过 viewBox、以及两行不同文字的墨水盒相交。
