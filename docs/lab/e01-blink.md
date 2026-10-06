@@ -1,5 +1,8 @@
 ---
 title: 实验 E01 点亮霸天虎的 RGB 红灯
+status: done
+difficulty: 1
+minutes: 30
 ---
 
 # 实验 E01 点亮霸天虎的 RGB 红灯（寄存器版）
@@ -68,7 +71,7 @@ SWD 接线与供电纪律见 [S0 第五步](../stm32/00-env.md#第五步接线sw
 | 症状 | 最可能原因 | 处置 |
 |---|---|---|
 | `Verified OK` 但灯不亮 | 引脚号错（教程串板） | 确认代码是 PF6 不是 PF9/PA8 |
-| 灯常亮不闪 | 主循环被优化掉/没进 while | 确认 `-O0`，`delay` 参数是 `volatile` |
+| 灯常亮不闪 | 没进 while / 延时被优化掉 | 确认 `-O0`；`delay` 循环体有 `__asm__ volatile ("nop")` 兜底——少这一句才真会被删，见 [C3 六变体实测](../c/03-volatile.md) |
 | OpenOCD 连接失败 | 驱动/接线/供电 | 回 [S0 常见坑](../stm32/00-env.md#常见坑) |
 | `make` 报 missing separator | Makefile 缩进是空格 | 换成 Tab |
 | 改完代码现象不变 | 只 `make` 没 `make flash` | 重新烧录 |
