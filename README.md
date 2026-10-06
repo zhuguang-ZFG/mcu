@@ -44,8 +44,8 @@
 
 - 成稿章节 **23 / 66**（上表「实物实验」那一行的 8 篇另计，不进章节数），通读约 **980 分钟**（≈ 16.3 小时）；
 - 实物实验 **8 / 8**（E01–E08 全部成稿）；
-- 机制动画 **33** 张，在 `docs/public/anim/`，动效与版式规范见 `.trellis/spec/docs-site/animation.md`；
-- 可构建示例工程 **14** 个，在 `code/`，与章节同构；
+- 机制动画 **34** 张，在 `docs/public/anim/`，动效与版式规范见 `.trellis/spec/docs-site/animation.md`；
+- 可构建示例工程 **15** 个，在 `code/`，与章节同构；
 - 章节 frontmatter 元数据缺项 **0** 条告警。
 <!-- readme:progress:end -->
 
@@ -107,10 +107,10 @@ docs/                        VitePress 站点（全部教程内容，base 为 /m
 ├── gd32/                    GD32 双系对照（G 篇 ARM / V 篇 RISC-V）
 ├── lab/                     实物实验中心（模板 + 8 个实验）
 ├── reference/               术语速查 / FAQ / 更新日志 / 关于我们与致谢
-└── public/anim/             33 张 SMIL 机制动画（构建期内联进页面）
+└── public/anim/             34 张 SMIL 机制动画（构建期内联进页面）
 code/                        与章节同构的示例工程（寄存器版，全部逐行注释）
 ├── stm32/ esp32/ rtos/ c/ gd32/
-└── toolchain/               不需要开发板的取证工程（如 02-elf）
+└── toolchain/               不需要开发板的取证工程（如 02-elf；stm32/01-arch、09-adc 也各带一个 probe.sh）
 scripts/                     gen-progress.mjs · anim-lint.mjs · links-check.mjs · anim-audit.html
 .trellis/spec/docs-site/     写作结构、内容风格、动画规范（条款尽量变成可执行检查）
 .github/workflows/           deploy.yml（构建并发布 Pages）· quality.yml（死链 / 动画 / 数字 / 链接四道检查）
@@ -135,7 +135,7 @@ npm run links:check     # 仓库根 README/CONTRIBUTING 的相对链接检查（
 
 完整版在站内 [FAQ](docs/reference/faq.md)，这里只答"在仓库里"才会问的。
 
-**Q1 我没有开发板，能学什么？** [B2 ELF 解剖](docs/build/02-elf.md)、[C1 内存模型](docs/c/01-memory-model.md)、[C3 volatile](docs/c/03-volatile.md) 三篇成稿章节只用编译器与 `readelf`/`objdump`，不需要板子；取证脚本在 [code/toolchain/](code/toolchain/) 与 [code/c/](code/c/)，`sh probe.sh` 一条命令跑完。S0 环境搭建也是无板可做的（装工具链、编出 `blink.bin`）。
+**Q1 我没有开发板，能学什么？** [B2 ELF 解剖](docs/build/02-elf.md)、[C1 内存模型](docs/c/01-memory-model.md)、[C3 volatile](docs/c/03-volatile.md) 三篇成稿章节只用编译器与 `readelf`/`objdump`，不需要板子；取证脚本在 [code/toolchain/](code/toolchain/) 与 [code/c/](code/c/)，`sh probe.sh` 一条命令跑完。S1 位带与 S9 的 SAR 算法也各有 `probe.sh`（[code/stm32/01-arch/](code/stm32/01-arch/)、[code/stm32/09-adc/](code/stm32/09-adc/)）——一个查 `-O2` 反汇编，一个在宿主机把 12 轮二分的码值全算出来，动画里每个数字都出自它们；这两章的板上现象仍标着待接板回填。S0 环境搭建也是无板可做的（装工具链、编出 `blink.bin`）。
 
 **Q2 为什么很多章节是空的？** 骨架页先建档（结构、学习目标、先修已定），正文按"能实测再写"的顺序补——写了就必须有出处，所以宁可标「建设中」也不预填结论。成稿进度见上表。
 

@@ -49,7 +49,7 @@
 - 颜色只能取规范色板：站点用一张固定映射表换主题 class，自造十六进制值或写 `rgba()` 底纹 = 深色模式漏网。
 - **只有阶段切换不算动画**：每张图至少一处连续运动（爬线 / 生长箭头 / 节拍脉冲），且运动本身承载结论。**禁装饰性动画**——不能帮助理解的动画不如不放。
 - 每个动画在 PR 描述里附"表达结论一句话"；深色模式截图一张。
-- 现有动画（33 张，总数以 `npm run docs:gen` 为准）：`stack-frame`、`irq-entry`、`context-switch`、`gpio-config`、`boot-sequence`、`i2c-timing`、`queue-passing`、`semaphore-mutex`、`priority-inversion`、`dma-pingpong`、`list-insert`、`spi-timing`、`tcp-handshake`、`rcc-clock-tree`、`tim-pwm-counter`、`tim-input-capture`、`uart-frame`、`usart-txe-tc`、`dma-circular-buffer`、`task-create-stack`、`task-notification`、`event-group-wait`、`software-timer-service`、`heap4-coalesce`、`gpio-matrix-routing`、`idf-uart-events`、`ledc-timer-channel`、`gd32-rcu-clock`、`volatile-as-if`、`bus-matrix`（S1）、`memory-two-homes`（C1）、`elf-two-views`（B2）、`bitband-alias`（S1）。新增动画必须被至少一个章节引用，并在此登记。
+- 现有动画（34 张，总数以 `npm run docs:gen` 为准）：`stack-frame`、`irq-entry`、`context-switch`、`gpio-config`、`boot-sequence`、`i2c-timing`、`queue-passing`、`semaphore-mutex`、`priority-inversion`、`dma-pingpong`、`list-insert`、`spi-timing`、`tcp-handshake`、`rcc-clock-tree`、`tim-pwm-counter`、`tim-input-capture`、`uart-frame`、`usart-txe-tc`、`dma-circular-buffer`、`task-create-stack`、`task-notification`、`event-group-wait`、`software-timer-service`、`heap4-coalesce`、`gpio-matrix-routing`、`idf-uart-events`、`ledc-timer-channel`、`gd32-rcu-clock`、`volatile-as-if`、`bus-matrix`（S1）、`memory-two-homes`（C1）、`elf-two-views`（B2）、`bitband-alias`（S1）、`sar-successive`（S9）。新增动画必须被至少一个章节引用，并在此登记。
 - 视频嵌入：B 站/油管一律 `<VideoEmbed type="bilibili|youtube" id="…" title="…" />`（主题已全局注册）。**id 嵌入前必须验证真实**：B 站查 `api.bilibili.com/x/web-interface/view?bvid=<id>`、油管查 `youtube.com/oembed?url=...` 核对标题，禁止占位/猜测链接；每个视频配一句"与本章哪一段对照看"。
 
 ## 5. 实物与图片规范

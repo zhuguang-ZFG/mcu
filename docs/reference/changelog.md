@@ -10,14 +10,15 @@ title: 更新日志
 
 ## 2026-10-06 · 动画补洞：机制图从"外围"补到"体内"
 
-先盘家底：29 张动画里协议与外设时序占 9 张（`uart-frame`、`usart-txe-tc`、`i2c-timing`、`spi-timing`、`dma-circular-buffer`、`dma-pingpong`、`tim-pwm-counter`、`tim-input-capture`、`tcp-handshake`），MCU 与内核机制 8 张（`boot-sequence`、`irq-entry`、`context-switch`、`stack-frame`、`rcc-clock-tree`、`gd32-rcu-clock`、`gpio-config`、`gpio-matrix-routing`），RTOS/C 侧 12 张。**两个已"成稿"的硬核章节居然一张图都没有**——C1 讲一个变量在两地生活、B2 把同一个 ELF 翻两副目录，全靠读者自己在脑子里拼图。这一批把最该动的四处补上：
+先盘家底：29 张动画里协议与外设时序占 9 张（`uart-frame`、`usart-txe-tc`、`i2c-timing`、`spi-timing`、`dma-circular-buffer`、`dma-pingpong`、`tim-pwm-counter`、`tim-input-capture`、`tcp-handshake`），MCU 与内核机制 8 张（`boot-sequence`、`irq-entry`、`context-switch`、`stack-frame`、`rcc-clock-tree`、`gd32-rcu-clock`、`gpio-config`、`gpio-matrix-routing`），RTOS/C 侧 12 张。**两个已"成稿"的硬核章节居然一张图都没有**——C1 讲一个变量在两地生活、B2 把同一个 ELF 翻两副目录，全靠读者自己在脑子里拼图。这一批把最该动的五处补上：
 
 - **`bus-matrix.svg`（S1，720×470，5 阶段 / 15s）**：CPU 的 ICode/DCode/System 与 DMA 同挂一张 AHB 矩阵，五条路线逐个爬通——取指打到 Flash（168MHz 下 5 个等待周期，S2 已核过的数），读 `USART1->SR` 要穿 AHB→APB2 桥再同步，DMA 自己发地址但和 CPU 抢同一块 SRAM，最后一阶段故意走不通：**CCM RAM 只接到 CPU**，红线爬到 42% 就停、✕ 每秒闪一下——放错地方就是无声失败（[S8](../stm32/08-dma.md) 有对应翻车实验）。
 - **`memory-two-homes.svg`（C1，720×452，5 阶段 / 15s）**：上电瞬间 RAM 里是随机值（虚线蚂蚁在爬）→ `Reset_Handler` 从 `_sidata=0x080002a0` 搬 12 字节到 `0x20000000`（曲线爬通 + `ldr/str/adds #4` 三圈）→ 绿光标扫过 `0x2000000c..0x2c` 清 `.bss` → 两支生长箭头立起 `_estack=0x20020000`，堆栈相向生长 → 反向路径只爬到 56% 就断，写明"永不回写"。**图里每个地址与字节数都是 `mem_probe.elf` 的实测值**，`sh probe.sh mem` 一条命令复现。
 - **`elf-two-views.svg`（B2，720×458，4 阶段 / 12s）**：中间那条带子是文件里真实的字节顺序，上面挂节表、下面挂程序头，四阶段分别演示两套目录各连到文件哪一块、`Addr` 与 `Off` 差 `0x1000`、`NOBITS` 只登记不给货、第二条 LOAD 的 `FileSiz=0x0c` 与 `MemSiz=0x20` 之差正是 `.bss`，最后 `objcopy` 那一刀把符号表与调试信息整块擦掉（换 `blink.elf` 看：`34,604 − 660 = 33,944`）。
 - **`bitband-alias.svg`（S1，720×452，5 阶段 / 15s）+ 新取证工程 `code/stm32/01-arch/`**：位带机制不再只有公式一行字——八条连线逐点把「一位 → 一个字」摊开，PF6 的别名地址按 `0x4200_0000 + 0x21414×32 + 6×4 = 0x4242_8298` 现场算出，源码里三条 `_Static_assert` 验算（编不过就是算错了）。左下与右下的反汇编是 xPack GCC 15.2.1 `-O2` 的真实输出：`GPIOF->ODR |= 1u<<6` 编成 `ldr / orr.w #64 / str` 三条，写别名字只剩 `movs r2,#1` + `str.w r2,[r3,#664]`（字面量 `0x4242_8000` 加 `0x298` 正是算出来的那个数）。`sh code/stm32/01-arch/probe.sh` 一条命令复现，不要开发板。
-- **三道闸门 + 一道人眼闸门全绿**：`npm run anim:lint` 33/33 通过；`scripts/anim-audit.html` 逐阶段量"出界 / 压字"报 **33 张，有问题 0 处**；`npm run docs:build` 零死链（`ignoreDeadLinks: false` 仍开着）；`readme:check` 与 `links:check`（根文档 86 个链接）通过。四张新图在站点里被构建期内联成 `<AnimFigure>`，深色主题下底色实测 `rgb(30, 34, 42)`，无硬编码白块。
-- 尚开着的坑（按缺口大小排）：MCU 体内机制还缺 **ADC 逐次逼近、Flash 擦写与等待周期、低功耗进入/唤醒、HardFault 栈溢出现场、NVIC 尾链、PLL 模拟环路**；协议侧 CAN 帧与仲裁、Modbus RTU 的 T3.5、1-Wire、USB 枚举、I2S、MQTT/TLS **连章节都还没有**——图和文得一起补。位带翻 PF6 的板上现象仍待接板回填。
+- **`sar-successive.svg`（S9，720×440，5 阶段 / 15s）+ 新取证工程 `code/stm32/09-adc/`**：逐次逼近不再只剩"像猜数字"这一句比喻——上面一格是采样保持给 `C_H` 充电定格，中间 12 个寄存器格子从 bit11 起逐个试 1，下面 DAC 把码值反喂、比较器只答大小：2048→1.6500 V 留、3072→2.4750 V 丢、2560→2.0625 V 丢，12 轮砍到 `1001 1011 0010` = 2482 = 0x9B2 → 1.9997 V，差 0.342 mV = 0.42 LSB；第 ⑤ 阶段把镜头拉回精度真正的天花板——高阻源没充满就转，红色充电曲线爬到半路就停。那 12 行试探表由 `sh code/stm32/09-adc/probe.sh sar` 现场算出（宿主 gcc，`-DVIN`/`-DVREF`/`-DBITS` 随便换：1.65 V 正落 0x800 误差 0.00 LSB，3.29 V 落 0xFF3 离满量程还差 12 个码，`-DBITS=8` 就只剩 8 轮）。**这是理想 ADC 的算法仿真，板上读数仍待接板实测**，`cross` 那一档只产 `.o`。
+- **三道闸门 + 一道人眼闸门全绿**：`npm run anim:lint` 34/34 通过；`scripts/anim-audit.html` 逐阶段量"出界 / 压字"报 **34 张，有问题 0 处**；`npm run docs:build` 零死链（`ignoreDeadLinks: false` 仍开着）；`readme:check` 与 `links:check`（根文档 88 个链接）通过。五张新图在站点里被构建期内联成 `<AnimFigure>`，深色主题下底色实测 `rgb(30, 34, 42)`，无硬编码白块。
+- 尚开着的坑（按缺口大小排）：MCU 体内机制还缺 **Flash 擦写与等待周期、低功耗进入/唤醒、HardFault 栈溢出现场、NVIC 尾链、PLL 模拟环路**；协议侧 CAN 帧与仲裁、Modbus RTU 的 T3.5、1-Wire、USB 枚举、I2S、MQTT/TLS **连章节都还没有**——图和文得一起补。位带翻 PF6 的板上现象、SAR 的真实读数（采样时间/源阻抗两栏实验）仍待接板回填。
 
 ## 2026-10-06 · 动画可执行化 + B2/C1 成稿
 
