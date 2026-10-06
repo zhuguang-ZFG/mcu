@@ -40,7 +40,7 @@ if command -v "${ARMPREFIX}gcc" >/dev/null 2>&1; then
         probe.c -o build/probe.s
 
     echo "----- 叶子函数 add2：没调用任何人 → 不 push lr -----"
-    sed -n '/^add2:/,/\.size[[:space:]]*add2/p' build/probe.s | grep -E "add|bx|^add2:|link register"
+    sed -n '/^add2:/,/\.size[[:space:]]*add2/p' build/probe.s | grep -E "add|bx|^add2:|link register" || true
 
     echo "----- sum6：前 4 个参数 r0-r3；第 5、6 个由调用方 str 上栈 -----"
     sed -n '/^sum6:/,/\.size[[:space:]]*sum6/p' build/probe.s | head -14
@@ -50,11 +50,11 @@ if command -v "${ARMPREFIX}gcc" >/dev/null 2>&1; then
 
     echo "----- mix(int, long long)：64 位必须落在偶数寄存器 → r1 被跳过 -----"
     echo "  [被调方] 只读 r0（tag）与 r2:r3（v），从没读入参 r1；r1 只作 64 位返回值的高半："
-    sed -n '/^mix:/,/\.size[[:space:]]*mix/p' build/probe.s | grep -E "r0|r1|r2|r3|bx" | grep -v "^\s*@"
+    sed -n '/^mix:/,/\.size[[:space:]]*mix/p' build/probe.s | grep -E "r0|r1|r2|r3|bx" | grep -v "^\s*@" || true
     echo "  [调用方] r0=tag，r2:r3=v（注意 r1 压根没被赋值）——这就是「跳过 r1」："
     sed -n '/^main:/,/\.size[[:space:]]*main/p' build/probe.s \
         | awk '/bl[[:space:]]+add64/{f=1;next} /bl[[:space:]]+mix/{exit} f' \
-        | grep -E "movs?[[:space:]]+r[0-3],"
+        | grep -E "movs?[[:space:]]+r[0-3]," || true
 
     echo "----- 非叶子 non_leaf：push {r4, lr} … pop {r4, pc}（返回地址直接弹进 PC） -----"
     sed -n '/^non_leaf:/,/\.size[[:space:]]*non_leaf/p' build/probe.s | grep -E "push|pop|sub[[:space:]]+sp|bl[[:space:]]" | head -8

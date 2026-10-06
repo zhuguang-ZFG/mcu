@@ -97,10 +97,10 @@ if command -v "${ARMPREFIX}gcc" >/dev/null 2>&1; then
     sed -n '/<HardFault_Handler>:/,/^$/p' build/fault_ctx.dis
 
     echo "----- .text 落址（Flash 0x08000000，对照 B1 的链接四步） -----"
-    "${ARMPREFIX}objdump" -h build/fault_ctx.elf | grep -E '^ +[0-9]+ \.text '
+    "${ARMPREFIX}objdump" -h build/fault_ctx.elf | grep -E '^ +[0-9]+ \.text ' || true
 
     echo "----- 三具尸体的符号地址 -----"
-    "${ARMPREFIX}nm" build/fault_ctx.elf | grep -E ' (crash_null|crash_unaligned|crash_divzero|HardFault_Handler|hardfault_report)$'
+    "${ARMPREFIX}nm" build/fault_ctx.elf | grep -E ' (crash_null|crash_unaligned|crash_divzero|HardFault_Handler|hardfault_report)$' || true
 
     ADDR=$("${ARMPREFIX}nm" build/fault_ctx.elf | awk '/ crash_null$/{print $1; exit}')
     FAULT=$("${ARMPREFIX}objdump" -d build/fault_ctx.elf \
