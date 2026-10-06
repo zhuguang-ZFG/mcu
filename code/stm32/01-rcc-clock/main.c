@@ -153,14 +153,28 @@ static void led_set(uint32_t on)
 }
 
 /** MCO1：把内部时钟引到引脚上，这是"不可见的时钟"变可见的最短路径。
- *  这里选 /4：168/4 = 42MHz，示波器量起来轻松，量到的数除以 4 就是 SYSCLK。 */
+ *  这里选 /4：168/4 = 42MHz，示波器量起来轻松，量到的数乘以 4 就是 SYSCLK。
+ *
+ *  编码陷阱：MCO1PRE[2:0] 不是"分频比 − 1"，而是
+ *    0xx = 不分频, 100 = /2, 101 = /3, 110 = /4, 111 = /5
+ *  （ST 官方 HAL 头文件 RCC_MCODIV_1..5 = 0/4/5/6/7，stm32f4xx_hal_rcc.h:314-318 @1f6451c）。
+ *  想当然写 div−1 的话，/4 会得到 0b011——落进"不分频"区，PA8 直接吐 168MHz，
+ *  对账结论整个作废。这张显式映射表就是防呆。 */
 static void mco1_init(uint32_t sysclk_hz)
 {
+    static const struct { uint32_t div; uint32_t pre; } mco_pre[] = {
+        { 1U, 0U }, { 2U, 4U }, { 3U, 5U }, { 4U, 6U }, { 5U, 7U },
+    };
     uint32_t div = 1UL;
+    uint32_t pre = 0UL;
+
     while ((sysclk_hz / div) > 42000000UL) { div++; }   /* 目标 ≈42MHz */
 
-    /* RCC_CFGR[26:24] 写 div-1 */
-    RCC_CFGR = (RCC_CFGR & ~RCC_CFGR_MCO1PRE) | ((div - 1UL) << 24);
+    for (uint32_t i = 0; i < sizeof mco_pre / sizeof mco_pre[0]; i++) {
+        if (mco_pre[i].div == div) { pre = mco_pre[i].pre; break; }
+    }
+
+    RCC_CFGR = (RCC_CFGR & ~RCC_CFGR_MCO1PRE) | (pre << 24);
 
     /* GPIOA 使能在 RCC_AHB1ENR bit0 */
     *(volatile uint32_t *)(RCC_BASE + 0x30UL) |= (1UL << 0);
