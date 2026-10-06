@@ -14,7 +14,9 @@ V3.3.3（GitHub `GigaDevice-GD32-MCU/GD32F4xx_Firmware_Library` @ `10d02f4`）�
 6. CK_OUT0（PA8, AF0）输出 PLLP/4 = **理论 50MHz**（待上板实测对账）。
 
 调试观察点：`g_clock_status`（0=PLL 档，1/2/3/4=各级回退）与 `g_clock_tree[]`
-（CK_SYS/CK_AHB/CK_APB1/CK_APB2）。
+（CK_SYS/CK_AHB/CK_APB1/CK_APB2）。`clock_tree_readback()` 按 **SCSS 如实解码**
+当前时钟源、按 RCU_PLL 参数重算频率——回退路径也报真值（例如 PLL 未锁定即为
+IRC16M 16MHz，而不是"以为的 25MHz"）。
 
 ## 构建
 

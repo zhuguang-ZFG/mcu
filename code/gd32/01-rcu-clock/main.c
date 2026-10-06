@@ -57,6 +57,7 @@
 #define RCU_CKSYSSRC_IRC16M (0UL << 0)
 #define RCU_CKSYSSRC_PLLP   (2UL << 0)
 #define RCU_SCSS_IRC16M     (0UL << 2)
+#define RCU_SCSS_HXTAL      (1UL << 2)   /*!< gd32f4xx_rcu.h:819 */
 #define RCU_SCSS_PLLP       (2UL << 2)
 #define RCU_AHB_CKSYS_DIV1  (0UL << 4)   /*!< AHBPSC[6:4 区] = 0（gd32f4xx_rcu.h:824） */
 #define RCU_APB2_CKAHB_DIV2 (4UL << 13)  /*!< APB2PSC = 4（:845） */
@@ -188,11 +189,34 @@ static void fmc_ws_set(uint32_t ws)
     FMC_WS = (FMC_WS & ~FMC_WC_WSCNT) | (ws & FMC_WC_WSCNT);
 }
 
-/* ⑥ 从 CFG0 反推真实时钟树（GDB 里看 g_clock_tree[]） */
-static void clock_tree_readback(uint32_t ck_sys)
+/* ⑥ 从寄存器反推真实时钟树（GDB 里看 g_clock_tree[]）。
+ *    源由 SCSS 如实解码、PLL 频率由 RCU_PLL 参数重算——故障路径也报真账，
+ *    绝不"调用方以为是哪档就填哪档"。 */
+static uint32_t pll_output_hz(void)
+{
+    uint32_t pll = RCU_PLL;
+    uint32_t psc = pll & 0x3FUL;
+    uint32_t n = (pll >> 6) & 0x1FFUL;
+    uint32_t p = (((pll >> 16) & 0x3UL) + 1UL) * 2UL;
+    uint32_t src = (pll & RCU_PLLSRC_HXTAL) ? HXTAL_VALUE_HZ : 16000000UL;
+
+    if ((0 == psc) || (0 == n)) {
+        return 0UL;                      /* PLL 未配置 */
+    }
+    return (src / psc) * n / p;
+}
+
+static void clock_tree_readback(void)
 {
     uint32_t cfg = RCU_CFG0;
     uint32_t ahb_div = 1U, apb1_div = 1U, apb2_div = 1U;
+    uint32_t ck_sys;
+
+    switch (cfg & RCU_CFG0_SCSS) {       /* 实际源：SCSS 回执，不是"我们以为" */
+    case RCU_SCSS_PLLP:  ck_sys = pll_output_hz(); break;
+    case RCU_SCSS_HXTAL: ck_sys = HXTAL_VALUE_HZ; break;
+    default:             ck_sys = 16000000UL; break;   /* IRC16M */
+    }
 
     switch ((cfg >> 4) & 0xFUL) {        /* AHBPSC（gd32f4xx_rcu.h:824-831） */
     case 8:  ahb_div = 2U; break;
@@ -245,12 +269,12 @@ static void clock_init(void)
 {
     if (hxtal_enable() != 0) {           /* 晶振不来：回退，不死等 */
         g_clock_status = 1U;
-        clock_tree_readback(16000000UL);
+        clock_tree_readback();
         return;
     }
     if (pmu_highdrive_enter() != 0) {    /* 电压档没握手成功 */
         g_clock_status = 2U;
-        clock_tree_readback(HXTAL_VALUE_HZ);
+        clock_tree_readback();
         return;
     }
 
@@ -258,17 +282,17 @@ static void clock_init(void)
 
     if (pll_start() != 0) {
         g_clock_status = 3U;
-        clock_tree_readback(HXTAL_VALUE_HZ);
+        clock_tree_readback();
         return;
     }
     if (clock_switch_to_pllp() != 0) {
         g_clock_status = 4U;
-        clock_tree_readback(HXTAL_VALUE_HZ);
+        clock_tree_readback();
         return;
     }
 
     g_clock_status = 0U;
-    clock_tree_readback(PLL_N * (HXTAL_VALUE_HZ / PLL_PSC) / PLL_P);
+    clock_tree_readback();
     ckout0_init();                       /* 理论 50MHz 上 PA8，待上板实测 */
 }
 
