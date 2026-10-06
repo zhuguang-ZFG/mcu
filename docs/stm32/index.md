@@ -12,16 +12,16 @@ title: S 篇导览
 |---|---|---|
 | S0 | [环境搭建](00-env.md)【成稿】 | 四件工具四个文件，红灯先闪起来 |
 | S1 | [架构总览](01-arch.md) | 为什么 0x40020000 是 GPIOA |
-| S2 | [RCC 时钟树](02-rcc-clock.md) | HSE→PLL→168MHz 手算全流程 |
+| S2 | [RCC 时钟树](02-rcc-clock.md)【成稿】 | HSE→PLL→168MHz 手算全流程（动画） |
 | S3 | [GPIO](03-gpio.md)【成稿】 | 七个寄存器位级图解（动画） |
 | S4 | [NVIC 与 EXTI](04-nvic-exti.md) | 中断现场与优先级（含动画） |
 | S5 | [SysTick](05-systick.md) | 内核定时器与精确延时 |
-| S6 | [定时器 TIM](06-tim.md) | 时基/PWM/输入捕获 |
-| S7 | [USART](07-usart.md) | 波特率、状态机、printf 重定向 |
-| S8 | [DMA](08-dma.md) | CPU 卸载与总线仲裁 |
+| S6 | [定时器 TIM](06-tim.md)【成稿】 | 时基/PWM/输入捕获（动画 x2 + 工程实测） |
+| S7 | [USART](07-usart.md)【成稿】 | 波特率实算、TXE/TC、IDLE+DMA 环形（动画 x2 + 工程） |
+| S8 | [DMA](08-dma.md)【成稿】 | 流/通道、环形与乒乓、处理期限（动画 x2 + 工程） |
 | S9 | [ADC](09-adc.md) | SAR 原理与采样时间 |
 | S10 | [DAC](10-dac.md) | 三外设协作出正弦 |
-| S11 | [I2C](11-i2c.md) | 时序与寄存器的逐拍对应 |
+| S11 | [I2C](11-i2c.md)【成稿】 | 时序与寄存器的逐拍对应（动画 + 视频） |
 | S12 | [SPI](12-spi.md) | 全双工移位与四模式 |
 | S13 | [内部 Flash 与 IAP](13-flash-iap.md) | 擦写规则与选项字节 |
 | S14 | [低功耗](14-pwr.md) | 三种模式的唤醒与实测 |

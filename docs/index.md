@@ -56,6 +56,14 @@ features:
 | [B4 启动过程：上电到 main](/build/04-startup.md) | 复位一毫秒动画 + 启动文件逐行过堂 |
 | [F2 上下文切换：PendSV 换魂术](/rtos/freertos/02-context-switch.md) | 换魂动画 + 十一条汇编逐行 + 野火内核视频 |
 
+## 最新一波成稿（每章都有动画和能跑的工程）
+
+| 路线 | 新成稿 |
+|---|---|
+| STM32 | [S2 RCC 时钟树](/stm32/02-rcc-clock.md) · [S6 定时器 TIM](/stm32/06-tim.md) · [S7 USART](/stm32/07-usart.md) · [S8 DMA](/stm32/08-dma.md) · [S11 I2C](/stm32/11-i2c.md) |
+| FreeRTOS | [F1 任务与 TCB](/rtos/freertos/01-task-tcb.md) · [F3 调度器](/rtos/freertos/03-scheduler.md) · [F4 队列](/rtos/freertos/04-queue.md) · [F5 信号量与互斥](/rtos/freertos/05-sem-mutex.md) · [F6 通知/事件/定时器](/rtos/freertos/06-notify-event-timer.md) · [F7 内存管理](/rtos/freertos/07-heap.md) |
+| ESP32-S3 | [P2 GPIO 矩阵](/esp32/02-gpio-matrix.md) · [P5 UART 驱动](/esp32/05-uart-driver.md) · [P7 定时器与 LEDC](/esp32/07-timer-ledc.md) |
+
 > 每章同一个循环：**手册 → 寄存器 → 库源码 → 实物**。看不懂的那一环，就是该回去补的那一环。
 
 </div>

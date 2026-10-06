@@ -6,3 +6,9 @@ docs/.vitepress/cache/
 
 # 上游参考源码(写作引用基准,不入库)
 .trellis/ref/
+
+# 固件构建产物（源码与 sdkconfig 入库，build 产物不入库）
+code/**/build/
+code/esp32/**/sdkconfig.old
+code/esp32/**/managed_components/
+code/esp32/**/dependencies.lock

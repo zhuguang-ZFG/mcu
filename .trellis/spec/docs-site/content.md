@@ -25,6 +25,15 @@
 - 板卡事实唯一基准：PRD/design 的"已核实板卡事实"（霸天虎 LED=PF6/7/8 共阳、立创 S3 外设清单）。除此之外的寄存器地址/引脚号：写"以 RM0090 §x.x / datasheet / 立创 wiki 原理图为准"，**禁止编造数值**。
 - 已核对的数值必须给第二来源：本任务已用 ST 官方 CMSIS 头文件（github.com/STMicroelectronics/cmsis_device_f4）核对 GPIOF=0x40021400、RCC=0x40023800、AHB1ENR=0x30、GPIOFEN=bit5、BSRR=0x18。新增同类事实沿用此法（CMSIS 头文件 / 官方手册 PDF）。
 
+## 版本与芯片边界（2026-10 批次沉淀）
+
+- F 篇内核结论只对**上游 FreeRTOS-Kernel V11.1.0 + ARM_CM4F** 负责；ESP-IDF v5.5.2 内置的是 V10.5.1 SMP 修改版，行号/单位/调度结论不混读。
+- V11 内核的 `INCLUDE_*` 宏默认全关：`vTaskDelay` 等 API 链接不上时先查 FreeRTOSConfig.h，不是代码坏了。
+- 事件组清位是**汇总清**（xEventGroupSetBits 走完整个等待列表后统一清），不是"先唤醒者独占"。
+- ESP32-S3 的 LEDC 是 **8 通道、14 位位宽、仅低速模式**（soc_caps.h）；经典 ESP32 的 16 通道/高速模式结论不能套。S3 模组 N16R8 的八线 PSRAM 占 IO35/36/37。
+- STM32F407：Port F 没有 TIM3 通道（PF6/7/8 在 AF3 是 TIM10/11/13）；USART1 的 DMA 请求在 **DMA2**（不是 DMA1）；DMA 标志清除写 HIFCR/LIFCR（HISR/LISR 只读）；AHB 预分频没有 /32 档（HPRE 1100=/64）。
+- 链接脚本的 MEMORY 区域属性合法字母只有 r/w/x/a/i/l——老教程的 `(xrwah)` 里的 `h` 在新 binutils 下是硬错误。
+
 ## 动画制作
 
 - SVG+SMIL，viewBox 宽 720，`<animate>` 用 `calcMode="discrete"` 做阶段切换（样例：`docs/public/anim/stack-frame.svg` 的四阶段 12s 循环结构，照抄其 keyTimes/values 模式）；

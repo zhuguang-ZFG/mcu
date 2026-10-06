@@ -1,0 +1,353 @@
+/**
+ * main.c —— 03-uart-dma：串口收发的两级缓冲，和"可写 ≠ 发完"
+ *
+ * 这个工程想讲清三件事：
+ *
+ * 1) 波特率是算出来的，不是填出来的。
+ *    默认 16 倍过采样（OVER8=0）时  baud = f_PCLK / BRR。时钟一变，波特率就跟着变，
+ *    所以 BRR 必须由"回读出来的 PCLK"算，而不是写死一个魔数。
+ *    （1MHz 那种 PLL 参考时钟不能直接喂 USART：BRR=9 时误差 -3.6%，
+ *      收发就已经不可靠了。见 S2/S7。）
+ *
+ * 2) 接收有两级缓冲：串口自己的移位寄存器/FIFO，DMA 搬进我们的环形数组。
+ *    DMA 不理解"帧"，它只理解"搬够 N 个字节"。
+ *    帧边界靠 USART 的 IDLE 标志（总线空闲一个帧时间就置位）来判断。
+ *
+ * 3) TXE 只说明"数据寄存器空出来了"，TC 才说明"停止位已经发出去"。
+ *    在 RS-485 这种需要切方向的场合，漏掉 TC 就会把最后一位切掉。
+ *
+ * 引脚依据：DS8626 Table 9，PA9=USART1_TX(AF7)、PA10=USART1_RX(AF7)。
+ *
+ * ⚠ DMA stream/channel 的取值见下方宏区。权威来源是 RM0090 的
+ *   "DMA2 request mapping" 表（Rev 18 Table 43）；本次实施未能取得该表正文（见任务研究记录），
+ *   所以这里不把它当成"板上事实"，而是集中成两个宏：
+ *   换板子/换 IDF 版本时只改这两行，改完跑一遍下面的自检步骤即可确认。
+ *
+ * 上板自检步骤（USB-TTL 接 PA9/PA10，115200 8N1）：
+ *   a. 电脑上发任意字符串；
+ *   b. g_rx_bytes 与 g_frames 应同时增长，g_frames 就是 IDLE 判出的帧数；
+ *   c. 蓝灯每收到一帧闪一次；
+ *   d. 若 g_rx_bytes 始终为 0，说明 stream/channel 配错了——
+ *      回查 RM0090 的 DMA2 request mapping 表，改上面两个宏重来。
+ */
+
+#include <stdint.h>
+
+/* ============================ 板级/通道配置 ============================ */
+
+#define USART1_BASE   (0x40011000UL)   /* APB2PERIPH_BASE + 0x1000 */
+#define DMA2_BASE     (0x40026400UL)   /* AHB1PERIPH_BASE + 0x6400 */
+#define DMA2_S5_BASE  (DMA2_BASE + 0x088UL)
+#define DMA2_LISR     (*(volatile uint32_t *)(DMA2_BASE + 0x00UL))
+#define DMA2_HISR     (*(volatile uint32_t *)(DMA2_BASE + 0x04UL))
+#define DMA2_HIFCR    (*(volatile uint32_t *)(DMA2_BASE + 0x0CUL)) /* 标志清除只走这个寄存器 */
+
+#define GPIOA_BASE    (0x40020000UL)
+#define GPIOA_MODER   (*(volatile uint32_t *)(GPIOA_BASE + 0x00UL))
+#define GPIOA_AFRH    (*(volatile uint32_t *)(GPIOA_BASE + 0x24UL)) /* 引脚 8..15 */
+
+#define GPIOF_BASE    (0x40021400UL)
+#define GPIOF_MODER   (*(volatile uint32_t *)(GPIOF_BASE + 0x00UL))
+#define GPIOF_BSRR    (*(volatile uint32_t *)(GPIOF_BASE + 0x18UL))
+
+#define RCC_BASE      (0x40023800UL)
+#define RCC_CFGR      (*(volatile uint32_t *)(RCC_BASE + 0x08UL))
+#define RCC_AHB1ENR   (*(volatile uint32_t *)(RCC_BASE + 0x30UL))
+#define RCC_APB2ENR   (*(volatile uint32_t *)(RCC_BASE + 0x44UL))
+
+/* ---- DMA 通道选择：权威表是 RM0090 Rev 18 Table 43（DMA2 request mapping） ----
+ * USART1_RX → DMA2 Stream5 Channel4（也可走 Stream2 Channel4）。
+ * 注意控制器是 DMA2 不是 DMA1：USART1 挂在 APB2 上，它的 DMA 请求归 DMA2 管——
+ * 选错控制器，数据永远不会来。本次实施未能取得 Table 43 正文（见研究记录），
+ * 取值按广泛使用的映射给出，上板自检步骤见工程 README。 */
+#define USART1_RX_STREAM        5U
+#define USART1_RX_CHANNEL       4U
+#define DMA_S5_CR   (*(volatile uint32_t *)(DMA2_S5_BASE + 0x00UL))
+#define DMA_S5_NDTR (*(volatile uint32_t *)(DMA2_S5_BASE + 0x04UL))
+#define DMA_S5_PAR  (*(volatile uint32_t *)(DMA2_S5_BASE + 0x08UL))
+#define DMA_S5_M0AR (*(volatile uint32_t *)(DMA2_S5_BASE + 0x0CUL))
+#define DMA_S5_FCR  (*(volatile uint32_t *)(DMA2_S5_BASE + 0x14UL))
+
+/* ---- USART 寄存器（偏移对应该头文件 USART_TypeDef） ---- */
+#define USART1_SR    (*(volatile uint32_t *)(USART1_BASE + 0x00UL))
+#define USART1_DR    (*(volatile uint32_t *)(USART1_BASE + 0x04UL))
+#define USART1_BRR   (*(volatile uint32_t *)(USART1_BASE + 0x08UL))
+#define USART1_CR1   (*(volatile uint32_t *)(USART1_BASE + 0x0CUL))
+#define USART1_CR3   (*(volatile uint32_t *)(USART1_BASE + 0x14UL))
+#define USART1_CR2   (*(volatile uint32_t *)(USART1_BASE + 0x10UL))
+
+#define USART_SR_RXNE (1UL << 5)
+#define USART_SR_TC   (1UL << 6)
+#define USART_SR_TXE  (1UL << 7)
+#define USART_SR_IDLE (1UL << 4)
+#define USART_SR_ORE  (1UL << 3)
+#define USART_SR_FE   (1UL << 1)
+#define USART_SR_NE   (1UL << 2)
+
+#define USART_CR1_RE  (1UL << 2)
+#define USART_CR1_TE  (1UL << 3)
+#define USART_CR1_IDLEIE (1UL << 4)
+#define USART_CR1_UE  (1UL << 13)
+#define USART_CR3_DMAR (1UL << 6)
+
+/* ---- DMA 流配置位（stm32f407xx.h） ---- */
+#define DMA_SxCR_EN     (1UL << 0)
+#define DMA_SxCR_DMEIE  (1UL << 1)
+#define DMA_SxCR_TEIE   (1UL << 2)
+#define DMA_SxCR_HTIE   (1UL << 3)
+#define DMA_SxCR_TCIE   (1UL << 4)
+#define DMA_SxCR_DIR    (0x3UL << 6)   /* 00=外设到内存，位宽 2、起始 bit6 */
+#define DMA_SxCR_CIRC   (1UL << 8)
+#define DMA_SxCR_MINC   (1UL << 10)
+#define DMA_SxCR_PS     (0x7UL << 11)  /* 外设地址宽度 */
+#define DMA_SxCR_MSIZE  (0x3UL << 13)
+#define DMA_SxCR_DIR_PeripheralToMemory 0UL
+#define DMA_SxCR_PS_Byte    (0UL << 11)
+#define DMA_SxCR_MSIZE_Byte (0UL << 13)
+#define DMA_SxCR_CHSEL  (0x7UL << 25)
+
+/* DMA2_Stream5 的状态位在 HISR 里（stream4..7 走高位寄存器，位号不变）；
+ * 清除要写 HIFCR——HISR 是只读状态寄存器，往它写 1 不会清任何标志。 */
+#define DMA_HISR_TEIF5  (1UL << 27)
+#define DMA_HISR_HTIF5  (1UL << 28)
+#define DMA_HISR_TCIF5  (1UL << 29)
+
+#define NVIC_ISER0 (*(volatile uint32_t *)(0xE000E100UL)) /* IRQ 0..31   */
+#define NVIC_ISER1 (*(volatile uint32_t *)(0xE000E104UL)) /* IRQ 32..63  */
+#define NVIC_ISER2 (*(volatile uint32_t *)(0xE000E108UL)) /* IRQ 64..95  */
+
+#define SysTick_CTRL (*(volatile uint32_t *)(0xE000E010UL))
+#define SysTick_LOAD (*(volatile uint32_t *)(0xE000E014UL))
+#define SysTick_VAL  (*(volatile uint32_t *)(0xE000E018UL))
+
+#define LED_R_PIN 6U
+#define LED_B_PIN 8U
+#define RX_BUF_LEN 64U
+#define BAUD       115200UL
+
+#ifndef HSE_VALUE_HZ
+#define HSE_VALUE_HZ 8000000UL /* 本工程默认跑在 HSI；这个宏只在"已切到 PLL 且源是 HSE"时才会用到，
+                                 数值错了只会让推导出的时钟偏掉，不会报错——按你板上的晶振填。 */
+#endif
+
+/* ============================ 观测量 ============================ */
+volatile uint32_t g_rx_bytes;      /* DMA 搬进环形数组的字节总数 */
+volatile uint32_t g_frames;        /* IDLE 判出的帧数 */
+volatile uint32_t g_overruns;      /* ORE/FE/NE 计数 */
+volatile uint32_t g_half_events;   /* 半缓冲中断次数 */
+volatile uint32_t g_full_events;   /* 整缓冲中断次数 */
+volatile uint32_t g_pclk2;         /* 实际生效的 APB2 时钟 */
+volatile uint32_t g_hclk;          /* 实际生效的 HCLK：SysTick 与波特率都以它为准 */
+volatile uint32_t g_brr;           /* 实际写进 BRR 的值 */
+volatile uint8_t  g_rx_buf[RX_BUF_LEN];
+
+static volatile uint32_t g_ms;
+void SysTick_Handler(void) { g_ms++; }
+
+static void delay_ms(uint32_t ms)
+{
+    uint32_t t0 = g_ms;
+    while ((g_ms - t0) < ms) { }
+}
+
+/* ============================ GPIO / 时钟 ============================ */
+
+static void led_init(void)
+{
+    RCC_AHB1ENR |= (1UL << 5);                       /* GPIOFEN */
+    GPIOF_MODER &= ~(3UL << (LED_R_PIN * 2));
+    GPIOF_MODER |=  (1UL << (LED_R_PIN * 2));
+    GPIOF_MODER &= ~(3UL << (LED_B_PIN * 2));
+    GPIOF_MODER |=  (1UL << (LED_B_PIN * 2));
+}
+
+static void led_set(uint32_t pin, uint32_t on)
+{
+    GPIOF_BSRR = on ? (1UL << (pin + 16)) : (1UL << pin);
+}
+
+static void usart1_pins(void)
+{
+    RCC_AHB1ENR |= (1UL << 0);                       /* GPIOAEN  */
+    RCC_APB2ENR |= (1UL << 4);                       /* USART1EN */
+
+    GPIOA_MODER &= ~(3UL << (9 * 2));
+    GPIOA_MODER |=  (2UL << (9 * 2));                /* PA9  复用 */
+    GPIOA_AFRH  &= ~(0xFUL << ((9 - 8) * 4));
+    GPIOA_AFRH  |=  (7UL << ((9 - 8) * 4));          /* AF7 = USART1_TX */
+
+    GPIOA_MODER &= ~(3UL << (10 * 2));
+    GPIOA_MODER |=  (2UL << (10 * 2));               /* PA10 复用 */
+    GPIOA_AFRH  &= ~(0xFUL << ((10 - 8) * 4));
+    GPIOA_AFRH  |=  (7UL << ((10 - 8) * 4));         /* AF7 = USART1_RX */
+}
+
+/** 从 CFGR 回读 HCLK 与 PCLK2。波特率与毫秒基准都必须跟着真实时钟走。 */
+static void clocks_read(uint32_t hsi_hz, volatile uint32_t *hclk, volatile uint32_t *pclk2)
+{
+    /* RM0090 Rev 18：HPRE 0xxx=/1、1000=/2、1001=/4、1010=/8、1011=/16、
+     * 1100=/64、1101=/128、1110=/256、1111=/512（F4 没有 /32 这一档） */
+    static const uint16_t hpre_div[]  = { 1,1,1,1,1,1,1,1,2,4,8,16,64,128,256,512 };
+    /* PPRE2：0xx=/1、100=/2、101=/4、110=/8、111=/16 */
+    static const uint16_t ppre_div[]  = { 1,1,1,1,1,1,1,1,2,4,8,16,16,16,16,16 };
+
+    uint32_t cfgr = RCC_CFGR;
+    uint32_t src  = hsi_hz;
+
+    if ((cfgr & 0x3UL) == 0x2UL) {
+        uint32_t pll = *(volatile uint32_t *)(RCC_BASE + 0x04UL);
+        uint32_t m =  pll & 0x3FUL;
+        uint32_t n = (pll >> 6) & 0x1FFUL;
+        uint32_t p = ((pll >> 16) & 0x3UL) ? 4UL : 2UL;
+        uint32_t hse = (pll & (1UL << 22)) ? HSE_VALUE_HZ : hsi_hz;
+        src = hse / m * n / p;
+    }
+    *hclk  = src / hpre_div[(cfgr >> 4) & 0xFUL];
+    *pclk2 = *hclk / ppre_div[(cfgr >> 13) & 0x7UL];
+}
+
+/* ============================ USART ============================ */
+
+/** 阻塞发送。注意最后等的是 TC 不是 TXE：
+ *  TXE = 数据寄存器空了，可以塞下一个字节；
+ *  TC  = 移位寄存器里的停止位已经跑完，此时才敢切方向/断电。 */
+static void uart_write_blocking(const char *s)
+{
+    for (; *s != '\0'; s++) {
+        while ((USART1_SR & USART_SR_TXE) == 0UL) { }
+        USART1_DR = (uint32_t)(uint8_t)*s;
+    }
+    while ((USART1_SR & USART_SR_TC) == 0UL) { }
+}
+
+static void usart1_init(uint32_t pclk2)
+{
+    USART1_CR1 = 0;
+    USART1_CR2 = 0;
+    USART1_CR3 = 0;
+
+    /* OVER8 默认 0 = 16 倍过采样，于是 baud = PCLK2 / BRR */
+    uint32_t brr = pclk2 / BAUD;
+    USART1_BRR = brr;
+    g_brr = brr;
+
+    USART1_CR1 = USART_CR1_UE | USART_CR1_TE | USART_CR1_RE | USART_CR1_IDLEIE;
+}
+
+static void dma2_stream5_rx_init(void)
+{
+    /* 先开 DMA2 时钟（RCC_AHB1ENR bit22）——不开时钟，流配置写了也白写 */
+    RCC_AHB1ENR |= (1UL << 22);
+
+    /* 配置前先关流：CHSEL/DIR/CIRC 这些位只有在 EN=0 时才能改 */
+    DMA_S5_CR = 0;
+    while (DMA_S5_CR & DMA_SxCR_EN) { }
+
+    DMA_S5_PAR  = USART1_BASE + 0x04UL;     /* DR：串口数据寄存器 */
+    DMA_S5_M0AR = (uint32_t)(uintptr_t)g_rx_buf;
+    DMA_S5_NDTR = RX_BUF_LEN;               /* 环形模式跑到 0 会自动回装成原值 */
+    DMA_S5_FCR  = 0;                        /* 直接模式，不走 FIFO */
+
+    DMA_S5_CR = DMA_SxCR_DIR_PeripheralToMemory
+              | DMA_SxCR_CIRC | DMA_SxCR_MINC
+              | DMA_SxCR_HTIE | DMA_SxCR_TCIE
+              | DMA_SxCR_PS_Byte | DMA_SxCR_MSIZE_Byte
+              | ((USART1_RX_CHANNEL & 0x7UL) << 25);
+
+    USART1_CR3 |= USART_CR3_DMAR;           /* 告诉 USART：RXNE 由 DMA 来取 */
+    DMA_S5_CR |= DMA_SxCR_EN;
+}
+
+
+/* ============================ 中断 ============================ */
+
+/** USART1 中断：只关心两类事——空闲（=一帧结束）和接收错误。 */
+void USART1_IRQHandler(void)
+{
+    uint32_t sr = USART1_SR;
+
+    if (sr & (USART_SR_ORE | USART_SR_FE | USART_SR_NE)) {
+        g_overruns++;
+        (void)USART1_DR;        /* 错误标志靠"读 SR 再读 DR"清 */
+    }
+
+    if (sr & USART_SR_IDLE) {
+        /* 关键：IDLE 不是靠写 0 清的，必须读一次 SR 再读一次 DR */
+        uint32_t ndtr = DMA_S5_NDTR;
+        uint32_t pos  = RX_BUF_LEN - ndtr;       /* 已写入的字节数 = 位置 */
+        uint32_t len  = pos;
+
+        if (pos == 0U) {
+            len = RX_BUF_LEN;                    /* 缓冲刚好绕回一圈 */
+        }
+
+        /* 把这一帧回显回去，顺带让电脑上肉眼确认收到了 */
+        for (uint32_t i = 0; i < len; i++) {
+            uint32_t byte = g_rx_buf[(pos + i) % RX_BUF_LEN];
+            while ((USART1_SR & USART_SR_TXE) == 0UL) { }
+            USART1_DR = byte;
+        }
+
+        g_rx_bytes += len;
+        g_frames++;
+
+        (void)USART1_DR;        /* 这一次读 DR 才真正清掉 IDLE */
+    }
+}
+
+/** DMA2 Stream5 中断：半缓冲/整缓冲各响一次，提醒 CPU "该处理了"。
+ *  环形模式下这两个中断是周期性出现的，正好用来画"生产/消费"的水位图。 */
+void DMA2_Stream5_IRQHandler(void)
+{
+    uint32_t hisr = DMA2_HISR;
+
+    if (hisr & DMA_HISR_HTIF5) {
+        DMA2_HIFCR = DMA_HISR_HTIF5;   /* 清标志写 HIFCR，不是 HISR */
+        g_half_events++;
+    }
+    if (hisr & DMA_HISR_TCIF5) {
+        DMA2_HIFCR = DMA_HISR_TCIF5;
+        g_full_events++;
+    }
+    if (hisr & DMA_HISR_TEIF5) {
+        DMA2_HIFCR = DMA_HISR_TEIF5;
+        g_overruns++;
+    }
+}
+
+/* ============================ main ============================ */
+
+int main(void)
+{
+    led_init();
+    usart1_pins();
+
+    clocks_read(16000000UL, &g_hclk, &g_pclk2);
+
+    SysTick_CTRL = 0;
+    /* SysTick 挂在内核时钟上，是 HCLK 而不是 PCLK2：
+     * 用 g_pclk2 在 HSI 下恰好同值，一旦切到 PLL（APB2=84MHz）就会让毫秒基准错 5.25 倍。 */
+    SysTick_LOAD = g_hclk / 1000UL - 1UL;
+    SysTick_VAL  = 0;
+    SysTick_CTRL = 0x7UL;
+
+    usart1_init(g_pclk2);
+    dma2_stream5_rx_init();
+
+    NVIC_ISER1 |= (1UL << (37 - 32));    /* USART1_IRQn       */
+    NVIC_ISER2 |= (1UL << (68 - 64));    /* DMA2_Stream5_IRQn */
+
+    uart_write_blocking("uart-dma ready\r\n");
+
+    while (1) {
+        delay_ms(500);
+        led_set(LED_R_PIN, 1);
+        delay_ms(2);
+        led_set(LED_R_PIN, 0);
+
+        if (g_frames != 0U) {
+            /* 收到过数据：蓝灯跟着帧数亮，读 GDB 里的 g_rx_bytes 就能对账 */
+            led_set(LED_B_PIN, (g_frames & 1UL) ? 1UL : 0UL);
+        }
+    }
+}

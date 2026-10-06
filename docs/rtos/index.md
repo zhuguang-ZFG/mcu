@@ -23,13 +23,13 @@ title: RTOS 篇导览
 | 编号 | 章节 | 一句话精髓 |
 |---|---|---|
 | F0 | [为什么需要 RTOS](freertos/00-why-rtos.md) | 亲手写一个必然失败的裸机调度 |
-| F1 | [任务与 TCB](freertos/01-task-tcb.md) | xTaskCreate 逐行走查 |
+| F1 | [任务与 TCB](freertos/01-task-tcb.md)【成稿】 | xTaskCreate 逐行走查（动画 + 工程） |
 | F2 | [上下文切换](freertos/02-context-switch.md)【成稿】 | PendSV 逐汇编指令（动画+视频） |
-| F3 | [调度器](freertos/03-scheduler.md) | 位图就绪表与 tick 的真相 |
-| F4 | [队列](freertos/04-queue.md) | 环形存储+两个阻塞列表 |
-| F5 | [信号量与互斥](freertos/05-sem-mutex.md) | 优先级反转复现与继承 |
-| F6 | [通知/事件/软件定时器](freertos/06-notify-event-timer.md) | 通知为什么比队列快 |
-| F7 | [内存管理](freertos/07-heap.md) | heap_1~heap_5 对比实验 |
+| F3 | [调度器](freertos/03-scheduler.md)【成稿】 | 位图就绪表与 tick 的真相 |
+| F4 | [队列](freertos/04-queue.md)【成稿】 | 环形存储+两个阻塞列表 |
+| F5 | [信号量与互斥](freertos/05-sem-mutex.md)【成稿】 | 优先级反转复现与继承（动画） |
+| F6 | [通知/事件/软件定时器](freertos/06-notify-event-timer.md)【成稿】 | 通知计数 vs 覆盖、事件组汇总清位、守护任务（动画 x3 + 工程） |
+| F7 | [内存管理](freertos/07-heap.md)【成稿】 | heap_1~heap_5 对比实验（动画 + 工程） |
 | F8 | [移植到 F407](freertos/08-port-f407.md) | 三异常接管全记录 |
 
 **RT-Thread 精讲（R 篇，基准 5.x）**
