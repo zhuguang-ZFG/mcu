@@ -65,7 +65,7 @@ npm run docs:build    # 产出 docs/.vitepress/dist
 
 ## 状态
 
-🚧 章节成稿 18 篇（S×7 / F×7 / P×4）+ 动画 27 张 + 实验 E01–E03；每条路线都有能上板的配套工程。
+🚧 章节成稿 18 篇（S×7 / F×7 / P×4）+ 动画 27 张 + 实验 E01–E03；每条路线都有能上板的配套工程。GD32 双系路线（G 篇 ARM GD32F4xx / V 篇 RISC-V GD32VF103）已建档建设中。
 
 ## License
 

@@ -15,6 +15,7 @@ export default defineConfig({
       { text: 'STM32', link: '/stm32/' },
       { text: 'RTOS', link: '/rtos/' },
       { text: 'ESP32', link: '/esp32/' },
+      { text: 'GD32', link: '/gd32/' },
       { text: '实验', link: '/lab/' },
     ],
     sidebar: {
@@ -148,6 +149,12 @@ export default defineConfig({
             { text: 'P11 低功耗', link: '/esp32/11-lowpower' },
             { text: 'P12 音频链路', link: '/esp32/12-audio-path' },
           ],
+        },
+      ],
+      '/gd32/': [
+        {
+          text: 'GD32 双系路线',
+          items: [{ text: '导览（G 篇 ARM / V 篇 RISC-V）', link: '/gd32/' }],
         },
       ],
       '/lab/': [

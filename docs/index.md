@@ -39,6 +39,11 @@ features:
     details: FreeRTOS 内核源码级剖析 + RT-Thread 设备框架与生态，上下文切换动画演示，双 OS 对照选型。
     link: /rtos/
     linkText: 进入路线
+  - icon: 🔁
+    title: GD32 双系对照（建设中）
+    details: G 篇 GD32F4xx（Cortex-M4，RCU/200MHz）逐字段对剖 STM32F407；V 篇 GD32VF103（RISC-V Bumblebee）丈量 CLIC 与 MTIME。
+    link: /gd32/
+    linkText: 看看规划
   - icon: 🔬
     title: 实物实验中心
     details: 逻辑分析仪抓 UART、示波器看 PWM、优先级反转复现——眼见为实，每章都有能上手的实验。
