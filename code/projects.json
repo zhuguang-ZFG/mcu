@@ -6,10 +6,28 @@
     "entry": "probe.sh"
   },
   {
+    "id": "c-02-pointer",
+    "path": "code/c/02-pointer",
+    "kind": "host-probe",
+    "entry": "probe.sh"
+  },
+  {
     "id": "c-03-volatile",
     "path": "code/c/03-volatile",
     "kind": "host-make",
     "entry": "Makefile"
+  },
+  {
+    "id": "c-04-struct-abi",
+    "path": "code/c/04-struct-abi",
+    "kind": "host-probe",
+    "entry": "probe.sh"
+  },
+  {
+    "id": "c-05-func-pointer",
+    "path": "code/c/05-func-pointer",
+    "kind": "host-probe",
+    "entry": "probe.sh"
   },
   {
     "id": "esp32-00-hello",
@@ -95,6 +113,12 @@
     "entry": "probe.sh"
   },
   {
+    "id": "toolchain-01-four-steps",
+    "path": "code/toolchain/01-four-steps",
+    "kind": "host-probe",
+    "entry": "probe.sh"
+  },
+  {
     "id": "toolchain-02-elf",
     "path": "code/toolchain/02-elf",
     "kind": "host-probe",
@@ -125,6 +149,30 @@
     "kind": "esp-idf",
     "entry": "CMakeLists.txt",
     "target": "esp32s3"
+  },
+  {
+    "id": "c-06-abi-stack",
+    "path": "code/c/06-abi-stack",
+    "kind": "host-probe",
+    "entry": "probe.sh"
+  },
+  {
+    "id": "stm32-04-nvic-exti",
+    "path": "code/stm32/04-nvic-exti",
+    "kind": "host-probe",
+    "entry": "probe.sh"
+  },
+  {
+    "id": "stm32-05-systick",
+    "path": "code/stm32/05-systick",
+    "kind": "host-probe",
+    "entry": "probe.sh"
+  },
+  {
+    "id": "stm32-16-debug-hardfault",
+    "path": "code/stm32/16-debug-hardfault",
+    "kind": "host-probe",
+    "entry": "probe.sh"
   },
   {
     "id": "common-behavior",

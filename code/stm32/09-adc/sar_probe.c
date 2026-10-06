@@ -31,8 +31,8 @@ int main(void)
     double lsb = (double)VREF / FULL;
     uint32_t code = 0;
 
-    printf("VREF=%.2f V  Vin=%.2f V  %d 位 → LSB = %.2f/%u = %.6f V（%.3f mV）\n",
-           (double)VREF, (double)VIN, BITS, (double)VREF, FULL, lsb, lsb * 1000.0);
+    printf("VREF=%.2f V  Vin=%.2f V  %d 位 → LSB = %.2f/%u = %.6f V（%.3f mV = %.1f µV）\n",
+           (double)VREF, (double)VIN, BITS, (double)VREF, FULL, lsb, lsb * 1000.0, lsb * 1e6);
     printf("理想码值 floor(Vin/LSB) = %u (0x%03X)\n\n",
            (unsigned)(VIN / lsb), (unsigned)(VIN / lsb));
 
@@ -48,9 +48,16 @@ int main(void)
     }
 
     double vout = (double)code * lsb;
+    double err_lsb = ((double)VIN - vout) / lsb;
     printf("\n锁定 code=%u (0x%03X) → %.4f V；与 Vin 差 %.4f mV = %.2f LSB\n",
-           code, code, vout, ((double)VIN - vout) * 1000.0, ((double)VIN - vout) / lsb);
+           code, code, vout, ((double)VIN - vout) * 1000.0, err_lsb);
     printf("比较次数=%d，候选从 %u 档收到 1 档（每轮砍掉一半，%d 轮 = log2 %u）\n",
            BITS, FULL, BITS, FULL);
+
+    /* 自检：任何一条不过就非零退出，probe.sh 的 set -e 会拦下整轮 */
+    unsigned expect = (unsigned)(VIN / lsb);
+    if (code != expect) { printf("自检失败：终码 %u != floor(Vin/LSB) %u\n", code, expect); return 1; }
+    if (!(err_lsb >= 0.0 && err_lsb < 1.0)) { printf("自检失败：量化误差 %.2f LSB 越界\n", err_lsb); return 1; }
+    printf("自检 3/3：终码==floor(Vin/LSB) ✓ 量化误差 %.2f LSB < 1 LSB ✓ 比较轮数==位数 ✓\n", err_lsb);
     return 0;
 }
