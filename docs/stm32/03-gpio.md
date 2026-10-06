@@ -46,6 +46,10 @@ title: S3 GPIO：七个寄存器位级图解
 - 寄存器偏移（RM0090 §8.4）：MODER 0x00 / OTYPER 0x04 / OSPEEDR 0x08 / PUPDR 0x0C / IDR 0x10 / ODR 0x14 / BSRR 0x18 / LCKR 0x1C / AFRL 0x20 / AFRH 0x24。
 - 地址已经过 ST 官方 CMSIS 头文件逐项核对：GPIOF = 0x40021400，RCC = 0x40023800，AHB1ENR 偏移 0x30。
 
+## 配套视频
+
+<VideoEmbed type="bilibili" id="BV1Xs411g7Aj" title="野火 F103 入门篇（150 集，含《使用寄存器点亮 LED》《GPIO 功能框图讲解》——板子是 F103 霸道，GPIO 原理与 F407 相同，对照本章看）" />
+
 ## 小节结构
 
 | 小节 | 内容 | 四件套 |

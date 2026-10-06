@@ -3,3 +3,6 @@ docs/.vitepress/dist/
 docs/.vitepress/cache/
 .playwright-mcp/
 *.log
+
+# 上游参考源码(写作引用基准,不入库)
+.trellis/ref/

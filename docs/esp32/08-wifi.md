@@ -34,7 +34,7 @@ menuconfig 填上 Wi-Fi 账号密码（示例工程惯例），`idf.py flash mon
 
 ## 配套视频
 
-<VideoEmbed type="youtube" id="gOW-B2KHvHU" title="TCP 3-Way Handshake Explained（3 分钟动画，和上图逐帧对照）" />
+<VideoEmbed type="bilibili" id="BV1kV411j7hA" title="一条视频讲清楚 TCP 与 UDP：三次握手与四次挥手（65 万播放，和上图逐帧对照）" />
 
 
 ## 小节结构

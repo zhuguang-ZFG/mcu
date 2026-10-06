@@ -43,7 +43,7 @@
 - 形式：独立 `.svg` 于 `docs/public/anim/`，SMIL（`<animate>`/`<animateTransform>`，`repeatCount="indefinite"`），viewBox 宽 720；页面用 markdown 图片语法 `![一句话描述](/anim/xxx.svg)` 引用（VitePress 自动加 base，禁 raw `<img>`、禁外链播放器、禁 JS 依赖）。
 - 配色：浅底 `#f6f8fa`，主色 `#3451b2`，强调 `#3eaf7c`，警示 `#d97706`；字号 ≥12px。
 - 每个动画在 PR 描述里附"表达结论一句话"；**禁装饰性动画**——不能帮助理解的动画不如不放。
-- 现有动画：`stack-frame`（栈帧）、`irq-entry`（中断现场）、`context-switch`（上下文切换）、`gpio-config`（GPIO 四张表）、`boot-sequence`（上电到 main）、`i2c-timing`（I2C 一帧）、`queue-passing`（队列传值）、`semaphore-mutex`（计数牌与钥匙）、`dma-pingpong`（双缓冲乒乓）、`list-insert`（就绪链表）、`tcp-handshake`（WiFi+TCP 握手）。
+- 现有动画：`stack-frame`（栈帧）、`irq-entry`（中断现场）、`context-switch`（上下文切换）、`gpio-config`（GPIO 四张表）、`boot-sequence`（上电到 main）、`i2c-timing`（I2C 一帧）、`queue-passing`（队列传值）、`semaphore-mutex`（计数牌与钥匙）、`priority-inversion`（反转与继承三泳道）、`dma-pingpong`（双缓冲乒乓）、`list-insert`（就绪链表）、`spi-timing`（SPI Mode0 逐拍+四模式）、`tcp-handshake`（WiFi+TCP 握手）。
 - 视频嵌入：B 站/油管一律 `<VideoEmbed type="bilibili|youtube" id="…" title="…" />`（主题已全局注册）。**id 嵌入前必须验证真实**：B 站查 `api.bilibili.com/x/web-interface/view?bvid=<id>`、油管查 `youtube.com/oembed?url=...` 核对标题，禁止占位/猜测链接；每个视频配一句"与本章哪一段对照看"。
 
 ## 5. 实物与图片规范

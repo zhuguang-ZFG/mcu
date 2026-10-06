@@ -14,6 +14,9 @@ const src = props.type === 'bilibili'
   : `https://www.youtube-nocookie.com/embed/${props.id}`
 
 const siteName = props.type === 'bilibili' ? '哔哩哔哩' : 'YouTube'
+const pageUrl = props.type === 'bilibili'
+  ? `https://www.bilibili.com/video/${props.id}`
+  : `https://youtu.be/${props.id}`
 </script>
 
 <template>
@@ -30,6 +33,7 @@ const siteName = props.type === 'bilibili' ? '哔哩哔哩' : 'YouTube'
     </div>
     <div class="video-caption">
       🎬 {{ title || id }} <span class="video-site">@ {{ siteName }}</span>
+      · <a :href="pageUrl" target="_blank" rel="noopener">打不开？去{{ siteName }}看 ↗</a>
     </div>
   </div>
 </template>

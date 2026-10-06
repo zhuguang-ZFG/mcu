@@ -4,27 +4,33 @@ title: F3 调度器：一条 CLZ 选出下一个任务
 
 # F3 调度器：位图、tick 与阻塞延时
 
-> 🎯 32 个优先级里挑"最高的非空链表"，要遍历几遍？FreeRTOS 的答案：一条 `CLZ`（数前导零）指令，硬件级 O(1)。调度器的聪明，全在这种"把活推给硬件"的设计里。
+> 🎯 32 个优先级里挑"最高的非空链表"，要遍历几遍？FreeRTOS 给了两个答案：通用版一路减着数，硬件加速版一条 `CLZ`（数前导零）指令直接出结果。调度器的聪明，全在"把活推给硬件"的设计里——而 `vTaskDelay` 的诚实，全在"挂进链表真睡觉"。
 
 ## 本章精髓
 
-1. 位图就绪表：`uxTopReadyPriority` 是一个 32 位变量，第 N 位=1 表示优先级 N 有就绪任务——`31 - CLZ(位图)` 直接得到最高优先级；链表数组（F1 的货架）负责同优先级轮转。
-2. tick 中断干三件事：系统节拍++、检查延时列表里谁该醒了（搬到就绪表）、（同优先级时）请求一次切换——`xTaskIncrementTick` 源码就读这三段。
-3. 阻塞延时的真相：`vTaskDelay` 不是"等"，是把任务挂进**延时列表**按唤醒时间排序，然后让出 CPU——任务真的"不在"了，这就是 RTOS 延时 vs 裸机死等的本质区别。
+1. **就绪表 = 链表数组 + 一个"最高非空"速查器**：`pxReadyTasksLists[configMAX_PRIORITIES]` 是货架（F1），`uxTopReadyPriority` 是速查器——通用路径里是标量（递减扫描），M4F 移植优化路径里是 **32 位位图**（CLZ 一把出最高位）。
+2. **tick 中断干三件事**：节拍++、查延时列表队首谁该醒了、（必要时）请求切换——`xTaskIncrementTick` 就读这三段。
+3. **`vTaskDelay` 不是"等"，是"搬"**：把自己挂进按唤醒时间排序的延时链表，然后让出 CPU——任务真的"不在"了，这是 RTOS 延时与裸机死等的本质区别。
+
+## 怎么读这一章
+
+- **能记住**：口诀"位图置位 CLZ 秒选，tick 三事：醒人、轮转、换片场"；`vListInsert` 按值排队、`vListInsertEnd` 队尾轮转。
+- **能理解**：为什么 tick 只查延时表**队首**（O(1) 的秘密）；为什么位图路径要求优先级 ≤32；为什么 `vTaskDelay(1)` 不能当精确 1ms 用。
+- **能用**：RunTimeStats 实测任务占比验证调度行为；按场景选 vTaskDelay / vTaskDelayUntil。
 
 ## 学习目标
 
-- 画出"延时列表/就绪列表/阻塞列表"三表的迁移图（任务状态机）。
-- 逐行讲 `xTaskIncrementTick`：醒人、换片、同优先级轮转（configUSE_TIME_SLICING）。
-- 用 vTaskGetRunTimeStats 实测各任务 CPU 占比，验证调度行为。
+- 画出三表迁移图（就绪/延时/阻塞），并说清每次迁移的触发源。
+- 逐行讲 `xTaskIncrementTick` 的剪枝逻辑（`xNextTaskUnblockTime`）。
+- 实测：两同优先级任务占比≈50/50；一个 +1 优先级后 100/0。
 
 ## 先修
 
-- [F1](01-task-tcb.md)、[F2 切换](02-context-switch.md)、[S5 SysTick](../../stm32/05-systick.md)。
+- [F1 任务与 TCB](01-task-tcb.md)、[F2 上下文切换](02-context-switch.md)、[S5 SysTick](../../stm32/05-systick.md)。
 
 ## 先跑起来（10 分钟 quick win）
 
-两任务同优先级各 vTaskDelay(1)：逻辑分析仪测两个 LED 翻转时刻——1ms 交替出现，时间片轮转眼见为实。
+两任务同优先级各 `vTaskDelay(1)`：逻辑分析仪测两个 LED 翻转时刻——1ms 交替出现，时间片轮转眼见为实。
 
 ## 动画：一条链表撑起整个调度
 
@@ -32,39 +38,201 @@ title: F3 调度器：一条 CLZ 选出下一个任务
 
 ![就绪链表插入动画](/anim/list-insert.svg)
 
-
 ## 小节结构
 
 | 小节 | 内容 | 四件套 |
 |---|---|---|
-| 位图选优 | CLZ 原理与汇编；configMAX_PRIORITIES 的取舍 | 库解析 |
-| 三表迁移 | 任务状态机全图（Ready/Blocked/Suspended/Running） | 配置 |
-| tick 三段 | xTaskIncrementTick 源码走查 | 库解析 |
-| vTaskDelay | 挂入延时列表逐行；vTaskDelayUntil 的周期任务价值 | 代码分析 |
-| 抢占点全集 | tick/API 调用/中断退出三处何时切换 | 代码分析 |
-| CPU 统计 | RunTimeStats 配置与解读 | 配置 |
+| 一、速查器双实现 | 通用扫描 vs 位图 CLZ（两版宏原文对照） | 库解析 |
+| 二、入库动作 | `prvAddTaskToReadyList` 两步走 | 库解析 |
+| 三、链表两兄弟 | `vListInsertEnd` 轮转 vs `vListInsert` 排序 | 代码分析 |
+| 四、tick 三段 | `xTaskIncrementTick` 走查 + 队首剪枝 | 库解析 |
+| 五、vTaskDelay 真相 | 挂延时表原文；抢占点全集 | 代码分析 |
+| 六、CPU 统计 | RunTimeStats 配置与解读 | 配置 |
 
-## 记忆锚点
+## 一、速查器双实现：通用扫描 vs 一条 CLZ
+
+选下一个任务 = 找"最高的非空就绪链表"。tasks.c（V11.1.0）里这条宏有**两副面孔**，由 `configUSE_PORT_OPTIMISED_TASK_SELECTION` 切换。
+
+**通用路径（=0）：标量 + 递减扫描。** `uxTopReadyPriority` 只是个数：
+
+```c
+#define taskRECORD_READY_PRIORITY( uxPriority ) \
+do {                                            \
+    if( ( uxPriority ) > uxTopReadyPriority )   \
+    {                                           \
+        uxTopReadyPriority = ( uxPriority );    \
+    }                                           \
+} while( 0 )
+```
+
+选择时从它开始往下找非空链表：
+
+```c
+while( listLIST_IS_EMPTY( &( pxReadyTasksLists[ uxTopPriority ] ) ) != pdFALSE )
+{
+    configASSERT( uxTopPriority );
+    --uxTopPriority;                       /* 一层层往下摸 */
+}
+listGET_OWNER_OF_NEXT_ENTRY( pxCurrentTCB, &( pxReadyTasksLists[ uxTopPriority ] ) );
+```
+
+**移植优化路径（=1，M4F 默认）：位图 + CLZ。** 同一个变量摇身变成位图——portmacro.h（ARM_CM4F）原文：
+
+```c
+#define portRECORD_READY_PRIORITY( uxPriority, uxReadyPriorities )  ( uxReadyPriorities ) |= ( 1UL << ( uxPriority ) )
+#define portRESET_READY_PRIORITY( uxPriority, uxReadyPriorities )   ( uxReadyPriorities ) &= ~( 1UL << ( uxPriority ) )
+#define portGET_HIGHEST_PRIORITY( uxTopPriority, uxReadyPriorities ) uxTopPriority = ( 31UL - ( uint32_t ) ucPortCountLeadingZeros( ( uxReadyPriorities ) ) )
+```
+
+第 N 位=1 ⟺ 优先级 N 有就绪任务。`ucPortCountLeadingZeros` 在 M4F 上就是一条 `CLZ` 汇编——**32 位里找最高置位，一条指令，O(1)，与任务数无关**。代价：位图 32 位，所以此路径要求 `configMAX_PRIORITIES ≤ 32`。
+
+> **【注】** 网上很多文章说"`uxTopReadyPriority` 是位图"——只对了一半：位图是**移植优化路径**的形态；通用路径里它是标量。读源码先看 `configUSE_PORT_OPTIMISED_TASK_SELECTION` 是哪条路，再谈语义。这也是读 FreeRTOS 的通用方法论：**一切结论先问配置宏**。
+
+## 二、入库动作：两步走
+
+任务就绪时（新建/解除阻塞/延时到期），走同一个宏（tasks.c）：
+
+```c
+#define prvAddTaskToReadyList( pxTCB )                                                              \
+do {                                                                                                \
+    taskRECORD_READY_PRIORITY( ( pxTCB )->uxPriority );              /* ① 速查器记账 */             \
+    listINSERT_END( &( pxReadyTasksLists[ ( pxTCB )->uxPriority ] ), &( ( pxTCB )->xStateListItem ) ); /* ② 挂到货架队尾 */ \
+} while( 0 )
+```
+
+①记账（标量取大 / 位图置位）②挂队尾。为什么队尾不是队首？因为 `listGET_OWNER_OF_NEXT_ENTRY` 从"上次的下一个"继续取——**队尾插入 + 循环取头 = 同优先级天然轮转**，时间片不需要额外数据结构。
+
+## 三、链表两兄弟：一个管轮转，一个管守时
+
+list.c 全文件只有两个插入函数，分工明确（V11.1.0 原文节选）：
+
+`vListInsertEnd`——不排序，插到"索引位置之前"（即下一个被取走的队尾）：
+
+```c
+pxNewListItem->pxNext = pxIndex;
+pxNewListItem->pxPrevious = pxIndex->pxPrevious;
+pxIndex->pxPrevious->pxNext = pxNewListItem;
+pxIndex->pxPrevious = pxNewListItem;
+```
+
+`vListInsert`——**按 xItemValue 升序**找位插入：
+
+```c
+for( pxIterator = ( ListItem_t * ) &( pxList->xListEnd );
+     pxIterator->pxNext->xItemValue <= xValueOfInsertion;
+     pxIterator = pxIterator->pxNext )
+{
+    /* 空循环体:纯粹迭代到插入点 */
+}
+```
+
+延时列表用后者，链表项的值 = **唤醒时刻**——于是队首永远是"最早该醒的"。这就是下一节 O(1) 剪枝的地基。四根指针改完收工，插入动画里看得清清楚楚。
+
+## 四、tick 三段：醒人、换片、（必要时）换片场
+
+SysTick 每拍调用一次 `xTaskIncrementTick`（tasks.c 节选）：
+
+```c
+const TickType_t xConstTickCount = xTickCount + ( TickType_t ) 1;
+xTickCount = xConstTickCount;                 /* ① 节拍++ */
+
+if( xConstTickCount >= xNextTaskUnblockTime ) /* ② 剪枝:队首都没到点就整个跳过 */
+{
+    for( ; ; )
+    {
+        if( listLIST_IS_EMPTY( pxDelayedTaskList ) != pdFALSE )
+        {
+            xNextTaskUnblockTime = portMAX_DELAY;
+            break;
+        }
+        else
+        {
+            /* 只看队首:它的 xItemValue 就是最早唤醒时刻 */
+            ...
+        }
+    }
+}
+```
+
+注意那行剪枝：`xNextTaskUnblockTime` 记着"下一个该醒的时刻"，tick 值没追上它，整个延时检查**一行比较就跳过**——1kHz 下每拍 1 次比较，这就是 FreeRTOS 敢让 tick 跑高频率的底气。追上了才进循环：队首到点→摘出→`prvAddTaskToReadyList`→看下一个队首，直到队首未到点。
+
+第三件事在函数尾部（configUSE_PREEMPTION + configUSE_TIME_SLICING 时）：若有同优先级就绪任务等着轮转，返回 `pdTRUE`，port 层据此**挂起 PendSV**——至于 PendSV 怎么换魂，[F2](02-context-switch.md) 的十一条汇编已经讲透，调度器只管"发信号"，搬寄存器是 PendSV 的活。
+
+## 五、vTaskDelay 真相：挂表、让出、不等任何人
+
+```c
+void vTaskDelay( const TickType_t xTicksToDelay )
+{
+    if( xTicksToDelay > ( TickType_t ) 0U )
+    {
+        vTaskSuspendAll();                                        /* 调度器暂停,搬家期间不许捣乱 */
+        prvAddCurrentTaskToDelayedList( xTicksToDelay, pdFALSE ); /* 挂进延时链表,值=唤醒时刻 */
+        xAlreadyYielded = xTaskResumeAll();
+    }
+    if( xAlreadyYielded == pdFALSE )
+    {
+        taskYIELD_WITHIN_API();                                   /* 主动让出 → PendSV */
+    }
+}
+```
+
+三行核心：**挂表 → 恢复调度 → 让出 CPU**。没有任何"等"——此刻起这个任务在就绪表里查无此人，直到 tick 把它搬回来。裸机的 `delay_ms()` 是原地空转烧 CPU，`vTaskDelay` 是"挂牌睡觉"，CPU 转头去伺候别人。
+
+由此推出**抢占点全集**：任务只在三处可能被换下——① tick 中断（醒人/轮转触发 PendSV）② 任务自己调 API（delay/队列/信号量内部 YIELD）③ 中断退出（FromISR 系列置了 xHigherPriorityTaskWoken）。
+
+> **【注】** `vTaskDelay(1)` 的延时区间是 (0, 1] 拍：你在拍中任何时刻调用，都睡到**下一拍**边界。想要严格周期（如 10ms 整的采样环），用 `vTaskDelayUntil`——它以上次唤醒点为锚，消除抖动累积。
+
+## 六、CPU 统计：用数据证明调度
+
+`configGENERATE_RUN_TIME_STATS=1` + 一个高精度定时器（如 TIM2 跑 10kHz+），`vTaskGetRunTimeStats` 打印各任务绝对/相对占用。实验要求：两同优先级任务 ≈50/50；其中一个 +1 优先级 → 100/0。**调度行为是可测量的事实，不是信仰**——这也是全站"眼见为实"的落脚点。
 
 ::: tip 一句话记住
-**位图置位 CLZ 秒选，tick 三事：醒人、轮转、换片场；vTaskDelay 是"挂起等叫"，不是原地死等。**
+**位图置位 CLZ 秒选（优化路径），标量递减慢扫（通用路径）；tick 三事：醒人、轮转、换片场；vTaskDelay 是挂表睡觉，不是原地死等。**
 :::
 
 ## 实物实验
 
-- quick win 的轮转证据 + RunTimeStats 打印两任务占比≈50/50；把其中一个优先级+1，占比瞬间 100/0——抢占式调度的铁证。
+- quick win 轮转证据 + RunTimeStats 占比实验（本章目标三）；
+- 进阶：逻辑分析仪夹 LED，把 `configTICK_RATE_HZ` 从 1000 改 100 再测，看交替周期跟着变——tick 频率物理化。
 
 ## 常见坑
 
-- **高优先级任务不延时**：它永不放弃 CPU，低优先级全体饿死——合作式让出（taskYIELD）或延时是基本教养。
-- **vTaskDelay(1) 想要精确 1ms**：实际延时 0~1 个 tick 区间（进入时机决定）——要周期精确用 vTaskDelayUntil。
-- **configTICK_RATE_HZ 盲目拉 10k**：tick 中断开销按频率线性涨——1kHz 是通用甜点。
-- **优先级数量开太多**：每个优先级一条链表，RAM 按条数收租。
+- **高优先级任务不延时**：永不放弃 CPU，低优先级全体饿死——`vTaskDelay` 是基本教养；
+- **`vTaskDelay(1)` 当精确 1ms**：实际 (0,1] 拍区间，周期任务请用 `vTaskDelayUntil`；
+- **`configTICK_RATE_HZ` 盲目拉 10k**：每拍都有醒人检查开销，1kHz 是通用甜点；
+- **优先级开几十上百**：每个优先级一条链表，RAM 按条收租；位图路径还硬性 ≤32；
+- **中断里调非 FromISR API**：list.c 注释里的崩溃清单第二名——`configMAX_SYSCALL_INTERRUPT_PRIORITY` 不是摆设。
+
+## 短自测
+
+1. 位图路径下 `uxTopReadyPriority` 第 12 位为 1 表示什么？选最高优先级要走几条指令？
+<details><summary>参考答案</summary>优先级 12 至少有一个就绪任务。选优 = 一次 CLZ 加一次减法（31-CLZ），M4F 上两条指令，O(1)。</details>
+
+2. tick 中断为什么敢只查延时链表队首？
+<details><summary>参考答案</summary>延时链表用 vListInsert 按唤醒时刻升序排列，队首即最早该醒者；队首未到点则全员未到点，直接 break。配合 xNextTaskUnblockTime 剪枝，常态每拍只需一次比较。</details>
+
+3. `vTaskDelay(10)` 在 tick=1kHz 时实际睡多久？为什么不是精确 10ms？
+<details><summary>参考答案</summary>(9, 10] ms。调用时刻落在拍内任意位置，唤醒对齐到第 10 个拍边界，不足一拍的部分被"抹零"。要精确周期用 vTaskDelayUntil（以唤醒点为锚）。</details>
+
+4. 同优先级轮转不需要额外数据结构，靠哪两个配合实现？
+<details><summary>参考答案</summary>prvAddTaskToReadyList 把任务插到就绪链表队尾（listINSERT_END），taskSELECT_HIGHEST_PRIORITY_TASK 用 listGET_OWNER_OF_NEXT_ENTRY 循环取"下一个"——队尾进、循环出，天然 Round-Robin。</details>
+
+## 对照表：本章概念 → 源码落点
+
+| 概念 | 落点（FreeRTOS-Kernel V11.1.0） |
+|---|---|
+| 速查器双实现 | `tasks.c` taskRECORD/SELECT_HIGHEST_PRIORITY_TASK 两组宏（configUSE_PORT_OPTIMISED_TASK_SELECTION 分路） |
+| 位图+CLZ | `portable/GCC/ARM_CM4F/portmacro.h` portRECORD/GET_HIGHEST_PRIORITY |
+| 入库两步 | `tasks.c` prvAddTaskToReadyList |
+| 排序/队尾插入 | `list.c` vListInsert / vListInsertEnd |
+| tick 醒人剪枝 | `tasks.c` xTaskIncrementTick（xNextTaskUnblockTime 比较+队首循环） |
+| 延时挂表 | `tasks.c` vTaskDelay → prvAddCurrentTaskToDelayedList |
 
 ## 你做到了
 
-- 调度器从"魔法"变成"位图+链表+三条路径"；
-- 能用统计工具证明调度行为，而不是猜。
+- 调度器从"魔法"变成"速查器+链表+三条抢占路径"；
+- 网上"位图"说法的适用边界被你亲手钉死（配置宏分路）；
+- 调度行为可测量——RunTimeStats 是你的测谎仪。
 
 <div class="achievement">
 ✅ 下一站：<a href="04-queue.html">F4 队列</a>——任务间的"传送带"：环形存储+两个阻塞列表的源码级解剖。
