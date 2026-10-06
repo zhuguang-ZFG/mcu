@@ -26,7 +26,7 @@ features:
     linkText: 进入路线
   - icon: 🧠
     title: C 语言精髓
-    details: 为什么 *(volatile uint32_t *)0x40020014 能点灯？指针、volatile、ABI、栈帧——嵌入式 C 是另一种 C。
+    details: 为什么 *(volatile uint32_t *)0x40021418 = 1UL << 22 能点灯？指针、volatile、ABI、栈帧——嵌入式 C 是另一种 C。
     link: /c/
     linkText: 进入路线
   - icon: ⚙️

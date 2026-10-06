@@ -42,9 +42,13 @@
 
 ## 4. 动画规范
 
-- 形式：独立 `.svg` 于 `docs/public/anim/`，SMIL（`<animate>`/`<animateTransform>`，`repeatCount="indefinite"`），viewBox 宽 720；页面用 markdown 图片语法 `![一句话描述](/anim/xxx.svg)` 引用（VitePress 自动加 base，禁 raw `<img>`、禁外链播放器、禁 JS 依赖）。
-- 配色：浅底 `#f6f8fa`，主色 `#3451b2`，强调 `#3eaf7c`，警示 `#d97706`；字号 ≥12px。
-- 每个动画在 PR 描述里附"表达结论一句话"；**禁装饰性动画**——不能帮助理解的动画不如不放。
+完整细则见 `.trellis/spec/docs-site/animation.md`（色板与字号、SMIL 阶段槽位的坑、三件动效武器、站点内联机制）。要点：
+
+- 形式：独立 `.svg` 于 `docs/public/anim/`，SMIL（`<animate>`/`<animateTransform>`，`repeatCount="indefinite"`），viewBox 宽 720；页面用 markdown 图片语法 `![一句话描述](/anim/xxx.svg)` 引用（构建期自动内联成 `<AnimFigure>`，随站点深浅主题换色；禁 raw `<img>`、禁外链播放器、禁 JS 依赖）。
+- 必带 `<title>`/`<desc>`：`<desc>` 要把因果讲完，关动效的人只看得这两行。
+- 颜色只能取规范色板：站点用一张固定映射表换主题 class，自造十六进制值或写 `rgba()` 底纹 = 深色模式漏网。
+- **只有阶段切换不算动画**：每张图至少一处连续运动（爬线 / 生长箭头 / 节拍脉冲），且运动本身承载结论。**禁装饰性动画**——不能帮助理解的动画不如不放。
+- 每个动画在 PR 描述里附"表达结论一句话"；深色模式截图一张。
 - 现有动画（29 张，总数以 `npm run docs:gen` 为准）：`stack-frame`、`irq-entry`、`context-switch`、`gpio-config`、`boot-sequence`、`i2c-timing`、`queue-passing`、`semaphore-mutex`、`priority-inversion`、`dma-pingpong`、`list-insert`、`spi-timing`、`tcp-handshake`、`rcc-clock-tree`、`tim-pwm-counter`、`tim-input-capture`、`uart-frame`、`usart-txe-tc`、`dma-circular-buffer`、`task-create-stack`、`task-notification`、`event-group-wait`、`software-timer-service`、`heap4-coalesce`、`gpio-matrix-routing`、`idf-uart-events`、`ledc-timer-channel`、`gd32-rcu-clock`、`volatile-as-if`。新增动画必须被至少一个章节引用，并在此登记。
 - 视频嵌入：B 站/油管一律 `<VideoEmbed type="bilibili|youtube" id="…" title="…" />`（主题已全局注册）。**id 嵌入前必须验证真实**：B 站查 `api.bilibili.com/x/web-interface/view?bvid=<id>`、油管查 `youtube.com/oembed?url=...` 核对标题，禁止占位/猜测链接；每个视频配一句"与本章哪一段对照看"。
 
