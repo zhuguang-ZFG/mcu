@@ -32,3 +32,19 @@
 - G 篇与 S 篇同构对照：每章开头给"同名不同姓"对照表（RCC↔RCU、168↔200/240MHz），动画复用现有骨架换数字与配色。
 - V 篇讲迁移：从 ARM 知识出发量 RISC-V——启动文件/链接脚本/CLIC/MTIME 四件事，不重复讲已会的 C 与外设概念。
 - 事实纪律沿用主站规范：数值双来源，章节 title 与 H1 一致，动画 `![](/anim/x.svg)` 引用。
+
+## 实施期补记（2026-10-06，G1 成稿）
+
+新增一手来源：
+- `gd32f4xx_pmu.h`（11,675B）/ `gd32f4xx_fmc.h`（27,907B 头 + 33,902B 源）/ `gd32f4xx_gpio.h`（28,758B）/ `Examples/RCU/Ckout_pin_clock_output/main.c`（5,919B），均 @ `10d02f4`。
+
+G1 成稿坐实的事实（行号 = 上述文件）：
+- RCU_CTL 0x00 / RCU_PLL 0x04 / RCU_CFG0 0x08 / AHB1EN 0x30 / APB1EN 0x40（gd32f4xx_rcu.h:44-56）；
+- 官方 200M 档 PLL 参数与全序列：HXTALEN+STB（超时！失败 while(1)）→ PMUEN → LDOVS → AHB/1 APB2/2 APB1/4 → RCU_PLL=PSC25|N400<<6|((P>>1)-1)<<16|HXTAL|Q9<<24 → PLLEN+PLLSTB → HDEN 等 HDRF → HDS 等 HDSRF → SCS=PLLP 等 SCSS（system_gd32f4xx.c:936-1003）；
+- **官方 system 文件不设 FMC 等待周期**（全文检索无 FMC_WS 写入；CKOUT 示例同样不设）——FMC_WS 是应用责任，WSCNT[3:0] 0~11 档（gd32f4xx_fmc.h:150-161）；
+- PMU 挂 APB1（RCU_APB1EN bit28）；LDOVS[14:15]、HDEN[16]、HDS[17]，回执 HDRF[16]/HDSRF[17]（gd32f4xx_pmu.h:59-73）——与 STM32F4 无 VOSRDY 相反；
+- CK_OUT0：PA8 AF0（example_ckout_main.c:135），源 IRC16M/LXTAL/HXTAL/PLLP，分频 /1~/5 含 /3 /5（rcu.h:886-901）；PC9 = CK_OUT1；
+- AHB 预分频无 /32 档（编码 12 直接 = /64，rcu.h:822-833）——与 STM32 同款怪癖；
+- GPIO：CTL 0x00（2bit/脚）、OCTL 0x14、BOP 0x18、AFSEL0 0x20（0-7）、AFSEL1 0x24（8-15）（gpio.h:52-61）；
+- 基准：GD32F450ZG 1MB Flash / 256KB SRAM 口径为产品选型表，**待 UM 核验**；FMC 等待对照表**待 UM 核验**（工程以 FMC_WS_VALUE=6 保守超配并已标注）。
+- IRQn 0..81（82 个外设向量，FPU_IRQn=81，gd32f4xx.h:279-284）。

@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 470" font-family="'Segoe UI','Microsoft YaHei',sans-serif">
+  <title>GD32F4xx RCU 时钟树：25MHz 晶振到 200MHz 主频</title>
+  <desc>四阶段动画：复位先跑 IRC16M 16MHz；HXTAL 25MHz 起振（超时回退 IRC16M）；PLL 经 PSC=25、N=400、P=2 锁定 200MHz（VCO 400MHz，Q=9）；CK_OUT0 输出 PLLP/4=50MHz 理论对账（待上板实测）。电压档三件套 LDOVS→HDEN→HDS 带 HDRF/HDSRF 回执。</desc>
+  <rect width="720" height="470" fill="#f6f8fa"/>
+  <text x="24" y="30" font-size="17" font-weight="bold" fill="#3451b2">GD32F4xx RCU：25MHz 晶振怎么变成 200MHz 主频</text>
+  <text x="24" y="50" font-size="12" fill="#666">HXTAL 25M → PLL（PSC=25 / N=400 / P=2 / Q=9）→ CK_SYS 200MHz → AHB/1、APB1/4、APB2/2 → 外设</text>
+
+  <!-- 源 -->
+  <rect x="30" y="90" width="120" height="44" fill="#ffffff" stroke="#3451b2" rx="6"/>
+  <text x="90" y="108" font-size="12" font-weight="bold" fill="#3451b2" text-anchor="middle">IRC16M</text>
+  <text x="90" y="124" font-size="12" fill="#666" text-anchor="middle">内部 16MHz</text>
+
+  <rect x="30" y="160" width="120" height="44" fill="#ffffff" stroke="#3451b2" rx="6"/>
+  <text x="90" y="178" font-size="12" font-weight="bold" fill="#3451b2" text-anchor="middle">HXTAL</text>
+  <text x="90" y="194" font-size="12" fill="#666" text-anchor="middle">晶振 25MHz</text>
+
+  <!-- PLL -->
+  <rect x="220" y="120" width="150" height="80" fill="#ffffff" stroke="#3eaf7c" stroke-width="2" rx="8"/>
+  <text x="295" y="142" font-size="13" font-weight="bold" fill="#3eaf7c" text-anchor="middle">PLL</text>
+  <text x="295" y="160" font-size="12" fill="#333" text-anchor="middle">PSC=25 → VCO 1MHz</text>
+  <text x="295" y="176" font-size="12" fill="#333" text-anchor="middle">N=400 → 400MHz</text>
+  <text x="295" y="192" font-size="12" fill="#333" text-anchor="middle">P=2 / Q=9</text>
+  <text x="295" y="208" font-size="12" fill="#3eaf7c" text-anchor="middle">等 PLLSTB 回执</text>
+
+  <!-- 总线 -->
+  <rect x="440" y="76" width="80" height="40" fill="#ffffff" stroke="#3451b2" rx="6"/>
+  <text x="480" y="93" font-size="12" font-weight="bold" fill="#3451b2" text-anchor="middle">CK_AHB</text>
+  <text x="480" y="108" font-size="12" fill="#666" text-anchor="middle">/1 = 200MHz</text>
+
+  <rect x="440" y="140" width="80" height="40" fill="#ffffff" stroke="#3451b2" rx="6"/>
+  <text x="480" y="157" font-size="12" font-weight="bold" fill="#3451b2" text-anchor="middle">CK_APB2</text>
+  <text x="480" y="172" font-size="12" fill="#666" text-anchor="middle">/2 = 100MHz</text>
+
+  <rect x="440" y="204" width="80" height="40" fill="#ffffff" stroke="#3451b2" rx="6"/>
+  <text x="480" y="221" font-size="12" font-weight="bold" fill="#3451b2" text-anchor="middle">CK_APB1</text>
+  <text x="480" y="236" font-size="12" fill="#666" text-anchor="middle">/4 = 50MHz</text>
+
+  <!-- 电压档三件套 -->
+  <rect x="220" y="250" width="300" height="66" fill="#fff7ed" stroke="#d97706" rx="8"/>
+  <text x="236" y="270" font-size="12" font-weight="bold" fill="#d97706">电压档三件套（都有回执！）</text>
+  <text x="236" y="288" font-size="12" fill="#333">① PMUEN 开时钟（APB1 bit28）</text>
+  <text x="236" y="306" font-size="12" fill="#333">② LDOVS → ③ HDEN 等 HDRF → ④ HDS 等 HDSRF</text>
+
+  <!-- CK_OUT0 -->
+  <rect x="560" y="96" width="130" height="64" fill="#ffffff" stroke="#d97706" stroke-width="2" rx="8"/>
+  <text x="625" y="116" font-size="12" font-weight="bold" fill="#d97706" text-anchor="middle">CK_OUT0 = /4</text>
+  <text x="625" y="134" font-size="12" fill="#666" text-anchor="middle">引到 PA8（AF0）</text>
+  <text x="625" y="150" font-size="12" font-weight="bold" fill="#d97706" text-anchor="middle">理论 50MHz</text>
+
+  <!-- 连线 -->
+  <g stroke="#94a3b8" stroke-width="2" fill="none">
+    <path d="M150 182 L220 160" marker-end="url(#arr)"/>
+    <path d="M370 160 L440 96" marker-end="url(#arr)"/>
+    <path d="M370 160 L440 160" marker-end="url(#arr)"/>
+    <path d="M370 170 L440 224" marker-end="url(#arr)"/>
+    <path d="M520 96 L560 120" marker-end="url(#arr)"/>
+  </g>
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <!-- 阶段点 -->
+  <g>
+    <circle cx="330" cy="360" r="6" fill="#3eaf7c"><animate attributeName="opacity" calcMode="discrete" values="1;0;0;0;1" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/></circle>
+    <circle cx="360" cy="360" r="6" fill="#94a3b8"><animate attributeName="opacity" calcMode="discrete" values="0;1;0;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/></circle>
+    <circle cx="390" cy="360" r="6" fill="#94a3b8"><animate attributeName="opacity" calcMode="discrete" values="0;0;1;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/></circle>
+    <circle cx="420" cy="360" r="6" fill="#94a3b8"><animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/></circle>
+  </g>
+
+  <!-- 阶段① IRC16M -->
+  <g opacity="0">
+    <animate attributeName="opacity" calcMode="discrete" values="1;0;0;0;1" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
+    <rect x="30" y="90" width="120" height="44" fill="none" stroke="#3eaf7c" stroke-width="3" rx="6"/>
+    <text x="36" y="330">① 复位先跑 IRC16M 16MHz——SCSS 回读就是 IRC16M（SCS=00）</text>
+  </g>
+  <!-- 阶段② HXTAL -->
+  <g opacity="0">
+    <animate attributeName="opacity" calcMode="discrete" values="0;1;0;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
+    <rect x="30" y="160" width="120" height="44" fill="none" stroke="#3eaf7c" stroke-width="3" rx="6"/>
+    <text x="36" y="330">② HXTAL 起振等 HXTALSTB——超时回退 IRC16M，不学官方 while(1) 死等</text>
+  </g>
+  <!-- 阶段③ PLL -->
+  <g opacity="0">
+    <animate attributeName="opacity" calcMode="discrete" values="0;0;1;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
+    <rect x="220" y="120" width="150" height="80" fill="none" stroke="#3eaf7c" stroke-width="3" rx="8"/>
+    <rect x="220" y="250" width="300" height="66" fill="none" stroke="#3eaf7c" stroke-width="3" rx="8"/>
+    <text x="36" y="330">③ PLL 锁定 200MHz：先电压三件套，再 PLLEN 等 PLLSTB，最后 SCS=PLLP 等 SCSS</text>
+  </g>
+  <!-- 阶段④ CK_OUT0 -->
+  <g opacity="0">
+    <animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
+    <rect x="560" y="96" width="130" height="64" fill="none" stroke="#3eaf7c" stroke-width="3" rx="8"/>
+    <text x="36" y="330">④ CK_OUT0 对账：PLLP/4 = 理论 50MHz 上 PA8——程序以为 vs 仪器实测（待上板）</text>
+  </g>
+
+  <text x="24" y="400" font-size="12" fill="#666">对照 STM32F407（S2）：PLL 公式同布局、VCO 更敢拉；VOS 无回执 → 三件套有回执；FLASH_ACR → FMC_WS（0~11 档）；MCO1 /2 幂 → CK_OUT0 /1~/5</text>
+  <text x="24" y="420" font-size="12" fill="#666">官方源：GigaDevice-GD32-MCU/GD32F4xx_Firmware_Library @10d02f4（system_gd32f4xx.c / gd32f4xx_rcu.h / gd32f4xx_pmu.h / gd32f4xx_fmc.h）</text>
+</svg>

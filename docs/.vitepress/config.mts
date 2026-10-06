@@ -154,7 +154,10 @@ export default defineConfig({
       '/gd32/': [
         {
           text: 'GD32 双系路线',
-          items: [{ text: '导览（G 篇 ARM / V 篇 RISC-V）', link: '/gd32/' }],
+          items: [
+            { text: '导览（G 篇 ARM / V 篇 RISC-V）', link: '/gd32/' },
+            { text: 'G1 RCU 时钟树', link: '/gd32/01-rcu-clock' },
+          ],
         },
       ],
       '/lab/': [

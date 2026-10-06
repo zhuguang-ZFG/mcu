@@ -16,7 +16,7 @@ title: GD32 双系路线
 | 章 | 标题 | 带走什么 |
 |---|---|---|
 | G0 | 环境与工具链 | 官方库 V3.3.3 目录解剖（复用 xPack ARM GCC） |
-| G1 | RCU 时钟树：200MHz 是怎么来的 | 与 S2 逐字段对照；官方默认 200M_PLL_25M_HXTAL |
+| **[G1 RCU 时钟树：200MHz 是怎么算出来的](/gd32/01-rcu-clock.md)【成稿】** | 与 S2 逐字段对照；PLL 同布局更激进（400MHz VCO）、电压档三件套带 HDRF/HDSRF 回执、FMC_WS 官方留白、CK_OUT0 理论 50MHz |
 | G2 | GPIO 与 AF 复用对照 | 七大寄存器"同名不同姓"点名 |
 | G3 | USART 增强点 | 从 `gd32f4xx_usart.h` 比出的差异清单 |
 | G4 | 差异点合集 | USBHS/EXMC/CAN 逐项"有没有、一不一样" |
