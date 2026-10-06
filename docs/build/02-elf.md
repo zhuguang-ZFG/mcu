@@ -14,7 +14,7 @@ minutes: 35
 ## 本章精髓
 
 1. **为什么一个文件要装两套目录**：ELF 同时伺候两个人。链接器按**节（section）**分抽屉——`.isr_vector`/`.text`/`.rodata`/`.data`/`.bss` 各归各；装载器按**段（segment，即程序头里的 `PT_LOAD`）**装车——把若干节打包成一批，一次性摆到指定地址。看错目录就会算错账：blink.elf 的 20 个节里只有 5 个带 `A`（alloc）标记，真正在文件里占字节的只有 2 个。**"34 KB 的固件"和"660 字节的固件"说的是同一件事。**
-2. **为什么 VMA 与 LMA 必须分家**：`.data` 的人住在 RAM，行李寄存在 Flash。这对坐标不是编译器凭空写的，是链接脚本给的——`stm32f407xx.ld:91,100` 那两行 `_sidata = LOADADDR(.data)` 与 `} >RAM AT> FLASH`，兑现成程序头就是 `VirtAddr=0x20000000 / PhysAddr=0x08000244`。搬运工是谁、怎么搬，[C1](../c/01-memory-model.md) 讲过，本章教你**从文件里把这对地址读出来**。
+2. **为什么 VMA 与 LMA 必须分家**：`.data` 的人住在 RAM，行李寄存在 Flash。这对坐标不是编译器凭空写的，是链接脚本给的——`stm32f407xx.ld:91,100` 那两行 `_sidata = LOADADDR(.data)` 与 `} >RAM AT> FLASH`，在 `elf_probe.elf` 上兑现成程序头就是 `VirtAddr=0x20000000 / PhysAddr=0x08000244`（第三刀会给两具标本的完整对照：`blink.elf` 因为 `.data` 是空的，同一个位置算出的是 `0x08000294`）。搬运工是谁、怎么搬，[C1](../c/01-memory-model.md) 讲过，本章教你**从文件里把这对地址读出来**。
 3. **为什么所有地址都可能差 1**：`readelf -h` 说入口是 `0x8000189`，`nm` 说 `Reset_Handler` 在 `0x08000188`。谁错了？都没错。Cortex-M 只跑 Thumb 态，**最低位是状态位不是地址位**。不懂这条约定，你会在 GDB 里对着一句 "Breakpoint at 0x8000189" 找不到函数。
 
 ## 怎么读这一章
