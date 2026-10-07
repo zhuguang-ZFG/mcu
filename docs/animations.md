@@ -31,6 +31,8 @@ title: 动画演示中心
 
 ![全局变量在 .bss/.data 的两地生活](/anim/memory-two-homes.svg)
 
+![环形缓冲两派：满/空判定与回绕](/anim/ring-buffer.svg)
+
 ![函数调用栈帧：压栈与弹栈](/anim/stack-frame.svg)
 
 ## 构建与运行全过程
@@ -40,6 +42,8 @@ title: 动画演示中心
 ![上电到 main 的启动时序](/anim/boot-sequence.svg)
 
 ![B1 四步构建：main.c 到 blink.elf 的流水线](/anim/build-four-steps.svg)
+
+![B3 链接脚本：.data 的两个住址（VMA/LMA）](/anim/data-vma-lma.svg)
 
 ## STM32F407 寄存器主线
 

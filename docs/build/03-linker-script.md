@@ -164,6 +164,10 @@ nokeep.bin 头两个字:  d040f8df 68014810
 
 ## `.data` 的双地址：一句 `>RAM AT> FLASH`
 
+先把"人在 RAM、货在 Flash"画出来——两个住址、一个搬运工、一个删词即翻车的反例。
+
+![.data 的 VMA 与 LMA 动画](/anim/data-vma-lma.svg)
+
 ```ld
   _sidata = LOADADDR(.data);                 /* :91 —— 门牌在段之前就发 */
   .data :
@@ -445,3 +449,5 @@ ENTRY(_start)
 一条命令跑完六刀（每刀的 `sed` diff、报错原文、换算式都在这里）：
 
 <<< ../../code/toolchain/03-linker/probe.sh
+
+> AI生成
