@@ -1,6 +1,6 @@
 ---
 title: B5 map 与体积：谁吃了我的 Flash
-status: building
+status: done
 difficulty: 2
 minutes: 25
 ---
@@ -14,6 +14,12 @@ minutes: 25
 1. `size` 的三列是三种资源：text（Flash：代码+只读）、data（Flash 存初值+RAM 住人）、bss（纯 RAM）——Flash 占用=text+data，RAM 占用=data+bss。
 2. map 文件的三板斧：Archive member 表（谁被从库里捞出来）、Memory Map（每个符号的落位）、 discarded 段（被 gc-sections 辞退的）。
 3. 优化的顺序：先看大项（库/表/缓冲区），再谈 -O 级别；方向错了 -O2 也救不了你。
+
+## 怎么读这一章
+
+- **能记住**：Flash=text+data、RAM=data+bss；"先审账再优化"。
+- **能理解**：为什么带初值的数组让 Flash 和 RAM 双涨、加 const 后 data 回落 text 涨；为什么 bin 比 text+data 大。
+- **能用**：`size`/`nm --size-sort`/`map` 三把刀完成一次"揪出大尾巴"审计。
 
 ## 学习目标
 
@@ -33,6 +39,8 @@ arm-none-eabi-nm -S --size-sort build/blink.elf    # 符号按大小排，倒数
 grep -A3 "Discarded input" build/blink.map | more  # 谁被辞退了
 ```
 
+`size` 一行三列就把 Flash/RAM 占用算清；`nm --size-sort` 把符号按体积排队，最大几个一目了然；`map` 的 Discarded 段告诉你 gc-sections 辞退了谁。
+
 ## 小节结构
 
 | 小节 | 内容 | 四件套 |
@@ -42,6 +50,84 @@ grep -A3 "Discarded input" build/blink.map | more  # 谁被辞退了
 | nm 审计 | --size-sort 找大户；A/B/C 实验各一次 | 代码分析 |
 | 瘦身工具箱 | -ffunction-sections+--gc-sections、-Os、去未用库、const 归位 | 配置 |
 | CCM 腾挪 | 大缓冲搬进 CCM 的链接脚本配合（B3 联动） | 配置 |
+
+## 一、size 三列：Flash 与 RAM 各吃哪几份
+
+`arm-none-eabi-size blink.elf` 输出三列（本站 00-blink 实测，具体数以你本地 build 为准）：
+
+```text
+   text	   data	    bss	    dec	    hex	filename
+   280	     12	     32	    324	    144	blink.elf
+```
+
+三列对应三种资源，推导靠 [B3 链接脚本](03-linker-script.md) 的段属性：
+
+| 列 | 装的是什么 | 住哪 | 算进谁的占用 |
+|---|---|---|---|
+| **text** | 代码（.text）+ 只读数据（.rodata）+ 向量表 | Flash | Flash |
+| **data** | 有初值的全局变量（.data） | 运行在 RAM，**初值存 Flash** | **Flash + RAM 各一份** |
+| **bss** | 零初始化的全局变量（.bss） | 纯 RAM（启动时清零，不占 Flash） | RAM |
+
+两条占用公式立刻出来：
+
+$$\text{Flash 占用} = \text{text} + \text{data}$$
+$$\text{RAM 占用} = \text{data} + \text{bss}$$
+
+为什么 data 算两份？因为 .data 有初值，初值必须存在断电不丢的 Flash 里（[B3](03-linker-script.md) 的 `AT> FLASH`），运行时启动代码把它搬到 RAM（[B4 启动](04-startup.md) 的 Reset_Handler 搬运循环）。所以 data 在 Flash 里存初值、在 RAM 里住运行值——两份都吃。bss 没初值，启动时清零即可，只吃 RAM。
+
+> **【注】** 这是 [C1 内存模型](../c/01-memory-model.md) "const 经济学"的账本版：const 数组进 .rodata（算 text，只吃 Flash），可写数组进 .data（算 data，Flash+RAM 双吃），未初始化数组进 .bss（只吃 RAM）。B5 审计就是把 C1 的段归属用 size 数字验证一遍。
+
+## 二、map 三板斧：Archive 表、Memory Map、Discarded
+
+map 文件是链接器 `ld` 加 `-Map=` 旗生成的"链接户口本"（00-blink 的 Makefile 里 `... -Map=build/blink.map`）。三块内容各有用途：
+
+**第一板斧：Archive member 表**——列出从哪些 `.a` 静态库里捞了哪些 `.o`。如果链接了 `libc.a`，这里能看到"为了 printf 捞了 `vfprintf.o`、`__assert.o`..."——库被引用的粒度一目了然，是 gc-sections 是否生效的证据。
+
+**第二板斧：Memory Map**——每个 `.o` 的每个段落进哪个地址、每个符号多大住哪。找 `main.o` 的记录就能看到 main 函数多大、它引用了谁。这是"揪大户"的主要战场：按段汇总的数字告诉你 `.text` 里哪块最大。
+
+**第三板斧：Discarded input**——被 `--gc-sections` 辞退的段。链接器发现某段没被任何入口（entry/中断向量）引用，就把它丢弃，不进最终 `.elf`。这里列出"谁被辞了"——如果某本该保留的段出现在这里，说明链接脚本没把它标 `KEEP()`（[B3](03-linker-script.md) 的 KEEP 用法）。
+
+## 三、nm 审计：按大小排队找大户
+
+`nm -S --size-sort` 把所有符号按体积从大到小排，倒数五个就是固件里最占地方的：
+
+```bash
+arm-none-eabi-nm -S --size-sort build/blink.elf | tail -10
+```
+
+典型大户（00-blink 量级很小，加库后才看得出）：
+
+| 大户类型 | 典型来源 | 瘦身手段 |
+|---|---|---|
+| `vfprintf` 一族 | printf 带浮点 | 不用 `%f` 就能关浮点版（`-u _printf_float` 反向） |
+| 大 `const` 表 | 正弦表/字库/查找表 | 必要的 Flash 开销，挪不走的 |
+| 大缓冲区 | `uint8_t buf[4096]` | 搬进 CCM（第五节）或改环形 |
+| 启动代码 | `crt0.o`/`startup_*.s` | 固定开销，几十百来字节 |
+
+审计纪律：**先看大项再谈优化级别**——一个 4KB 的未用数组比 `-O2` 到 `-Os` 省的那几百字节大一个数量级。方向错了 -O2 也救不了你。
+
+## 四、瘦身工具箱：四把刀按顺序用
+
+1. **`-ffunction-sections -fdata-sections` + `--gc-sections`**：把每个函数/数据各放一个段，链接时丢弃没引用的。这是"没用到的库函数不进固件"的前提——不加 `-ffunction-sections`，整个 `.o` 要么全进要么全不进，gc-sections 无从下手。00-blink 的 Makefile 已默认开这套旗。
+2. **`-Os`**：优化体积（比 -O2 更省 Flash，代价是速度略慢）。Flash 敏感场景首选；速度敏感的热路径单独标 `-O2`/`-O3`。
+3. **去未用库**：链接了 `libc` 但没用 `malloc`，gc-sections 会把 `malloc.o` 辞退——前提是 `-ffunction-sections`。整库链接不可怕，gc-sections 救场。
+4. **const 归位**：把有初值的"只读"数组标 `const`——从 .data（Flash+RAM 双吃）挪进 .rodata（只吃 Flash）。C1 的"const 经济学"在 B5 的账本上直接体现：加一个 `const`，data 降、text 涨、RAM 净省。
+
+## 五、CCM 腾挪：大缓冲搬进核心耦合内存
+
+F407 除了 128KB SRAM，还有 **64KB CCM RAM**（Core Coupled Memory，0x10000000）——CPU 直连、零等待、但** DMA 访问不到**。适合放 CPU 专用的大缓冲（DMA 缓冲不能放这，[S8](../stm32/08-dma.md) 的坑）。
+
+链接脚本加一段（[B3](03-linker-script.md) 的 MEMORY 范式）：
+
+```ld
+MEMORY { RAM (xrw) : ORIGIN=0x20000000, LENGTH=128K
+         CCM (xrw) : ORIGIN=0x10000000, LENGTH=64K }
+/* 大缓冲指定进 CCM */
+.bss.dma_buf (NOLOAD) : { *(.dma_buf) } > RAM      /* DMA 缓冲留 RAM */
+.bss.cpu_buf  (NOLOAD) : { *(.cpu_buf)  } > CCM    /* CPU 专用缓冲进 CCM */
+```
+
+代码侧给缓冲加 section 属性：`__attribute__((section(".cpu_buf")))`。CCM 腾挪的收益：128KB 主 SRAM 留给 DMA/栈/堆，64KB CCM 专门放大缓冲——两个内存域分工，不互相挤。代价：CCM 的数据 DMA 搬不动，配错了 DMA 静默失败（[S8](../stm32/08-dma.md)）。
 
 ## 记忆锚点
 
@@ -60,6 +146,31 @@ grep -A3 "Discarded input" build/blink.map | more  # 谁被辞退了
 - **栈堆不算进 bss**：它们靠 `_Min_*` 预算段占位+运行时生长（B3）；爆 RAM 的另一种死法。
 - **优化级别迷信**：-Os 通常赢 -O2（Flash 敏感场景）；但先砍大项再谈级别。
 
+## 短自测
+
+1. 为什么 .data 同时算进 Flash 和 RAM 占用，.bss 只算 RAM？
+<details><summary>参考答案</summary>.data 有初值，初值必须存在断电不丢的 Flash（链接脚本 AT> FLASH），运行时启动代码搬到 RAM——所以 Flash 存初值一份、RAM 住运行值一份，两份都吃。.bss 零初始化，启动时清零即可，初值不需要存 Flash，只占 RAM。</details>
+
+2. `nm --size-sort` 倒数五个符号里，最大的一般是哪类？瘦身优先级怎么排？
+<details><summary>参考答案</summary>典型大户：vfprintf 一族（printf 带浮点）、大 const 表、大缓冲区、启动代码。瘦身优先级：先砍大项（未用数组、未用库函数靠 gc-sections）→ 再调优化级别（-Os）→ 最后抠 const 归位。一个 4KB 未用数组比 -O2 到 -Os 省的几百字节大一个数量级，方向错了 -O2 救不了。</details>
+
+3. gc-sections 为什么必须配 `-ffunction-sections` 才有效？
+<details><summary>参考答案</summary>不加 `-ffunction-sections`，一个 .o 里的所有函数被打包进同一个 .text 段，链接器只能整段进或整段丢——只要有一个函数被引用，整段都保留，没引用的函数也跟着进固件。加了 `-ffunction-sections`，每个函数各占一个 .text.funcname 段，链接器能精确丢弃没被引用的单个函数。gc-sections 的"按段丢弃"粒度依赖 -ffunction-sections 把段切细。</details>
+
+4. CCM RAM 适合放什么、不适合放什么？为什么？
+<details><summary>参考答案</summary>适合放 CPU 专用的大缓冲（零等待、不与主 SRAM 抢空间）；不适合放 DMA 缓冲——CCM 直连 CPU 不挂总线矩阵，DMA 访问不到，配错了 DMA 静默失败。判断标准：这块数据 DMA 要不要碰？要碰就留主 SRAM，不碰就腾进 CCM。</details>
+
+## 对照表：本章概念 → 仓库与上游落点
+
+| 概念 | 落点 |
+|---|---|
+| size 三列公式 | 本节第一节；[C1 内存模型](../c/01-memory-model.md) 段归属 |
+| map 三板斧 | 00-blink 的 `build/blink.map`（`make` 生成） |
+| nm --size-sort 审计 | `arm-none-eabi-nm`；[C6 栈帧](../c/06-abi-stack.md) 也用 nm |
+| gc-sections + -ffunction-sections | 00-blink Makefile 默认旗 |
+| CCM 链接脚本 | [B3 链接脚本](03-linker-script.md) MEMORY 范式 + 本节第五节 |
+| const 经济学验证 | [C1](../c/01-memory-model.md) 第二节 + 本节实验三连 |
+
 ## 你做到了
 
 - 固件体积在你眼里是一笔能逐条对账的账；
@@ -68,3 +179,5 @@ grep -A3 "Discarded input" build/blink.map | more  # 谁被辞退了
 <div class="achievement">
 ✅ 下一站：<a href="06-flash-debug.html">B6 烧录与调试</a>——SWD 两根线怎么把固件送进 Flash，断点凭什么让 CPU 停下。
 </div>
+
+> AI生成
