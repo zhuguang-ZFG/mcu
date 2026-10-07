@@ -29,7 +29,7 @@ sar_probe() {
 
 ts_probe() {
     have "$HOSTCC" || { echo "找不到 $HOSTCC —— 装一个宿主 gcc（或 HOSTCC=... sh probe.sh）" >&2; exit 1; }
-    "$HOSTCC" -std=c11 -O2 -Wall -Wextra -Werror ts_probe.c -o build/ts_probe.exe
+    "$HOSTCC" -std=c11 -O2 -Wall -Wextra -Werror ts_probe.c -lm -o build/ts_probe.exe
     ./build/ts_probe.exe
 }
 
