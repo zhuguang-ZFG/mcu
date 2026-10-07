@@ -10,7 +10,7 @@
 #include "driver/gpio.h"
 #include "esp_task_wdt.h"
 #include "esp_timer.h"
-#include "esp_reset_reason.h"
+#include "esp_system.h"      /* esp_reset_reason()：v5.5 里住在 esp_system.h（无独立 esp_reset_reason.h） */
 
 #define UART_NUM UART_NUM_1
 #define UART_TX_PIN GPIO_NUM_10
