@@ -23,6 +23,13 @@ CORE=$CMSIS/core_cm4.h
 STARTUP=../00-blink/startup_stm32f407xx.s
 LDSCRIPT=../00-blink/stm32f407xx.ld
 
+# .trellis/ref/ 被 gitignore（.gitignore:8），CI 上不存在；第 0 段挖出的常数
+# 喂给后续全部步骤（编译宏/向量槽核对），缺文件时整体跳过——与 16-debug-hardfault 一致。
+if [ ! -f "$HDR" ] || [ ! -f "$CORE" ]; then
+    echo "未 provision .trellis/ref/cmsis（$HDR / $CORE 不存在）：跳过常数对账与取证" >&2
+    exit 0
+fi
+
 echo "############ 0. 从 CMSIS 头文件现挖常数（每行自带 文件:行号 引证） ############"
 
 # fact <文件> <grep锚> <sed提取式> <名字>
