@@ -114,6 +114,10 @@ if (sim_read_ctrl(&b) & CTRL_COUNTFLAG) got_wrong++;
 
 ## 三、周期 = LOAD + 1：167999 是怎么来的，忘减一亏在哪
 
+先看这张图：倒数、归零重载，和那个"读一次就清"的 COUNTFLAG。
+
+![SysTick 倒数与 COUNTFLAG 读清动画](/anim/systick-tick.svg)
+
 硬件语义（`probe.c:45-48` 注释）：使能后每个周期 VAL--；VAL **已经为 0** 的那个周期执行重载、置 COUNTFLAG。所以从 LOAD 数到 0 再重载，一个完整周期是 LOAD+1 个时钟——「减一」不是口诀，是数出来的。
 
 168MHz 要 1ms：$168000000 / 1000 = 168000$ 个时钟 → `LOAD = 168000 - 1 = 167999`。probe [2] 一族三例：
@@ -275,3 +279,5 @@ ticks = 16800000，`ticks - 1 > 0xFFFFFF`，`SysTick_Config` 返回 1 拒配、�
 <div class="achievement">
 ✅ 下一站：<a href="06-tim.html">S6 定时器 TIM</a>——24 位不够用时，32 位 TIM 登场：从数脉冲到发 PWM，STM32 最全能的外设。
 </div>
+
+> AI生成

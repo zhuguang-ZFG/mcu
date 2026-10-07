@@ -303,12 +303,71 @@ html.dark {
   padding: 0 24px 8px;
 }
 
+/* 入场动效：滚到可见区后，统计块淡入、轨道逐条滑入、章节 chip 逐颗浮现。
+   全部用 transform/opacity（纯合成），并受 is-reduced 关闭。 */
 .mcu-map__stats {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   justify-content: center;
   margin: 8px 0 28px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.mcu-map.is-visible .mcu-map__stats {
+  opacity: 1;
+  transform: none;
+}
+
+.mcu-track {
+  margin: 18px 0;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.45s ease var(--d, 0s), transform 0.45s ease var(--d, 0s);
+}
+.mcu-map.is-visible .mcu-track {
+  opacity: 1;
+  transform: none;
+}
+
+.vp-doc .mcu-chips li {
+  margin: 0;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.4s ease var(--d, 0s), transform 0.4s ease var(--d, 0s);
+}
+.mcu-map.is-visible .vp-doc .mcu-chips li {
+  opacity: 1;
+  transform: none;
+}
+
+.mcu-track__bar i {
+  display: block;
+  height: 100%;
+  background: var(--mcu-accent);
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 尊重系统"减少动效"：不动、不渐入、进度条直接落位 */
+.mcu-map.is-reduced .mcu-map__stats,
+.mcu-map.is-reduced .mcu-track,
+.mcu-map.is-reduced .vp-doc .mcu-chips li {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+.mcu-map.is-reduced .mcu-track__bar i {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mcu-map__stats,
+  .mcu-track,
+  .vp-doc .mcu-chips li {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 .mcu-stat {
   min-width: 116px;

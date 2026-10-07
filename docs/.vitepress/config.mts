@@ -71,6 +71,7 @@ export default defineConfig({
       { text: 'ESP32', link: '/esp32/' },
       { text: 'GD32', link: '/gd32/' },
       { text: '实验', link: '/lab/' },
+      { text: '动画', link: '/animations' },
       {
         text: '资料',
         items: [

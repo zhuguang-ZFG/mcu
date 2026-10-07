@@ -95,6 +95,10 @@ ESP32-S3 是**双核**：
 
 ## 二、第一棒 ROM：芯片里烧死的引导
 
+先把三棒接力画出来：ROM 认路、bootloader 验货、app 开工——串口前缀就是探针。
+
+![ESP32-S3 上电三棒接力动画](/anim/esp32-boot-relay.svg)
+
 ROM 引导是**固化在芯片里**的（不是你能改的代码），上电后第一段执行的就是它。它做三件事：
 
 1. **读 strapping 脚**，决定启动模式——这就是为什么"按住 BOOT 键再复位"能进下载模式。
@@ -319,3 +323,5 @@ factory,  app,  factory, ,        1M,
 <div class="achievement">
 ✅ 下一站：<a href="03-idf-anatomy.html">P3 IDF 工程解剖</a>——把那几个 `CMakeLists.txt` 和 `sdkconfig` 拆开看，理解这条流水线怎么把上千个文件编成你刚烧进去的镜像。
 </div>
+
+> AI生成

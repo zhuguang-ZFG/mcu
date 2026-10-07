@@ -44,8 +44,8 @@
 
 - 成稿章节 **40 / 75**（上表「实物实验」那一行的 6 篇另计，不进章节数），通读约 **1570 分钟**（≈ 26.2 小时）；
 - 实物实验 **6 / 8**（文稿成稿；完整配套工程 6 项，上板验证 0 项）；
-- 机制动画 **34** 张，在 `docs/public/anim/`，动效与版式规范见 `.trellis/spec/docs-site/animation.md`；
-- 示例工程 **28** 个，在 `code/`，与章节同构；
+- 机制动画 **40** 张，在 `docs/public/anim/`，动效与版式规范见 `.trellis/spec/docs-site/animation.md`；
+- 示例工程 **32** 个，在 `code/`，与章节同构；
 - 章节 frontmatter 元数据校验已通过（缺项或非法值会阻止构建）。
 <!-- readme:progress:end -->
 
@@ -167,3 +167,5 @@ npm run site:measure     # 原始/压缩体积与搜索按需加载记录
 ## 许可
 
 [Apache-2.0](LICENSE)
+
+> AI生成

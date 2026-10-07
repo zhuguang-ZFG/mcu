@@ -154,6 +154,10 @@ CFSR 是三个子寄存器拼成的（`core_cm4.h:616-684`）：低 8 位 MMFSR�
 
 ## 四、栈帧取证：案发时用的是哪个栈
 
+先看"崩溃破案"的整条流水线：案发、升级、取证、PC 对行号。
+
+![HardFault 故障取证全流程动画](/anim/hardfault-forensics.svg)
+
 异常进入时，硬件**自动**把 8 个寄存器压进当前栈（ARMv7-M 异常机制），probe 实测的版图（`fault_ctx.c:22-24` 的 `hw_frame_t`）：
 
 ```text
@@ -408,3 +412,5 @@ D:\Users\mcu\code\stm32\16-debug-hardfault/fault_ctx.c:70
 <div class="achievement">
 ✅ S 篇收官。下一站：<a href="../rtos/index.html">RTOS 篇</a>——从"一个超级循环"到"多个平行世界"，先看 FreeRTOS 怎么变魔术。
 </div>
+
+> AI生成

@@ -3,9 +3,14 @@ docs/.vitepress/dist/
 docs/.vitepress/cache/
 .playwright-mcp/
 *.log
+__pycache__/
+.temp/
 
 # 上游参考源码(写作引用基准,不入库)
 .trellis/ref/
+
+# 暂缓入库的进行中工程（完工后移回 code/ 并登记 projects.json）
+.trellis/wip/
 
 # 固件构建产物（源码与 sdkconfig 入库，build 产物不入库）
 code/**/build/

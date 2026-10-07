@@ -58,6 +58,10 @@ sh probe.sh errors     # 预处理/编译/链接 各制造一个错误，原文�
 
 ## 一、调度员 gcc：`-###` 看它把活分给谁
 
+先把整条流水线画出来：一份 65 行的 `main.c` 是怎样在四道工序里变成能烧进 Flash 的 `.elf`。
+
+![B1 四步构建流水线动画](/anim/build-four-steps.svg)
+
 `arm-none-eabi-gcc` 本身不编译任何代码。它读参数、查后缀、然后 fork 出真正的工具。加 `-###` 让它**只打印不执行**，内部分工一目了然（本机实测，路径已截断）：
 
 ```text
@@ -303,3 +307,5 @@ $ arm-none-eabi-nm -n blink.elf | grep -E ' (Reset_Handler|main)$'
 <div class="achievement">
 ✅ 下一站：<a href="02-elf.html">B2 ELF 解剖</a>——readelf/objdump 实拆一个固件，段与节不再傻傻分不清。
 </div>
+
+> AI生成
