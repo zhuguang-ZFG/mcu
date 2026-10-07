@@ -7,5 +7,5 @@ idf_component_register(
          "../../../common/reliability/health.c"
          "../../../common/reliability/record.c"
     PRIV_INCLUDE_DIRS "../../../common/reliability"
-    PRIV_REQUIRES driver esp_timer esp_hw_support
+    PRIV_REQUIRES driver esp_timer esp_hw_support esp_system
 )
