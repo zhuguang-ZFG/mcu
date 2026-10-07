@@ -645,6 +645,10 @@ def build_parser():
     fault.add_argument("--fault", type=lambda x: int(x, 0), required=True)
     fault.add_argument("--task", type=lambda x: int(x, 0), default=0)
     sub.add_parser("log")
+    # Accept common options before OR after the subcommand, as documented.
+    for child in sub.choices.values():
+        for flag, kind in [("--port", str), ("--baud", int), ("--timeout", float), ("--output", str)]:
+            child.add_argument(flag, type=kind, default=argparse.SUPPRESS)
     return parser
 
 

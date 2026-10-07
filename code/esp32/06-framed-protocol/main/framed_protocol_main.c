@@ -42,12 +42,13 @@ static device_service_t s_service;
 #if CONFIG_RELIABILITY_TEST_FAULTS
 /* 故障注入（仅测试构建）：必须由显式 TEST_FAULT 命令触发 */
 static volatile uint8_t s_pause_feed;   /* fault=1：喂帧/解析全停 */
+static uint8_t s_pending_kind;
+static uint32_t s_fault_at;
 static volatile uint8_t s_pause_tx;     /* fault=2：TX 步进停，RX 照常 */
 static void fault_inject(void *user, uint8_t kind, uint8_t id)
 {
     (void)user; (void)id;
-    if (kind == 1) s_pause_feed = 1;
-    if (kind == 2) s_pause_tx = 1;
+    s_pending_kind=kind; s_fault_at=(uint32_t)(esp_timer_get_time()/1000)+200U;
     ESP_LOGW(TAG, "FAULT INJECTED: kind=%u", kind);
 }
 #endif
@@ -98,7 +99,10 @@ static void uart_task(void *arg)
         }
 
 #if CONFIG_RELIABILITY_TEST_FAULTS
-        if (s_pause_feed) { vTaskDelay(pdMS_TO_TICKS(5)); continue; }
+        if (s_pending_kind && (int32_t)(now_ms()-s_fault_at)>=0) {
+            if(s_pending_kind==1) s_pause_feed=1; else s_pause_tx=1;
+            s_pending_kind=0;
+        }
 #else
         ;
 #endif
@@ -106,6 +110,9 @@ static void uart_task(void *arg)
         /* 2) 周期取数：不管事件来没来都看一眼驱动缓冲（通知丢失的兜底） */
         size_t drained = 0;
         for (;;) {
+#if CONFIG_RELIABILITY_TEST_FAULTS
+            if(s_pause_feed) break;
+#endif
             size_t buffered = 0;
             uart_get_buffered_data_len(UART_PORT, &buffered);
             if (buffered == 0 || drained >= MAX_PER_ROUND) break;
@@ -118,6 +125,8 @@ static void uart_task(void *arg)
             drained += (size_t)n;
             serviced = true;
         }
+
+        protocol_rx_poll(&s_service.rx, now_ms());
 
         /* 3) TX 步进：队列里有帧就推（uart_tx_chars 有界写入） */
 #if CONFIG_RELIABILITY_TEST_FAULTS

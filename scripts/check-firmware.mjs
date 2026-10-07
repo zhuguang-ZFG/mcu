@@ -20,8 +20,9 @@ for (const p of projects.filter(p => p.kind !== 'esp-idf')) {
   if (p.kind === 'host-probe') run('sh', [p.entry], cwd)
   if (p.kind === 'host-make') run(make, ['-B', 'run', 'asm-arm'], cwd)
   if (p.kind === 'arm-make') {
-    for (const scene of p.scenes || [null]) run(make, ['-B', ...(scene ? [`DEMO_SCENE=${scene}`] : [])], cwd)
-    const builds = p.scenes ? p.scenes.map(n => `build/scene-${n}`) : ['build']
+    if(p.variants) { for(const v of p.variants) run(make,['-B',...v.args],cwd) }
+    else for (const scene of p.scenes || [null]) run(make, ['-B', ...(scene ? [`DEMO_SCENE=${scene}`] : [])], cwd)
+    const builds = p.variants ? p.variants.map(v=>v.dir) : p.scenes ? p.scenes.map(n => `build/scene-${n}`) : ['build']
     for (const dir of builds) {
       const elf = fs.readdirSync(path.join(cwd, dir)).find(f => f.endsWith('.elf'))
       assert.ok(elf, `${p.id}: missing ELF`)
@@ -45,6 +46,13 @@ for (const p of projects.filter(p => p.kind !== 'esp-idf')) {
       assert.match(run(make, ['-n', 'DEMO_SCENE=2', 'flash'], cwd), /program build\/scene-2\/freertos-lab\.elf/)
       const bad = spawnSync(make, ['-n', 'DEMO_SCENE=7'], { cwd, encoding: 'utf8' })
       assert.notEqual(bad.status, 0, 'invalid scene must fail')
+    }
+    if(p.variants){
+      const digest=v=>{const dir=path.join(cwd,v.dir);const file=fs.readdirSync(dir).find(f=>f.endsWith('.bin'));return createHash('sha256').update(fs.readFileSync(path.join(dir,file))).digest('hex')}
+      const first=digest(p.variants[0]);
+      assert.notEqual(first,digest(p.variants[1]),'normal/fault builds must differ');
+      run(make,p.variants[0].args,cwd);assert.equal(digest(p.variants[0]),first);
+      assert.notEqual(spawnSync(make,['MODE=99'],{cwd}).status,0);
     }
   }
 }

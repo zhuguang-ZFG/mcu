@@ -21,6 +21,6 @@
   "children": [],
   "parent": "10-07-knowledge-closure",
   "relatedFiles": [],
-  "notes": "2026-10-07 用户同意接续本任务并完善规划。PRD/design/implement 已更新，新增 research/planning-evidence.md；冻结五工程范围、协议失步恢复、健康宽限与停喂狗锁存、独立构建验收。保持 planning，等待方案审阅；新增工程尚未实施，STM32 原始时序资料与工具链为实施前检查项。",
+  "notes": "Implementation completed and locally verified; remote CI pending. See research/validation.md. Hardware measurements remain pending.",
   "meta": {}
 }

@@ -94,6 +94,7 @@ export default defineConfig({
         },
       ],
       '/c/': [
+        { text: 'C8 串口协议：从字节流到可恢复的消息', link: '/c/08-framed-protocol' },
         {
           text: 'C 语言精髓',
           items: [
@@ -126,6 +127,7 @@ export default defineConfig({
         },
       ],
       '/stm32/': [
+        { text: 'S17 看门狗：任务失去进展之后', link: '/stm32/17-watchdog-reset' },
         {
           text: 'STM32F407 寄存器主线',
           items: [
@@ -195,6 +197,7 @@ export default defineConfig({
         },
       ],
       '/esp32/': [
+        { text: 'P13 看门狗与健康监督：不要喂反了', link: '/esp32/13-watchdog-health' },
         {
           text: 'ESP32-S3 + ESP-IDF',
           items: [

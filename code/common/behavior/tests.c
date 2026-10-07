@@ -2,7 +2,11 @@
 #include <stdint.h>
 #include "capture.h"
 #include "circular.h"
+#include "../../stm32/platform/uart.h"
 int main(void) {
+    assert(f407_dma_events(0x400)==1 && f407_dma_events(0x800)==2 && f407_dma_events(0x200)==4);
+    assert(f407_dma_events(0xc00)==3 && f407_dma_events(1UL<<29)==0);
+    assert(RCC_RESET_OFFSET==0x74);
     capture_t c={0};
     capture_edge(&c,UINT32_MAX-499,false); assert(c.frequency==0);
     capture_edge(&c,500,false); assert(c.frequency==1000);

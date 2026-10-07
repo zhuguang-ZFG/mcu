@@ -27,7 +27,7 @@ LDFLAGS  := $(MCU) -T stm32f407xx.ld \
             -nostartfiles
 
 OBJS     := $(BUILD)/startup_stm32f407xx.o $(BUILD)/main.o \
-            $(BUILD)/protocol.o $(BUILD)/transport.o $(BUILD)/service.o
+            $(BUILD)/protocol.o $(BUILD)/transport.o $(BUILD)/service.o $(BUILD)/uart.o
 
 all: $(BUILD)/$(TARGET).elf $(BUILD)/$(TARGET).bin $(BUILD)/$(TARGET).hex
 	$(SIZE) $(BUILD)/$(TARGET).elf
@@ -82,3 +82,6 @@ clean:
 	rm -rf $(BUILD)
 
 .PHONY: all flash debug gdb clean
+
+$(BUILD)/uart.o: ../platform/uart.c ../platform/uart.h | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@

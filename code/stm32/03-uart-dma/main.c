@@ -32,6 +32,7 @@
  */
 
 #include <stdint.h>
+#include "../platform/uart.h"
 #include "../../common/behavior/circular.h"
 
 /* ============================ 板级/通道配置 ============================ */
@@ -109,9 +110,9 @@
 
 /* DMA2_Stream5 的状态位在 HISR 里（stream4..7 走高位寄存器，位号不变）；
  * 清除要写 HIFCR——HISR 是只读状态寄存器，往它写 1 不会清任何标志。 */
-#define DMA_HISR_TEIF5  (1UL << 27)
-#define DMA_HISR_HTIF5  (1UL << 28)
-#define DMA_HISR_TCIF5  (1UL << 29)
+#define DMA_HISR_TEIF5  DMA5_TE
+#define DMA_HISR_HTIF5  DMA5_HT
+#define DMA_HISR_TCIF5  DMA5_TC
 
 #define NVIC_ISER0 (*(volatile uint32_t *)(0xE000E100UL)) /* IRQ 0..31   */
 #define NVIC_ISER1 (*(volatile uint32_t *)(0xE000E104UL)) /* IRQ 32..63  */

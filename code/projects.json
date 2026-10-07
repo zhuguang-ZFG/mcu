@@ -198,7 +198,8 @@
     "path": "code/esp32/06-framed-protocol",
     "kind": "esp-idf",
     "entry": "CMakeLists.txt",
-    "target": "esp32s3"
+    "target": "esp32s3",
+    "faults": true
   },
   {
     "id": "esp32-07-watchdog-health",
@@ -213,5 +214,69 @@
     "path": "code/c/07-ub-misra",
     "kind": "host-probe",
     "entry": "probe.sh"
+  },
+  {
+    "id": "stm32-06-watchdog-health",
+    "path": "code/stm32/06-watchdog-health",
+    "kind": "arm-make",
+    "entry": "Makefile",
+    "variants": [
+      {
+        "args": [
+          "MODE=0",
+          "FAULTS=0"
+        ],
+        "dir": "build/mode-0-faults-0"
+      },
+      {
+        "args": [
+          "MODE=0",
+          "FAULTS=1"
+        ],
+        "dir": "build/mode-0-faults-1"
+      },
+      {
+        "args": [
+          "MODE=1",
+          "FAULTS=0"
+        ],
+        "dir": "build/mode-1-faults-0"
+      },
+      {
+        "args": [
+          "MODE=1",
+          "FAULTS=1"
+        ],
+        "dir": "build/mode-1-faults-1"
+      },
+      {
+        "args": [
+          "MODE=2",
+          "FAULTS=0"
+        ],
+        "dir": "build/mode-2-faults-0"
+      },
+      {
+        "args": [
+          "MODE=2",
+          "FAULTS=1"
+        ],
+        "dir": "build/mode-2-faults-1"
+      },
+      {
+        "args": [
+          "MODE=3",
+          "FAULTS=0"
+        ],
+        "dir": "build/mode-3-faults-0"
+      },
+      {
+        "args": [
+          "MODE=3",
+          "FAULTS=1"
+        ],
+        "dir": "build/mode-3-faults-1"
+      }
+    ]
   }
 ]

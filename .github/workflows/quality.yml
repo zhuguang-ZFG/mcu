@@ -68,9 +68,11 @@ jobs:
         env:
           PROJECT: ${{ matrix.path }}
           TARGET: ${{ matrix.target }}
+          VARIANT: ${{ matrix.variant }}
+          DEFAULTS: ${{ matrix.defaults }}
         run: |
           . /opt/esp/idf/export.sh
           cd "$PROJECT"
-          idf.py -B build/ci -D SDKCONFIG="$PWD/build/ci/sdkconfig" set-target "$TARGET"
-          idf.py -B build/ci -D SDKCONFIG="$PWD/build/ci/sdkconfig" build size
-          python -c 'import json; assert json.load(open("build/ci/project_description.json"))["target"] == "esp32s3"'
+          idf.py -B build/ci-$VARIANT -D SDKCONFIG="$PWD/build/ci-$VARIANT/sdkconfig" -D SDKCONFIG_DEFAULTS="$DEFAULTS" set-target "$TARGET"
+          idf.py -B build/ci-$VARIANT -D SDKCONFIG="$PWD/build/ci-$VARIANT/sdkconfig" -D SDKCONFIG_DEFAULTS="$DEFAULTS" build size
+          python -c 'import json,os; assert json.load(open("build/ci-"+os.environ["VARIANT"]+"/project_description.json"))["target"] == "esp32s3"'
