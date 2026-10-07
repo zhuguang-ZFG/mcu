@@ -206,5 +206,11 @@
     "entry": "CMakeLists.txt",
     "target": "esp32s3",
     "faults": true
+  },
+  {
+    "id": "c-07-ub-misra",
+    "path": "code/c/07-ub-misra",
+    "kind": "host-probe",
+    "entry": "probe.sh"
   }
 ]

@@ -71,6 +71,8 @@ title: 动画演示中心
 
 ![SAR 逐次逼近：12 轮二分](/anim/sar-successive.svg)
 
+![DAC 三重奏：TIM 打拍、DMA 递谱、DAC 开嗓](/anim/dac-trio.svg)
+
 ![I2C 时序：起始/停止/应答](/anim/i2c-timing.svg)
 
 ![SPI 时序：主从沿采样](/anim/spi-timing.svg)
@@ -80,6 +82,8 @@ title: 动画演示中心
 ![TIM 输入捕获：边沿定格](/anim/tim-input-capture.svg)
 
 ![HardFault 取证：故障升级与栈帧挖 PC](/anim/hardfault-forensics.svg)
+
+![IAP 跳转接力：关断、换栈、改向量、跳 reset](/anim/iap-handoff.svg)
 
 ## FreeRTOS 精讲
 
