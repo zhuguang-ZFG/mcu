@@ -24,11 +24,10 @@ STARTUP=../00-blink/startup_stm32f407xx.s
 LDSCRIPT=../00-blink/stm32f407xx.ld
 
 # .trellis/ref/ 被 gitignore（.gitignore:8），CI 上不存在；第 0 段挖出的常数
-# 喂给后续全部步骤（编译宏/向量槽核对），缺文件时整体跳过——与 16-debug-hardfault 一致。
-if [ ! -f "$HDR" ] || [ ! -f "$CORE" ]; then
-    echo "未 provision .trellis/ref/cmsis（$HDR / $CORE 不存在）：跳过常数对账与取证" >&2
-    exit 0
-fi
+# 喂给宿主编译宏与向量槽核对（§0–§2）。缺头文件时仅跳过 §0–§2；
+# §3 交叉链接只依赖 code/stm32/00-blink（入库文件）与 arm-none-eabi-gcc，
+# 照常运行——CI 上保住"强符号顶替 weak、槽 22 = handler|1"主线取证。
+if [ -f "$HDR" ] && [ -f "$CORE" ]; then
 
 echo "############ 0. 从 CMSIS 头文件现挖常数（每行自带 文件:行号 引证） ############"
 
@@ -139,6 +138,9 @@ check_slot "$EXTI9_5_IRQN"   EXTI9_5_IRQHandler
 check_slot "$TIM2_IRQN"      TIM2_IRQHandler
 check_slot "$USART1_IRQN"    USART1_IRQHandler
 check_slot "$EXTI15_10_IRQN" EXTI15_10_IRQHandler
+else
+    echo "未 provision .trellis/ref/cmsis（$HDR / $CORE 不存在）：跳过 §0–§2（常数对账/宿主编译/向量槽核对）；§3 交叉链接继续" >&2
+fi
 
 ARMPREFIX=arm-none-eabi-
 if command -v "${ARMPREFIX}gcc" >/dev/null 2>&1; then

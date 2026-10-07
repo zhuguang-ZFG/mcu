@@ -21,6 +21,6 @@
   "children": [],
   "parent": "10-07-knowledge-closure",
   "relatedFiles": [],
-  "notes": "16 篇全部 status:done（P1 六篇 + P2 五篇 + F0/F8 + P1/P3/P4），质量门禁全绿：test 27/27、projects 28、docs:build 零错误、anim 34、成稿 40/75。提交 2804e6f（成稿+探针工程）、caa5f59（摘录容错）、280e3a5（S4 CMSIS 缺省跳过）、69947e3（S9 -lm，CI 真凶）。",
+  "notes": "16 篇全部 status:done（P1 六篇 + P2 五篇 + F0/F8 + P1/P3/P4），质量门禁全绿：test 27/27、projects 28、docs:build 零错误、anim 34、成稿 40/75。提交 2804e6f（成稿+探针工程）、caa5f59（摘录容错）、280e3a5+后续（S4 缺 CMSIS 时跳过 §0–§2 常数对账，但 §3 交叉链接依赖入库的 00-blink 启动文件，CI 上仍验证强符号顶替 weak）、69947e3（S9 -lm，CI 真凶）。",
   "meta": {}
 }
