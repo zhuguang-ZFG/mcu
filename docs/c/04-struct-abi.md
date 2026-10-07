@@ -51,6 +51,10 @@ cd code/c/04-struct-abi && sh probe.sh
 
 ## 一、GPIO_TypeDef 解剖
 
+先看这张图：偏移是"数"出来的——条带、填充、位域陷阱一次看全。
+
+![结构体对齐与填充动画](/anim/struct-alignment.svg)
+
 CMSIS 头文件把"寄存器地图"翻译成 C 结构体。以下是 `stm32f407xx.h` 第 526–537 行的官方定义（第二来源：[github.com/STMicroelectronics/cmsis_device_f4](https://github.com/STMicroelectronics/cmsis_device_f4/blob/master/Include/stm32f407xx.h)）：
 
 ```c
@@ -241,3 +245,5 @@ C 标准把位域布局（分配方向、跨单元策略、填充）留给编译
 <div class="achievement">
 ✅ 下一站：<a href="05-func-pointer.html">C5 函数指针与状态机</a>——中断驱动代码的基本功三件套。
 </div>
+
+> AI生成

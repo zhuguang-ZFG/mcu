@@ -33,6 +33,8 @@ title: 动画演示中心
 
 ![环形缓冲两派：满/空判定与回绕](/anim/ring-buffer.svg)
 
+![结构体与 ABI：对齐、填充与位域陷阱](/anim/struct-alignment.svg)
+
 ![函数调用栈帧：压栈与弹栈](/anim/stack-frame.svg)
 
 ## 构建与运行全过程
@@ -102,6 +104,8 @@ title: 动画演示中心
 ![软件定时器服务](/anim/software-timer-service.svg)
 
 ![heap_4 内存合并](/anim/heap4-coalesce.svg)
+
+![移植 FreeRTOS：三异常改名接管](/anim/freertos-port.svg)
 
 ## ESP32-S3 + ESP-IDF
 
