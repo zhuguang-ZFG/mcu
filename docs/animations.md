@@ -85,6 +85,8 @@ title: 动画演示中心
 
 ![IAP 跳转接力：关断、换栈、改向量、跳 reset](/anim/iap-handoff.svg)
 
+![低功耗三档对比：Sleep/Stop/Standby](/anim/stm32-pwr-three-modes.svg)
+
 ## FreeRTOS 精讲
 
 ![为什么需要 RTOS：超级循环 vs 平行世界](/anim/why-rtos.svg)
@@ -128,6 +130,26 @@ title: 动画演示中心
 ## GD32 双系对照
 
 ![GD32 RCU 时钟树：与 STM32 逐字段对照](/anim/gd32-rcu-clock.svg)
+
+![ECLIC 两维优先级：level 定抢占，priority 定序](/anim/riscv-clic-priority.svg)
+
+![MTIME 64 位读写纪律：hi-lo-hi 防撕裂](/anim/riscv-mtime-tick.svg)
+
+![RISC-V 点灯闭环：五步装配](/anim/riscv-blink-closed.svg)
+
+## RT-Thread 精讲
+
+![R1 二级位图：32×8 实现 256 级优先级选优](/anim/rtt-bitmap-256.svg)
+
+![R2 IPC 五种武器一副骨架](/anim/rtt-ipc-skeleton.svg)
+
+![R4 设备框架调用链：应用 → 框架 → 驱动 → 寄存器](/anim/rtt-device-chain.svg)
+
+![R7 Nano 移植四件套装配](/anim/rtt-port-nano.svg)
+
+## 双 OS 对照与选型
+
+![双 OS 同概念对照：通知 vs 无 / 设备框架 / 配置哲学](/anim/dual-os-compare.svg)
 
 ## 动画规范
 

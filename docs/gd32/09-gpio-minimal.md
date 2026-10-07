@@ -48,6 +48,12 @@ minutes: 30
 
 十分钟后你写的每行代码都有账可查——本章 main.c 就是这两笔账的展开。
 
+## 动画：RISC-V 点灯闭环
+
+开时钟 → CTL0 四位配置 → OCTL 设初值 → BOP/BC 原子翻转 → mtime 延时——五步装配，V0~V4 的产出在此合体成第一个完整的 RISC-V 点灯闭环。
+
+![RISC-V 点灯闭环：五步装配](/anim/riscv-blink-closed.svg)
+
 ## 小节结构
 
 | 小节 | 内容 |

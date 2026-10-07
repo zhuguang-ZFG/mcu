@@ -15,6 +15,12 @@ minutes: 30
 - **能理解**：为什么 FreeRTOS 的信号量基于队列实现而 RT-Thread 是独立 IPC 对象；为什么 FreeRTOS 有任务通知而 RT-Thread 没有——思想差异：一个抠性能到极致，一个求模型统一。
 - **能用**：拿到任何第三个 RTOS（Zephyr/ThreadX/µC/OS），能按这张对照表的维度快速建档，30 分钟内给出"与 F/R 的异同"初判。
 
+## 动画：双 OS 同概念对照
+
+任务通知 vs 二值信号量、有无设备框架、FreeRTOSConfig.h vs Kconfig——三组同概念双实现并排演进，两个内核"抠性能"与"求统一"的思想差异一眼看穿。
+
+![双 OS 同概念对照：通知 vs 无 / 设备框架 / 配置哲学](/anim/dual-os-compare.svg)
+
 ## 总览对照
 
 | 维度 | FreeRTOS (V11.x) | RT-Thread (5.x) |

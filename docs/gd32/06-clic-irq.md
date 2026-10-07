@@ -48,6 +48,12 @@ minutes: 35
 
 读完本章再回看这五行，每个编号你都能讲出它与 ARM `IRQn` 的区别。
 
+## 动画：ECLIC 两维优先级
+
+level 决定能否打断别人（抢占），priority 决定同 level 内谁先响应（排序）——两维配合完成中断嵌套与同级排序，无需 ARM 的 PRIGROUP 分组钥匙。
+
+![ECLIC 两维优先级：level 定抢占，priority 定序](/anim/riscv-clic-priority.svg)
+
 ## 小节结构
 
 | 小节 | 内容 | 四件套 |

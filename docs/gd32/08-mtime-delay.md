@@ -56,6 +56,12 @@ int main(void)
 
 `gcc demo.c -o demo && ./demo` 输出 `1ms = 27000 ticks, 3ms = 81000 ticks`——先减再比的无符号差值跨过 32 位边界也不出错。本章全部延时数学都能这样在宿主预演。
 
+## 动画：MTIME 64 位读写纪律
+
+RV32 读 64 位 mtime 走"高-低-高"循环防撕裂，写 mtimecmp 必须"先高后低"防假中断——两条读写纪律保住跨 32 位边界的时间账。
+
+![MTIME 64 位读写纪律：hi-lo-hi 防撕裂](/anim/riscv-mtime-tick.svg)
+
 ## 小节结构
 
 | 小节 | 内容 |

@@ -35,6 +35,12 @@ minutes: 30
 
 主循环跑 5 秒→进 Stop→RTC 2 秒后唤醒→串口打印"我醒了"循环——万用表串在供电上，看电流从 mA 掉到 µA 的跳水瞬间。
 
+## 动画：低功耗三档对比
+
+Sleep 只停 CPU、Stop 停 1.2V 域时钟保留 SRAM、Standby 几乎全断电——三档"停什么/留什么/谁唤醒/醒来到哪"逐档对照，深睡与快醒的取舍一目了然。
+
+![低功耗三档对比：Sleep/Stop/Standby](/anim/stm32-pwr-three-modes.svg)
+
 ## 板卡事实
 
 - PWR 控制器基址 `PWR_BASE = APB1 + 0x7000 = 0x40007000`（CMSIS 已核对）；时钟在 RCC_APB1ENR bit28 = `RCC_APB1ENR_PWREN_Msk`。
