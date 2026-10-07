@@ -143,9 +143,17 @@ function lint(file) {
   return out
 }
 
+// 总览页收录校验：新图忘了登记 docs/animations.md 时，build 只查"死链"不查
+// "漏链"，任何既有门禁都拦不住——总览页悄悄缺一张，直到有人肉眼发现。
+const gallery = readFileSync('docs/animations.md', 'utf8')
+
 let bad = 0
 for (const f of files) {
   const errs = lint(f)
+  const name = basename(f, '.svg')
+  if (!gallery.includes(`/anim/${name}.svg`)) {
+    errs.push(`未收录进 docs/animations.md——新图必须登记总览页`)
+  }
   if (!errs.length) continue
   bad++
   console.log(`\n${f}`)

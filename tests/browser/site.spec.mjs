@@ -1,4 +1,12 @@
 import { test, expect } from '@playwright/test'
+import { readdirSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+// 磁盘上有多少张动画，演示中心页就必须一张不少地陈列出来——
+// anim-lint 管源文件登记，这里管的是构建后的真实页面。
+const animDir = join(dirname(dirname(dirname(fileURLToPath(import.meta.url)))), 'docs', 'public', 'anim')
+const svgNames = readdirSync(animDir).filter(f => f.endsWith('.svg')).map(f => f.slice(0, -4))
 
 test('search loads its index on demand and returns tutorial results', async ({ page }) => {
   const requests=[]
@@ -29,6 +37,20 @@ test('animation controls and reduced motion work in both themes', async ({ page 
   await expect(page.locator('html')).toHaveClass(/dark/)
   expect(await figure.evaluate(el=>el.querySelector('svg').animationsPaused())).toBe(true)
   expect(errors).toEqual([])
+})
+test('animation gallery lists every svg with working controls', async ({ page }) => {
+  await page.goto('animations.html')
+  const figures = page.locator('.anim-figure')
+  await expect(figures).toHaveCount(svgNames.length)
+  const listed = await page.evaluate(() => [...document.querySelectorAll('.anim-figure')].map(el => el.dataset.anim))
+  expect([...new Set(listed)].sort()).toEqual([...new Set(svgNames)].sort())
+  await expect(page.locator('.anim-figure__btn')).toHaveCount(svgNames.length)
+  const button = figures.first().locator('.anim-figure__btn')
+  await expect(button).toHaveText('暂停')
+  await button.click()
+  expect(await figures.first().evaluate(el => el.querySelector('svg').animationsPaused())).toBe(true)
+  await button.click()
+  expect(await figures.first().evaluate(el => el.querySelector('svg').animationsPaused())).toBe(false)
 })
 test('lab states and metadata are visible on mobile', async ({ page }) => {
   await page.setViewportSize({width:390,height:844})
