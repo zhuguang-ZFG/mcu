@@ -36,6 +36,8 @@ projects: ["rtos-01-freertos-lab"]
 | 霸天虎（F8/R7 移植工程） | 1 | 串口日志观测 |
 | 逻辑分析仪（可选） | 1 | GPIO 打点看执行序更直观 |
 
+> 板卡外观与原理图见 [野火霸天虎官方资料页](https://doc.embedfire.com/products/link/zh/latest/mcu/stm32/stm32f407_batianhu.html)。
+
 ## 原理一句话
 
 高任务等锁 → 锁在低任务手里 → 中任务抢占低任务 → 低任务永远还不了锁 → 高任务"被中任务间接阻塞"；互斥量的继承把低任务临时抬到高优先级，中任务插不进来。

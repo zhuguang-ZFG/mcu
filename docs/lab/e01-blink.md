@@ -38,6 +38,8 @@ projects: ["stm32-00-blink"]
 | Micro-USB 线 | 2 | 板子供电 + 仿真器 |
 | 电脑（装好工具链） | 1 | 见 [S0](../stm32/00-env.md) |
 
+> 板卡外观与原理图见 [野火霸天虎官方资料页](https://doc.embedfire.com/products/link/zh/latest/mcu/stm32/stm32f407_batianhu.html)。
+
 ## 原理一句话
 
 LED 阳极共接 3.3V，阴极经限流电阻到 PF6——**引脚拉低才有电流**，所以 `BSRR` 高 16 位写 1（拉低）= 亮，低 16 位写 1（拉高）= 灭。
@@ -96,3 +98,5 @@ SWD 接线与供电纪律见 [S0 第五步](../stm32/00-env.md#第五步接线sw
 <div class="achievement">
 ✅ 下一站：<a href="e02-logic-uart.html">实验 E02 逻辑分析仪抓 UART 帧</a>——把串口波形抓到屏幕上，一位一位对照手册。
 </div>
+
+> AI生成

@@ -37,6 +37,8 @@ projects: []
 | 双板各一 | 2 | 烧好低功耗固件 |
 | 电池盒/稳压电源 | 1 | 旁路板载 LDO 更佳 |
 
+> 板卡外观与引脚分配见 [野火霸天虎资料页](https://doc.embedfire.com/products/link/zh/latest/mcu/stm32/stm32f407_batianhu.html) / [立创 S3 wiki](https://wiki.lckfb.com/zh-hans/szpi-esp32s3/)。
+
 ## 原理一句话
 
 续航(小时) ≈ 电池容量(mAh) ÷ 平均电流(mA)——平均电流由"工作时长占比×工作电流 + 睡眠占比×睡眠电流"决定；睡眠电流每降一个数量级，续航涨一个数量级。

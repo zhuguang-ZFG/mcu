@@ -10,8 +10,8 @@ title: 导读·实物装备清单
 
 | 板卡 | 角色 | 关键配置 | 用在哪 |
 |---|---|---|---|
-| 野火 STM32F407 霸天虎 | STM32 主线 | F407ZGT6：168MHz、1MB Flash、192KB RAM；RGB 灯 PF6/7/8 | [S 篇](../stm32/index.md) 全部 + RTOS 移植 |
-| 立创·实战派 ESP32-S3（小智板） | ESP32 主线 | N16R8：LX7 双核 240MHz、16MB Flash、8MB PSRAM；2 寸屏/双麦/喇叭/姿态传感器 | [P 篇](../esp32/index.md) 全部 |
+| [野火 STM32F407 霸天虎](https://doc.embedfire.com/products/link/zh/latest/mcu/stm32/stm32f407_batianhu.html) | STM32 主线 | F407ZGT6：168MHz、1MB Flash、192KB RAM；RGB 灯 PF6/7/8 | [S 篇](../stm32/index.md) 全部 + RTOS 移植 |
+| [立创·实战派 ESP32-S3](https://wiki.lckfb.com/zh-hans/szpi-esp32s3/)（小智板） | ESP32 主线 | N16R8：LX7 双核 240MHz、16MB Flash、8MB PSRAM；2 寸屏/双麦/喇叭/姿态传感器 | [P 篇](../esp32/index.md) 全部 |
 | 2.8 寸 ESP32-S3 显示模块（ES3C28P，[LCD wiki 资料](https://www.lcdwiki.com/zh/2.8inch_ESP32-S3_Display)） | ESP32 当前持板 | N16R8 同款主控；ILI9341V 2.8 寸屏（SPI：CS=IO10/DC=IO46/SCK=IO12）；FT6336G 触摸（I2C=IO15/16，INT=IO17 低有效）；ES8311 音频；WS2812 RGB=IO42；SD=SDIO；电池 ADC=IO9 | [P 篇](../esp32/index.md) 实验（触摸/屏/音频场景） |
 
 ::: warning 买板注意

@@ -46,7 +46,7 @@ idf.py --version
 
 ## 第二步：认识你的板子
 
-立创·实战派 ESP32-S3（小智板）核心配置：模组 **ESP32-S3-WROOM-1-N16R8**（16MB Flash + 8MB PSRAM，LX7 双核 240MHz），USB 转串口芯片 **CH340K**。板子 Type-C 口身兼三职：供电、烧录、串口监视——一根线搞定。
+立创·实战派 ESP32-S3（小智板）核心配置：模组 **ESP32-S3-WROOM-1-N16R8**（16MB Flash + 8MB PSRAM，LX7 双核 240MHz），USB 转串口芯片 **CH340K**。板子 Type-C 口身兼三职：供电、烧录、串口监视——一根线搞定。板卡外观、原理图与引脚分配见 [立创官方 wiki](https://wiki.lckfb.com/zh-hans/szpi-esp32s3/)。
 
 插上电脑，打开设备管理器看"端口 (COM 和 LPT)"：
 
@@ -150,3 +150,5 @@ SRAM 剩余：3xxxxx 字节；PSRAM 剩余：83xxxxx 字节
 <div class="achievement">
 ✅ 下一站：<a href="01-arch-boot.html">P1 S3 架构与启动全过程</a>——bootloader、分区表、app 三段接力，讲清上电到你的 printf 之间发生了什么。
 </div>
+
+> AI生成

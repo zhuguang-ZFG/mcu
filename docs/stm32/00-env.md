@@ -30,7 +30,7 @@ minutes: 25
 
 | 装备 | 用途 | 备注 |
 |---|---|---|
-| 野火 F407 霸天虎 | 目标板 | 板载 RGB 红灯=PF6 |
+| [野火 F407 霸天虎](https://doc.embedfire.com/products/link/zh/latest/mcu/stm32/stm32f407_batianhu.html) | 目标板 | 板载 RGB 灯 PF6/7/8；板卡外观与原理图见官方资料页 |
 | ST-Link V2（或 J-Link/DAP） | 烧录+调试 | 霸天虎**不板载**仿真器，必须自备 |
 | Micro-USB 线 ×2 | 板子供电、仿真器连接 | 别拿成充电专用线（没数据线芯） |
 | 杜邦线若干 | 接 SWD | 若仿真器带排线可省 |
@@ -182,3 +182,5 @@ x/wx 0x40023830   # RCC_AHB1ENR：bit5 应该是 1（GPIOF 时钟开了）
 <div class="achievement">
 ✅ 下一站：<a href="01-arch.html">S1 F407 架构总览</a>——为什么 0x40020000 是 GPIOA？总线矩阵与存储器映射给你答案。状态：本章代码已静态核对 RM0090，<strong>待上板实测反馈</strong>（欢迎 Issue 报告你的现象）。
 </div>
+
+> AI生成

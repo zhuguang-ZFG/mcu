@@ -17,3 +17,14 @@ title: 实验中心
 - **先做实验再吵架**：对任何"我觉得应该是"的争议，先上板；
 - 实测记录表是实验的一部分——填上日期、板子、现象，下次复习就是财富；
 - 写新实验请复制 [实验模板](template.md)，规范见 [CONTRIBUTING](https://github.com/zhuguang-ZFG/mcu/blob/main/CONTRIBUTING.md)。
+
+## 板卡资料
+
+实验用到的两块核心板卡，外观与引脚分配见各板官方资料页：
+
+- [野火 STM32F407 霸天虎](https://doc.embedfire.com/products/link/zh/latest/mcu/stm32/stm32f407_batianhu.html)——S 篇与 RTOS 移植主线板
+- [立创·实战派 ESP32-S3](https://wiki.lckfb.com/zh-hans/szpi-esp32s3/)——P 篇主线板
+
+完整装备清单见 [实物装备清单](../guide/hardware.md)。
+
+> AI生成

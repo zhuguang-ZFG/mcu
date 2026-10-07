@@ -37,6 +37,8 @@ projects: ["stm32-02-tim-pwm", "esp32-03-ledc-fade"]
 | 霸天虎（S6 PWM 固件）或 S3（P7 LEDC 固件） | 1 | F407 1kHz 呼吸；S3 5kHz fade |
 | 杜邦线 | 2 | 通道+地 |
 
+> 板卡外观与引脚分配见 [野火霸天虎资料页](https://doc.embedfire.com/products/link/zh/latest/mcu/stm32/stm32f407_batianhu.html) / [立创 S3 wiki](https://wiki.lckfb.com/zh-hans/szpi-esp32s3/)。
+
 ## 原理一句话
 
 PWM=周期内高电平时间占比；占空比=CCR/(ARR+1)（STM32）或 duty/2^bits（LEDC）——波形的每个参数都能从寄存器值算出来。
@@ -81,3 +83,5 @@ PWM=周期内高电平时间占比；占空比=CCR/(ARR+1)（STM32）或 duty/2^
 
 - 定时器参数与物理波形建立换算直觉；
 - "数字配置→模拟现象"的验证方法论再下一城。
+
+> AI生成

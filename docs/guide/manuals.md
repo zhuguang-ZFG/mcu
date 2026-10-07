@@ -14,6 +14,7 @@ title: 导读·手册地图
 | **STM32F407ZG Datasheet**（数据手册） | 引脚定义、复用功能表、电气参数、封装 | 选引脚、查复用（AF 几）、看电压电流限额时 |
 | **PM0214**（Cortex-M4 编程手册） | 内核寄存器（NVIC/SysTick/SCB）、异常模型、指令集摘要 | [S4 中断](../stm32/04-nvic-exti.md)、[S5 SysTick](../stm32/05-systick.md)、[S16 HardFault](../stm32/16-debug-hardfault.md) |
 | ARMv7-M 架构参考手册 | 指令集的完整定义 | 读启动文件/上下文切换汇编时（B4、F2） |
+| [野火霸天虎资料页](https://doc.embedfire.com/products/link/zh/latest/mcu/stm32/stm32f407_batianhu.html)（doc.embedfire.com） | **这块板**的原理图、引脚分配、外设接线 | 用板载 RGB/按键/扩展接口之前必查 |
 
 ::: tip RM0090 怎么用
 不要从头读！按"章节目录 → 外设 → 寄存器地图 → 具体寄存器位"的路径查。每个外设章节末尾都有 register map 汇总表，配合正文位定义使用。
@@ -26,7 +27,7 @@ title: 导读·手册地图
 | **ESP32-S3 技术参考手册（TRM）** | S3 全部外设寄存器、IO_MUX/GPIO Matrix、系统结构 | [P2 GPIO 矩阵](../esp32/02-gpio-matrix.md) 等底层章节 |
 | **ESP-IDF 编程指南**（选 v5.5 + ESP32-S3） | API 参考、驱动用法、构建系统、启动流程 | P 篇日常查阅；版本和芯片别选错 |
 | **ESP32-S3-WROOM-1 Datasheet** | 模组引脚、电源要求、RF 参数 | 硬件设计/供电排查时 |
-| 立创实战派 S3 wiki（wiki.lckfb.com） | **这块板**的原理图、引脚分配、外设接线 | 用板载屏/麦克风/按键之前必查 |
+| [立创实战派 S3 wiki](https://wiki.lckfb.com/zh-hans/szpi-esp32s3/) | **这块板**的原理图、引脚分配、外设接线 | 用板载屏/麦克风/按键之前必查 |
 
 ## RTOS 侧
 
@@ -62,3 +63,5 @@ title: 导读·手册地图
 
 - 每类问题知道翻哪本、怎么查；
 - 收藏夹从"100 篇二手教程"换成"5 本一手手册"。
+
+> AI生成

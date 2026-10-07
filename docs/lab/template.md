@@ -10,6 +10,7 @@ title: 实验模板
 
 - 所有字段都必须填**真实内容**，没有"待补充"字段；
 - 接线图一律 SVG（`docs/public/images/labs/`），实物照片欢迎实拍补充（规范见 [CONTRIBUTING](https://github.com/zhuguang-ZFG/mcu/blob/main/CONTRIBUTING.md)）；
+- 板卡外观与引脚分配见各板官方资料页：[野火霸天虎](https://doc.embedfire.com/products/link/zh/latest/mcu/stm32/stm32f407_batianhu.html)、[立创实战派 S3](https://wiki.lckfb.com/zh-hans/szpi-esp32s3/)；
 - 预期现象必须可观测（肉眼/串口/逻辑分析仪/万用表），禁止"应该可以了吧"；
 - 故障排查 ≥3 条，按"出现频率"排序；
 - 思考题 2–4 个，答案藏在对应章节里。
@@ -90,3 +91,5 @@ projects: []
 ## 你做到了
 
 能力清单（成就感闭环）。
+
+> AI生成

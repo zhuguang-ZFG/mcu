@@ -38,6 +38,8 @@ projects: ["stm32-04-i2c-eeprom"]
 | 上拉电阻 4.7kΩ ×2 | 2 | 模块自带则免 |
 | 霸天虎（本页 EEPROM 工程） | 1 | I2C1 PB6/PB7，外接模块按下文接线 |
 
+> 板卡外观与原理图见 [野火霸天虎官方资料页](https://doc.embedfire.com/products/link/zh/latest/mcu/stm32/stm32f407_batianhu.html)。
+
 ## 原理一句话
 
 I2C 的每次交互都是"START + 地址帧 + ACK + 数据帧(+ACK) + STOP"的积木组合——寄存器级驱动就是按事件位依次搭建这些积木。
@@ -91,3 +93,5 @@ I2C 的每次交互都是"START + 地址帧 + ACK + 数据帧(+ACK) + STOP"的�
 构建、接线与排查见[工程 README](https://github.com/zhuguang-ZFG/mcu/tree/main/code/stm32/04-i2c-eeprom)。
 
 <<< ../../code/stm32/04-i2c-eeprom/main.c
+
+> AI生成
