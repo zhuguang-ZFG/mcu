@@ -43,7 +43,7 @@ for (const p of projects.filter(p => p.kind !== 'esp-idf')) {
       assert.equal(hash(1), first)
       assert.equal(hash(2), second)
       assert.match(run(make, ['-n', 'DEMO_SCENE=2', 'flash'], cwd), /program build\/scene-2\/freertos-lab\.elf/)
-      const bad = spawnSync(make, ['-n', 'DEMO_SCENE=6'], { cwd, encoding: 'utf8' })
+      const bad = spawnSync(make, ['-n', 'DEMO_SCENE=7'], { cwd, encoding: 'utf8' })
       assert.notEqual(bad.status, 0, 'invalid scene must fail')
     }
   }
