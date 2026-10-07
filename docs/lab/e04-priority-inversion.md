@@ -1,12 +1,12 @@
 ---
 title: 实验 E04 优先级反转复现
-status: building
+status: done
 difficulty: 3
 minutes: 90
-code_status: planned
+code_status: ready
 hardware_status: pending
-code_note: 尚无本实验的 FreeRTOS / RT-Thread 两版工程；以下是实验设计。
-projects: []
+code_note: FreeRTOS scene 6（信号量版+互斥量版）已进 rtos-01-freertos-lab 工程；RT-Thread 版待 R7 移植工程补。
+projects: ["rtos-01-freertos-lab"]
 
 ---
 
@@ -40,6 +40,12 @@ projects: []
 
 高任务等锁 → 锁在低任务手里 → 中任务抢占低任务 → 低任务永远还不了锁 → 高任务"被中任务间接阻塞"；互斥量的继承把低任务临时抬到高优先级，中任务插不进来。
 
+## 动画：优先级反转与继承
+
+三任务的时间轴：L 拿锁进临界区→H 等锁→M 抢占 L（信号量版 H 被饿死）vs L 被继承抬级（互斥量版 M 插不进、H 及时完成）。两种结局并排对照，继承机制的"抬级"在画面上直观可见。
+
+![优先级反转与继承动画](/anim/priority-inversion.svg)
+
 ## 剧本（三任务）
 
 | 任务 | 优先级 | 行为 |
@@ -50,10 +56,16 @@ projects: []
 
 ## 步骤
 
-1. **FreeRTOS·信号量版**：用二值信号量当"锁"，串口打点时间戳：观察 H 的"拿到锁"比预期晚多久；
-2. **FreeRTOS·互斥量版**：同一剧本换互斥量重跑，对比 H 的等待时间；
+1. **FreeRTOS·信号量版**：`make DEMO_SCENE=6` 烧录，串口看 H 的"拿到锁"比预期晚多久；
+2. **FreeRTOS·互斥量版**：`make DEMO_SCENE=6 USE_MUTEX=1` 重跑，对比 H 的等待时间；
 3. **RT-Thread 版**：同剧本在 RT-Thread 工程上复现（rt_sem vs rt_mutex），日志对比；
 4. 打点版（可选）：三任务各翻一个 GPIO，分析仪上看执行序列——反转的"心电图"。
+
+## 配套工程
+
+FreeRTOS scene 6 已进 `code/rtos/01-freertos-lab`（`make DEMO_SCENE=6` 信号量版 / `make DEMO_SCENE=6 USE_MUTEX=1` 互斥量版）。三任务优先级 1/2/3，L 临界区 3 秒、M 错峰 500ms 启动、H 延时 1 秒后要锁——时间戳日志直接打印 H 的等待时长。
+
+RT-Thread 版待 R7 移植工程补（rt_sem_create/rt_mutex_create + rt_sem_take/rt_mutex_take），剧本与 FreeRTOS 版同构。
 
 ## 预期现象
 
@@ -87,3 +99,5 @@ projects: []
 
 - 亲手复现航天史上著名的 bug 并修复；
 - 双 OS 同剧本对照——你的实验证据比教科书插图更有说服力。
+
+> AI生成

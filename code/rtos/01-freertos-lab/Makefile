@@ -6,6 +6,8 @@
 #   make DEMO_SCENE=3           场景 3（事件组）
 #   make DEMO_SCENE=4           场景 4（软件定时器）
 #   make DEMO_SCENE=5           场景 5（堆）
+#   make DEMO_SCENE=6           场景 6（优先级反转·信号量版）
+#   make DEMO_SCENE=6 USE_MUTEX=1  场景 6（优先级反转·互斥量版）
 #   make flash / make clean
 #
 # 内核源码：默认取本仓库的忽略缓存 .trellis/ref/freertos-v11/kernel
@@ -16,10 +18,10 @@ TARGET   := freertos-lab
 FREERTOS_KERNEL ?= ../../../.trellis/ref/freertos-v11/kernel
 DEMO_SCENE      ?= 1
 ifneq ($(words $(DEMO_SCENE)),1)
-$(error DEMO_SCENE must be one of 1 2 3 4 5)
+$(error DEMO_SCENE must be one of 1 2 3 4 5 6)
 endif
-ifeq ($(filter $(DEMO_SCENE),1 2 3 4 5),)
-$(error DEMO_SCENE must be one of 1 2 3 4 5)
+ifeq ($(filter $(DEMO_SCENE),1 2 3 4 5 6),)
+$(error DEMO_SCENE must be one of 1 2 3 4 5 6)
 endif
 # 参数变化不是 make 的文件依赖；每场景独立产物，切换无需 clean。
 BUILD    := build/scene-$(DEMO_SCENE)
@@ -37,6 +39,9 @@ INC      := -I. -I$(FREERTOS_KERNEL)/include \
 CFLAGS   := $(MCU) -O0 -g3 -Wall -Wextra -MMD -MP $(INC) \
             -ffunction-sections -fdata-sections \
             -DDEMO_SCENE=$(DEMO_SCENE)
+ifneq ($(USE_MUTEX),)
+CFLAGS += -DUSE_MUTEX=1
+endif
 ASFLAGS  := $(MCU) -g3
 LDFLAGS  := $(MCU) -T stm32f407xx.ld \
             -Wl,--gc-sections -Wl,-Map=$(BUILD)/$(TARGET).map \

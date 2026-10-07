@@ -40,10 +40,10 @@
 | [双 OS 对照与选型](docs/rtos/index.md) | 2 / 2（2） | [对比 0 同概念双实现对照](docs/rtos/compare/00-side-by-side.md) · [对比 1 选型决策树](docs/rtos/compare/01-choose.md) |
 | [ESP32-S3 + ESP-IDF](docs/esp32/index.md) | 13 / 13（13） | [P0 环境搭建](docs/esp32/00-env.md) · [P1 S3 架构与启动](docs/esp32/01-arch-boot.md) · [P2 GPIO 与引脚矩阵](docs/esp32/02-gpio-matrix.md) · [P3 IDF 工程解剖](docs/esp32/03-idf-anatomy.md) · [P4 中断与双核](docs/esp32/04-irq-dualcore.md) · [P5 UART 驱动解析](docs/esp32/05-uart-driver.md) · [P6 SPI/I2C 驱动框架](docs/esp32/06-spi-i2c-driver.md) · [P7 定时器与 LEDC](docs/esp32/07-timer-ledc.md) · [P8 Wi-Fi 精髓](docs/esp32/08-wifi.md) · [P9 蓝牙与 ESP-NOW](docs/esp32/09-bt-espnow.md) · [P10 Flash、分区表、NVS 与 OTA](docs/esp32/10-flash-nvs-ota.md) · [P11 低功耗](docs/esp32/11-lowpower.md) · [P12 音频链路](docs/esp32/12-audio-path.md) |
 | [GD32 双系对照](docs/gd32/index.md) | 10 / 10（10） | [G0 环境与工具链](docs/gd32/00-env.md) · [G1 RCU 时钟树](docs/gd32/01-rcu-clock.md) · [G2 GPIO 与 AF 复用对照](docs/gd32/02-gpio-af.md) · [G3 USART 增强点](docs/gd32/03-usart.md) · [G4 GD32 外设差异](docs/gd32/04-periph-diff.md) · [V0 RISC-V 工具链与启动文件](docs/gd32/05-riscv-toolchain.md) · [V1 Bumblebee 内核与 CLIC 中断](docs/gd32/06-clic-irq.md) · [V2 RCU 与 108MHz](docs/gd32/07-rcu-108m.md) · [V3 MTIME 与裸机延时](docs/gd32/08-mtime-delay.md) · [V4 GPIO 最小系统](docs/gd32/09-gpio-minimal.md) |
-| [实物实验中心](docs/lab/index.md) | 6 / 8（8） | [实验 E01 点亮霸天虎的 RGB 红灯](docs/lab/e01-blink.md) · [实验 E02 逻辑分析仪抓 UART 帧](docs/lab/e02-logic-uart.md) · [实验 E03 示波器看 PWM](docs/lab/e03-scope-pwm.md) · [实验 E05 I2C 抓包读 EEPROM](docs/lab/e05-i2c-eeprom.md) · [实验 E07 S3 板载姿态传感器](docs/lab/e07-qmi8658.md) · [实验 E08 S3 音频链路放音](docs/lab/e08-audio-play.md) |
+| [实物实验中心](docs/lab/index.md) | 8 / 8（8） | [实验 E01 点亮霸天虎的 RGB 红灯](docs/lab/e01-blink.md) · [实验 E02 逻辑分析仪抓 UART 帧](docs/lab/e02-logic-uart.md) · [实验 E03 示波器看 PWM](docs/lab/e03-scope-pwm.md) · [实验 E04 优先级反转复现](docs/lab/e04-priority-inversion.md) · [实验 E05 I2C 抓包读 EEPROM](docs/lab/e05-i2c-eeprom.md) · [实验 E06 低功耗电流实测](docs/lab/e06-lowpower-current.md) · [实验 E07 S3 板载姿态传感器](docs/lab/e07-qmi8658.md) · [实验 E08 S3 音频链路放音](docs/lab/e08-audio-play.md) |
 
-- 成稿章节 **75 / 75**（上表「实物实验」那一行的 6 篇另计，不进章节数），通读约 **2730 分钟**（≈ 45.5 小时）；
-- 实物实验 **6 / 8**（文稿成稿；完整配套工程 6 项，上板验证 0 项）；
+- 成稿章节 **75 / 75**（上表「实物实验」那一行的 8 篇另计，不进章节数），通读约 **2730 分钟**（≈ 45.5 小时）；
+- 实物实验 **8 / 8**（文稿成稿；完整配套工程 7 项，上板验证 0 项）；
 - 机制动画 **46** 张，在 `docs/public/anim/`，动效与版式规范见 `.trellis/spec/docs-site/animation.md`；
 - 示例工程 **33** 个，在 `code/`，与章节同构；
 - 章节 frontmatter 元数据校验已通过（缺项或非法值会阻止构建）。

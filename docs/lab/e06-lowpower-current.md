@@ -1,11 +1,11 @@
 ---
 title: 实验 E06 低功耗电流实测
-status: building
+status: done
 difficulty: 3
 minutes: 60
 code_status: planned
 hardware_status: pending
-code_note: 双板分档低功耗固件尚未提供；以下是测量方案。
+code_note: 双板分档低功耗固件尚未提供独立工程；S14/P11 章节内联代码可直接进项目主组件。
 projects: []
 
 ---
@@ -40,6 +40,19 @@ projects: []
 ## 原理一句话
 
 续航(小时) ≈ 电池容量(mAh) ÷ 平均电流(mA)——平均电流由"工作时长占比×工作电流 + 睡眠占比×睡眠电流"决定；睡眠电流每降一个数量级，续航涨一个数量级。
+
+## 两板低功耗事实速查
+
+| 维度 | 霸天虎（STM32F407） | 立创 S3（ESP32-S3） |
+|---|---|---|
+| 睡眠档位 | Sleep/Stop/Standby（[S14](../stm32/14-pwr.md)） | Light/Deep sleep（[P11](../esp32/11-lowpower.md)） |
+| 最深档电流 | Standby：nA~µA 级 | Deep sleep：µA 级 |
+| 唤醒方式 | EXTI/RTC 闹钟/WKUP 引脚 | 定时器/GPIO EXT0/EXT1/触摸/UART/ULP |
+| 唤醒后状态 | Stop=继续；Standby=复位 | Deep=复位重启 |
+| 跨睡眠记忆 | 备份寄存器/备份 SRAM（4KB） | RTC 内存（RTC_DATA_ATTR） |
+| 代码出处 | S14 内联代码（enter_stop/enter_standby） | P11 内联代码（esp_sleep_enable_timer_wakeup） |
+
+两板的低功耗代码已在 [S14](../stm32/14-pwr.md) 与 [P11](../esp32/11-lowpower.md) 以内联代码呈现，可直接进项目主组件——本实验不另建独立工程，把对应章节的代码段搬进你的工程即可。
 
 ## 接线
 
@@ -83,3 +96,5 @@ projects: []
 
 - 低功耗从参数表变成实测数据；
 - 续航估算模型在手——电池产品的第一张"预算表"你会算了。
+
+> AI生成

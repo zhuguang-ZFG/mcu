@@ -16,7 +16,7 @@ export function loadProjects(repo = root) {
     const entry = { 'arm-make': 'Makefile', 'esp-idf': 'CMakeLists.txt', 'host-probe': 'probe.sh', 'host-make': 'Makefile' }[p.kind]
     if (p.entry !== entry || !fs.statSync(path.join(repo, p.path, entry), { throwIfNoEntry: false })?.isFile()) throw new Error(`构建入口不存在: ${p.id}`)
     if (p.kind === 'esp-idf' && p.target !== 'esp32s3') throw new Error(`目标必须为 esp32s3: ${p.id}`)
-    if (p.scenes && (p.kind !== 'arm-make' || JSON.stringify(p.scenes) !== '[1,2,3,4,5]')) throw new Error(`非法场景列表: ${p.id}`)
+    if (p.scenes && (p.kind !== 'arm-make' || !['[1,2,3,4,5]','[1,2,3,4,5,6]'].includes(JSON.stringify(p.scenes)))) throw new Error(`非法场景列表: ${p.id}`)
   }
   // 忽略空目录；有真实构建入口却未登记的工程必须补入清单。
   for (const board of fs.readdirSync(path.join(repo, 'code'), { withFileTypes: true }).filter(d => d.isDirectory())) {

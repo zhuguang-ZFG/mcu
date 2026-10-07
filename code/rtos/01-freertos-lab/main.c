@@ -19,6 +19,7 @@
 #include "task.h"
 #include "event_groups.h"
 #include "timers.h"
+#include "semphr.h"
 
 #ifndef DEMO_SCENE
 #define DEMO_SCENE 1
@@ -260,6 +261,74 @@ static void scene_start(void)
     big = pvPortMalloc(2048);
     log_line("big ok?2", big != NULL ? 1 : 0); /* 合并后成了 */
     (void)c;
+}
+
+#endif
+
+/* ============================ 场景 6：优先级反转（E04） ============================ */
+#if DEMO_SCENE == 6
+
+/*
+ * 三任务演一出戏：L 拿锁干长活，H 等锁，M 死循环抢占 L。
+ * 信号量版：H 被 M 间接阻塞（反转）；互斥量版：L 被继承抬级，M 插不进（修复）。
+ * 对应实验：E04 优先级反转复现。
+ */
+static SemaphoreHandle_t g_lock;   /* 同一个句柄，编译期选 sem 或 mutex */
+
+static void task_low(void *arg)
+{
+    (void)arg;
+    for (;;) {
+        log_line("L take", 0);
+        xSemaphoreTake(g_lock, portMAX_DELAY);
+        log_line("L got lock, working 3s", 0);
+        vTaskDelay(pdMS_TO_TICKS(3000));   /* 临界区：3 秒 */
+        log_line("L give", 0);
+        xSemaphoreGive(g_lock);
+        vTaskDelay(pdMS_TO_TICKS(5000));   /* 睡 5s 后再来 */
+    }
+}
+
+static void task_mid(void *arg)
+{
+    (void)arg;
+    vTaskDelay(pdMS_TO_TICKS(500));       /* 错峰：等 L 拿到锁后再启动 */
+    for (;;) {
+        log_line("M running", 0);          /* 死循环干活，不碰锁 */
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+}
+
+static void task_high(void *arg)
+{
+    (void)arg;
+    vTaskDelay(pdMS_TO_TICKS(1000));      /* 等 L 进临界区、M 在跑后再要锁 */
+    for (;;) {
+        log_line("H want lock", 0);
+        uint32_t t0 = xTaskGetTickCount();
+        xSemaphoreTake(g_lock, portMAX_DELAY);
+        uint32_t waited = xTaskGetTickCount() - t0;
+        log_line("H got lock, waited ms", waited);
+        log_line("H give", 0);
+        xSemaphoreGive(g_lock);
+        vTaskDelay(pdMS_TO_TICKS(5000));
+    }
+}
+
+static void scene_start(void)
+{
+    /* 编译期二选一：USE_MUTEX=1 用互斥量（带继承），=0 用二值信号量（无继承） */
+#ifdef USE_MUTEX
+    g_lock = xSemaphoreCreateMutex();
+    uart_puts("scene=6 mutex (with inheritance)\r\n");
+#else
+    g_lock = xSemaphoreCreateBinary();
+    xSemaphoreGive(g_lock);   /* binary sem 初始空，先 give 让 L 能 take */
+    uart_puts("scene=6 binary sem (no inheritance)\r\n");
+#endif
+    xTaskCreate(task_low,  "L", configMINIMAL_STACK_SIZE, NULL, 1, NULL);  /* 优先级 1=低 */
+    xTaskCreate(task_mid,  "M", configMINIMAL_STACK_SIZE, NULL, 2, NULL);  /* 优先级 2=中 */
+    xTaskCreate(task_high, "H", configMINIMAL_STACK_SIZE, NULL, 3, NULL);  /* 优先级 3=高 */
 }
 
 #endif
