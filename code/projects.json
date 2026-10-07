@@ -179,5 +179,32 @@
     "path": "code/common/behavior",
     "kind": "host-probe",
     "entry": "probe.sh"
+  },
+  {
+    "id": "common-reliability",
+    "path": "code/common/reliability",
+    "kind": "host-probe",
+    "entry": "probe.sh"
+  },
+  {
+    "id": "stm32-05-framed-protocol",
+    "path": "code/stm32/05-framed-protocol",
+    "kind": "arm-make",
+    "entry": "Makefile"
+  },
+  {
+    "id": "esp32-06-framed-protocol",
+    "path": "code/esp32/06-framed-protocol",
+    "kind": "esp-idf",
+    "entry": "CMakeLists.txt",
+    "target": "esp32s3"
+  },
+  {
+    "id": "esp32-07-watchdog-health",
+    "path": "code/esp32/07-watchdog-health",
+    "kind": "esp-idf",
+    "entry": "CMakeLists.txt",
+    "target": "esp32s3",
+    "faults": true
   }
 ]
