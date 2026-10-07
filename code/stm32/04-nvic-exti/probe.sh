@@ -173,14 +173,16 @@ EOF
     "${ARMPREFIX}gcc" $MCU -nostdlib -T "$LDSCRIPT" build/startup.o build/isr_demo.o -o build/irq_demo.elf
 
     echo "----- .isr_vector 落在 Flash 起始（objdump -h） -----"
-    "${ARMPREFIX}objdump" -h build/irq_demo.elf | grep -E 'Idx|isr_vector|\.text'
+    "${ARMPREFIX}objdump" -h build/irq_demo.elf | grep -E 'Idx|isr_vector|\.text' || true
     echo "----- 符号表：EXTI0_IRQHandler 是强定义，不再是 weak（objdump -t） -----"
-    "${ARMPREFIX}objdump" -t build/irq_demo.elf | grep -E 'EXTI0_IRQHandler|Default_Handler$|g_pfnVectors'
+    "${ARMPREFIX}objdump" -t build/irq_demo.elf | grep -E 'EXTI0_IRQHandler|Default_Handler$|g_pfnVectors' || true
 
     "${ARMPREFIX}objcopy" -O binary --only-section=.isr_vector build/irq_demo.elf build/vec.bin
     word22=$(dd if=build/vec.bin bs=4 skip=22 count=1 2>/dev/null | od -A n -t x4 | tr -d ' \n')
-    handler=$("${ARMPREFIX}nm" build/irq_demo.elf | grep ' T EXTI0_IRQHandler$' | cut -d' ' -f1)
-    defaddr=$("${ARMPREFIX}nm" build/irq_demo.elf | grep ' T Default_Handler$' | cut -d' ' -f1)
+    handler=$("${ARMPREFIX}nm" build/irq_demo.elf | grep ' T EXTI0_IRQHandler$' | cut -d' ' -f1) \
+        || { echo "nm 未找到强符号 EXTI0_IRQHandler——取证段失效" >&2; exit 1; }
+    [ -n "$handler" ] || { echo "nm 取到的 EXTI0_IRQHandler 地址为空——取证段失效" >&2; exit 1; }
+    defaddr=$("${ARMPREFIX}nm" build/irq_demo.elf | grep ' T Default_Handler$' | cut -d' ' -f1) || true
     want=$(printf '%08x' $((0x$handler | 1)))
     echo "  槽22（EXTI0）内容 = $word22"
     echo "  nm: EXTI0_IRQHandler = 0x$handler（|Thumb 位 = $want），Default_Handler = 0x$defaddr"
