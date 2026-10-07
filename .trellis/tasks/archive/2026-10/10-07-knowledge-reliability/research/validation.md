@@ -20,3 +20,5 @@
 ## 保留事项
 
 尚无本轮物理板卡测量：复位耗时、.noinit/RTC保留、WWDG窗口和真实UART满负荷由后续上板验证，不用构建结果冒充。CI按同一交付HEAD验收。C8/S17/P13已接入导航和课程清单，原实验验证状态不变。
+
+Remote CI: https://github.com/zhuguang-ZFG/mcu/actions/runs/37657967783 — all 13 jobs succeeded for 76b619b.
