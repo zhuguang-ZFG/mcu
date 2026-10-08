@@ -85,6 +85,51 @@ export function checkSitemap(xml) {
   return { problems, count: locs.length }
 }
 
+/**
+ * 本地搜索索引必须含中文二元组。
+ * MiniSearch 默认按空白/标点切词，一整段中文会被当成 1 个 token，只有落在段首的词
+ * 能靠 prefix 命中——实测搜「优先级反转」「上下文切换」「链接脚本」全部 0 结果。
+ * 一旦有人误删 config.mts 里的 miniSearch.options.tokenize，构建不会报错、
+ * 死链也查不出来，中文搜索只会「静默失效」，所以必须有门禁。
+ */
+export function checkSearchIndex(json, minBigram = 5000) {
+  const problems = []
+  const terms = Array.isArray(json?.index) ? json.index.map((x) => x[0]) : []
+  if (!terms.length) problems.push('索引里没有任何 term')
+  const bigram = terms.filter((t) => /^[一-鿿]{2}$/.test(t))
+  if (bigram.length < minBigram) {
+    problems.push(
+      `中文二元组仅 ${bigram.length} 条（需 ≥ ${minBigram}）：中文搜索会静默失效，` +
+        `请检查 config.mts 的 themeConfig.search.options.miniSearch.options.tokenize`
+    )
+  }
+  return { problems, terms: terms.length, bigram: bigram.length }
+}
+
+/** 从 chunk 源码里取出索引 JSON。产物形如：`const t='{...}';export{t as default};` */
+export function parseSearchIndexChunk(src) {
+  const m = /const\s+\w+\s*=\s*'([\s\S]*)'\s*;\s*export\s*\{/.exec(src)
+  if (!m) return null
+  try {
+    return JSON.parse(m[1].replace(/\\'/g, "'"))
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 在产物里定位本地搜索索引 chunk 并解析。
+ * 用文本解析而不是 import：直接 import 产物 chunk 会触发 Node 的
+ * MODULE_TYPELESS_PACKAGE_JSON 警告，污染门禁输出。
+ */
+export function loadSearchIndex(dist) {
+  const chunks = path.join(dist, 'assets', 'chunks')
+  if (!fs.existsSync(chunks)) return null
+  const file = fs.readdirSync(chunks).find((f) => f.startsWith('@localSearchIndex'))
+  if (!file) return null
+  return parseSearchIndexChunk(fs.readFileSync(path.join(chunks, file), 'utf8'))
+}
+
 /** robots.txt 必须放行抓取并指向 sitemap。 */
 export function checkRobots(txt) {
   const problems = []
@@ -125,6 +170,16 @@ if (isMain) {
   }
   if (fs.existsSync(robotsPath)) {
     for (const p of checkRobots(fs.readFileSync(robotsPath, 'utf8'))) fail(`robots.txt：${p}`)
+  }
+
+  // 中文搜索可用性（索引必须含二元组，否则中文搜索静默失效）
+  const index = loadSearchIndex(dist)
+  if (!index) {
+    fail('产物找不到本地搜索索引 chunk')
+  } else {
+    const { problems, bigram } = checkSearchIndex(index)
+    for (const p of problems) fail(`搜索索引：${p}`)
+    if (!problems.length && !quiet) console.log(`✓ 搜索索引含 ${bigram} 条中文二元组（中文词检索可用）`)
   }
 
   // 每页分享卡

@@ -8,7 +8,7 @@
 
 - `npm run quality`：单元回归、工程清单、站点构建、动画、README、链接、导航可达性、分享/收录元数据、性能预算、无障碍基线。
 - `npm run nav:check`：扫描全部页面，检查每个页面都能从 `config.mts` 的 nav/sidebar 到达（页面→入口方向，正是死链检查的反面）。
-- `npm run seo:check`：检查构建产物含 sitemap.xml（每条 `<loc>` 必须带 `host+base` 前缀）、robots.txt、og-cover.png，且每页都有 og/twitter 分享卡与 canonical。需先构建。
+- `npm run seo:check`：检查构建产物含 sitemap.xml（每条 `<loc>` 必须带 `host+base` 前缀）、robots.txt、og-cover.png，每页都有 og/twitter 分享卡与 canonical，**且本地搜索索引含足量中文二元组**。需先构建。
 - `npm run perf:budget`：纯静态体积预算（zlib，无浏览器）——首屏外壳+CSS、渲染阻塞 CSS、最大单块、搜索索引原文。需先构建。行为侧（延迟索引、减少动效）仍由 `test:browser` 覆盖，两者分工不重叠。
 - `npm run a11y:check`：无障碍静态审计——每页 html[lang]、img alt、button/链接可访问名、h1、地标（main/VPContent）。需先构建。
 - `npm run firmware:check`：ARM/host 全工程、五场景切换、初始 SP 与 Thumb 复位向量验证。
@@ -36,6 +36,8 @@
 | 任一 CI job 失败/取消/跳过 | 不部署 |
 | 搜索产物 raw >500 kB | 保留告警，记录 gzip/Brotli/首屏请求，不能单纯调阈值 |
 | 首屏外壳+CSS、CSS、最大单块或搜索索引超出 perf:budget | 报错；确属合理增长再上调 BUDGETS 并说明原因 |
+| 搜索索引缺少中文二元组（seo:check） | 报错；说明 `themeConfig.search.options.miniSearch.options.tokenize` 被误删，中文搜索会静默失效 |
+| 改动搜索分词器 | 构建端与浏览器端必须共用同一函数（VitePress 两端都读 `miniSearch.options`），否则索引与查询口径不一致、搜索整体失效 |
 | 页面缺 lang、img alt、button/链接可访问名、h1 或地标 | 报错；框架级组件（如 VPSwitch）可列入白名单，但须注明理由 |
 
 ## 5. Good / Base / Bad Cases

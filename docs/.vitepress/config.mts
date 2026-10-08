@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress'
 import { animDuration, decorateAnim, readAnim } from './anim-decorate.mjs'
 import { codeLanguages } from './code-languages.mjs'
 import { renderSearch } from '../../scripts/search-render.mjs'
+import { tokenizeForSearch } from '../../scripts/search-tokenize.mjs'
 
 const HOST = 'https://zhuguang-zfg.github.io'
 const BASE = '/mcu/'
@@ -96,6 +97,9 @@ export default defineConfig({
       provider: 'local',
       options: {
         _render: renderSearch,
+        // 中文分词：默认分词器把整段中文当 1 个 token，只有段首词能被 prefix 命中
+        // （实测搜「寄存器」「总线」「外设」全部 0 结果）。两端必须共用同一函数。
+        miniSearch: { options: { tokenize: tokenizeForSearch } },
         translations: {
           button: { buttonText: '搜索', resetButtonTitle: '清空搜索' },
           noResultsText: '没有找到相关段落——换个说法再试，名词类问题去「术语速查」页查。',
@@ -111,7 +115,6 @@ export default defineConfig({
       { text: 'ESP32', link: '/esp32/' },
       { text: 'GD32', link: '/gd32/' },
       { text: '实验', link: '/lab/' },
-      
       { text: '动画', link: '/animations' },
       {
         text: '资料',

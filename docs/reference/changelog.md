@@ -13,9 +13,10 @@ title: 更新日志
 前一天的打磨把「内容」做到位了，这一轮补的是**工程与传播层面**——实测发现四处"够不到顶"的地方，逐项补齐并都加了防回退闸门。
 
 - **传播力（此前为 0）**：线上实测 `sitemap.xml` 与 `robots.txt` 双双 404，`<head>` 里没有任何 `og:` / `twitter:` 分享标签、也没有 `canonical`——链接发出去是一张白板卡。现已开启 sitemap（106→108 条 URL）、补 `robots.txt`、每页注入 og/twitter 分享卡与 canonical，并确定性生成 1200×630 分享图（`scripts/gen-og-cover.py`，非 AI 生图，中文不乱码）。**踩到一个真坑**：VitePress 的 sitemap hostname 必须含 `base` 且带尾斜杠，否则所有 URL 会丢 `/mcu/` 前缀——已加反例测试锁死。
-- **可证性能**：`site:measure` 要启动浏览器，跑不进 `quality` 快线，体积回退一直没人守。新增纯静态 `perf:budget`（zlib，无浏览器），盯住首屏外壳+CSS、渲染阻塞 CSS、最大单块、搜索索引四项预算（当前 79.7 / 19.0 / 391.7 / 2047 KB，均在预算内）。行为侧（延迟索引、减少动效）仍由 `test:browser` 覆盖，两者分工不重叠。
+- **可证性能**：`site:measure` 要启动浏览器，跑不进 `quality` 快线，体积回退一直没人守。新增纯静态 `perf:budget`（zlib，无浏览器），盯住首屏外壳+CSS、渲染阻塞 CSS、最大单块、搜索索引四项预算（当前 80.0 / 19.2 / 506.7 / 2979 KB，均在预算内）。行为侧（延迟索引、减少动效）仍由 `test:browser` 覆盖，两者分工不重叠。
 - **无障碍**：此前只有 `prefers-reduced-motion` 与图片 alt 达标，缺防回退。现补 skip-link（跳到正文）、`:focus-visible` 品牌色焦点环（深浅主题自适应），以及 `a11y:check` 静态审计（lang / img alt / 按钮与链接可访问名 / h1 / 地标）。
 - **可信度机制**：新增[上板验证与回填指南](../guide/verify-on-hardware.md)——四步流程（读卡→构建→记录→回填）+ 证据文件模板 + 常见疑问；实验总览表前显示「X / N 已实测」进度与入口。**刻意不为之**：没有真板子就不改 `hardware_status`，CI 的 metadata 校验也会拦下无证据的 `verified`。
+- **中文搜索（此前部分失效）**：实测搜「优先级反转」「上下文切换」「链接脚本」「等待周期」**全部 0 结果**——尽管这些词就在正文里。根因是 MiniSearch 默认按空白/标点切词，一整段中文被当成 1 个 token，只有落在段首的词能靠 `prefix` 命中。现改为对连续中文切二元组（`scripts/search-tokenize.mjs`，构建端与浏览器端共用同一函数），这四类查询现各有上百条命中且 top3 命中正确章节。代价是索引 brotli 391 → 507 KB（按需懒加载，首次搜索才下载），预算已相应上调并在脚本里写明原因。另加 `seo:check` 闸门：一旦有人误删分词配置，中文搜索不会报错、只会"静默失效"，现在 CI 会拦下。
 - **404 页**：此前是 VitePress 默认的「404 Not Found」，连 h1 都没有。改为带搜索提示、常见目的地、按板块直达的兜底页。
 - **术语速查补齐**：审计发现高频术语缺独立条目——`GPIO` 全站出现 388 次却只有 ESP32 的「GPIO Matrix」，I2C/SPI/USART/ADC/DAC/TIM/PWM/RTC/UART、FreeRTOS/RT-Thread、RCC/tick/FPU/CMSIS/SPL、RISC-V/Bumblebee/CLIC/MTIME 均无条目。补 21 条（收录 90 → 117），风格保持「一句话 + 别误会成 + 深读」。
 - **尚开着的坑**：8 个实验 + 2 个综合项目的**上板验证仍是 0 项**——这是本站当前最大的信任缺口，需要真板子与仪器，欢迎按新指南回填。

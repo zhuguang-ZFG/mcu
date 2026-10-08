@@ -22,8 +22,14 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 export const BUDGETS = {
   shellBr: 110 * 1024, // 外壳(app+theme+framework) + CSS 的 brotli 总量
   cssBr: 35 * 1024, // 渲染阻塞 CSS（brotli）
-  largestChunkBr: 460 * 1024, // 最大单块（brotli）
-  searchIndexRaw: 2600 * 1024, // 搜索索引原文（懒加载，但有上限）
+  // 最大单块与搜索索引的基线在 2026-10-08 因「中文分词」上调：
+  // MiniSearch 默认按空白/标点切词，整段中文被当成 1 个 token，只有段首词能被
+  // prefix 命中——实测搜「优先级反转」「上下文切换」「链接脚本」全部 0 结果。
+  // 改为对连续中文切二元组后这三类查询才有结果，代价是索引 br 391→507 KB、
+  // 原文 2047→2979 KB。索引是按需懒加载的（用户首次搜索才下载），
+  // 换中文搜索真正可用，这笔体积值得付。下调前请先确认中文搜索仍能命中。
+  largestChunkBr: 560 * 1024, // 最大单块（brotli），当前为搜索索引
+  searchIndexRaw: 3200 * 1024, // 搜索索引原文（懒加载，但有上限）
 }
 
 const KB = (n) => (n / 1024).toFixed(1)
