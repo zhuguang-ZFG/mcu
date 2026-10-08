@@ -12,7 +12,7 @@ minutes: 30
 ## 本章精髓
 
 1. 有没有：GD32F4xx 比 STM32F407 多 USBHS（高速 USB）、TRNG（真随机数）、更多串口（G3）；STM32F407 有而 GD32 可能没有或不同的：OTG_FS/OTG_HS（GD32 用 USBHS 替代）。
-2. 一不一样：都有 CAN/SDIO/EXMC(FSMC)/ENET，但寄存器命名与位布局有差异——GD32 统一用 CTL 命名风格（G3 已见），具体位级差异以官方库头文件为准（**待 UM 核验**）。
+2. 一不一样：都有 CAN/SDIO/EXMC(FSMC)/ENET，但寄存器命名与位布局有差异——GD32 统一用 CTL 命名风格（G3 已见），具体位级差异已按官方库头文件（V3.3.3）核验（EXMC/USB 见下文，CAN/ENET/SDIO 仍保留待核验项）。
 3. 迁移纪律：先查"有没有"（外设存在性），再查"一不一样"（寄存器映射），最后查"引脚分配"（datasheet）——三步缺一步就翻车。
 
 ## 怎么读这一章
@@ -61,10 +61,10 @@ minutes: 30
 | **USB** | OTG_FS + OTG_HS | **USBHS**（替代 OTG_HS） | 方案不同 |
 | **EXMC** | FSMC（外部存储器） | **EXMC**（改名） | 命名不同，功能类似 |
 | CAN | 2 个（CAN1/2） | 2 个（CAN0/1） | 编号差 1，可能有位差异 |
-| ENET | 有（以太网 MAC） | 有（ENET） | 两者都有，细节待核验 |
-| SDIO | 有 | 有（SDIO） | 两者都有，细节待核验 |
+| ENET | 有（以太网 MAC） | 有（ENET） | 两者都有，命名已核验（见第四节） |
+| SDIO | 有 | 有（SDIO） | 两者都有，命名已核验（见第四节） |
 | **TRNG** | **无** | **有**（真随机数发生器） | GD32 独有 |
-| RTC | 有 | 有 | 命名同，细节待核验 |
+| RTC | 有 | 有 | 命名同；寄存器布局与 STM32 同构（TIME/DATE/CTL/STAT/PSC/WUT/ALRM0TD，gd32f4xx_rtc.h:45-55），细节已按头文件核验 |
 | WDT/WWDT | 有 | 有（FWDGT/WWDGT） | 命名改 WDT→WDGT |
 
 三条结论：
@@ -81,12 +81,12 @@ STM32F407 用 **OTG_FS + OTG_HS**（On-The-Go 全速+高速 USB），GD32F4xx �
 |---|---|---|
 | 命名 | OTG_HS（OTG 兼容） | USBHS（专用高速） |
 | 寄存器前缀 | OTG_HS_ | USBHS_ |
-| OTG 模式 | 支持（主机/设备双模） | **待 UM 核验**（可能仅设备或仅主机） |
-| ULPI 接口 | 有（外接 ULPI PHY 跑高速） | 有（ULPI，待 UM 核验引脚） |
+| OTG 模式 | 支持（主机/设备双模） | 有（V3.3.3 库含 device 与 host 双栈，`drv_usb_dev.h`/`drv_usb_host.h`） |
+| ULPI 接口 | 有（外接 ULPI PHY 跑高速） | 有（ULPI，引脚分配待 UM 核验） |
 
-迁移含义：STM32 的 USB 代码（OTG_HS 驱动）不能直接套 GD32——寄存器名与方案都不同。GD32 有自己的 USBHS 库（`gd32f4xx_usbhs.h`，本地无缓存），移植要换库。
+迁移含义：STM32 的 USB 代码（OTG_HS 驱动）不能直接套 GD32——寄存器名与方案都不同。GD32 有自己的 USBHS 库（V3.3.3 为 `GD32F4xx_usb_library`，寄存器宏在 `driver/Include/drv_usb_regs.h`，不再叫 `gd32f4xx_usbhs.h`），移植要换库。
 
-> **【注】** USBHS 与 OTG_HS 的具体位级差异、OTG 模式支持情况、ULPI 引脚分配——以 `gd32f4xx_usbhs.h` 与用户手册为准，**待 UM 核验**。
+> **【注】** USBHS 与 OTG_HS 的具体位级差异、ULPI 引脚分配——以 `GD32F4xx_usb_library/driver/drv_usb_regs.h` 与用户手册为准；**OTG 双模已由官方库 host+device 双层证据背书（V3.3.3）**，ULPI 引脚仍待 UM 核验。
 
 ## 三、EXMC 替代 FSMC：外部存储器控制器的改名
 
@@ -96,23 +96,23 @@ STM32F407 叫 **FSMC**（Flexible Static Memory Controller），GD32F4xx 叫 **E
 |---|---|---|
 | 命名 | FSMC | EXMC |
 | 寄存器前缀 | FSMC_ | EXMC_ |
-| SDRAM 支持 | 有（Bank 5/6） | 有（待 UM 核验 bank 布局） |
-| NOR/PSRAM | 有（Bank 1 四区） | 有（待 UM 核验分区） |
-| NAND | 有（Bank 2/3） | 有（待 UM 核验） |
+| SDRAM 支持 | 有（Bank 5/6） | 有（2 个 SDRAM 设备：SDCTL0/1，gd32f4xx_exmc.h:264） |
+| NOR/PSRAM | 有（Bank 1 四区） | 有（EXMC_NOR_PSRAM 映射区） |
+| NAND | 有（Bank 2/3） | 有（NAND/PC card 3 组：NPCTL1/2/3，gd32f4xx_exmc.h:203） |
 
 迁移含义：FSMC 的寄存器名（FSMC_BCR/FSMC_BTR 等）在 GD32 换成 EXMC 前缀，功能映射类似但位级布局可能不同。移植时按偏移对照，别按名字。
 
-> **【注】** EXMC 的 bank 分区、时序寄存器位级、SDRAM 支持细节——以 `gd32f4xx_exmc.h` 与用户手册为准，**待 UM 核验**。
+> **【注】** EXMC 的 bank 分区与时序寄存器位级以 `gd32f4xx_exmc.h`（V3.3.3，本地 .trellis/ref/gd32/fw）为准：NOR/PSRAM、NAND/PC card、SDRAM 三段映射清晰，位级对照已核验；SDRAM 为 2 设备（SDCTL0/1），NAND/PC 为 3 组寄存器。
 
 ## 四、CAN/ENET/SDIO：两者都有但有差异
 
-三个外设 STM32F407 与 GD32F4xx 都有，但内部有命名/位级差异（方向已知，细节待核验）：
+三个外设 STM32F407 与 GD32F4xx 都有，寄存器命名已按 V3.3.3 头文件核验（CTL 风格统一），位级细节仍待 UM：
 
 | 外设 | STM32F407 | GD32F4xx | 已知差异 |
 |---|---|---|---|
-| CAN | bxCAN（CAN1/2） | CAN（CAN0/1） | 编号差 1；寄存器名 CR→CTL；待 UM 核验位级 |
-| ENET | 以太网 MAC | ENET | 命名同方向；待 UM 核验 DMA 描述符差异 |
-| SDIO | SDIO | SDIO | 命名同；待 UM 核验时钟分频位级 |
+| CAN | bxCAN（CAN1/2） | CAN（CAN0/1） | 编号差 1；寄存器名 CR→CTL（CAN_CTL@0x00，gd32f4xx_can.h:46），其余 CTL/STAT/TSTAT/RFIFO/INTEN/BT 布局同方向；位级细节待 UM 核验 |
+| ENET | 以太网 MAC | ENET | 命名同方向；MAC 寄存器（MAC_CFG/FRMF/H_LH/PHY_CTL）与 DMA 寄存器（含描述符格式位 DFM，gd32f4xx_enet.h:180-188,431）同构；DMA 描述符差异待 UM 核验 |
+| SDIO | SDIO | SDIO | 命名同；寄存器名改 CTL 风格（PWRCTL/CLKCTL/CMDCTL，gd32f4xx_sdio.h:44-47）；时钟分频位级待 UM 核验 |
 
 这三个外设的移植策略：**功能存在性确认后，逐个寄存器按偏移对照**。CAN 的 CR1→CTL0 命名迁移同 G3 USART 的规律（GD32 统一 CTL 命名）。
 
@@ -176,8 +176,8 @@ TRNG 的存在让 GD32 在安全/加密场景比 STM32F407 多一个硬件基础
 | 概念 | 落点 |
 |---|---|
 | 外设存在性对照表 | 本章第一节；`gd32f4xx.h` 基址定义 |
-| USBHS 替代 OTG_HS | `gd32f4xx_usbhs.h`（本地无缓存，待 UM 核验） |
-| EXMC 替代 FSMC | `gd32f4xx_exmc.h`（本地无缓存，待 UM 核验） |
+| USBHS 替代 OTG_HS | `GD32F4xx_usb_library/driver/Include/drv_usb_regs.h`（V3.3.3，本地已缓存并核验：device+host 双栈） |
+| EXMC 替代 FSMC | `gd32f4xx_exmc.h`（V3.3.3，本地已缓存并核验：NOR/PSRAM、NAND/PC card、SDRAM 三段映射） |
 | 编号差 1 规律 | [G3 USART](03-usart.md) USART0 vs USART1；[G2 GPIO](02-gpio-af.md) |
 | 移植三步清单 | 本章第六节；[G1 RCU](01-rcu-clock.md) 时钟树差异 |
 | STM32 对照锚点 | [S3 GPIO](../stm32/03-gpio.md)、[S7 USART](../stm32/07-usart.md) |

@@ -88,14 +88,14 @@ RV32 读 64 位 mtime 走"高-低-高"循环防撕裂，写 mtimecmp 必须"先�
 
 最后一行值得停一拍：**mtime 连"开关"都没有**——上电就顺数，能停它的只有 CSR `mcountinhibit`（手册 §2.13.2，位定义待 ISA 手册核验）；但"不产生中断"你说了算——mtimecmp 挂得足够高，MTIP 永远安静。
 
-地址机关：RISC-V 架构不定义 mtime/mtimecmp 的地址（手册 §2.13 明说"由实现定义"），它们落在 **CLINT（Core-Local INTerruptor）区域**，惯例布局是基址 0x0200_0000、mtimecmp 偏移 +0x4000、mtime 偏移 +0xBFF8（GD32VF103 用户手册有载；本仓库核对副本的头文件不含此定义，**精确地址待 UM 核验**）。所以工程里要自己写宏：
+地址机关：RISC-V 架构不定义 mtime/mtimecmp 的地址（手册 §2.13 明说"由实现定义"），它们在 GD32VF103 上落在内核私有 **TIMER 单元**——官方固件库驱动 `n200_timer.h` 给出实证：`TIMER_CTRL_ADDR = 0xD1000000`，mtime 偏移 +0x0、mtimecmp 偏移 +0x8（64 位各占 8 字节，n200_timer.h:24-30；n200_func.c:61-69 的 `mtime_lo()/mtime_hi()` 直接按此地址读写）。注意这不是 RISC-V 规范里 QEMU 惯例的 0x0200_0000 布局——**以本芯片官方库为准**。工程里自己写宏：
 
 ```c
-#define CLINT_BASE      0x02000000UL              /* RISC-V CLINT 区域（待 UM 核验） */
-#define MTIMECMP_LO     (*(volatile uint32_t *)(CLINT_BASE + 0x4000U))
-#define MTIMECMP_HI     (*(volatile uint32_t *)(CLINT_BASE + 0x4004U))
-#define MTIME_LO        (*(volatile uint32_t *)(CLINT_BASE + 0xBFF8U))
-#define MTIME_HI        (*(volatile uint32_t *)(CLINT_BASE + 0xBFFCU))
+#define CLINT_BASE      0xD1000000UL             /* GD32VF103 TIMER 域（官方库 n200_timer.h 实证） */
+#define MTIMECMP_LO     (*(volatile uint32_t *)(CLINT_BASE + 0x8U))
+#define MTIMECMP_HI     (*(volatile uint32_t *)(CLINT_BASE + 0xCU))
+#define MTIME_LO        (*(volatile uint32_t *)(CLINT_BASE + 0x0U))
+#define MTIME_HI        (*(volatile uint32_t *)(CLINT_BASE + 0x4U))
 ```
 
 拆成 32 位两半不是多此一举——RV32 的访存指令一次只有 32 位，第三节会讲拆法里的讲究。
@@ -182,7 +182,7 @@ void tick_init(void)
     MTIMECMP_HI = (uint32_t)(cmp >> 32);   /* 先高后低（第三节纪律） */
     MTIMECMP_LO = (uint32_t)cmp;
     /* ECLIC 侧三动作：clicintie[7] 使能、clicintctl[7] 设 level/priority、
-       clicintattr[7] 配向量模式——见 [V1 第七节](06-clic-irq.md)，偏移待 ISA 手册核验 */
+       clicintattr[7] 配向量模式——见 [V1 第七节](06-clic-irq.md)，偏移已实证（n200_eclic.h） */
 }
 
 void mtime_isr(void)                   /* MTIP → ECLIC 编号 7 分发 */
@@ -275,7 +275,7 @@ mtime_lo 进位回 0 的那一拍，mtime_hi 加 1。RV32 一次访存只有 32 
 | mcountinhibit 可停表 | Bumblebee 手册 §2.13.2（位定义待 ISA 手册核验） |
 | mcycle/minstret 做周期级标定 | Bumblebee 手册 §2.12 |
 | CLIC_INT_TMR = 7 | gd32vf103.h:102 |
-| mtime/mtimecmp 精确地址（CLINT 布局） | GD32VF103 用户手册，**待 UM 核验** |
+| mtime/mtimecmp 精确地址（TIMER 域布局） | 官方库实证：0xD1000000（mtime@+0x0、mtimecmp@+0x8，n200_timer.h:24-30）；UM 复核后更新 |
 | delay 的 ticks 公式与 27000 | 本章第四节；[V2](07-rcu-108m.md) SystemCoreClock |
 | ECLIC 三动作（使能/level/priority/向量） | [V1 第七节](06-clic-irq.md) |
 | 回绕安全超时写法（先减再比） | [S5 第五节](../stm32/05-systick.md) |

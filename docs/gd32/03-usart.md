@@ -13,7 +13,7 @@ minutes: 30
 
 1. 数量差异：GD32F4xx 有 **8 个串口**（USART0/1/2/5 + UART3/4/6/7），比 STM32F407 的 6 个多两个；命名从"USART1~6 + UART4/5"变成"USART0~5 + UART3/4/6/7"——**编号从 0 起不是从 1 起**。
 2. 寄存器命名大换血：STM32 的 CR1/CR2/CR3 → GD32 的 **CTL0/CTL1/CTL2**；BRR → **BAUD**；GTPR → **GP**；SR/DR → **STAT/DATA**——功能等价，名字全变。
-3. GD32 USART 有"不连续时钟"与"智能卡"模式的增强（具体位差异以 `gd32f4xx_usart.h` 与用户手册为准——**待 UM 核验**）。
+3. GD32 USART 有"不连续时钟"（CTL1.CLEN）与"智能卡"（CTL2.SCEN/NKEN）模式的增强（位级事实已按 `gd32f4xx_usart.h` V3.3.3 核验，见第四节）。
 
 ## 怎么读这一章
 
@@ -25,7 +25,7 @@ minutes: 30
 
 - 画出 GD32F4xx 8 个串口的编号/中断号/总线对照表。
 - 逐字段对照 STM32 CR1/CR2/CR3/BRR 与 GD32 CTL0/1/2/BAUD 的命名映射。
-- 指出 GD32 USART 相比 STM32F407 的已知增强点与待核验项。
+- 指出 GD32 USART 相比 STM32F407 的已知增强点（CLEN/SCEN/NKEN/IREN，已按 V3.3.3 头文件核验）。
 
 ## 先修
 
@@ -42,7 +42,7 @@ minutes: 30
 | 数量与编号 | 8 个串口 vs 6 个，0 起编号 | 配置 |
 | 寄存器命名 | CR1/2/3→CTL0/1/2，BRR→BAUD 全表 | 库解析 |
 | 中断号地图 | 8 个 USART_IRQn 与总线归属 | 配置 |
-| 增强点 | GD32 独有功能（待 UM 核验） | 库解析 |
+| 增强点 | GD32 独有功能（已核验） | 库解析 |
 | 库函数对照 | gd32 USART 配置 API 与 SPL 对照 | 库解析 |
 
 ## 一、数量与编号：8 个串口，0 起编号
@@ -113,16 +113,17 @@ UART7_IRQn  = 83,    // APB1，GD32 独有
 
 中断号不连续（39→52 跳了 13，53→71 跳了 18）——这是 GD32 中断向量表布局与 STM32 不同。迁移时**不要按 STM32 的中断号找 GD32 的**，按上表对照。
 
-## 四、增强点：GD32 独有功能（待 UM 核验）
+## 四、增强点：GD32 独有功能（已按 V3.3.3 头文件核验）
 
-GD32F4xx 的 USART 相比 STM32F407 的已知增强方向（具体位与寄存器以 `gd32f4xx_usart.h` 与用户手册为准——**待 UM 核验**）：
+GD32F4xx 的 USART 相比 STM32F407 的增强点，位级事实已对照 `gd32f4xx_usart.h`（V3.3.3，本地 .trellis/ref/gd32/fw）核验：
 
-1. **USART5 的存在**：多一个同步/异步串口（APB2），STM32F407 没有对应——可能用于额外的高速同步通信。
-2. **UART6/7 的存在**：多两个异步串口（APB1）——多串口产品（如 8 通道数据采集）的直接收益。
-3. **不连续时钟特性**：GD32 USART 可能在同步模式下支持"不连续时钟"（时钟只在数据传输期间输出）——具体 CTL1 位以头文件为准。
-4. **智能卡增强**：CTL2 的智能卡模式可能与 STM32 的 CR3 有寄存器差异——待核验。
+1. **USART5 的存在**：多一个同步/异步串口（APB2），STM32F407 没有对应（gd32f4xx_usart.h:47）——可用于额外的高速同步通信。
+2. **UART6/7 的存在**：多两个异步串口（APB1，gd32f4xx_usart.h:45-46）——多串口产品（如 8 通道数据采集）的直接收益。
+3. **不连续时钟（CLEN）**：`USART_CTL1_CLEN` BIT(8)（gd32f4xx_usart.h:104）——CTL1 的 CK 长度位，控制 8 位帧出 7/8 个 CK 脉冲（`USART_CLEN_NONE`）还是 8/9 个（`USART_CLEN_EN`，:290-292）。STM32F407 无此位。
+4. **智能卡增强（SCEN/NKEN）**：`USART_CTL2_SCEN` BIT(5) 开智能卡模式（:117）、`USART_CTL2_NKEN` BIT(4) 选 NACK 使能（:116）——都在 CTL2，对应 STM32 CR3 的位置但字段不同。
+5. **IrDA 模式（IREN）**：`USART_CTL2_IREN` BIT(1)（:113）——与 STM32 的 CR3.IREN 同语义。
 
-> **【注】** 以上增强点是基于"GD32 比 STM32 多 3 个串口"推断的合理方向。**位级事实必须对照 `gd32f4xx_usart.h` 与用户手册**——本页不猜，标"待 UM 核验"。
+> **【注】** 以上位级事实已对照 `gd32f4xx_usart.h`（V3.3.3）逐一核验并标注行号；与用户手册的语义一致性（如时序细节）仍以上板实测为准。
 
 ## 五、库函数对照：GD32 与 SPL
 
@@ -179,11 +180,11 @@ GD32 库的风格：**函数名小写下划线**（`usart_init` vs `USART_Init`�
 | 概念 | 落点 |
 |---|---|
 | 8 个串口中断号 | `gd32f4xx.h` IRQn_Type 枚举（USART0_IRQn=37 等） |
-| 寄存器命名映射 | `gd32f4xx_usart.h`（本地无缓存，待核验）；偏移对照 STM32 RM0090 |
+| 寄存器命名映射 | `gd32f4xx_usart.h`（V3.3.3，本地已缓存核验）；偏移对照 STM32 RM0090 |
 | USART0 基址 | `gd32f4xx.h` USART_BASE = APB1 + 0x4400 |
 | 库函数对照 | GD32 V3.3.3 库 `usart_init`/`usart_enable` vs STM32 SPL `USART_Init`/`USART_Cmd` |
 | STM32 对照锚点 | [S7 USART](../stm32/07-usart.md) 全章 |
-| 增强点待核验 | `gd32f4xx_usart.h` + 用户手册（待 UM 核验） |
+| 增强点（CLEN/SCEN/NKEN/IREN） | `gd32f4xx_usart.h`（V3.3.3 已核验：CLEN=CTL1:8、SCEN=CTL2:5、NKEN=CTL2:4、IREN=CTL2:1） |
 
 ## 你做到了
 

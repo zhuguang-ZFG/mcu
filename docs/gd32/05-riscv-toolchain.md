@@ -195,7 +195,7 @@ SECTIONS
 4. 使能 PLL：`RCU_CTL |= PLLEN`（bit24），轮询 `PLLSTB`（bit25）
 5. 选 PLL 为系统时钟：`RCU_CFG0 |= RCU_CKSYSSRC_PLL`，轮询 `SCSS = PLL`
 
-这与 STM32 RCC 提频六步同构，只是寄存器名 `RCC→RCU`、位名 `PLLRDY→PLLSTB`、`SWS→SCSS`（[G1](01-rcu-clock.md) 已在 GD32F4 上逐字段对照过）。**同样"官方留白"**：`system_gd32vf103.c` 全文不设 Flash 等待周期——108MHz 是否需要等待周期**待 UM 核验**（与 G1 在 GD32F4 的发现一致）。
+这与 STM32 RCC 提频六步同构，只是寄存器名 `RCC→RCU`、位名 `PLLRDY→PLLSTB`、`SWS→SCSS`（[G1](01-rcu-clock.md) 已在 GD32F4 上逐字段对照过）。**同样"官方留白"**：`system_gd32vf103.c` 全文不设 Flash 等待周期——但 VF103 的 FMC_WS 寄存器确实存在（@0x00，WSCNT 为 3 位域 0~7，gd32vf103_fmc.h:45,64），108MHz 档要配几拍**待 UM 核验**（与 G1 在 GD32F4 的发现一致）。
 
 启动序列全景：
 
@@ -289,7 +289,7 @@ FLASH = 0x08000000、RAM = 0x20000000（`gd32vf103.h:193-194`）。与 STM32F407
 | 108M 流程 HXTAL→MUL27→PREDV0 | `system_gd32vf103.c:751-830` |
 | HXTALEN/STB bit16/17、PLLEN/STB bit24/25 | `gd32vf103_rcu.h:67-68 / :71-72` |
 | 默认 `__SYSTEM_CLOCK_108M_PLL_HXTAL` | `system_gd32vf103.c:62` |
-| 108M 是否需 Flash 等待周期 | 用户手册，**待 UM 核验** |
+| 108M 是否需 Flash 等待周期 | 用户手册，**待 UM 核验**（FMC_WS@0x00 存在、WSCNT 3 位域已实证） |
 
 ## 你做到了
 

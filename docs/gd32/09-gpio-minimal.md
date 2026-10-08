@@ -19,7 +19,7 @@ minutes: 30
 
 - **读过 [S3 GPIO](../stm32/03-gpio.md) 与 [G2](02-gpio-af.md)**：先接受第一节那个反转——G2 的"七表全同"在 VF103 上不适用；之后每节都是旧知识换编制。
 - **只读过 S3**：把"先时钟、后配置、数据用原子写"三句纪律带走，四位编码就是 S3 四张表压进一格的"F1 压缩版"。
-- 逐位编码（MD/CTL 语义）标注了"待 UM 核验"：布局与命名有 F1 惯例和头文件背书，精确编码以 UM 为准，上板前核一遍。
+- 逐位编码（MD/CTL 语义）已按头文件核验：每脚 4 位、低 2 位 MD 高 2 位 CTL 与 F1 惯例一致（gd32vf103_gpio.h:53-104）；精确电气语义（如速度档上限）上板前按 UM 复核一遍。
 
 ## 学习目标
 
@@ -88,11 +88,11 @@ AFIO 是"复用重映射"的 F1 制机关：F1 家族的复用功能只有固定
 | 数据寄存器 | IDR/ODR/BSRR | ISTAT/OCTL/BOP/BC/TG | ISTAT/OCTL/BOP/BC |
 | GPIO 基址 | 0x40020000（GPIOA） | 0x40020000 | **0x40010800——与 STM32F103 同址** |
 
-最后一行再补一记铁证：0x40010800 恰是 STM32F103 GPIOA 的老地址，端口步进 0x400（A~E 依次 +0x400，与 F103 完全同址；逐口基址待 UM 核验）。[V2](07-rcu-108m.md) 的 RCU 跟 F1 同门牌、本章 GPIO 也跟 F1 同门牌——"外设层像 F1、内核是 RISC-V"这个混血判断，处处有地址背书。
+最后一行再补一记铁证：0x40010800 恰是 STM32F103 GPIOA 的老地址，端口步进 0x400（A~E 依次 +0x400，与 F103 完全同址；逐口基址已核验：GPIOA=GPIO_BASE+0，B~E 各 +0x400，gd32vf103_gpio.h:41-45）。[V2](07-rcu-108m.md) 的 RCU 跟 F1 同门牌、本章 GPIO 也跟 F1 同门牌——"外设层像 F1、内核是 RISC-V"这个混血判断，处处有地址背书。
 
 ## 二、四位一坑：CTL0/CTL1 的 MD+CTL 编码
 
-F1 血统把 S3 的四张表压成一张：每脚 4 位，低 2 位是 **MD**（速度/方向），高 2 位是 **CTL**（输入/输出形态）。CTL0（偏移 0x00）管脚 0~7，CTL1（偏移 0x04）管脚 8~15。四位语义（F1 惯例，逐位编码**待 UM 核验**）：
+F1 血统把 S3 的四张表压成一张：每脚 4 位，低 2 位是 **MD**（速度/方向），高 2 位是 **CTL**（输入/输出形态）。CTL0（偏移 0x00）管脚 0~7，CTL1（偏移 0x04）管脚 8~15。四位语义已核验（gd32vf103_gpio.h:53-104：每脚 MD 占低 2 位、CTL 占高 2 位，逐位编码与 F1 惯例一致）：
 
 | MD | 含义 | CTL | 输入时 | 输出/复用时 |
 |---|---|---|---|---|
@@ -111,11 +111,11 @@ GPIOx_MODER |=  (1UL << (pin * 2U));      GPIO_CTL0(x) |=  (0x8UL << (pin * 4U))
 
 照搬 S3 的 0x3 掩码会留下两个旧位——"模式改不干净"的暗病，配复用脚时尤其致命（残留位能把推挽变开漏，信号半死不活）。
 
-要上拉/下拉输入：MD=00、CTL=10，再写 OCTL 对应位——F1 血统的"输出锁存器"兼任上拉/下拉选择（写 1 上拉、写 0 下拉），这是与 S3 PUPDR 独立寄存器的又一个结构差异（**待 UM 核验**）。复用输出（如 USART_TX）：MD 选速度、CTL 选"复用推挽"，重映射候选脚多时还要动 AFIO——三件套见 [V1 第七节](06-clic-irq.md) 第 3、4 步。
+要上拉/下拉输入：MD=00、CTL=10，再写 OCTL 对应位——F1 血统的"输出锁存器"兼任上拉/下拉选择（写 1 上拉、写 0 下拉），这是与 S3 PUPDR 独立寄存器的又一个结构差异（OCTL 存在已实证，"写 1 上拉"的语义待 UM 核验）。复用输出（如 USART_TX）：MD 选速度、CTL 选"复用推挽"，重映射候选脚多时还要动 AFIO——三件套见 [V1 第七节](06-clic-irq.md) 第 3、4 步。
 
 ## 三、数据四剑客：ISTAT/OCTL/BOP/BC
 
-| 岗位 | STM32F407（[S3](../stm32/03-gpio.md)） | VF103（偏移**待 UM 核验**，F1 惯例） | 备注 |
+| 岗位 | STM32F407（[S3](../stm32/03-gpio.md)） | VF103（偏移已核验，gd32vf103_gpio.h:55-58） | 备注 |
 |---|---|---|---|
 | 看电平 | IDR（只读） | **ISTAT**（+0x08） | 输入的耳朵 |
 | 写电平 | ODR（读写） | **OCTL**（+0x0C） | 读-改-写暗伤同 S3 第二节 |
@@ -127,7 +127,7 @@ GPIOx_MODER |=  (1UL << (pin * 2U));      GPIO_CTL0(x) |=  (0x8UL << (pin * 4U))
 - **OCTL 的暗伤**：`OCTL 或上一个值`是"读-改-写"三条指令，中断插进读与写之间就冲掉别人的改动——S3 第二节的翻车现场在 RISC-V 上一字不差。
 - **BOP 只能纯赋值**：读回恒 0、写 0 无影响——对它做读-改-写等于把自己的位全清空（S3 坑 5 的 F1 版）。
 - **BC 是 GD32 家的直路**：F407 想清一个脚得往 BSRR 高 16 位写（pin+16 半档）；VF103 直接把 1 左移 pin 位写 BC——不用挪半档（[G2 第三节](02-gpio-af.md) 在 F4xx 上已点名这件兵器）。
-- **没有 TG**：G2 介绍的硬件翻转寄存器在 VF103 上没有（**待 UM 核验**）——翻转老老实实 BOP/BC 各写一次。
+- **没有 TG**：G2 介绍的硬件翻转寄存器在 VF103 上没有（头文件实证：寄存器列表只有 CTL0/1、ISTAT、OCTL、BOP、BC、LOCK 六枚，无 TG，gd32vf103_gpio.h:53-59）——翻转老老实实 BOP/BC 各写一次。
 
 ## 四、点灯五步：完整 main.c
 
@@ -145,16 +145,16 @@ GPIOx_MODER |=  (1UL << (pin * 2U));      GPIO_CTL0(x) |=  (0x8UL << (pin * 4U))
 #define RCU_APB2EN      (*(volatile uint32_t *)(RCU_BASE + 0x18U))
 #define RCU_APB2EN_PAEN (1UL << 2)      /* PA 时钟位 bit2；PB~PE 是 bit3~6 */
 
-/* ---------- GPIO（偏移布局待 UM 核验，F1 惯例） ---------- */
+/* ---------- GPIO（偏移已核验，gd32vf103_gpio.h:53-58） ---------- */
 #define GPIO_CTL0(x)    (*(volatile uint32_t *)((x) + 0x00U))
 #define GPIO_OCTL(x)    (*(volatile uint32_t *)((x) + 0x0CU))
 #define GPIO_BOP(x)     (*(volatile uint32_t *)((x) + 0x10U))
 #define GPIO_BC(x)      (*(volatile uint32_t *)((x) + 0x14U))
 
-/* ---------- mtime 延时（V3 第四节原样搬运） ---------- */
-#define CLINT_BASE      0x02000000U
-#define MTIME_LO        (*(volatile uint32_t *)(CLINT_BASE + 0xBFF8U))
-#define MTIME_HI        (*(volatile uint32_t *)(CLINT_BASE + 0xBFFCU))
+/* ---------- mtime 延时（V3 第四节原样搬运；基址按官方库实证更新） ---------- */
+#define CLINT_BASE      0xD1000000U      /* GD32VF103 TIMER 域（n200_timer.h:29） */
+#define MTIME_LO        (*(volatile uint32_t *)(CLINT_BASE + 0x0U))
+#define MTIME_HI        (*(volatile uint32_t *)(CLINT_BASE + 0x4U))
 extern uint32_t SystemCoreClock;        /* V2：SystemInit 后为 108000000 */
 
 static uint64_t mtime_read(void)
@@ -302,10 +302,10 @@ F407 没有独立清零寄存器，用 BSRR 高 16 位复位区：把 1 左移 (
 | GPIO 时钟使能 PA~PE = APB2EN bit2~6 | gd32vf103_rcu.h:165-169 |
 | AFEN = APB2EN bit0 | gd32vf103_rcu.h:164 |
 | RCU 基址 0x40021000、APB2EN 偏移 0x18 | gd32vf103.h:226；gd32vf103_rcu.h:52 |
-| CTL0/CTL1/ISTAT/OCTL/BOP/BC 偏移与四位编码 | F1 惯例，**待 UM 核验** |
-| 端口基址步进 0x400、逐口地址 | F1 惯例（与 F103 同址），**待 UM 核验** |
+| CTL0/CTL1/ISTAT/OCTL/BOP/BC 偏移与四位编码 | gd32vf103_gpio.h:53-104（已核验） |
+| 端口基址步进 0x400、逐口地址 | gd32vf103_gpio.h:41-45（已核验，与 F103 同址） |
 | 读-改-写暗伤与 BSRR 纪律 | [S3 第二节](../stm32/03-gpio.md) |
-| BOP/BC/TG 与 F4xx 对照 | [G2 第一/三节](02-gpio-af.md)；VF103 无 TG 待 UM 核验 |
+| BOP/BC/TG 与 F4xx 对照 | [G2 第一/三节](02-gpio-af.md)；VF103 无 TG 已实证（寄存器列表无 TG 项） |
 | mtime 延时实现 | [V3 第四节](08-mtime-delay.md) |
 | 启动文件/链接脚本/Makefile 标志 | [V0](05-riscv-toolchain.md) |
 | SystemInit 默认 108M 档 | [V2 第二节](07-rcu-108m.md)；system_gd32vf103.c:62 |

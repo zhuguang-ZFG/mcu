@@ -19,7 +19,7 @@ minutes: 35
 
 - **读过 [S4 NVIC 与 EXTI](../stm32/04-nvic-exti.md)**：每节先看"与 S4 的差异表"，五处不同一次记全。
 - **没读过 S4**：先记住"中断 = 配置控制器 + 设优先级 + 写 ISR"三件事，再看 RISC-V 每件事怎么落。
-- ECLIC 寄存器精确偏移以 Bumblebee ISA 手册为准（本页标注"待 ISA 手册核验"），但中断号、level/priority 维度、向量模式都有头文件或内核手册背书。
+- ECLIC 寄存器精确偏移已由官方固件驱动实证（n200_eclic.h），但 nlbits 语义、shv 字段细节仍以 Bumblebee ISA 手册为准（本页标注"待 ISA 手册核验"处仅剩语义级）；中断号、level/priority 维度、向量模式都有头文件或内核手册背书。
 
 ## 学习目标
 
@@ -97,7 +97,7 @@ ECLIC 是 Bumblebee 核的私有外设（与 DEBUG、TIMER 并列在 Core 层级
 - 快速中断尾链（tail-chaining）；
 - 支持 NMI。
 
-与 NVIC 的结构对照（ECLIC 寄存器精确偏移**待 ISA 手册核验**，这里讲结构与维度）：
+与 NVIC 的结构对照（ECLIC 寄存器精确偏移已由官方固件驱动实证，见 n200_eclic.h：基址 0xD2000000、cliccfg@0x0、clicintip@0x1000、clicintie@0x1001、clicintattr@0x1002、clicintctl@0x1003，每中断间隔 4 字节；这里讲结构与维度）：
 
 | | ARM NVIC (S4) | ECLIC (V1) |
 |---|---|---|
@@ -150,7 +150,7 @@ ECLIC_NUM_INTERRUPTS         /* 中断总数哨兵（gd32vf103.h:171） */
 - **level**（抢占级，最多 16 级）：决定"能不能打断别人"。高 level 抢断低 level——类似 ARM 的抢占优先级。
 - **priority**（同级排序，最多 16 级）：决定"同 level 同时挂起时谁先上"——类似 ARM 的子优先级，但**没有打断能力**。
 
-**推论一**：移植 RTOS 时"优先级数值没变、行为全变"的灵异事件（S4 3.2 讲的 PRIGROUP 尺子换了）在 RISC-V 上不会发生——没有"分组尺子"可换。但 RTOS 仍要求"全部 level 给抢占"这类约定，对应到 cliccfg 的 nlbits 设置（**待 ISA 手册核验** nlbits 精确语义与位宽）。
+**推论一**：移植 RTOS 时"优先级数值没变、行为全变"的灵异事件（S4 3.2 讲的 PRIGROUP 尺子换了）在 RISC-V 上不会发生——没有"分组尺子"可换。但 RTOS 仍要求"全部 level 给抢占"这类约定，对应到 cliccfg 的 nlbits 设置（官方驱动已给掩码与移位：`ECLIC_CFG_NLBITS_MASK=0x1E`、`NLBITS_LSB=1`，n200_eclic.h:54-55；**精确语义**仍以 ISA 手册为准）。
 
 **推论二**：ARM 那套 `NVIC_SetPriorityGrouping()` / `0x5FA` 钥匙在 RISC-V 上完全不存在——看到 GD32VF103 例程里"设优先级分组"的写法，那是在配 cliccfg，不是 ARM 的 AIRCR。
 
@@ -175,7 +175,7 @@ ECLIC 的"向量直跳"省了 ARM 那张大表，但代价是每个要用向量�
 
 > **【注】RISC-V 异常返回没有"魔法值"**。ARM 进 ISR 时 LR 被硬件换成 `EXC_RETURN`（0xFFFFFFFD），出 ISR 一条 `bx lr` 触发硬件弹栈。RISC-V 进 ISR 时硬件把返回地址存进 `mepc`、把中断使能存进 `mstatus.MPIE`，ISR 末尾一条 `mret` 指令恢复——没有"LR 换魔法值"这一步，压栈也是软件在 prologue 干（不像 ARM 硬件自动压 8 字）。
 >
-> 精确的 shv 位位置、向量寄存器布局、clicintattr 字段**待 ISA 手册核验**。
+> 精确的 shv 位位置、向量寄存器布局、clicintattr 字段——官方固件驱动已实证偏移（clicintattr@+0x1002、SHV 位 0x01、TRIG_LEVEL/EDGE=0x00/0x02、TRIG_POS/NEG=0x00/0x04，n200_eclic.h:40-46），语义细节仍以 ISA 手册为准。
 
 ## 六、MTIME 不是 SysTick：内存映射定时器
 
@@ -185,19 +185,19 @@ ECLIC 的"向量直跳"省了 ARM 那张大表，但代价是每个要用向量�
 - **mtime**：64 位当前计数值；
 - **mtimecmp**：64 位比较值，**mtime 不小于 mtimecmp 时触发定时器中断**；
 - **mtime/mtimecmp 不是 CSR**——手册明说："not CSR registers, but Memory Address Mapped system registers"（内存映射系统寄存器）；
-- 具体映射地址 RISC-V 架构不定义，由实现定；Bumblebee 把它们做在 TIMER 单元里（**精确基地址待 ISA 手册核验**）。
+- 具体映射地址 RISC-V 架构不定义，由实现定；Bumblebee 把它们做在 TIMER 单元里——官方固件驱动实证：`TIMER_CTRL_ADDR = 0xD1000000`，mtime @ +0x0、mtimecmp @ +0x8（n200_timer.h:24-30）。
 
 | | SysTick (Cortex-M, S5) | MTIME (Bumblebee) |
 |---|---|---|
 | 位数 | 24 位递减 | 64 位递增 |
 | 比较方式 | 倒数到 0 触发 | mtime 不小于 mtimecmp 触发 |
-| 寄存器位置 | SCS 内存映射 0xE000E010 | TIMER 单元内存映射（待核验） |
+| 寄存器位置 | SCS 内存映射 0xE000E010 | TIMER 单元内存映射（官方驱动实证 0xD1000000） |
 | 是否 CSR | 否 | **否**（常被误以为 CSR） |
 | IRQn | -1（内核异常） | `CLIC_INT_TMR = 7`（ECLIC，gd32vf103.h:102） |
 | 重装 | 写 LOAD 自动重装 | **软件写 mtimecmp = mtime + 周期** |
 | RTOS tick | 直接用 | 直接用（[V3](08-mtime-delay.md) 详述） |
 
-**驱动频率**（手册 §3.1 + GD32VF103 注记）：mtime 由 SoC 的 `mtime_toggle_a` 脉冲驱动，每检测到一个边沿 mtime 加 1。GD32VF103 上 `rtc_clk = core_clk_aon / 4`，所以 **mtime 自增频率 = core_clk_aon / 4**。若核心跑 108MHz，mtime 约 27MHz 自增（`core_clk_aon` 与核心时钟的精确关系**待 UM 核验**）。
+**驱动频率**（手册 §3.1 + GD32VF103 注记）：mtime 由 SoC 的 `mtime_toggle_a` 脉冲驱动，每检测到一个边沿 mtime 加 1。GD32VF103 上 `rtc_clk = core_clk_aon / 4`，所以 **mtime 自增频率 = core_clk_aon / 4**。若核心跑 108MHz，mtime 约 27MHz 自增（`core_clk_aon` 与核心时钟同源同频的关系已由 [V3](08-mtime-delay.md) 收案：手册 §2.1）。
 
 **推论**：MTIME 是 64 位递增 + 软件比较，意味着"周期定时"要软件每次中断后把 mtimecmp 加一个周期（不像 SysTick 硬件自动重装）——这是 RTOS port 到 RISC-V 必须处理的差异（[V3](08-mtime-delay.md) 详述）。SysTick 的"写一次 LOAD 一劳永逸"在 MTIME 上不成立。
 
@@ -237,7 +237,7 @@ GD32VF103 的"混血"在这里体现得最清楚：外设层（EXTI/AFIO/GPIO）
 
 ## 实物实验
 
-- 用 GDB 读 `mtvec`（`info registers mtvec`）与 cliccfg，看 ECLIC 全局配置（精确寄存器布局待 ISA 手册）。
+- 用 GDB 读 `mtvec`（`info registers mtvec`）与 cliccfg，看 ECLIC 全局配置（寄存器偏移已实证，语义细节见 ISA 手册）。
 - 配 EXTI0 为 shv=1 向量模式，按键触发，在 ISR 入口设断点——应直接断在专属入口，不停在公共入口。
 - 配同 EXTI0 为 shv=0 非向量模式，再触发——应先停在公共入口，单步后分发到 ISR。两种模式对比"向量直跳"。
 - MTIME 实验（[V3](08-mtime-delay.md) 详述）：读 mtime 两次间隔，反推自增频率，验证 `core_clk_aon / 4`。
@@ -272,7 +272,7 @@ GD32VF103 的"混血"在这里体现得最清楚：外设层（EXTI/AFIO/GPIO）
 
 <details><summary>看答案</summary>
 
-**不是 CSR**。Bumblebee 手册 §2.13 明说它们是 "Memory Address Mapped system registers"，做在 TIMER 单元里，精确地址由实现定（待 ISA 手册核验）。要用 `lw`/`sw` 普通访存指令读写，不能用 `csrr`/`csrw`——后者会触发非法指令异常。
+**不是 CSR**。Bumblebee 手册 §2.13 明说它们是 "Memory Address Mapped system registers"，做在 TIMER 单元里，精确地址由实现定（官方固件驱动实证：0xD1000000，n200_timer.h:29）。要用 `lw`/`sw` 普通访存指令读写，不能用 `csrr`/`csrw`——后者会触发非法指令异常。
 
 </details>
 
@@ -288,7 +288,7 @@ shv=1 是**向量模式**——硬件直跳到该中断专属入口（向量直�
 
 <details><summary>看答案</summary>
 
-约为 `core_clk_aon / 4`。依据：mtime 由 SoC 的 `mtime_toggle_a` 脉冲驱动（每检测到边沿 mtime 加 1），Bumblebee 手册 §3.1 注记 GD32VF103 上 `rtc_clk = core_clk_aon / 4`，而 mtime_toggle_a 推荐 由 rtc_clk 驱动。若核心跑 108MHz，mtime 约 27MHz 自增（`core_clk_aon` 与核心时钟的精确关系待 UM 核验）。
+约为 `core_clk_aon / 4`。依据：mtime 由 SoC 的 `mtime_toggle_a` 脉冲驱动（每检测到边沿 mtime 加 1），Bumblebee 手册 §3.1 注记 GD32VF103 上 `rtc_clk = core_clk_aon / 4`，而 mtime_toggle_a 推荐 由 rtc_clk 驱动。若核心跑 108MHz，mtime 约 27MHz 自增（`core_clk_aon` 与核心时钟同源同频已由 [V3](08-mtime-delay.md) 收案：手册 §2.1）。
 
 </details>
 
@@ -308,9 +308,9 @@ shv=1 是**向量模式**——硬件直跳到该中断专属入口（向量直�
 | MTIME 64 位、mtime/mtimecmp 内存映射、非 CSR | Bumblebee 手册 §2.13 |
 | mtime_toggle_a、rtc_clk = core_clk_aon / 4 | Bumblebee 手册 §3.1 + GD32VF103 注记 |
 | ARM 对照：IRQn+16、4 位优先级、PRIGROUP、0x5FA、向量表 | [S4](../stm32/04-nvic-exti.md) 第二/三/四节 |
-| ECLIC 寄存器精确偏移、shv 位、clicintattr/clicintctl 字段 | 待 ISA 手册核验 |
-| mtime/mtimecmp 精确映射基地址、nlbits 语义 | 待 ISA 手册核验 |
-| `core_clk_aon` 与核心时钟的精确关系 | 用户手册，待 UM 核验 |
+| ECLIC 寄存器精确偏移、shv 位、clicintattr/clicintctl 字段 | 官方固件驱动实证（n200_eclic.h:28-49）；语义细节以 ISA 手册为准 |
+| mtime/mtimecmp 精确映射基地址 | 官方固件驱动实证：0xD1000000（n200_timer.h:24-30）；nlbits 语义待 ISA 手册 |
+| `core_clk_aon` 与核心时钟的精确关系 | 已收案：同源同频（[V3](08-mtime-delay.md)，手册 §2.1） |
 
 ## 你做到了
 
