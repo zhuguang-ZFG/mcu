@@ -330,5 +330,3 @@ ECLIC 的标准原型与权威寄存器表：
 <div class="achievement">
 ✅ 下一站：<a href="07-rcu-108m.html">V2 RCU 与 108MHz</a>——G1 的 RCU 知识平移到 RISC-V，预设档 48/72/108M 怎么算。
 </div>
-
-> AI生成

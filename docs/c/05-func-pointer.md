@@ -308,5 +308,3 @@ A 派 7 格（牺牲一格当哨兵：`w+1 == r` 判满，所以永远留一格�
 <div class="achievement">
 ✅ 下一站：<a href="06-abi-stack.html">C6 调用约定与栈帧</a>——一次函数调用的全程直播（动画）。
 </div>
-
-> AI生成

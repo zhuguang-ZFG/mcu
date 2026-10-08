@@ -179,5 +179,3 @@ MEMORY { RAM (xrw) : ORIGIN=0x20000000, LENGTH=128K
 <div class="achievement">
 ✅ 下一站：<a href="06-flash-debug.html">B6 烧录与调试</a>——SWD 两根线怎么把固件送进 Flash，断点凭什么让 CPU 停下。
 </div>
-
-> AI生成

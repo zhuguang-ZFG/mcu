@@ -2,7 +2,7 @@
 title: P13 看门狗与健康监督：不要喂反了
 status: done
 difficulty: 3
-minutes: 45
+minutes: 15
 ---
 
 # P13 看门狗与健康监督：不要喂反了
@@ -98,5 +98,3 @@ RTC_NOINIT_ATTR故障记录有magic/version/CRC，结合 esp_reset_reason 原值
 ## 你做到了
 
 能从错误输入追到状态机和恢复路径，为双板记录器的完整链路做准备。
-
-> AI生成

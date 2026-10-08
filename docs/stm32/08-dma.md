@@ -2,7 +2,7 @@
 title: S8 DMA：让数据自己搬家
 status: done
 difficulty: 3
-minutes: 50
+minutes: 30
 ---
 
 # S8 DMA：让数据自己搬家

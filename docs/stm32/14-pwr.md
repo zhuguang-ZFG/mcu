@@ -285,5 +285,3 @@ void PWR_EnterSTOPMode(uint32_t PWR_Regulator, uint8_t PWR_STOPEntry)
 <div class="achievement">
 ✅ 下一站：<a href="15-spl-anatomy.html">S15 SPL 库解剖</a>——把标准库拆开，看它如何封装我们手写的每一行。
 </div>
-
-> AI生成

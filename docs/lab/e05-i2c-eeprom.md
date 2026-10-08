@@ -93,5 +93,3 @@ I2C 的每次交互都是"START + 地址帧 + ACK + 数据帧(+ACK) + STOP"的�
 构建、接线与排查见[工程 README](https://github.com/zhuguang-ZFG/mcu/tree/main/code/stm32/04-i2c-eeprom)。
 
 <<< ../../code/stm32/04-i2c-eeprom/main.c
-
-> AI生成

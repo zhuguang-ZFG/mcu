@@ -307,5 +307,3 @@ $ arm-none-eabi-nm -n blink.elf | grep -E ' (Reset_Handler|main)$'
 <div class="achievement">
 ✅ 下一站：<a href="02-elf.html">B2 ELF 解剖</a>——readelf/objdump 实拆一个固件，段与节不再傻傻分不清。
 </div>
-
-> AI生成

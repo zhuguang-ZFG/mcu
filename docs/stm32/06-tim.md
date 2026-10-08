@@ -2,7 +2,7 @@
 title: S6 定时器 TIM：一器多用的瑞士军刀
 status: done
 difficulty: 3
-minutes: 45
+minutes: 25
 ---
 
 # S6 定时器 TIM：一器多用的瑞士军刀

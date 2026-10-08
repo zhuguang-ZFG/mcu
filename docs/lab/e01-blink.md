@@ -98,5 +98,3 @@ SWD 接线与供电纪律见 [S0 第五步](../stm32/00-env.md#第五步接线sw
 <div class="achievement">
 ✅ 下一站：<a href="e02-logic-uart.html">实验 E02 逻辑分析仪抓 UART 帧</a>——把串口波形抓到屏幕上，一位一位对照手册。
 </div>
-
-> AI生成

@@ -370,5 +370,3 @@ STM32 的 Flash 是**原地执行**的（地址空间直接映射，CPU 直接�
 <div class="achievement">
 ✅ 下一站：<a href="../../rtos/index.html">RTOS 篇</a>把双核 SMP 的调度细节补齐，或回 <a href="00-env.html">P0</a> 复查环境配置。
 </div>
-
-> AI生成

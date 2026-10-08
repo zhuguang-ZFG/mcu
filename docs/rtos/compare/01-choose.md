@@ -129,5 +129,3 @@ RTOS 的坑都长在"不熟悉"上：FreeRTOS 的优先级数值大=高、RT-Thr
 <div class="achievement">
 ✅ RTOS 篇收官。下一站：<a href="../../esp32/index.html">P 篇 ESP32-S3</a>——去双核+Wi-Fi 的世界里，看 FreeRTOS 的"出厂形态"。
 </div>
-
-> AI生成

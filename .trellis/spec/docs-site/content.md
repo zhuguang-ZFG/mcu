@@ -6,7 +6,7 @@
 
 对照金样例 `docs/c/06-abi-stack.md` 逐段核对：
 
-1. frontmatter `title: <前缀+编号 标题>` 与 H1 一致，并带 `status`（done|building）/ `difficulty`（1|2|3）/ `minutes` 三项进度元数据——首页地图与 README 的数字全靠它们算出来，缺一项或值非法，`npm run docs:gen` 就失败；
+1. frontmatter `title: <前缀+编号 标题>` 与 H1 一致，并带 `status`（done|building）/ `difficulty`（1|2|3）/ `minutes` 三项进度元数据——首页地图与 README 的数字全靠它们算出来，缺一项或值非法，`npm run docs:gen` 就失败；`minutes` 不凭感觉填：按 `正文字数/300 + 代码字数/150 + 10`（取整到 5，最少 15；`## 附录…` 整节不计），`npm run reading:check` 对偏离 ±40% 的章节报错，`node scripts/reading-time.mjs --fix` 采纳模型值（lab/ 与 projects/ 的 minutes 是上板时长，不在此列）；
 2. `> 🎯` 钩子（≤60 字类比/反直觉问题，禁"本章将介绍"）；
 3. 本章精髓（1–3 个"为什么"）；
 4. 学习目标（可检验动词：能手算/能逐行讲清/能在板上观测）；
@@ -17,6 +17,8 @@
 9. 实物实验（装备/观测点/预期现象）；
 10. 常见坑（≥2 条真实坑，按出现频率排序）；
 11. 你做到了 + `<div class="achievement">` 下一站。
+
+页尾的"本页由 AI 生成"声明由主题统一渲染（`theme/AiNotice.vue`，挂在 `Layout.vue` 的 `#doc-after`），**页面里不要再手写 `> AI生成`**——此前手写导致一半页面有、一半漏掉。
 
 成稿增强件（对标金样例 S3/B4/F2）：精髓后加"怎么读这一章"（能记住/能理解/能用三层）；常见坑后加"短自测"（≥3 题，答案 `<details>` 折叠）与"对照表"（本章概念→仓库文件行/章节落点）；有合适视频时加"配套视频"（VideoEmbed，id 须先验证）；有一手文献支撑结论时，在"你做到了"之前加"延伸阅读"——每条写成 `**[\[D2\]](../reference/bibliography.md#papers)** 作者 年 — 它和本章哪一句有关`，条目必须先登记进 `docs/reference/bibliography.md`（论文要 DOI 经 Crossref 核对，手册要写修订号或明标"未核版本"），不列书单、不引二手博客。
 
@@ -47,6 +49,7 @@
 
 ```bash
 npm run docs:gen                                      # 零元数据告警（title/status/difficulty/minutes 齐）
+npm run reading:check                                 # 每章 minutes 与字数模型偏差在 ±40% 内
 npm run docs:build                                    # 零错误（含死链）
 grep -rn "TODO\|待补充\|placeholder" docs/ --include="*.md"   # 无命中（除 template.md 的元说明）
 ```

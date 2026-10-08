@@ -285,5 +285,3 @@ SPL 的 DAC API 把 CR 的位组合打包成结构体字段（stm32f4xx_dac.c V1
 <div class="achievement">
 ✅ 下一站：<a href="11-i2c.html">S11 I2C</a>——两根线一个地址，时序与寄存器逐拍对应。
 </div>
-
-> AI生成

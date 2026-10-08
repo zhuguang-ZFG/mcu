@@ -2,7 +2,7 @@
 title: S7 USART：让芯片开口说话
 status: done
 difficulty: 3
-minutes: 45
+minutes: 30
 ---
 
 # S7 USART：让芯片开口说话

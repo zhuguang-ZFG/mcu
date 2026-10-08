@@ -336,5 +336,3 @@ SPL 的 Flash 操作 API 几乎是寄存器序列的逐字直译（stm32f4xx_fla
 <div class="achievement">
 ✅ 下一站：<a href="14-pwr.html">S14 低功耗</a>——让电池供电的产品活过一年。
 </div>
-
-> AI生成

@@ -2,7 +2,7 @@
 title: B4 启动过程：上电到 main 的每一条指令
 status: done
 difficulty: 3
-minutes: 45
+minutes: 30
 ---
 
 # B4 启动过程：从复位向量到 main

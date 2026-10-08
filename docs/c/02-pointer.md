@@ -259,5 +259,3 @@ probe.c:54:59: error: assignment of read-only location '*(const int *)p'  @ 全�
 <div class="achievement">
 ✅ 下一站：<a href="03-volatile.html">C3 volatile</a>——编译器优化如何"优化掉"你的寄存器读写，以及 volatile 的能力边界。
 </div>
-
-> AI生成

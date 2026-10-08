@@ -219,5 +219,3 @@ finsh 不是免费的，上板前要算账：
 <div class="achievement">
 ✅ 下一站：<a href="06-env-menuconfig.html">R6 Env 与 menuconfig</a>——RT-Thread 的"点单系统"：scons 与 Kconfig。
 </div>
-
-> AI生成

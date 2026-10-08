@@ -285,5 +285,3 @@ SPL 每个函数开头一串 `assert_param(IS_GPIO_PIN(init->GPIO_Pin))`。`asse
 <div class="achievement">
 ✅ 下一站：<a href="16-debug-hardfault.html">S16 HardFault 与排错</a>——崩溃现场的法医技术。
 </div>
-
-> AI生成

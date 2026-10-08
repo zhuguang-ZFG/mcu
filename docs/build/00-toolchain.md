@@ -162,5 +162,3 @@ ARM 官方维护 **Arm GNU Toolchain**（gcc/binutils/newlib/gdb 一体打包）
 <div class="achievement">
 ✅ 下一站：<a href="01-four-steps.html">B1 四步构建</a>——把 main.c 一步步变成机器码，中间产物全留下。
 </div>
-
-> AI生成

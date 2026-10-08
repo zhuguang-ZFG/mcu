@@ -2,7 +2,7 @@
 title: G2 GPIO 与 AF 复用对照：七大寄存器同名不同姓
 status: done
 difficulty: 2
-minutes: 30
+minutes: 60
 ---
 
 # G2 GPIO 与 AF 复用对照：七大寄存器同名不同姓
@@ -331,5 +331,3 @@ GPIO_PUD(gpiox) |=  GPIO_PUPD_SET(pin, pupd);       /* 写上下拉            *
 <div class="achievement">
 ✅ 下一站：<a href="03-usart.html">G3 USART 增强点</a>——从 gd32f4xx_usart.h 比出的差异清单，串口打印继续。
 </div>
-
-> AI生成

@@ -221,5 +221,3 @@ finsh 的 `list_thread` 输出列大致是：`name / pri / status / sp / stack s
 <div class="achievement">
 ✅ 下一站：<a href="02-ipc.html">R2 IPC 全家桶</a>——信号量/互斥量/事件/邮箱/消息队列：一套范式五种武器。
 </div>
-
-> AI生成

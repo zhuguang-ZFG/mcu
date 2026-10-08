@@ -186,5 +186,3 @@ x/wx 0x40023830   # RCC_AHB1ENR：bit5 应该是 1（GPIOF 时钟开了）
 <div class="achievement">
 ✅ 下一站：<a href="01-arch.html">S1 F407 架构总览</a>——为什么 0x40020000 是 GPIOA？总线矩阵与存储器映射给你答案。状态：本章代码已静态核对 RM0090，<strong>待上板实测反馈</strong>（欢迎 Issue 报告你的现象）。
 </div>
-
-> AI生成

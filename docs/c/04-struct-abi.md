@@ -251,5 +251,3 @@ C 标准把位域布局（分配方向、跨单元策略、填充）留给编译
 <div class="achievement">
 ✅ 下一站：<a href="05-func-pointer.html">C5 函数指针与状态机</a>——中断驱动代码的基本功三件套。
 </div>
-
-> AI生成

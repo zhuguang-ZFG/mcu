@@ -184,5 +184,3 @@ title: 动画演示中心
 动画都是"裸 SVG"：不带脚本、颜色写成属性，构建期由 `AnimFigure` 包装内联进页面，跟随站点深浅主题换色。动效与版式规范见仓库内 `.trellis/spec/docs-site/animation.md`，批量自查跑 `npm run anim:lint`。
 
 想批量核版式（出界/压字），用仓库内 `scripts/anim-audit.html`（用法见动画规范 §7）。
-
-> AI生成

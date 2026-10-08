@@ -227,5 +227,3 @@ wifi:state: got ip:192.168.x.x                ← GOT_IP（网络可用）
 <div class="achievement">
 ✅ 下一站：<a href="09-bt-espnow.html">P9 蓝牙与 ESP-NOW</a>——无路由直连的另一种可能。
 </div>
-
-> AI生成

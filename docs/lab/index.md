@@ -30,5 +30,3 @@ title: 实验中心
 > 实战派整板实拍（来源：[xiaozhi-esp32](https://github.com/78/xiaozhi-esp32)，MIT 许可）。资料图**不是**上板验证证据——实验的实测记录以 [evidence 文件](../guide/verify-on-hardware.md)为准。
 
 完整装备清单见 [实物装备清单](../guide/hardware.md)。
-
-> AI生成

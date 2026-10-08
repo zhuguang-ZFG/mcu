@@ -2,7 +2,7 @@
 title: F0 为什么需要 RTOS：先失败一次
 status: done
 difficulty: 1
-minutes: 20
+minutes: 35
 ---
 
 # F0 为什么需要 RTOS：先失败一次
@@ -299,5 +299,3 @@ RTOS 不是升级，是**换一种成本结构**。它买的是"结构清晰 + �
 <div class="achievement">
 ✅ 下一站：<a href="01-task-tcb.html">F1 任务与 TCB</a>——xTaskCreate 逐行走查，看"平行世界"怎么造出来。
 </div>
-
-> AI生成

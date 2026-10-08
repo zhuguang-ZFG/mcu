@@ -2,7 +2,7 @@
 title: V3 MTIME 与裸机延时
 status: done
 difficulty: 2
-minutes: 25
+minutes: 45
 ---
 
 # V3 MTIME 与裸机延时
@@ -295,5 +295,3 @@ mtime_lo 进位回 0 的那一拍，mtime_hi 加 1。RV32 一次访存只有 32 
 <div class="achievement">
 ✅ 下一站：<a href="09-gpio-minimal.html">V4 GPIO 最小系统</a>——时钟、时基都齐了，配上 GPIO 点亮第一盏 RISC-V 的灯。
 </div>
-
-> AI生成

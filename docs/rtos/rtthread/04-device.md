@@ -2,7 +2,7 @@
 title: R4 设备框架：驱动与应用的解耦术
 status: done
 difficulty: 2
-minutes: 30
+minutes: 55
 ---
 
 # R4 设备框架：RT-Thread 最灵魂的一章
@@ -332,5 +332,3 @@ rt_uint32_t f = 4000;  rt_device_control(buz, BUZZER_CMD_SET_FREQ, &f);
 <div class="achievement">
 ✅ 下一站：<a href="05-finsh.html">R5 finsh 控制台</a>——在板子上跑 shell：list、ps、help 的背后。
 </div>
-
-> AI生成

@@ -174,5 +174,3 @@ OpenOCD 开 Semihosting：`monitor arm semihosting enable`；newlib 链接加 `-
 <div class="achievement">
 ✅ 下一站：<a href="07-build-system.html">B7 构建系统</a>——手写 Makefile 之后，看 CMake/Ninja 与 ESP-IDF、RT-Thread(scons) 怎么把它规模化。
 </div>
-
-> AI生成

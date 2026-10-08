@@ -301,5 +301,3 @@ FLASH = 0x08000000、RAM = 0x20000000（`gd32vf103.h:193-194`）。与 STM32F407
 <div class="achievement">
 ✅ 下一站：<a href="06-clic-irq.html">V1 Bumblebee 内核与 CLIC 中断</a>——没有 NVIC 的世界，向量怎么"直跳"。
 </div>
-
-> AI生成

@@ -194,5 +194,3 @@ GD32 库的风格：**函数名小写下划线**（`usart_init` vs `USART_Init`�
 <div class="achievement">
 ✅ 下一站：<a href="04-periph-diff.html">G4 GD32 外设差异</a>——USBHS/EXMC/CAN 逐项"有没有、一不一样"。
 </div>
-
-> AI生成

@@ -2,7 +2,7 @@
 title: C1 内存模型：一个全局变量的三段旅程
 status: done
 difficulty: 2
-minutes: 35
+minutes: 65
 ---
 
 # C1 内存模型：一个全局变量的三段旅程

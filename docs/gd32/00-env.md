@@ -198,5 +198,3 @@ GD32F4xx_Firmware_Library_V3.3.3/
 <div class="achievement">
 ✅ 下一站：<a href="01-rcu-clock.html">G1 RCU 时钟树</a>——200MHz 是怎么算出来的，与 STM32F4 的 RCC 逐字段对照。
 </div>
-
-> AI生成

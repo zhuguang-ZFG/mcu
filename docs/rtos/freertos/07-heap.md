@@ -2,7 +2,7 @@
 title: F7 内存管理：heap_1 到 heap_5 的人生选择
 status: done
 difficulty: 3
-minutes: 40
+minutes: 25
 ---
 
 # F7 内存管理：heap_1 到 heap_5 的人生选择

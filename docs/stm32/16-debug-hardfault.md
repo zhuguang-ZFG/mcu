@@ -412,5 +412,3 @@ D:\Users\mcu\code\stm32\16-debug-hardfault/fault_ctx.c:70
 <div class="achievement">
 ✅ S 篇收官。下一站：<a href="../rtos/index.html">RTOS 篇</a>——从"一个超级循环"到"多个平行世界"，先看 FreeRTOS 怎么变魔术。
 </div>
-
-> AI生成

@@ -133,5 +133,3 @@ RT-Thread 的 Kconfig 是"菜单派"（[R6 Env 与 menuconfig](../rtthread/06-en
 <div class="achievement">
 ✅ 下一站：<a href="01-choose.html">对比 1 选型决策树</a>——你的下一个项目，该牵谁的手。
 </div>
-
-> AI生成

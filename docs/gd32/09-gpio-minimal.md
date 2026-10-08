@@ -2,7 +2,7 @@
 title: V4 GPIO 最小系统
 status: done
 difficulty: 2
-minutes: 30
+minutes: 55
 ---
 
 # V4 GPIO 最小系统
@@ -319,5 +319,3 @@ F407 没有独立清零寄存器，用 BSRR 高 16 位复位区：把 1 左移 (
 <div class="achievement">
 ✅ <b>V 篇收官</b>。下一站：<a href="../lab/index.html">实验中心</a>把闭环上板实测；或直奔 <a href="../rtos/index.html">RTOS 篇</a>——看 SysTick 的 tick 在 RISC-V 上怎么落到 mtimecmp。
 </div>
-
-> AI生成

@@ -389,5 +389,3 @@ NVS 页头与条目的 CRC32 不是装饰：
 <div class="achievement">
 ✅ 下一站：<a href="11-lowpower.html">P11 低功耗</a>——睡眠矩阵、ULP 与电流实测。
 </div>
-
-> AI生成

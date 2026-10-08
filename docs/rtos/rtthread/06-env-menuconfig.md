@@ -265,5 +265,3 @@ board 放板级知识（时钟、堆、引脚、链接脚本），libraries 放 
 <div class="achievement">
 ✅ 下一站：<a href="07-port-f407.html">R7 移植到霸天虎</a>——Nano 手动移植到标准版，两步走全记录。
 </div>
-
-> AI生成

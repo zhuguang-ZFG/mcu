@@ -2,7 +2,7 @@
 title: P0 环境搭建：ESP-IDF 与小智板的第一次对话
 status: done
 difficulty: 1
-minutes: 30
+minutes: 20
 ---
 
 # P0 环境搭建：ESP-IDF 与小智板的第一次对话
@@ -154,5 +154,3 @@ SRAM 剩余：3xxxxx 字节；PSRAM 剩余：83xxxxx 字节
 <div class="achievement">
 ✅ 下一站：<a href="01-arch-boot.html">P1 S3 架构与启动全过程</a>——bootloader、分区表、app 三段接力，讲清上电到你的 printf 之间发生了什么。
 </div>
-
-> AI生成

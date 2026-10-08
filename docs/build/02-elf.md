@@ -2,7 +2,7 @@
 title: B2 ELF 解剖：把固件放上解剖台
 status: done
 difficulty: 2
-minutes: 35
+minutes: 65
 ---
 
 # B2 ELF 解剖：readelf 与 objdump 实拆固件

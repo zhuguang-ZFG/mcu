@@ -2,7 +2,7 @@
 title: P2 GPIO 与引脚矩阵：引脚自由换岗的秘密
 status: done
 difficulty: 3
-minutes: 45
+minutes: 25
 ---
 
 # P2 GPIO 与引脚矩阵：引脚自由换岗的秘密

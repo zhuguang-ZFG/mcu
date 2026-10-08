@@ -455,5 +455,3 @@ ENTRY(_start)
 一条命令跑完六刀（每刀的 `sed` diff、报错原文、换算式都在这里）：
 
 <<< ../../code/toolchain/03-linker/probe.sh
-
-> AI生成

@@ -182,5 +182,3 @@ finsh 提供：
 <div class="achievement">
 ✅ 下一站：<a href="04-device.html">R4 设备框架</a>——RT-Thread 最灵魂的一章：驱动与应用如何解耦。
 </div>
-
-> AI生成

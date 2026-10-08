@@ -323,5 +323,3 @@ factory,  app,  factory, ,        1M,
 <div class="achievement">
 ✅ 下一站：<a href="03-idf-anatomy.html">P3 IDF 工程解剖</a>——把那几个 `CMakeLists.txt` 和 `sdkconfig` 拆开看，理解这条流水线怎么把上千个文件编成你刚烧进去的镜像。
 </div>
-
-> AI生成

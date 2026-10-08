@@ -2,7 +2,7 @@
 title: S2 RCC 时钟树：168MHz 是怎么算出来的
 status: done
 difficulty: 3
-minutes: 50
+minutes: 35
 ---
 
 # S2 RCC 时钟树：168MHz 是怎么算出来的

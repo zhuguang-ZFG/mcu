@@ -279,5 +279,3 @@ ticks = 16800000，`ticks - 1 > 0xFFFFFF`，`SysTick_Config` 返回 1 拒配、�
 <div class="achievement">
 ✅ 下一站：<a href="06-tim.html">S6 定时器 TIM</a>——24 位不够用时，32 位 TIM 登场：从数脉冲到发 PWM，STM32 最全能的外设。
 </div>
-
-> AI生成

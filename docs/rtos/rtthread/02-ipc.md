@@ -179,5 +179,3 @@ RT-Thread 5.x 把所有 IPC 的公共部分抽到 `struct rt_ipc_object`（位�
 <div class="achievement">
 ✅ 下一站：<a href="03-mem.html">R3 内存管理</a>——memheap/slab/TLSF 三选与内存池的确定性之美。
 </div>
-
-> AI生成

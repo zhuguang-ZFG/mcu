@@ -316,5 +316,3 @@ ULP-RISC-V（S2/S3）更现代——直接用 C 写，有 GCC 工具链，算力
 <div class="achievement">
 ✅ 下一站：<a href="12-audio-path.html">P12 音频链路</a>——ES8311+ES7210：小智板的看家本领，从 I2S 时序到"hello 语音"。
 </div>
-
-> AI生成

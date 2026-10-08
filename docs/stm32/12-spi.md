@@ -285,5 +285,3 @@ SPL 的 `SPI_InitTypeDef` 八字段到寄存器的落位（对照 stm32f4xx_spi.
 <div class="achievement">
 ✅ 下一站：<a href="13-flash-iap.html">S13 内部 Flash 与 IAP</a>——固件给自己"动手术"。
 </div>
-
-> AI生成

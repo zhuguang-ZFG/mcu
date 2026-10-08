@@ -217,5 +217,3 @@ ESP-NOW 不另起射频，它复用 Wi-Fi 的 PHY/MAC——所以**和 Wi-Fi 同
 <div class="achievement">
 ✅ 下一站：<a href="10-flash-nvs-ota.html">P10 Flash/分区/NVS/OTA</a>——16MB 的版图管理与永不翻车的升级。
 </div>
-
-> AI生成

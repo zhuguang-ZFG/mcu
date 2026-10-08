@@ -244,5 +244,3 @@ TRNG 的存在让 GD32 在安全/加密场景比 STM32F407 多一个硬件基础
 <div class="achievement">
 ✅ G 篇收官。下一站：<a href="../rtos/rtthread/00-arch.html">R 篇 RT-Thread</a>——国产内核+国产操作系统的组合；或直接进 <a href="05-riscv-toolchain.html">V 篇 RISC-V</a>——GD32VF103 的 Bumblebee 内核，没有 NVIC 的世界。
 </div>
-
-> AI生成

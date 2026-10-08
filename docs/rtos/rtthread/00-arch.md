@@ -180,5 +180,3 @@ RT-Thread 的生态更偏国内（中文文档、国产 MCU 适配多），FreeR
 <div class="achievement">
 ✅ 下一站：<a href="01-thread-sched.html">R1 线程与调度</a>——rt_thread 解剖与 256 级位图，和 FreeRTOS 逐项对照。
 </div>
-
-> AI生成
