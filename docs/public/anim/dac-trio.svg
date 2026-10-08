@@ -77,9 +77,10 @@
     <animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
     <rect x="40" y="248" width="640" height="128" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
     <text x="56" y="270" font-size="13" font-weight="bold" fill="#3451b2">④ 波形出来：样本率、表长、频率的数学</text>
-    <text x="56" y="294" font-size="13" fill="#333">f_波形 = f_样本 / N = f_TIM6更新 / N。1kHz/64 点要 64kHz 样本率，84MHz/64kHz=1312.5 不整除——舍入到 1312 误差 0.1%。</text>
-    <text x="56" y="320" font-size="12" font-family="Consolas,monospace" fill="#333">N=64 → 正弦；N=8 → 阶梯三角（零阶保持 + 点太少）；N=2 → 奈奎斯特极限，方波</text>
-    <text x="56" y="346" font-size="12" fill="#d97706">选表长不光看频率，还要看 84MHz 能不能整除——这是波形数学最值得讲的一刀。</text>
+    <text x="56" y="292" font-size="13" fill="#333">f_波形 = f_样本 / N = f_TIM6更新 / N——1kHz/64 点要 64kHz 样本率。</text>
+    <text x="56" y="312" font-size="13" fill="#333">84MHz / 64kHz = 1312.5 不整除——舍入到 1312，误差 0.1%。</text>
+    <text x="56" y="332" font-size="12" font-family="Consolas,monospace" fill="#333">N=64 → 正弦；N=8 → 阶梯三角（零阶保持 + 点太少）；N=2 → 奈奎斯特极限，方波</text>
+    <text x="56" y="354" font-size="12" fill="#d97706">选表长不光看频率，还要看 84MHz 能不能整除——这是波形数学最值得讲的一刀。</text>
   </g>
 
   <!-- 阶段字幕 -->
