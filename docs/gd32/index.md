@@ -11,17 +11,17 @@ title: GD32 双系路线
 - **G 篇（GD32F4xx，ARM Cortex-M4F）**：STM32F407 的"近亲"——寄存器布局神似，但外设库叫 **RCU** 不叫 RCC、主频更高（**F450 200MHz / F470 240MHz**，官方库默认档就是 200MHz），USART 等外设还有增强点。逐字段对照学"兼容但不相同"。
 - **V 篇（GD32VF103，RISC-V RV32IMAC）**：Bumblebee 内核 108MHz——没有 NVIC、没有 SysTick，中断走 **CLIC**、内核定时走 **MTIME**。用你已经会的 STM32 知识丈量 RISC-V，只讲迁移必需的四件事。
 
-事实基准：官方固件库（GD32F4xx 库版本 **V3.3.3** / GD32VF103 官方库），源码按版本核对（参考缓存位于 .trellis/ref/，不随仓库分发）；位域细节绝大多数已按库头文件核验并标注出处，剩余依赖用户手册（UM）/datasheet 的项仍标注"待核验"。
+事实基准：**官方固件库 + 官方手册双层核对**——固件库取 GD32F4xx **V3.3.3** / GD32VF103 官方库（源码按版本核对），手册取 **GD32F4xx User Manual Rev3.0**、**GD32VF103 User Manual EN V1.0**、**GD32F407xx Datasheet Rev2.7**、**GD32F470 Product Brief**、**Bumblebee Core Brief**（参考缓存位于 .trellis/ref/，不随仓库分发）。位域、引脚与复用号已按"头文件说什么 + 手册怎么写"逐项标注出处；手册本身留白或没给的（典型如 Flash"频率↔等待周期"对照表、VF103 的 CKOUT0 引脚名），页面明写**手册留白**并降级为"待上板实测"，**不猜、不外推**。
 
 ## G 篇：GD32F4xx 对照篇
 
 | 章 | 标题 | 带走什么 |
 |---|---|---|
 | **[G0 环境与工具链](/gd32/00-env.md)【成稿】** | 官方库 V3.3.3 目录解剖 | 复用 xPack ARM GCC，启动文件/system/链接脚本三件套 |
-| **[G1 RCU 时钟树：200MHz 是怎么算出来的](/gd32/01-rcu-clock.md)【成稿】** | 与 S2 逐字段对照 | PLL 同布局更激进（400MHz VCO）、电压档三件套带 HDRF/HDSRF 回执、FMC_WS 官方留白、CK_OUT0 理论 50MHz |
-| **[G2 GPIO 与 AF 复用对照](/gd32/02-gpio-af.md)【成稿】** | 七大寄存器"同名不同姓"点名 | 多出 BC/TG 两件兵器，编码逐位核对 |
+| **[G1 RCU 时钟树：200MHz 是怎么算出来的](/gd32/01-rcu-clock.md)【成稿】** | 与 S2 逐字段对照 | PLL 同布局更激进（400MHz VCO）、电压档三件套带 HDRF/HDSRF 回执、FMC_WS"官方留白"的真相（datasheet 零等待）、USB 为什么不能走 PLLQ、CK_OUT0 理论 50MHz |
+| **[G2 GPIO 与 AF 复用对照](/gd32/02-gpio-af.md)【成稿】** | 七大寄存器"同名不同姓"点名 | 多出 BC/TG 两件兵器，编码逐位核对，速度四档按负载的实测上限（datasheet Table 4-28） |
 | **[G3 USART 增强点](/gd32/03-usart.md)【成稿】** | 从 `gd32f4xx_usart.h` 比出的差异清单 | 8 个串口、CTL0/1/2 命名差异、CLEN/SCEN/NKEN 增强点已核验 |
-| **[G4 GD32 外设差异](/gd32/04-periph-diff.md)【成稿】** | USBHS/EXMC/CAN 逐项"有没有、一不一样" | GD32 独有外设与 STM32 对照 |
+| **[G4 GD32 外设差异](/gd32/04-periph-diff.md)【成稿】** | USBHS/EXMC/CAN/ENET/SDIO 逐项"有没有、一不一样" | GD32 独有外设与 STM32 对照；CAN 位时序连复位值都一样、SDIO 分频多一位（藏在 bit31）、ULPI 12 根引脚同脚同 AF |
 
 ## V 篇：GD32VF103 RISC-V 篇
 

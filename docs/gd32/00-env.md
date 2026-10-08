@@ -149,7 +149,7 @@ GD32F4xx_Firmware_Library_V3.3.3/
 
 - **quick win 复现**：`cd code/gd32/01-rcu-clock && make`，看到 `size` 打印三列体积——证明 xPack 工具链对 GD32 通。
 - **目录自检**：打开 `.trellis/ref/gd32/`，数一数 CMSIS 设备层文件（`gd32f4xx.h`、`system_gd32f4xx.c`）与标准外设库文件（`gd32f4xx_rcu.h`、`gd32f4xx_gpio.h`、`gd32f4xx_fmc.h`……）各几个，印证两层结构。
-- **型号对照（选做）**：把 Makefile 的 `-DGD32F450` 暂改成 `-DGD32F470`，看 `gd32f4xx.h` 顶部 `#ifdef` 分支怎么挑容量——型号选择宏已实证：`gd32f4xx.h:46` 列出 6 种型号（F450/F405/F407/F470/F425/F427），F450 与 F470 共享容量分支（:171-213）；F470 的**精确容量参数**（Flash/RAM 大小）仍以 datasheet 为准。
+- **型号对照（选做）**：把 Makefile 的 `-DGD32F450` 暂改成 `-DGD32F470`，看 `gd32f4xx.h` 顶部 `#ifdef` 分支怎么挑容量——型号选择宏已实证：`gd32f4xx.h:46` 列出 6 种型号（F450/F405/F407/F470/F425/F427），F450 与 F470 共享容量分支（:171-213）；F470 系列容量已按官方 Product Brief 实证：200MHz、Flash 512~3072KB、SRAM 256~768KB（最高配 3MB Flash + 768KB SRAM）。
 
 ## 常见坑
 

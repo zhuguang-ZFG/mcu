@@ -13,7 +13,7 @@ minutes: 45
 
 1. **PLL 寄存器和 STM32 同布局**（PSC/N/P/Q 同位域），但官方参数更激进：VCO 拉到 **400MHz**（STM32 的 N=336），25M 晶振 ÷25 ×400 ÷2 = **200MHz**。
 2. **电压档是"三件套"且有回执**：LDOVS → HDEN → HDS，后两者各有就绪标志位 **HDRF/HDSRF**，官方代码真的轮询等待——和 F405/407 的"写入即生效、无位可等"正好相反。
-3. **官方 system 文件不设 Flash 等待周期**——FMC_WS 是应用自己的责任；档位实际支持 **0~15**（WSCNT 4 位域，比 STM32 的 0~7 宽一倍，且另有 FMC_WSEN 使能寄存器），具体"频率↔等待"对照表在用户手册里（**待 UM 核验**）。
+3. **官方 system 文件不设 Flash 等待周期，而且确实不用设**——UM §2.4.1 实证 WSCNT 是 4 位域 **0~15 档**（比 STM32 的 0~7 宽一倍），且必须先置 FMC_WSEN 才生效；而 GD32F407xx datasheet 开篇明写 168MHz 下 **Flash 零等待**——"官方留白"不是偷懒，是这条取指路径本就不需要。两份手册都**不给"频率↔等待"对照表**（全文检索实证），与 ST 在 RM0090 直接给整张表的做法正好相反。
 
 ## 怎么读这一章
 
@@ -64,7 +64,11 @@ RCU_PLL = (25U | (400U << 6U) | (((2U >> 1U) - 1U) << 16U) |
            (RCU_PLLSRC_HXTAL) | (9U << 24U));
 ```
 
-即 **PSC=25，N=400，P=2，SRC=HXTAL，Q=9**：25MHz ÷ 25 = 1MHz 进 VCO，× 400 = **400MHz**，÷ P2 = **200MHz**。对比 STM32F407 的 8÷8×336÷2=168——公式一模一样，N 的上限更敢用（400 > 336）。Q=9 给出 400/9≈44.4MHz，留给 USB 时钟树再分（**待 UM 核验** USB 精确要求）。
+即 **PSC=25，N=400，P=2，SRC=HXTAL，Q=9**：25MHz ÷ 25 = 1MHz 进 VCO，× 400 = **400MHz**，÷ P2 = **200MHz**。对比 STM32F407 的 8÷8×336÷2=168——公式一模一样，N 的上限更敢用（400 > 336）。
+
+Q=9 给出 400/9 ≈ **44.4MHz**——这里有个值得停一下的细节：**USB 要的是 48MHz，44.4 不是 48**。UM §4.2.2 已核验：USBFS / USBHS / TRNG / SDIO 四个外设统一吃一路叫 **CK48M** 的时钟，而 CK48M 由 **PLLQ / PLLSAIP / IRC48M 三选一**（`RCU_ADDCTL` 的 `PLL48MSEL` + `CK48MSEL` 两位）。所以官方 200MHz 档下 PLLQ 根本凑不出 48MHz，USB 必须改走另外两源——GD32 多给的那颗 **IRC48M（片内 48MHz RC）** 正是为这种场合准备的。
+
+对照着看 ST 的选择就更有意思：STM32F407 **没有** 48MHz 片内 RC，CK48M 只能由 PLLQ 出，所以 ST 把 N 定在 336——336/7 刚好 48.000MHz，提频公式是被 USB 反向约束过的。GD32 敢把 N 推到 400（VCO 400MHz 整），代价是 PLLQ 凑不出整 48，补偿是多给一颗 IRC48M。**同一条公式，两种取舍。**
 
 ## 三、电压档三件套：这次真的"等就绪"
 
@@ -84,9 +88,11 @@ GD32 把"能不能上 200MHz"拆成三次握手，每一步都有硬件回执（
 
 `system_gd32f4xx.c` 全文件**没有任何 FMC 等待周期设置**；对官方库**全量 Examples（3295 个文件，浅克隆逐目录检索）**搜 `fmc_wscnt_set` / `FMC_WS`——**零命中**。也就是说官方示例从不设 Flash 等待。而 FMC 的等待档位实际有 **0~15 共 16 档**——WSCNT 是 4 位域（`FMC_WC_WSCNT = BITS(0,3)`，gd32f4xx_fmc.h:65），头文件给出 WS_WSCNT_0 ~ WS_WSCNT_15 全部宏（:149-165），比 STM32F407 的 0~7（3 位）宽一倍。另外 GD32 还有一枚 STM32 没有的 **FMC_WSEN@0xFC** 等待使能寄存器（`FMC_WSEN_WSEN` bit0，:117-118）——两件套都要自己管。
 
-> 🤔 **这本身就是个值得追的问题**：官方示例不设等待却跑高频，是档位有硬件自适应、还是示例实际跑在低档频率？——答案在用户手册（UM），本页**不猜**。拿到 UM 或上板实测后再回来填这个坑。
+> ✅ **这个坑已经填了**：官方示例不设等待却跑高频，答案在 datasheet 第一页——GD32F407xx 的 Cortex-M4 "operating at 168 MHz frequency with **Flash accesses zero wait states**"（GD32F407xx Datasheet Rev2.7 §1）。GD32 的 Flash 取指路径按零等待设计，所以官方 system 文件不写 FMC_WS 也能跑满 168MHz。那 WSCNT 存在的意义是什么？UM §2.4.1 的一句话给了线索——"The WSCNT valid when **WSEN** bit in FMC_WSEN is set"：**等待周期默认整条路关着**，要用得先开 FMC_WSEN@0xFC，这是给特殊电压/温度条件或更高主频档留的余量，不是常规必配项。
+>
+> ⚠️ 一个诚实的边界：我们手上的 datasheet 是 **F407xx（168MHz 档）**。官方 system 文件默认的 **200MHz 档属于 F450/F470**，那两颗的零等待上限要各自 datasheet 确认，本站**不做外推**。
 
-> ⚠️ 本工程策略：`FMC_WS_VALUE` 宏默认取**保守超配值**（多配等待周期只会稍慢，欠配会取指跑飞）；位域事实已核验（WSCNT 4 位 0~15 + WSEN 使能），但准确的"频率↔等待"对照表**待 UM 核验**，上板实测后回填。
+> ⚠️ 本工程策略：`FMC_WS_VALUE` 宏默认取**保守超配值**（多配等待周期只会稍慢，欠配会取指跑飞）。位域与使能链已全部核验（WSCNT 4 位 0~15 + WSEN 使能，UM §2.4.1 / §2.4.10）；但手册**确实不提供**"频率↔等待"对照表——所以"这颗板子这个频率该配几拍"没有纸面答案，只能上板实测。在没有对照表的情况下，保守超配是唯一安全的默认值。
 
 ## 五、CK_OUT0 对账：MCO1 的同岗同事
 
@@ -159,8 +165,11 @@ GD32 把"能不能上 200MHz"拆成三次握手，每一步都有硬件回执（
 | LDOVS/HDEN/HDS 与 HDRF/HDSRF | gd32f4xx_pmu.h:59-73 |
 | PMUEN bit28 | gd32f4xx_rcu.h:261 |
 | FMC_WS.WSCNT 0~15 档 + FMC_WSEN 使能 | gd32f4xx_fmc.h:65,117-118,149-165（V3.3.3 已核验） |
-| PA8 AF0 配 CK_OUT0 | example_ckout_main.c:135（@10d02f4） |
-| Flash 频率↔等待对照表 | 用户手册（UM），**待核验** |
+| WSCNT 必须 WSEN 置位才生效 | **UM Rev3.0 §2.4.1 / §2.4.10 已核验**（p69 / p76） |
+| 168MHz 下 Flash 零等待 | **GD32F407xx Datasheet Rev2.7 §1 已核验**（F450/F470 的 200/240MHz 档未外推） |
+| UM 与 datasheet 均无"频率↔等待"对照表 | 两份手册全文检索零命中（已核验） |
+| CK48M 三源 PLLQ/PLLSAIP/IRC48M，由 RCU_ADDCTL 的 PLL48MSEL+CK48MSEL 选 | **UM Rev3.0 §4.2.2 已核验**（p94） |
+| PA8 AF0 配 CK_OUT0 | example_ckout_main.c:135（@10d02f4）+ **datasheet §2.6.6 Table 2-9 AF0 列已核验** |
 
 ## 你做到了
 

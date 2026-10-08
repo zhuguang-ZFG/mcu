@@ -195,7 +195,7 @@ SECTIONS
 4. 使能 PLL：`RCU_CTL |= PLLEN`（bit24），轮询 `PLLSTB`（bit25）
 5. 选 PLL 为系统时钟：`RCU_CFG0 |= RCU_CKSYSSRC_PLL`，轮询 `SCSS = PLL`
 
-这与 STM32 RCC 提频六步同构，只是寄存器名 `RCC→RCU`、位名 `PLLRDY→PLLSTB`、`SWS→SCSS`（[G1](01-rcu-clock.md) 已在 GD32F4 上逐字段对照过）。**同样"官方留白"**：`system_gd32vf103.c` 全文不设 Flash 等待周期——但 VF103 的 FMC_WS 寄存器确实存在（@0x00，WSCNT 为 3 位域 0~7，gd32vf103_fmc.h:45,64），108MHz 档要配几拍**待 UM 核验**（与 G1 在 GD32F4 的发现一致）。
+这与 STM32 RCC 提频六步同构，只是寄存器名 `RCC→RCU`、位名 `PLLRDY→PLLSTB`、`SWS→SCSS`（[G1](01-rcu-clock.md) 已在 GD32F4 上逐字段对照过）。**同样"官方留白"**：`system_gd32vf103.c` 全文不设 Flash 等待周期——但 VF103 的 FMC_WS 寄存器确实存在（@0x4002 2000 + 0x00，gd32vf103_fmc.h:45,64），而且 UM 已核验出一个 G1 没有的收窄：**VF103 的 WSCNT[2:0] 只有 000/001/010 三档有效，011~111 全部保留**（UM §2.4.1），同样要先置 FMC_WSEN 才生效。108MHz 档实际该配几拍，UM 不给映射表（与 G1 在 GD32F4 的发现一致）——**待上板实测**。
 
 启动序列全景：
 
@@ -289,7 +289,8 @@ FLASH = 0x08000000、RAM = 0x20000000（`gd32vf103.h:193-194`）。与 STM32F407
 | 108M 流程 HXTAL→MUL27→PREDV0 | `system_gd32vf103.c:751-830` |
 | HXTALEN/STB bit16/17、PLLEN/STB bit24/25 | `gd32vf103_rcu.h:67-68 / :71-72` |
 | 默认 `__SYSTEM_CLOCK_108M_PLL_HXTAL` | `system_gd32vf103.c:62` |
-| 108M 是否需 Flash 等待周期 | 用户手册，**待 UM 核验**（FMC_WS@0x00 存在、WSCNT 3 位域已实证） |
+| VF103 的 WSCNT 只有 0/1/2 三档有效（011~111 保留），须 WSEN 使能 | **GD32VF103 UM EN V1.0 §2.4.1 已核验**（p40）；FMC 基址 0x4002 2000 |
+| 108M 档实际等待拍数 | UM 不给"频率↔等待"映射表（已检索）——**待上板实测** |
 
 ## 你做到了
 
