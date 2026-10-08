@@ -76,20 +76,27 @@ npm run docs:gen && npm run docs:build   # 死链门禁必须零错误
 改完图先跑 lint，再在浏览器里确认：深色模式无白块、`svg.children.length` 没被吞、
 阶段点与字幕同步、暂停后 `svg.getCurrentTime()` 不再前进。
 
-## 7. 版式审计（出界 / 压字）——必须在浏览器里跑
+## 7. 版式审计（出界 / 压字）——`npm run anim:audit`，CI 必跑
 
 `anim-lint` 只看得到 SMIL 与色板，看不到"字被画到画布外"和"两行字叠在一起"。
-这两类用 `scripts/anim-audit.html` 判定：它把 34 张图按 viewBox 原尺寸内联，
-从所有 discrete 动画的 `keyTimes` 取每个阶段槽位的中点当采样时刻，
-`setCurrentTime(t)` 后用祖先链累乘 `opacity` 筛出"这一时刻真的看得见"的文字，
-再量两种违规：越过 viewBox、以及两行不同文字的墨水盒相交。
+这两类由 `scripts/anim-audit.mjs` 判定（Playwright 无头 Chromium，CI `checks` 作业在装完浏览器后跑）：
+它扫 `docs/public/anim/` 全量内联，从所有 discrete 动画的 `keyTimes` 取每个阶段槽位的中点、
+**再按 `--step`（默认 1s）等距加采样点**，`setCurrentTime(t)` 后用祖先链累乘 `opacity`
+筛出"这一时刻真的看得见"的文字，再量两种违规：越过 viewBox、以及两行不同文字的墨水盒相交。
 
 ```bash
-npm run docs:build
-cp scripts/anim-audit.html scripts/anim-shot.html docs/.vitepress/dist/   # dist 每次构建都被清空
-node D:/Temp/mcu-static.mjs &            # 127.0.0.1:4188 以 dist 为根（vitepress preview 不服务站外 html）
-# 打开 http://127.0.0.1:4188/anim-audit.html，标题区显示 DONE 才算跑完
+npm run anim:audit                        # 全量，非零退出即有问题
+node scripts/anim-audit.mjs dual-os-compare --step 0.5   # 单图、更密采样
 ```
+
+为什么要等距加采样：只取阶段中点时，`dual-os-compare` 的天平托盘标签随 4s 摆动周期
+压进下方说明行（±4.5° × 160px 臂长 = 12.6px 下沉）在所有阶段中点都恰好不相交，
+手动页跑了两轮都是 OK——加 1s 等距采样才抓到。**连续动画（animateTransform / 非 discrete）
+造成的压字只有等距采样能看见。**
+
+判定是文字对文字；**形状压文字**（填充矩形淡入时盖住虚线框、箭头穿过标签）不在覆盖范围内，
+改图后仍要用 `scripts/anim-shot.html?fig=<名>&t=<秒>` 或 Playwright 截几帧亲眼看一遍。
+`scripts/anim-audit.html` 保留为浏览器里逐条看表格的版本，判定逻辑与 CLI 同源，LIST 需手维护。
 
 两个坑，都踩过：
 

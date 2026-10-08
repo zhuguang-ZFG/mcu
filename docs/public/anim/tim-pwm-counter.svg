@@ -49,7 +49,7 @@
   <text x="300" y="340" font-size="12" fill="#888">低：CNT ≥ CCR</text>
 
   <!-- 公式条 -->
-  <text x="110" y="395" font-size="13" fill="#333" font-family="Consolas,monospace">f = 84MHz/(PSC+1)/(ARR+1) = 84M/84/1000 = 1kHz · 占空比 = CCR/(ARR+1) = 500/1000 = 50%</text>
+  <text x="360" y="395" font-size="12" fill="#333" font-family="Consolas,monospace" text-anchor="middle">f = 84MHz/(PSC+1)/(ARR+1) = 84M/84/1000 = 1kHz · 占空比 = CCR/(ARR+1) = 500/1000 = 50%</text>
 
   <!-- ===== 阶段 ①：计数 ===== -->
   <g opacity="1">

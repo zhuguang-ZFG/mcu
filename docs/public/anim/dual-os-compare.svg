@@ -41,9 +41,10 @@
   <text x="412" y="202" font-size="11.5" font-weight="bold" fill="#166534">Kconfig 菜单</text>
   <text x="412" y="220" font-size="11" fill="#57606a">menuconfig：依赖自动检查，软件包生态地基</text>
 
-  <!-- 对照天平：绕支点摆动（一直转，dur=4s 整除 12s） -->
-  <g transform="rotate(-4.5 360 254)">
-    <animateTransform attributeName="transform" type="rotate" values="-4.5 360 254;4.5 360 254;-4.5 360 254" keyTimes="0;0.5;1" dur="4s" repeatCount="indefinite"/>
+  <!-- 对照天平：绕支点摆动（一直转，dur=4s 整除 12s）。
+       幅度 ±3.5°：臂长 160px，4.5° 时托盘标签会下沉 12.6px 压进 y=307 的说明行 -->
+  <g transform="rotate(-3.5 360 254)">
+    <animateTransform attributeName="transform" type="rotate" values="-3.5 360 254;3.5 360 254;-3.5 360 254" keyTimes="0;0.5;1" dur="4s" repeatCount="indefinite"/>
     <line x1="200" y1="254" x2="520" y2="254" stroke="#333" stroke-width="3" stroke-linecap="round"/>
     <line x1="200" y1="254" x2="200" y2="270" stroke="#666" stroke-width="1.5"/>
     <rect x="148" y="270" width="104" height="16" rx="4" fill="#dbe7ff" stroke="#3451b2"/>
