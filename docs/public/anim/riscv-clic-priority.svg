@@ -9,29 +9,29 @@
   <rect x="40" y="66" width="260" height="180" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
   <text x="170" y="86" font-size="13" font-weight="bold" fill="#3451b2" text-anchor="middle">ARM NVIC：单维 + PRIGROUP</text>
   <line x1="56" y1="94" x2="284" y2="94" stroke="#e2e8f0"/>
-  <text x="56" y="114" font-size="10" fill="#666">16 级优先级，1 个寄存器值</text>
+  <text x="56" y="114" font-size="11" fill="#666">16 级优先级，1 个寄存器值</text>
   <rect x="56" y="122" width="228" height="24" rx="3" fill="#f1f5f9" stroke="#94a3b8"/>
-  <text x="170" y="138" font-size="10" font-family="Consolas,monospace" fill="#64748b" text-anchor="middle">PRIGROUP 切分点：[抢占组|子优先级]</text>
-  <text x="56" y="166" font-size="10" fill="#666">切分点一改，含义全变：</text>
-  <text x="56" y="182" font-size="9" font-family="Consolas,monospace" fill="#94a3b8">组0：0抢占+16子（全子）</text>
-  <text x="56" y="196" font-size="9" font-family="Consolas,monospace" fill="#94a3b8">组4：2抢占+2子（常用）</text>
-  <text x="56" y="210" font-size="9" font-family="Consolas,monospace" fill="#94a3b8">组7：16抢占+0子（全抢占）</text>
-  <text x="56" y="232" font-size="10" fill="#d97706">单维切分=一改全动，心智负担</text>
+  <text x="170" y="138" font-size="11" font-family="Consolas,monospace" fill="#64748b" text-anchor="middle">PRIGROUP 切分点：[抢占组|子优先级]</text>
+  <text x="56" y="166" font-size="11" fill="#666">切分点一改，含义全变：</text>
+  <text x="56" y="182" font-size="11" font-family="Consolas,monospace" fill="#94a3b8">组0：0抢占+16子（全子）</text>
+  <text x="56" y="196" font-size="11" font-family="Consolas,monospace" fill="#94a3b8">组4：2抢占+2子（常用）</text>
+  <text x="56" y="210" font-size="11" font-family="Consolas,monospace" fill="#94a3b8">组7：16抢占+0子（全抢占）</text>
+  <text x="56" y="232" font-size="11" fill="#d97706">单维切分=一改全动，心智负担</text>
 
   <!-- 右侧 ECLIC（常驻） -->
   <rect x="420" y="66" width="260" height="180" rx="8" fill="#ffffff" stroke="#3eaf7c" stroke-width="2"/>
   <text x="550" y="86" font-size="13" font-weight="bold" fill="#1a7f56" text-anchor="middle">ECLIC：两维独立</text>
   <line x1="436" y1="94" x2="664" y2="94" stroke="#e2e8f0"/>
-  <text x="436" y="114" font-size="10" fill="#666">level（0-15）× priority（0-15）</text>
+  <text x="436" y="114" font-size="11" fill="#666">level（0-15）× priority（0-15）</text>
   <rect x="436" y="122" width="100" height="24" rx="3" fill="#d8f3e5" stroke="#3eaf7c"/>
-  <text x="486" y="138" font-size="10" font-family="Consolas,monospace" fill="#1a7f56" text-anchor="middle">level 定抢占</text>
+  <text x="486" y="138" font-size="11" font-family="Consolas,monospace" fill="#1a7f56" text-anchor="middle">level 定抢占</text>
   <rect x="544" y="122" width="120" height="24" rx="3" fill="#dbe7ff" stroke="#3451b2"/>
-  <text x="604" y="138" font-size="10" font-family="Consolas,monospace" fill="#3451b2" text-anchor="middle">priority 定同级序</text>
-  <text x="436" y="166" font-size="10" fill="#666">两维独立设置，不用切分点：</text>
-  <text x="436" y="182" font-size="9" font-family="Consolas,monospace" fill="#1a7f56">level 高抢占 level 低</text>
-  <text x="436" y="196" font-size="9" font-family="Consolas,monospace" fill="#3451b2">同级 level 内 priority 高先</text>
-  <text x="436" y="210" font-size="9" font-family="Consolas,monospace" fill="#94a3b8">shv 向量直跳 / 非 shv 统一入口</text>
-  <text x="436" y="232" font-size="10" fill="#3eaf7c">两维独立=改一维不动另一维</text>
+  <text x="604" y="138" font-size="11" font-family="Consolas,monospace" fill="#3451b2" text-anchor="middle">priority 定同级序</text>
+  <text x="436" y="166" font-size="11" fill="#666">两维独立设置，不用切分点：</text>
+  <text x="436" y="182" font-size="11" font-family="Consolas,monospace" fill="#1a7f56">level 高抢占 level 低</text>
+  <text x="436" y="196" font-size="11" font-family="Consolas,monospace" fill="#3451b2">同级 level 内 priority 高先</text>
+  <text x="436" y="210" font-size="11" font-family="Consolas,monospace" fill="#94a3b8">shv 向量直跳 / 非 shv 统一入口</text>
+  <text x="436" y="232" font-size="11" fill="#3eaf7c">两维独立=改一维不动另一维</text>
 
   <!-- 中断排队演示条（连续运动：高 level 插队） -->
   <text x="360" y="264" font-size="11" fill="#94a3b8" text-anchor="middle">中断排队：高 level 插队到低 level 前面</text>

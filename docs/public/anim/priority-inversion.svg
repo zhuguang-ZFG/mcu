@@ -3,6 +3,7 @@
   <desc>优先级反转与优先级继承：一把锁引发的悬案。三条时间线对照：H 抢锁失败被阻塞，M 抢占持锁的 L 造成反转；开启继承后 L 临时借到 H 的优先级，M 抢不动它，H 尽快拿锁返回。继承的红色箭头从 L 向上逐段画到 H 级——优先级是借上去的。</desc>
   <rect width="720" height="400" fill="#f6f8fa"/>
   <text x="360" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#24292f">优先级反转与优先级继承：一把锁引发的悬案</text>
+  <text x="360" y="54" text-anchor="middle" font-size="12" fill="#57606a">三条时间线对照：H 抢锁失败被阻塞，M 抢占持锁的 L 造成反转；继承后 L 临时借到 H 的优先级</text>
 
   <!-- 时间轴与分格 -->
   <line x1="90" y1="330" x2="700" y2="330" stroke="#57606a" stroke-width="2"/>
@@ -27,9 +28,9 @@
 
   <!-- 图例 -->
   <g font-size="12" fill="#57606a">
-    <rect x="90" y="46" width="14" height="14" fill="#3eaf7c" rx="2"/><text x="110" y="58">运行中</text>
-    <rect x="180" y="46" width="14" height="14" fill="#e7c54b" rx="2"/><text x="200" y="58">就绪被压</text>
-    <rect x="290" y="46" width="14" height="14" fill="#9ea7b3" rx="2"/><text x="310" y="58">阻塞等锁</text>
+    <rect x="90" y="354" width="14" height="14" fill="#3eaf7c" rx="2"/><text x="110" y="366">运行中</text>
+    <rect x="180" y="354" width="14" height="14" fill="#e7c54b" rx="2"/><text x="200" y="366">就绪被压</text>
+    <rect x="290" y="354" width="14" height="14" fill="#9ea7b3" rx="2"/><text x="310" y="366">阻塞等锁</text>
   </g>
 
   <!-- L 道:拿锁跑→被M压→继承后跑→回落 -->

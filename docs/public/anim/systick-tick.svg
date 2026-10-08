@@ -13,7 +13,7 @@
   <text x="192" y="134" font-size="11" fill="#888">LOAD</text>
   <line x1="230" y1="142" x2="500" y2="142" stroke="#cbd5e1" stroke-width="2"/>
   <text x="500" y="134" font-size="11" fill="#888" text-anchor="end">0</text>
-  <text x="360" y="158" font-size="10" fill="#94a3b8" text-anchor="middle">VAL 沿此轴一路减到底，到底即归零重载</text>
+  <text x="360" y="158" font-size="11" fill="#94a3b8" text-anchor="middle">VAL 沿此轴一路减到底，到底即归零重载</text>
   <!-- 跑动的计数点：LOAD→0 递减，到底瞬间弹回重载 -->
   <circle cx="230" cy="142" r="6" fill="#3451b2">
     <animate attributeName="cx" values="230;500;500;230" keyTimes="0;0.85;0.92;1" dur="1.2s" repeatCount="indefinite"/>
@@ -25,7 +25,7 @@
     </circle>
   </g>
   <text x="560" y="168" font-size="11" fill="#d97706" text-anchor="middle">COUNTFLAG</text>
-  <text x="560" y="150" font-size="9" fill="#a16207" text-anchor="middle">归零亮</text>
+  <text x="560" y="150" font-size="11" fill="#a16207" text-anchor="middle">归零亮</text>
 
   <!-- ===== 阶段一：倒数与归零重载 ===== -->
   <g opacity="1">

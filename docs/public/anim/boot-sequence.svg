@@ -17,7 +17,7 @@
       <text x="320" y="86">③ 读 0x04</text><text x="436" y="86">④ 开 FPU</text>
       <text x="552" y="86">⑤ 搬 .data</text><text x="668" y="86">⑥ 清 .bss</text>
     </g>
-    <g fill="#888" font-size="10">
+    <g fill="#888" font-size="11">
       <text x="88" y="103">RESET 松开</text><text x="204" y="103">→ MSP 栈顶</text>
       <text x="320" y="103">→ PC 入口</text><text x="436" y="103">CPACR</text>
       <text x="552" y="103">Flash→RAM</text><text x="668" y="103">RAM 归零</text>
@@ -58,9 +58,9 @@
   <text x="52" y="154" font-size="12" font-weight="bold" fill="#3451b2">Flash @0x08000000 · 断电不丢</text>
 
   <rect x="52" y="166" width="288" height="30" fill="#eef2ff" stroke="#3451b2" rx="4"/>
-  <text x="62" y="186" font-size="10.5" fill="#3451b2" font-family="Consolas,monospace">0x08000000 → _estack（初始 MSP）</text>
+  <text x="62" y="186" font-size="11" fill="#3451b2" font-family="Consolas,monospace">0x08000000 → _estack（初始 MSP）</text>
   <rect x="52" y="204" width="288" height="30" fill="#eef2ff" stroke="#3451b2" rx="4"/>
-  <text x="62" y="224" font-size="10.5" fill="#3451b2" font-family="Consolas,monospace">0x08000004 → Reset_Handler（入口）</text>
+  <text x="62" y="224" font-size="11" fill="#3451b2" font-family="Consolas,monospace">0x08000004 → Reset_Handler（入口）</text>
 
   <!-- 两读高亮框 -->
   <rect x="48" y="162" width="296" height="38" fill="none" stroke="#d97706" stroke-width="2.5" rx="6" opacity="0">
@@ -71,13 +71,13 @@
 
   <rect x="52" y="252" width="288" height="52" fill="#fef3c7" stroke="#d97706" rx="6"/>
   <text x="64" y="274" font-size="11" font-weight="bold" fill="#92400e">.data 初值仓库（_sidata）</text>
-  <text x="64" y="292" font-size="10" fill="#92400e">全局变量的初值存在这里，等搬运</text>
+  <text x="64" y="292" font-size="11" fill="#92400e">全局变量的初值存在这里，等搬运</text>
 
   <g opacity="0">
     <animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;1;1;1;1" keyTimes="0;0.13;0.26;0.39;0.52;0.65;0.78;1" dur="18s" repeatCount="indefinite"/>
     <rect x="52" y="318" width="288" height="36" fill="#f8fafc" stroke="#3451b2" rx="6"/>
-    <text x="64" y="334" font-size="10.5" fill="#3451b2" font-family="Consolas,monospace">CPACR @0xE000ED88：CP10/CP11 开门</text>
-    <text x="64" y="348" font-size="10" fill="#666">不做这步，第一条浮点指令就 UsageFault</text>
+    <text x="64" y="334" font-size="11" fill="#3451b2" font-family="Consolas,monospace">CPACR @0xE000ED88：CP10/CP11 开门</text>
+    <text x="64" y="348" font-size="11" fill="#666">不做这步，第一条浮点指令就 UsageFault</text>
   </g>
 
   <!-- ===== RAM 面板 ===== -->
@@ -85,7 +85,7 @@
   <text x="396" y="154" font-size="12" font-weight="bold" fill="#3451b2">RAM @0x20000000 · 掉电即失</text>
 
   <rect x="396" y="166" width="272" height="34" fill="#dbe7ff" stroke="#3451b2" rx="4"/>
-  <text x="408" y="188" font-size="10.5" fill="#3451b2">栈：MSP = _estack，从顶端向下长</text>
+  <text x="408" y="188" font-size="11" fill="#3451b2">栈：MSP = _estack，从顶端向下长</text>
 
   <rect x="396" y="214" width="272" height="52" fill="#f8fafc" stroke="#94a3b8" stroke-dasharray="5 3" rx="6">
     <animate attributeName="fill" calcMode="discrete" values="#f8fafc;#dcfce7;#dcfce7" keyTimes="0;0.65;1" dur="18s" repeatCount="indefinite"/>
@@ -94,7 +94,7 @@
   <text x="408" y="236" font-size="11" fill="#3451b2">.data 目的地（_sdata .. _edata）</text>
   <g opacity="0">
     <animate attributeName="opacity" calcMode="discrete" values="0;1;1" keyTimes="0;0.65;1" dur="18s" repeatCount="indefinite"/>
-    <text x="408" y="254" font-size="10" fill="#166534">搬完：初值生效，C 的承诺兑现</text>
+    <text x="408" y="254" font-size="11" fill="#166534">搬完：初值生效，C 的承诺兑现</text>
   </g>
 
   <rect x="396" y="280" width="272" height="52" fill="#f1f5f9" stroke="#94a3b8" rx="6">
@@ -107,7 +107,7 @@
   <g opacity="0">
     <animate attributeName="opacity" calcMode="discrete" values="0;1;1" keyTimes="0;0.78;1" dur="18s" repeatCount="indefinite"/>
     <text x="408" y="302" font-size="11" fill="#166534">.bss 全部归 0（_sbss .. _ebss）</text>
-    <text x="408" y="320" font-size="10" fill="#166534">不占 Flash——初值全是 0，现场清</text>
+    <text x="408" y="320" font-size="11" fill="#166534">不占 Flash——初值全是 0，现场清</text>
   </g>
 
   <!-- 搬运小方块 -->

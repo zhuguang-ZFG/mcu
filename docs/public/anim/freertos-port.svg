@@ -8,12 +8,12 @@
   <!-- ===== 常驻：三异常接管图 ===== -->
   <rect x="40" y="64" width="640" height="168" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
   <text x="56" y="86" font-size="12" font-weight="bold" fill="#3451b2">三异常接管（port.c 的函数 ← #define 改名 → 向量表里的 CMSIS 名）</text>
-  <g font-size="10" font-family="Consolas,monospace">
+  <g font-size="11" font-family="Consolas,monospace">
     <text x="70" y="116" fill="#333">vPortSVCHandler</text>
     <text x="70" y="160" fill="#333">xPortPendSVHandler</text>
     <text x="70" y="204" fill="#333">xPortSysTickHandler</text>
   </g>
-  <g font-size="10" font-family="Consolas,monospace" fill="#1a7f56">
+  <g font-size="11" font-family="Consolas,monospace" fill="#1a7f56">
     <text x="470" y="116">SVC_Handler <tspan fill="#94a3b8">异常 11</tspan></text>
     <text x="470" y="160">PendSV_Handler <tspan fill="#94a3b8">异常 14</tspan></text>
     <text x="470" y="204">SysTick_Handler <tspan fill="#94a3b8">异常 15</tspan></text>
@@ -35,12 +35,12 @@
       <path d="M0,0 L8,4 L0,8 z" fill="#666"/>
     </marker>
   </defs>
-  <g font-size="9" fill="#94a3b8" font-family="Consolas,monospace">
+  <g font-size="11" fill="#94a3b8" font-family="Consolas,monospace">
     <text x="345" y="126">#define 改名</text>
     <text x="345" y="170">#define 改名</text>
     <text x="345" y="214">#define 改名</text>
   </g>
-  <text x="250" y="226" font-size="9" fill="#94a3b8">nm 实测：三符号都是 T（port.o 强定义）——不是启动文件里的 W 弱符号</text>
+  <text x="250" y="226" font-size="11" fill="#94a3b8">nm 实测：三符号都是 T（port.o 强定义）——不是启动文件里的 W 弱符号</text>
 
   <!-- ===== 阶段一：port 层选择 ===== -->
   <g opacity="1">

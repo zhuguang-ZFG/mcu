@@ -10,18 +10,18 @@
   <rect x="40" y="80" width="640" height="20" fill="#f1f5f9" stroke="#cbd5e1"/>
   <path d="M60 80v20 M80 80v20 M100 80v20 M120 80v20 M140 80v20 M160 80v20 M180 80v20 M200 80v20 M220 80v20 M240 80v20 M260 80v20 M280 80v20 M300 80v20 M320 80v20 M340 80v20 M360 80v20 M380 80v20 M400 80v20 M420 80v20 M440 80v20 M460 80v20 M480 80v20 M500 80v20 M520 80v20 M540 80v20 M560 80v20 M580 80v20 M600 80v20 M620 80v20 M640 80v20 M660 80v20" stroke="#cbd5e1" fill="none"/>
   <rect x="140" y="80" width="20" height="20" fill="#dbe7ff" stroke="#3451b2" stroke-width="1.5"/>
-  <text x="50" y="94" font-size="8" fill="#94a3b8" text-anchor="middle">0</text>
-  <text x="150" y="94" font-size="9" fill="#3451b2" text-anchor="middle" font-weight="bold">5</text>
-  <text x="670" y="94" font-size="8" fill="#94a3b8" text-anchor="middle">31</text>
+  <text x="50" y="94" font-size="11" fill="#94a3b8" text-anchor="middle">0</text>
+  <text x="150" y="94" font-size="11" fill="#3451b2" text-anchor="middle" font-weight="bold">5</text>
+  <text x="670" y="94" font-size="11" fill="#94a3b8" text-anchor="middle">31</text>
 
   <!-- 第二级：8 位条 ready_table[5] -->
   <text x="40" y="128" font-size="11" fill="#57606a">ready_table[5]（8 位，展开第 5 个字节看 bit 级）</text>
   <rect x="240" y="134" width="320" height="20" fill="#f1f5f9" stroke="#cbd5e1"/>
   <path d="M280 134v20 M320 134v20 M360 134v20 M400 134v20 M440 134v20 M480 134v20 M520 134v20" stroke="#cbd5e1" fill="none"/>
   <rect x="320" y="134" width="40" height="20" fill="#d8f3e5" stroke="#1a7f56" stroke-width="1.5"/>
-  <text x="260" y="148" font-size="8" fill="#94a3b8" text-anchor="middle">bit0</text>
-  <text x="340" y="148" font-size="9" fill="#1a7f56" text-anchor="middle" font-weight="bold">2</text>
-  <text x="540" y="148" font-size="8" fill="#94a3b8" text-anchor="middle">bit7</text>
+  <text x="260" y="148" font-size="11" fill="#94a3b8" text-anchor="middle">bit0</text>
+  <text x="340" y="148" font-size="11" fill="#1a7f56" text-anchor="middle" font-weight="bold">2</text>
+  <text x="540" y="148" font-size="11" fill="#94a3b8" text-anchor="middle">bit7</text>
 
   <!-- 连续运动：查表指针1 在 32 字节条上扫描（阶段2可见） -->
   <circle cx="50" cy="90" r="4" fill="#3451b2" opacity="0">

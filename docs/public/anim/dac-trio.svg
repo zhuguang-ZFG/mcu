@@ -10,22 +10,22 @@
   <text x="52" y="86" font-size="13" font-weight="bold" fill="#3451b2">TIM6 打拍</text>
   <text x="52" y="106" font-size="11" fill="#666">计数 0→ARR 产生更新</text>
   <text x="52" y="124" font-size="11" fill="#333">CR2.MMS=010 → TRGO</text>
-  <text x="52" y="140" font-size="9" fill="#94a3b8">f_更新=f_TIM/((PSC+1)(ARR+1))</text>
+  <text x="52" y="140" font-size="11" fill="#94a3b8">f_更新=f_TIM/((PSC+1)(ARR+1))</text>
 
   <rect x="258" y="66" width="205" height="80" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
   <text x="270" y="86" font-size="13" font-weight="bold" fill="#d97706">DMA 递谱</text>
   <text x="270" y="106" font-size="11" fill="#666">DMA1 Stream5 Ch7</text>
   <text x="270" y="124" font-size="11" fill="#333">正弦表→DHR12R1，循环</text>
-  <text x="270" y="140" font-size="9" fill="#94a3b8">MINC+CIRC，指针自动回卷</text>
+  <text x="270" y="140" font-size="11" fill="#94a3b8">MINC+CIRC，指针自动回卷</text>
 
   <rect x="476" y="66" width="205" height="80" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
   <text x="488" y="86" font-size="13" font-weight="bold" fill="#1a7f56">DAC 开嗓</text>
   <text x="488" y="106" font-size="11" fill="#666">DHR12R1→DOR1（触发沿）</text>
   <text x="488" y="124" font-size="11" fill="#333">12 位→4096 级电压</text>
-  <text x="488" y="140" font-size="9" fill="#94a3b8">0~VREF，电阻梯形网络</text>
+  <text x="488" y="140" font-size="11" fill="#94a3b8">0~VREF，电阻梯形网络</text>
 
   <!-- 正弦表 + 样本指针（常驻底层） -->
-  <text x="360" y="166" font-size="10" fill="#94a3b8" text-anchor="middle">64 点正弦表（const，住 Flash）——指针扫过即 DMA 递谱</text>
+  <text x="360" y="166" font-size="11" fill="#94a3b8" text-anchor="middle">64 点正弦表（const，住 Flash）——指针扫过即 DMA 递谱</text>
   <line x1="60" y1="190" x2="660" y2="190" stroke="#e2e8f0" stroke-width="1"/>
   <!-- 简化正弦波形（16 个可见采样点连成阶梯） -->
   <polyline points="60,190 100,178 140,166 180,166 220,178 260,190 300,202 340,214 380,214 420,202 460,190 500,178 540,166 580,166 620,178 660,190" fill="none" stroke="#3451b2" stroke-width="2"/>
@@ -40,7 +40,7 @@
   <circle cx="60" cy="190" r="6" fill="#d97706">
     <animate attributeName="cx" values="60;660;660;60" keyTimes="0;0.86;0.93;1" dur="4s" repeatCount="indefinite"/>
   </circle>
-  <text x="360" y="232" font-size="10" fill="#94a3b8" text-anchor="middle">样本指针：DMA 每次触发取一个点，扫到表头自动回卷</text>
+  <text x="360" y="232" font-size="11" fill="#94a3b8" text-anchor="middle">样本指针：DMA 每次触发取一个点，扫到表头自动回卷</text>
 
   <!-- 阶段一：TIM6 打拍 -->
   <g opacity="1">

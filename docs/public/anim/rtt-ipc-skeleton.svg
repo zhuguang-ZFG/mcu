@@ -14,24 +14,24 @@
   <!-- 左侧 IPC 卡片 -->
   <rect x="40" y="86" width="130" height="38" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
   <text x="105" y="103" font-size="12" font-weight="bold" fill="#3451b2" text-anchor="middle">信号量</text>
-  <text x="105" y="118" font-size="10" fill="#666" text-anchor="middle">count 计数令牌</text>
+  <text x="105" y="118" font-size="11" fill="#666" text-anchor="middle">count 计数令牌</text>
 
   <rect x="40" y="136" width="130" height="38" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
   <text x="105" y="153" font-size="12" font-weight="bold" fill="#3451b2" text-anchor="middle">互斥量</text>
-  <text x="105" y="168" font-size="10" fill="#666" text-anchor="middle">owner + 优先级继承</text>
+  <text x="105" y="168" font-size="11" fill="#666" text-anchor="middle">owner + 优先级继承</text>
 
   <rect x="40" y="186" width="130" height="38" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
   <text x="105" y="203" font-size="12" font-weight="bold" fill="#3451b2" text-anchor="middle">事件集</text>
-  <text x="105" y="218" font-size="10" fill="#666" text-anchor="middle">32 位旗语 set</text>
+  <text x="105" y="218" font-size="11" fill="#666" text-anchor="middle">32 位旗语 set</text>
 
   <!-- 右侧 IPC 卡片 -->
   <rect x="550" y="110" width="130" height="38" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
   <text x="615" y="127" font-size="12" font-weight="bold" fill="#3451b2" text-anchor="middle">邮箱</text>
-  <text x="615" y="142" font-size="10" fill="#666" text-anchor="middle">定长 4 字节池</text>
+  <text x="615" y="142" font-size="11" fill="#666" text-anchor="middle">定长 4 字节池</text>
 
   <rect x="550" y="170" width="130" height="38" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
   <text x="615" y="187" font-size="12" font-weight="bold" fill="#3451b2" text-anchor="middle">消息队列</text>
-  <text x="615" y="202" font-size="10" fill="#666" text-anchor="middle">变长环形队列</text>
+  <text x="615" y="202" font-size="11" fill="#666" text-anchor="middle">变长环形队列</text>
 
   <!-- 中央：通用 IPC 骨架 -->
   <rect x="240" y="80" width="240" height="160" rx="8" fill="#ffffff" stroke="#3451b2" stroke-width="1.5"/>
@@ -49,11 +49,11 @@
   <rect x="256" y="170" width="208" height="62" rx="4" fill="#dcfce7"/>
   <text x="360" y="184" font-size="11" fill="#166534" text-anchor="middle">③ 挂起列表 suspend list</text>
   <rect x="266" y="192" width="36" height="32" rx="3" fill="#ffffff" stroke="#1a7f56"/>
-  <text x="284" y="212" font-size="9" fill="#1a7f56" text-anchor="middle">头</text>
+  <text x="284" y="212" font-size="11" fill="#1a7f56" text-anchor="middle">头</text>
   <rect x="306" y="192" width="36" height="32" rx="3" fill="#ffffff" stroke="#cbd5e1"/>
   <rect x="346" y="192" width="36" height="32" rx="3" fill="#ffffff" stroke="#cbd5e1"/>
   <rect x="386" y="192" width="36" height="32" rx="3" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="432" y="212" font-size="9" fill="#166534" text-anchor="middle">尾</text>
+  <text x="432" y="212" font-size="11" fill="#166534" text-anchor="middle">尾</text>
 
   <!-- 箭头：卡片 → 中央骨架 -->
   <line x1="170" y1="105" x2="234" y2="105" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
@@ -66,7 +66,7 @@
   <circle cx="432" cy="208" r="5" fill="#3eaf7c">
     <animate attributeName="cx" values="432;284;432" dur="4s" repeatCount="indefinite"/>
   </circle>
-  <text x="360" y="248" font-size="10" fill="#3eaf7c" text-anchor="middle">等待线程：尾部排进 → resume 时从头部唤醒</text>
+  <text x="360" y="248" font-size="11" fill="#3eaf7c" text-anchor="middle">等待线程：尾部排进 → resume 时从头部唤醒</text>
 
   <!-- 阶段一：通用骨架三件套 -->
   <g opacity="1">

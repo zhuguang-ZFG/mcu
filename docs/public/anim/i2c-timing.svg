@@ -62,7 +62,7 @@
   </path>
 
   <!-- 位标签：对准 SCL 脉冲中心（采样点）；高电平标上方、低电平标下方 -->
-  <g font-size="10" fill="#666" text-anchor="middle" font-family="Consolas,monospace">
+  <g font-size="11" fill="#666" text-anchor="middle" font-family="Consolas,monospace">
     <text x="176" y="188">A6=1</text><text x="206" y="242">A5=0</text><text x="236" y="188">A4=1</text>
     <text x="266" y="242">A3=0</text><text x="296" y="242">A2=0</text><text x="326" y="242">A1=0</text>
     <text x="356" y="242">A0=0</text><text x="386" y="242">W=0</text>
@@ -73,8 +73,8 @@
     <text x="686" y="242" fill="#3eaf7c" font-weight="bold">ACK</text>
   </g>
   <!-- START/STOP 是"每帧都要重演一遍"的控制事件：给它们一个与主时间轴无关的节拍脉冲 -->
-  <text x="95" y="242" font-size="10" fill="#d97706" font-weight="bold">START<animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/></text>
-  <text x="710" y="188" font-size="10" fill="#d97706" font-weight="bold" text-anchor="end">STOP<animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/></text>
+  <text x="95" y="242" font-size="11" fill="#d97706" font-weight="bold">START<animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/></text>
+  <text x="710" y="188" font-size="11" fill="#d97706" font-weight="bold" text-anchor="end">STOP<animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/></text>
 
   <!-- 阶段高亮扫过：槽位与字幕一一对应（空闲→START→地址→ACK→数据→ACK/STOP→整帧） -->
   <rect x="90" y="70" width="70" height="200" fill="#d97706" opacity="0.10">

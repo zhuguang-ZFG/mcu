@@ -19,7 +19,7 @@
   <text x="128" y="196" font-size="11" fill="#64748b" text-anchor="middle">向量表[22] = ISR 地址</text>
   <rect x="48" y="216" width="160" height="46" fill="#fff" stroke="#cbd5e1" rx="5"/>
   <text x="128" y="236" font-size="12" fill="#888" text-anchor="middle">EXTI0_IRQHandler</text>
-  <text x="128" y="252" font-size="10" fill="#aaa" text-anchor="middle">（清挂起 → 翻转 LED）</text>
+  <text x="128" y="252" font-size="11" fill="#aaa" text-anchor="middle">（清挂起 → 翻转 LED）</text>
   <text x="44" y="292" font-size="11" fill="#888">①  NVIC 判优先级</text>
   <text x="44" y="310" font-size="11" fill="#888">②  硬件压栈（免指令）</text>
   <text x="44" y="328" font-size="11" fill="#888">③  取向量表跳 ISR</text>
@@ -30,7 +30,7 @@
   <text x="274" y="108" font-size="13" font-weight="bold" fill="#3451b2">当前栈（MSP/PSP）</text>
   <rect x="274" y="118" width="216" height="30" fill="#dbe7ff" stroke="#3451b2" rx="3"/>
   <text x="382" y="138" font-size="12" fill="#3451b2" text-anchor="middle">main 的栈帧</text>
-  <g font-size="10" font-family="Consolas,monospace">
+  <g font-size="11" font-family="Consolas,monospace">
     <g fill="none" stroke="#94a3b8" stroke-dasharray="3 3">
       <rect x="274" y="148" width="216" height="24"/><rect x="274" y="172" width="216" height="24"/>
       <rect x="274" y="196" width="216" height="24"/><rect x="274" y="220" width="216" height="24"/>
@@ -44,7 +44,7 @@
       <text x="282" y="308">R1</text><text x="282" y="332">R0</text><text x="282" y="376">R0　← 压完 sp 在这</text>
     </g>
   </g>
-  <text x="382" y="356" font-size="10" fill="#aaa" text-anchor="middle">↓ 硬件自动压栈区（8 字 = 32 字节）</text>
+  <text x="382" y="356" font-size="11" fill="#aaa" text-anchor="middle">↓ 硬件自动压栈区（8 字 = 32 字节）</text>
 
   <!-- 右：寄存器 -->
   <rect x="540" y="88" width="160" height="296" fill="#fff" stroke="#cbd5e1" rx="8"/>
@@ -91,7 +91,7 @@
       <rect x="274" y="292" width="216" height="24" opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;1;1" keyTimes="0;0.422;1" dur="12s" repeatCount="indefinite"/></rect>
       <rect x="274" y="316" width="216" height="24" opacity="0"><animate attributeName="opacity" calcMode="discrete" values="0;1;1" keyTimes="0;0.451;1" dur="12s" repeatCount="indefinite"/></rect>
     </g>
-    <g font-size="10" font-family="Consolas,monospace" fill="#1a7f56">
+    <g font-size="11" font-family="Consolas,monospace" fill="#1a7f56">
       <text x="282" y="164">xPSR</text><text x="282" y="188">PC（返回地址）</text>
       <text x="282" y="212">LR</text><text x="282" y="236">R12</text>
       <text x="282" y="260">R3</text><text x="282" y="284">R2</text>
@@ -110,14 +110,14 @@
     <animate attributeName="opacity" calcMode="discrete" values="0;0;1;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
     <rect x="48" y="216" width="160" height="46" fill="#d8f3e5" stroke="#3eaf7c" stroke-width="2" rx="5"/>
     <text x="128" y="236" font-size="12" fill="#1a7f56" text-anchor="middle" font-weight="bold">EXTI0_IRQHandler</text>
-    <text x="128" y="252" font-size="10" fill="#1a7f56" text-anchor="middle">（清挂起 → 翻转 LED）</text>
+    <text x="128" y="252" font-size="11" fill="#1a7f56" text-anchor="middle">（清挂起 → 翻转 LED）</text>
     <g fill="#d8f3e5" stroke="#3eaf7c">
       <rect x="274" y="148" width="216" height="24"/><rect x="274" y="172" width="216" height="24"/>
       <rect x="274" y="196" width="216" height="24"/><rect x="274" y="220" width="216" height="24"/>
       <rect x="274" y="244" width="216" height="24"/><rect x="274" y="268" width="216" height="24"/>
       <rect x="274" y="292" width="216" height="24"/><rect x="274" y="316" width="216" height="24"/>
     </g>
-    <g font-size="10" font-family="Consolas,monospace" fill="#1a7f56">
+    <g font-size="11" font-family="Consolas,monospace" fill="#1a7f56">
       <text x="282" y="164">xPSR</text><text x="282" y="188">PC（返回地址）</text>
       <text x="282" y="212">LR</text><text x="282" y="236">R12</text>
       <text x="282" y="260">R3</text><text x="282" y="284">R2</text>

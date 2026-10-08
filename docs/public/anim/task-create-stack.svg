@@ -8,27 +8,27 @@
   <!-- ===== 左：新栈（化妆后的异常现场） ===== -->
   <rect x="30" y="70" width="330" height="300" fill="#ffffff" stroke="#cbd5e1" rx="8"/>
   <text x="46" y="92" font-size="13" font-weight="bold" fill="#3451b2">新任务的栈（向下生长）</text>
-  <text x="330" y="92" font-size="10" fill="#888" text-anchor="end">高地址 ↑</text>
+  <text x="330" y="92" font-size="11" fill="#888" text-anchor="end">高地址 ↑</text>
 
   <g font-size="11" font-family="Consolas,monospace">
     <rect x="56" y="102" width="220" height="24" fill="#dbe7ff" stroke="#3451b2" rx="3"/>
     <text x="64" y="119" fill="#3451b2">xPSR = 0x01000000</text>
-    <text x="286" y="119" fill="#888" text-anchor="end" font-size="10">Thumb 位</text>
+    <text x="286" y="119" fill="#888" text-anchor="end" font-size="11">Thumb 位</text>
 
     <rect x="56" y="128" width="220" height="24" fill="#dbe7ff" stroke="#3451b2" rx="3"/>
     <text x="64" y="145" fill="#3451b2">PC = 任务函数</text>
-    <text x="286" y="145" fill="#888" text-anchor="end" font-size="10">从这里开始跑</text>
+    <text x="286" y="145" fill="#888" text-anchor="end" font-size="11">从这里开始跑</text>
 
     <rect x="56" y="154" width="220" height="24" fill="#ffffff" stroke="#d97706" rx="3"/>
     <text x="64" y="171" fill="#d97706">LR = prvTaskExitError</text>
-    <text x="286" y="171" fill="#888" text-anchor="end" font-size="10">不许 return</text>
+    <text x="286" y="171" fill="#888" text-anchor="end" font-size="11">不许 return</text>
 
     <rect x="56" y="180" width="220" height="24" fill="#ffffff" stroke="#94a3b8" rx="3"/>
     <text x="64" y="197" fill="#666">r12, r3, r2, r1</text>
 
     <rect x="56" y="206" width="220" height="24" fill="#dbe7ff" stroke="#3eaf7c" rx="3"/>
     <text x="64" y="223" fill="#3eaf7c">r0 = pvParameters</text>
-    <text x="286" y="223" fill="#888" text-anchor="end" font-size="10">任务参数</text>
+    <text x="286" y="223" fill="#888" text-anchor="end" font-size="11">任务参数</text>
 
     <rect x="56" y="232" width="220" height="24" fill="#ffffff" stroke="#94a3b8" rx="3"/>
     <text x="64" y="249" fill="#666">r11 … r4</text>

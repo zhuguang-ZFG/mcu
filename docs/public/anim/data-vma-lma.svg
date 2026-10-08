@@ -8,25 +8,25 @@
   <!-- ===== 顶图（常驻）：Flash 与 RAM 两块地 ===== -->
   <rect x="40" y="64" width="310" height="76" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
   <text x="54" y="84" font-size="11" font-weight="bold" fill="#666">FLASH 1MB @ 0x0800_0000（LMA 侧：初值寄存处）</text>
-  <rect x="54" y="94" width="100" height="34" rx="3" fill="#dbe7ff" stroke="#3451b2"/><text x="104" y="115" font-size="10" fill="#3451b2" text-anchor="middle">.isr_vector + .text</text>
+  <rect x="54" y="94" width="100" height="34" rx="3" fill="#dbe7ff" stroke="#3451b2"/><text x="104" y="115" font-size="11" fill="#3451b2" text-anchor="middle">.isr_vector + .text</text>
   <rect x="162" y="94" width="60" height="34" rx="3" fill="#fdf0d5" stroke="#d97706"><animate attributeName="opacity" values="0.6;1;0.6" dur="1.2s" repeatCount="indefinite"/></rect>
-  <text x="192" y="109" font-size="10" font-weight="bold" fill="#d97706" text-anchor="middle">.data</text>
-  <text x="192" y="122" font-size="9" fill="#92400e" text-anchor="middle" font-family="Consolas,monospace">@0x08000218</text>
-  <text x="236" y="115" font-size="10" fill="#94a3b8">← _sidata</text>
-  <text x="300" y="132" font-size="9" fill="#94a3b8" text-anchor="middle"></text>
+  <text x="192" y="109" font-size="11" font-weight="bold" fill="#d97706" text-anchor="middle">.data</text>
+  <text x="192" y="122" font-size="11" fill="#92400e" text-anchor="middle" font-family="Consolas,monospace">@0x08000218</text>
+  <text x="236" y="115" font-size="11" fill="#94a3b8">← _sidata</text>
+  <text x="300" y="132" font-size="11" fill="#94a3b8" text-anchor="middle"></text>
 
   <rect x="370" y="64" width="310" height="76" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
   <text x="384" y="84" font-size="11" font-weight="bold" fill="#666">RAM 128KB @ 0x2000_0000（VMA 侧：运行时的家）</text>
-  <rect x="384" y="94" width="70" height="34" rx="3" fill="#d8f3e5" stroke="#3eaf7c"/><text x="419" y="109" font-size="10" font-weight="bold" fill="#1a7f56" text-anchor="middle">.data</text>
-  <text x="419" y="122" font-size="9" fill="#1a7f56" text-anchor="middle" font-family="Consolas,monospace">@0x20000000</text>
-  <text x="462" y="109" font-size="10" fill="#94a3b8">← _sdata .. _edata</text>
-  <rect x="560" y="94" width="60" height="34" rx="3" fill="#f1f5f9" stroke="#94a3b8"/><text x="590" y="115" font-size="10" fill="#64748b" text-anchor="middle">.bss 清零</text>
+  <rect x="384" y="94" width="70" height="34" rx="3" fill="#d8f3e5" stroke="#3eaf7c"/><text x="419" y="109" font-size="11" font-weight="bold" fill="#1a7f56" text-anchor="middle">.data</text>
+  <text x="419" y="122" font-size="11" fill="#1a7f56" text-anchor="middle" font-family="Consolas,monospace">@0x20000000</text>
+  <text x="462" y="109" font-size="11" fill="#94a3b8">← _sdata .. _edata</text>
+  <rect x="560" y="94" width="60" height="34" rx="3" fill="#f1f5f9" stroke="#94a3b8"/><text x="590" y="115" font-size="11" fill="#64748b" text-anchor="middle">.bss 清零</text>
 
   <!-- 搬运货物：Flash → RAM（真在跑） -->
   <circle cx="228" cy="168" r="7" fill="#d97706">
     <animate attributeName="cx" values="228;360;360;228" keyTimes="0;0.5;0.55;1" dur="2.4s" repeatCount="indefinite"/>
   </circle>
-  <text x="300" y="158" font-size="10" fill="#d97706" text-anchor="middle">初值货物：启动时从 _sidata 运往 _sdata</text>
+  <text x="300" y="158" font-size="11" fill="#d97706" text-anchor="middle">初值货物：启动时从 _sidata 运往 _sdata</text>
   <line x1="228" y1="168" x2="360" y2="168" stroke="#d97706" stroke-width="1" stroke-dasharray="4 4"/>
 
   <!-- ===== 阶段一：图纸三件事 ===== -->

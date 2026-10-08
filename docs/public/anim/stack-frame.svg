@@ -22,9 +22,9 @@
   <text x="162" y="276" font-size="11" fill="#94a3b8" text-anchor="middle">↓ 更低地址（空闲栈空间）</text>
 
   <!-- 地址标注（贴在槽内左上，别伸出画布） -->
-  <text x="60" y="154" font-size="10" fill="#888" font-family="Consolas,monospace">0x2000FFF0</text>
-  <text x="60" y="214" font-size="10" fill="#888" font-family="Consolas,monospace">0x2000FFE8</text>
-  <text x="60" y="254" font-size="10" fill="#888" font-family="Consolas,monospace">0x2000FFE0</text>
+  <text x="60" y="154" font-size="11" fill="#888" font-family="Consolas,monospace">0x2000FFF0</text>
+  <text x="60" y="214" font-size="11" fill="#888" font-family="Consolas,monospace">0x2000FFE8</text>
+  <text x="60" y="254" font-size="11" fill="#888" font-family="Consolas,monospace">0x2000FFE0</text>
 
   <!-- sp 指针（S0→150 S1→210 S2→250 S3→150，段与段之间是滑过去的：push 走两级、sub 一级、pop 一步回家） -->
   <g transform="translate(272,150)">

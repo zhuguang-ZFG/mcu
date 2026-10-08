@@ -90,7 +90,7 @@
     <animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;1;1;0" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/>
     <animateMotion calcMode="linear" path="M95,228 L95,180 L150,170" dur="3s" repeatCount="indefinite"/>
   </circle>
-  <text x="95" y="200" font-size="10" fill="#3eaf7c" font-weight="bold" opacity="0">搬家→就绪
+  <text x="95" y="200" font-size="11" fill="#3eaf7c" font-weight="bold" opacity="0">搬家→就绪
     <animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;1;1;0" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/>
   </text>
 

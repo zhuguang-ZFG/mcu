@@ -9,29 +9,29 @@
   <rect x="40" y="62" width="200" height="118" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
   <rect x="42" y="64" width="196" height="4" rx="2" fill="#3451b2"/>
   <text x="56" y="84" font-size="13" font-weight="bold" fill="#3451b2">① Sleep 睡觉</text>
-  <text x="56" y="104" font-size="10.5" fill="#333">停：只有 CPU 时钟（脑）</text>
-  <text x="56" y="120" font-size="10.5" fill="#333">留：外设全醒 · SRAM 全在</text>
-  <text x="56" y="136" font-size="10.5" fill="#333">醒：任意中断，µs 级</text>
-  <text x="56" y="152" font-size="10.5" fill="#333">醒后：原地继续跑（时钟没变）</text>
-  <text x="56" y="168" font-size="10.5" font-weight="bold" fill="#3451b2">电流：mA 级（数十 mA）</text>
+  <text x="56" y="104" font-size="11" fill="#333">停：只有 CPU 时钟（脑）</text>
+  <text x="56" y="120" font-size="11" fill="#333">留：外设全醒 · SRAM 全在</text>
+  <text x="56" y="136" font-size="11" fill="#333">醒：任意中断，µs 级</text>
+  <text x="56" y="152" font-size="11" fill="#333">醒后：原地继续跑（时钟没变）</text>
+  <text x="56" y="168" font-size="11" font-weight="bold" fill="#3451b2">电流：mA 级（数十 mA）</text>
 
   <rect x="260" y="62" width="200" height="118" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
   <rect x="262" y="64" width="196" height="4" rx="2" fill="#d97706"/>
   <text x="276" y="84" font-size="13" font-weight="bold" fill="#d97706">② Stop 停摆</text>
-  <text x="276" y="104" font-size="10.5" fill="#333">停：1.2V 域全部时钟</text>
-  <text x="276" y="120" font-size="10.5" fill="#333">留：SRAM + 寄存器保留</text>
-  <text x="276" y="136" font-size="10.5" fill="#333">醒：EXTI / RTC 闹钟</text>
-  <text x="276" y="152" font-size="10.5" fill="#333">醒后：继续跑，HSI 16MHz 接管</text>
-  <text x="276" y="168" font-size="10.5" font-weight="bold" fill="#d97706">电流：µA ~ 几十 µA</text>
+  <text x="276" y="104" font-size="11" fill="#333">停：1.2V 域全部时钟</text>
+  <text x="276" y="120" font-size="11" fill="#333">留：SRAM + 寄存器保留</text>
+  <text x="276" y="136" font-size="11" fill="#333">醒：EXTI / RTC 闹钟</text>
+  <text x="276" y="152" font-size="11" fill="#333">醒后：继续跑，HSI 16MHz 接管</text>
+  <text x="276" y="168" font-size="11" font-weight="bold" fill="#d97706">电流：µA ~ 几十 µA</text>
 
   <rect x="480" y="62" width="200" height="118" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
   <rect x="482" y="64" width="196" height="4" rx="2" fill="#1a7f56"/>
   <text x="496" y="84" font-size="13" font-weight="bold" fill="#1a7f56">③ Standby 假死</text>
-  <text x="496" y="104" font-size="10.5" fill="#333">停：1.2V 域断电</text>
-  <text x="496" y="120" font-size="10.5" fill="#333">留：仅备份域（RTC·备份SRAM）</text>
-  <text x="496" y="136" font-size="10.5" fill="#333">醒：WKUP 引脚 / RTC 闹钟</text>
-  <text x="496" y="152" font-size="10.5" fill="#333">醒后：复位重来（像重新上电）</text>
-  <text x="496" y="168" font-size="10.5" font-weight="bold" fill="#1a7f56">电流：nA ~ µA</text>
+  <text x="496" y="104" font-size="11" fill="#333">停：1.2V 域断电</text>
+  <text x="496" y="120" font-size="11" fill="#333">留：仅备份域（RTC·备份SRAM）</text>
+  <text x="496" y="136" font-size="11" fill="#333">醒：WKUP 引脚 / RTC 闹钟</text>
+  <text x="496" y="152" font-size="11" fill="#333">醒后：复位重来（像重新上电）</text>
+  <text x="496" y="168" font-size="11" font-weight="bold" fill="#1a7f56">电流：nA ~ µA</text>
 
   <!-- 电流计：指针从 mA 逐档扫到 nA（一直转，dur=6s 整除 12s） -->
   <path d="M 322.3 217.6 A 46 46 0 0 1 345.8 200.3" fill="none" stroke="#3451b2" stroke-width="5"/>
@@ -45,7 +45,7 @@
     <line x1="360" y1="244" x2="360" y2="201" stroke="#333" stroke-width="3" stroke-linecap="round"/>
   </g>
   <circle cx="360" cy="244" r="4.5" fill="#24292f"/>
-  <text x="360" y="262" font-size="10" fill="#94a3b8" text-anchor="middle">电流计指针：Sleep mA → Stop µA → Standby nA，逐档下移</text>
+  <text x="360" y="262" font-size="11" fill="#94a3b8" text-anchor="middle">电流计指针：Sleep mA → Stop µA → Standby nA，逐档下移</text>
 
   <!-- 阶段一：Sleep -->
   <g opacity="1">

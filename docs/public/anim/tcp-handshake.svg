@@ -16,7 +16,7 @@
   <line x1="570" y1="136" x2="570" y2="330" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="5 4"/>
 
   <!-- WiFi 四步（左侧小字阶梯） -->
-  <g font-size="10" fill="#888">
+  <g font-size="11" fill="#888">
     <text x="40" y="160">WiFi ① 扫描 SSID</text>
     <text x="40" y="176">WiFi ② 认证 Auth</text>
     <text x="40" y="192">WiFi ③ 关联 Assoc</text>

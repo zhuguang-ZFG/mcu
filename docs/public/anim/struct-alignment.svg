@@ -7,24 +7,24 @@
 
   <!-- ===== 常驻：GPIO_TypeDef 偏移条带 ===== -->
   <rect x="40" y="64" width="640" height="52" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
-  <text x="54" y="82" font-size="10" fill="#94a3b8">GPIO_TypeDef（RM0090 寄存器地图 → C 结构体）</text>
-  <g font-size="9" font-family="Consolas,monospace" fill="#666">
-    <rect x="54" y="88" width="58" height="22" rx="2" fill="#f1f5f9" stroke="#94a3b8"/><text x="83" y="102" text-anchor="middle">MODER</text><text x="83" y="112" text-anchor="middle" font-size="8">0x00</text>
-    <rect x="116" y="88" width="58" height="22" rx="2" fill="#f1f5f9" stroke="#94a3b8"/><text x="145" y="102" text-anchor="middle">OTYPER</text><text x="145" y="112" text-anchor="middle" font-size="8">0x04</text>
-    <rect x="178" y="88" width="58" height="22" rx="2" fill="#f1f5f9" stroke="#94a3b8"/><text x="207" y="102" text-anchor="middle">OSPEEDR</text><text x="207" y="112" text-anchor="middle" font-size="8">0x08</text>
-    <rect x="240" y="88" width="58" height="22" rx="2" fill="#f1f5f9" stroke="#94a3b8"/><text x="269" y="102" text-anchor="middle">PUPDR</text><text x="269" y="112" text-anchor="middle" font-size="8">0x0C</text>
-    <rect x="302" y="88" width="58" height="22" rx="2" fill="#f1f5f9" stroke="#94a3b8"/><text x="331" y="102" text-anchor="middle">IDR</text><text x="331" y="112" text-anchor="middle" font-size="8">0x10</text>
-    <rect x="364" y="88" width="58" height="22" rx="2" fill="#f1f5f9" stroke="#94a3b8"/><text x="393" y="102" text-anchor="middle">ODR</text><text x="393" y="112" text-anchor="middle" font-size="8">0x14</text>
-    <rect x="426" y="88" width="58" height="22" rx="2" fill="#fdf0d5" stroke="#d97706" stroke-width="2"/><text x="455" y="102" text-anchor="middle" fill="#92400e" font-weight="bold">BSRR</text><text x="455" y="112" text-anchor="middle" font-size="8" fill="#92400e">0x18</text>
-    <rect x="488" y="88" width="58" height="22" rx="2" fill="#f1f5f9" stroke="#94a3b8"/><text x="517" y="102" text-anchor="middle">LCKR</text><text x="517" y="112" text-anchor="middle" font-size="8">0x1C</text>
-    <rect x="550" y="88" width="58" height="22" rx="2" fill="#f1f5f9" stroke="#94a3b8"/><text x="579" y="102" text-anchor="middle">AFR[0]</text><text x="579" y="112" text-anchor="middle" font-size="8">0x20</text>
-    <rect x="612" y="88" width="58" height="22" rx="2" fill="#f1f5f9" stroke="#94a3b8"/><text x="641" y="102" text-anchor="middle">AFR[1]</text><text x="641" y="112" text-anchor="middle" font-size="8">0x24</text>
+  <text x="54" y="82" font-size="11" fill="#94a3b8">GPIO_TypeDef（RM0090 寄存器地图 → C 结构体）</text>
+  <g font-size="11" font-family="Consolas,monospace" fill="#666">
+    <rect x="54" y="88" width="58" height="22" rx="2" fill="#f1f5f9" stroke="#94a3b8"/><text x="83" y="102" text-anchor="middle">MODER</text><text x="83" y="112" text-anchor="middle" font-size="11">0x00</text>
+    <rect x="116" y="88" width="58" height="22" rx="2" fill="#f1f5f9" stroke="#94a3b8"/><text x="145" y="102" text-anchor="middle">OTYPER</text><text x="145" y="112" text-anchor="middle" font-size="11">0x04</text>
+    <rect x="178" y="88" width="58" height="22" rx="2" fill="#f1f5f9" stroke="#94a3b8"/><text x="207" y="102" text-anchor="middle">OSPEEDR</text><text x="207" y="112" text-anchor="middle" font-size="11">0x08</text>
+    <rect x="240" y="88" width="58" height="22" rx="2" fill="#f1f5f9" stroke="#94a3b8"/><text x="269" y="102" text-anchor="middle">PUPDR</text><text x="269" y="112" text-anchor="middle" font-size="11">0x0C</text>
+    <rect x="302" y="88" width="58" height="22" rx="2" fill="#f1f5f9" stroke="#94a3b8"/><text x="331" y="102" text-anchor="middle">IDR</text><text x="331" y="112" text-anchor="middle" font-size="11">0x10</text>
+    <rect x="364" y="88" width="58" height="22" rx="2" fill="#f1f5f9" stroke="#94a3b8"/><text x="393" y="102" text-anchor="middle">ODR</text><text x="393" y="112" text-anchor="middle" font-size="11">0x14</text>
+    <rect x="426" y="88" width="58" height="22" rx="2" fill="#fdf0d5" stroke="#d97706" stroke-width="2"/><text x="455" y="102" text-anchor="middle" fill="#92400e" font-weight="bold">BSRR</text><text x="455" y="112" text-anchor="middle" font-size="11" fill="#92400e">0x18</text>
+    <rect x="488" y="88" width="58" height="22" rx="2" fill="#f1f5f9" stroke="#94a3b8"/><text x="517" y="102" text-anchor="middle">LCKR</text><text x="517" y="112" text-anchor="middle" font-size="11">0x1C</text>
+    <rect x="550" y="88" width="58" height="22" rx="2" fill="#f1f5f9" stroke="#94a3b8"/><text x="579" y="102" text-anchor="middle">AFR[0]</text><text x="579" y="112" text-anchor="middle" font-size="11">0x20</text>
+    <rect x="612" y="88" width="58" height="22" rx="2" fill="#f1f5f9" stroke="#94a3b8"/><text x="641" y="102" text-anchor="middle">AFR[1]</text><text x="641" y="112" text-anchor="middle" font-size="11">0x24</text>
   </g>
   <!-- 游标：沿偏移条带连续扫描（真在跑） -->
   <circle cx="54" cy="126" r="6" fill="#3451b2">
     <animate attributeName="cx" values="54;670;670;54" keyTimes="0;0.86;0.93;1" dur="4s" repeatCount="indefinite"/>
   </circle>
-  <text x="360" y="144" font-size="10" fill="#94a3b8" text-anchor="middle">offsetof 逐格数出来：第 7 个成员 × 4 字节 = 0x18——不是背的，是算的</text>
+  <text x="360" y="144" font-size="11" fill="#94a3b8" text-anchor="middle">offsetof 逐格数出来：第 7 个成员 × 4 字节 = 0x18——不是背的，是算的</text>
 
   <!-- ===== 阶段一：地址计算器 ===== -->
   <g opacity="1">
@@ -58,22 +58,22 @@
     <rect x="40" y="158" width="640" height="232" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
     <text x="56" y="182" font-size="13" font-weight="bold" fill="#3451b2">③ 填充肉眼可见：同一组成员，两种排法差 4 字节</text>
     <text x="70" y="208" font-size="11" font-family="Consolas,monospace" fill="#92400e">Padded_t { u8 a; u32 b; u8 c; }  → 12 字节</text>
-    <g font-size="9">
+    <g font-size="11">
       <rect x="70" y="216" width="24" height="22" fill="#dbe7ff" stroke="#3451b2"/><text x="82" y="230" text-anchor="middle" fill="#3451b2">a</text>
       <rect x="94" y="216" width="72" height="22" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="3 2"/><text x="130" y="230" text-anchor="middle" fill="#94a3b8">pad 3</text>
       <rect x="166" y="216" width="96" height="22" fill="#d8f3e5" stroke="#3eaf7c"/><text x="214" y="230" text-anchor="middle" fill="#1a7f56">b @4</text>
       <rect x="262" y="216" width="24" height="22" fill="#dbe7ff" stroke="#3451b2"/><text x="274" y="230" text-anchor="middle" fill="#3451b2">c</text>
       <rect x="286" y="216" width="72" height="22" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="3 2"/><text x="322" y="230" text-anchor="middle" fill="#94a3b8">tail 3</text>
     </g>
-    <text x="130" y="254" font-size="9" fill="#94a3b8" text-anchor="middle">sizeof=12：1+3+4+1+3</text>
+    <text x="130" y="254" font-size="11" fill="#94a3b8" text-anchor="middle">sizeof=12：1+3+4+1+3</text>
     <text x="420" y="208" font-size="11" font-family="Consolas,monospace" fill="#1a7f56">Packed_t { u32 b; u8 a; u8 c; }  → 8 字节</text>
-    <g font-size="9">
+    <g font-size="11">
       <rect x="420" y="216" width="96" height="22" fill="#d8f3e5" stroke="#3eaf7c"/><text x="468" y="230" text-anchor="middle" fill="#1a7f56">b @0</text>
       <rect x="516" y="216" width="24" height="22" fill="#dbe7ff" stroke="#3451b2"/><text x="528" y="230" text-anchor="middle" fill="#3451b2">a</text>
       <rect x="540" y="216" width="24" height="22" fill="#dbe7ff" stroke="#3451b2"/><text x="552" y="230" text-anchor="middle" fill="#3451b2">c</text>
       <rect x="564" y="216" width="48" height="22" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="3 2"/><text x="588" y="230" text-anchor="middle" fill="#94a3b8">tail 2</text>
     </g>
-    <text x="516" y="254" font-size="9" fill="#94a3b8" text-anchor="middle">sizeof=8：4+1+1+2</text>
+    <text x="516" y="254" font-size="11" fill="#94a3b8" text-anchor="middle">sizeof=8：4+1+1+2</text>
     <text x="56" y="290" font-size="13" fill="#333">成员按对齐要求落位、洞是编译器插的填充——你能在内存里"看见"这些洞。</text>
     <text x="56" y="318" font-size="13" fill="#1a7f56">成员从大到小排，填充变少：Padded 12 字节 → Packed 8 字节，省 4 字节。</text>
     <text x="56" y="346" font-size="12" fill="#666">注意 pack 是给协议帧的（网络包、文件头）：给寄存器结构体加 #pragma pack(1)</text>

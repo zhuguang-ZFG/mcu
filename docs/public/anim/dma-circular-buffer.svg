@@ -10,7 +10,7 @@
   <text x="56" y="102" font-size="13" font-weight="bold" fill="#3451b2">环形数组 g_rx_buf[64]（画成直线，尾接回头）</text>
 
   <!-- 跑道格子：64 格缩成 16 段表示 -->
-  <g font-size="10" font-family="Consolas,monospace" fill="#888" text-anchor="middle">
+  <g font-size="11" font-family="Consolas,monospace" fill="#888" text-anchor="middle">
     <text x="80"  y="196">0</text><text x="200" y="196">16</text>
     <text x="320" y="196">32</text><text x="440" y="196">48</text>
     <text x="560" y="196">63→0</text>

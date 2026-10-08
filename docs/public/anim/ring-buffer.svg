@@ -24,20 +24,20 @@
       <text x="0" y="-62" font-size="11" font-weight="bold" fill="#d97706" text-anchor="middle">w</text>
     </g>
   </g>
-  <text x="190" y="152" font-size="10" fill="#94a3b8" text-anchor="middle">物理 8 格</text>
-  <text x="190" y="166" font-size="10" fill="#94a3b8" text-anchor="middle">首尾相接</text>
-  <text x="190" y="264" font-size="10" fill="#d97706" text-anchor="middle">w 由生产者（中断）推进</text>
-  <text x="190" y="278" font-size="10" fill="#3451b2" text-anchor="middle">r 由消费者（主循环）推进</text>
+  <text x="190" y="152" font-size="11" fill="#94a3b8" text-anchor="middle">物理 8 格</text>
+  <text x="190" y="166" font-size="11" fill="#94a3b8" text-anchor="middle">首尾相接</text>
+  <text x="190" y="264" font-size="11" fill="#d97706" text-anchor="middle">w 由生产者（中断）推进</text>
+  <text x="190" y="278" font-size="11" fill="#3451b2" text-anchor="middle">r 由消费者（主循环）推进</text>
 
   <!-- ===== 右：两派容量对照卡（常驻） ===== -->
   <rect x="340" y="60" width="160" height="74" rx="8" fill="#fff7ed" stroke="#d97706"/>
   <text x="420" y="80" font-size="12" font-weight="bold" fill="#d97706" text-anchor="middle">A 派：牺牲一格</text>
   <text x="420" y="102" font-size="15" font-weight="bold" fill="#d97706" text-anchor="middle">7 / 8 格</text>
-  <text x="420" y="124" font-size="10" fill="#92400e" text-anchor="middle">(w+1)%CAP==r 判满</text>
+  <text x="420" y="124" font-size="11" fill="#92400e" text-anchor="middle">(w+1)%CAP==r 判满</text>
   <rect x="520" y="60" width="160" height="74" rx="8" fill="#d8f3e5" stroke="#3eaf7c"/>
   <text x="600" y="80" font-size="12" font-weight="bold" fill="#1a7f56" text-anchor="middle">B 派：单调索引</text>
   <text x="600" y="102" font-size="15" font-weight="bold" fill="#1a7f56" text-anchor="middle">8 / 8 格</text>
-  <text x="600" y="124" font-size="10" fill="#1a7f56" text-anchor="middle">(uint8_t)(w-r)>=CAP 判满</text>
+  <text x="600" y="124" font-size="11" fill="#1a7f56" text-anchor="middle">(uint8_t)(w-r)>=CAP 判满</text>
   <rect x="340" y="146" width="340" height="92" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
   <text x="356" y="168" font-size="12" font-weight="bold" fill="#3451b2">指针相等时：空 or 满？</text>
   <text x="356" y="190" font-size="11" fill="#333">起点必是空（r==w 且无数据）；塞满后追平也是 r==w——</text>
