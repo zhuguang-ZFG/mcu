@@ -18,6 +18,24 @@ title: 导读·实物装备清单
 霸天虎**不板载仿真器**，必须另购调试器（见下表）。立创 S3 板与 ES3C28P 均为 Type-C 一线通吃（供电+烧录+串口），无此问题。两块 S3 板都是 N16R8 小智系（16MB Flash + 8MB PSRAM），P 篇正文通用；差异在板载外设——实战派带姿态传感器 QMI8658（[E07](../lab/e07-qmi8658.md)），ES3C28P 带电容触摸与 2.8 寸方屏（FT6336G/ILI9341V）。引脚以各板资料页为准，上板前先核。
 :::
 
+### 板卡与主控实拍参考
+
+三张开源许可的实物照片，帮你下单前后认板子、认模组。**野火霸天虎官方产品图受版权保护，本站不转载**——外观与引脚图请看[官方资料页](https://doc.embedfire.com/products/link/zh/latest/mcu/stm32/stm32f407_batianhu.html)。
+
+![立创·实战派 ESP32-S3 开发板：2 寸 IPS 屏、摄像头开孔、Type-C 接口](/images/boards/lichuang-s3-board.jpg)
+
+立创·实战派 ESP32-S3 整板（P 篇主线板）。来源：[xiaozhi-esp32 项目](https://github.com/78/xiaozhi-esp32)（MIT 许可）。
+
+![ESP32-S3-WROOM-1-N16R8 模组特写：屏蔽罩上印型号与 N16R8 后缀](/images/boards/esp32s3-wroom1-module.jpg)
+
+实战派/ES3C28P 板载的 **ESP32-S3-WROOM-1-N16R8** 模组（16MB Flash + 8MB PSRAM），屏蔽罩丝印清晰。来源：[Wikimedia Commons](https://commons.wikimedia.org/wiki/File:ESP32-S3_on_paper.jpg)（CC BY-SA 4.0，作者 VectorVoyager）。
+
+![基于 STM32F407 的第三方开发板](/images/boards/stm32f407-board.jpg)
+
+F407 家族板卡形态参考：图为一款第三方 F407VET6 板（LQFP100、带以太网）；霸天虎为 F407ZGT6/LQFP144，外观不同、芯片同门。来源：[Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Embedded_World_2016,_STM32_F407_VGT6.jpg)（CC0，作者 Ordercrazy；该 Commons 页面标题误作 Nucleo，实为第三方板，本站按实物标注）。
+
+> 以上均为**资料参考图**，不是上板验证证据——实验的实测记录仍以 [evidence 文件与实测照片](verify-on-hardware.md)为准。
+
 ## 必配工具
 
 | 装备 | 参考价 | 用途 | 用在哪 |
@@ -54,6 +72,18 @@ title: 导读·实物装备清单
 - **数据线变充电线**：只能供电不能通信，症状是插上去设备管理器毫无反应。换线先试。
 - **便宜 ST-Link 固件太旧**：个别国产 V2 克隆需要升级固件才能被新 OpenOCD 识别，买评价里"OpenOCD 可用"的。
 - **逻辑分析仪别买 8 通道以下的**：SPI 全双工 + 片选就要 4 根线，8 通道是底线。
+
+## 图片来源与许可
+
+本站正文与代码采用 Apache-2.0 许可；页面照片为第三方素材，各自遵循其原始许可，再利用时请遵守对应条款：
+
+| 图片 | 引用页 | 来源 | 许可 |
+|---|---|---|---|
+| `/images/boards/lichuang-s3-board.jpg` | 本页、[实验中心](../lab/index.md) | [78/xiaozhi-esp32](https://github.com/78/xiaozhi-esp32) | MIT |
+| `/images/boards/esp32s3-wroom1-module.jpg` | 本页、[P0 环境](../esp32/00-env.md) | [Wikimedia Commons · VectorVoyager](https://commons.wikimedia.org/wiki/File:ESP32-S3_on_paper.jpg) | CC BY-SA 4.0 |
+| `/images/boards/stm32f407-board.jpg` | 本页、[S0 环境](../stm32/00-env.md) | [Wikimedia Commons · Ordercrazy](https://commons.wikimedia.org/wiki/File:Embedded_World_2016,_STM32_F407_VGT6.jpg) | CC0 |
+
+实验实测照片（待上板后补充）将存放于 `docs/public/photos/`，命名与回填规范见[上板验证指南](verify-on-hardware.md)。
 
 ## 你做到了
 

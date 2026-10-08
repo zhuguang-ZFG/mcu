@@ -3,6 +3,11 @@
 > 本文件是施工指引（不进 docs/），列出每个实验上板时需要拍摄的照片/截图。
 > 拍摄后放到 `docs/public/photos/eXX-*.jpg`，在对应实验章插入 `![](/photos/eXX-*.jpg)`。
 > 拍完一批后把 `hardware_status: pending` 改成 `verified`，并在实验章"实测记录"表填日期/数据。
+>
+> ⚠️ 注意与**资料参考图**区分：`docs/public/images/boards/` 下已有三张互联网开源许可照片
+> （实战派整板 MIT、WROOM-1 模组 CC BY-SA 4.0、第三方 F407 板 CC0，来源见 guide/hardware.md
+> "图片来源与许可"），它们是帮读者认板子的资料图，**不能**充当上板验证证据，
+> 也不改变 hardware_status。霸天虎无合法授权照片（野火官方仓库无许可证），继续用官方链接。
 
 ## E01 点亮 RGB 红灯
 - [ ] 板子全景（霸天虎 + LED 亮红灯）

@@ -35,6 +35,10 @@ minutes: 25
 | Micro-USB 线 ×2 | 板子供电、仿真器连接 | 别拿成充电专用线（没数据线芯） |
 | 杜邦线若干 | 接 SWD | 若仿真器带排线可省 |
 
+![基于 STM32F407 的第三方开发板](/images/boards/stm32f407-board.jpg)
+
+> F407 家族板卡形态参考：图为一款第三方 F407VET6 板（LQFP100）；本站基准板霸天虎为 F407ZGT6/LQFP144，外观不同、芯片同门（来源：[Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Embedded_World_2016,_STM32_F407_VGT6.jpg)，CC0）。
+
 ## 第一步：装 ARM 交叉编译器
 
 1. 打开 Arm 官网开发者页，搜 **"Arm GNU Toolchain"**，下载 Windows 版 `arm-gnu-toolchain-14.x.rel*-mingw-w64-x86_64-arm-none-eabi.exe`。

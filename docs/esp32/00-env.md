@@ -48,6 +48,10 @@ idf.py --version
 
 立创·实战派 ESP32-S3（小智板）核心配置：模组 **ESP32-S3-WROOM-1-N16R8**（16MB Flash + 8MB PSRAM，LX7 双核 240MHz），USB 转串口芯片 **CH340K**。板子 Type-C 口身兼三职：供电、烧录、串口监视——一根线搞定。板卡外观、原理图与引脚分配见 [立创官方 wiki](https://wiki.lckfb.com/zh-hans/szpi-esp32s3/)。
 
+![ESP32-S3-WROOM-1-N16R8 模组：屏蔽罩上印型号，N16R8 表示 16MB Flash + 8MB PSRAM](/images/boards/esp32s3-wroom1-module.jpg)
+
+> 模组实物参考（一款搭载同款模组的通用开发板；来源：[Wikimedia Commons](https://commons.wikimedia.org/wiki/File:ESP32-S3_on_paper.jpg)，CC BY-SA 4.0，作者 VectorVoyager）。
+
 插上电脑，打开设备管理器看"端口 (COM 和 LPT)"：
 
 - 出现 `USB-SERIAL CH340 (COMx)` → 驱动 OK，记下 COM 号；

@@ -25,6 +25,10 @@ title: 实验中心
 - [野火 STM32F407 霸天虎](https://doc.embedfire.com/products/link/zh/latest/mcu/stm32/stm32f407_batianhu.html)——S 篇与 RTOS 移植主线板
 - [立创·实战派 ESP32-S3](https://wiki.lckfb.com/zh-hans/szpi-esp32s3/)——P 篇主线板
 
+![立创·实战派 ESP32-S3 开发板](/images/boards/lichuang-s3-board.jpg)
+
+> 实战派整板实拍（来源：[xiaozhi-esp32](https://github.com/78/xiaozhi-esp32)，MIT 许可）。资料图**不是**上板验证证据——实验的实测记录以 [evidence 文件](../guide/verify-on-hardware.md)为准。
+
 完整装备清单见 [实物装备清单](../guide/hardware.md)。
 
 > AI生成
