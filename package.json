@@ -15,10 +15,11 @@
     "links:check": "node scripts/links-check.mjs",
     "nav:check": "node scripts/nav-check.mjs",
     "seo:check": "node scripts/seo-check.mjs",
+    "perf:budget": "node scripts/perf-budget.mjs",
     "projects:check": "node scripts/project-catalog.mjs",
     "test": "node --test tests/*.test.mjs",
     "firmware:check": "node scripts/check-firmware.mjs",
-    "quality": "npm run test && npm run projects:check && npm run docs:build && npm run anim:lint && npm run readme:check && npm run links:check && npm run nav:check && npm run seo:check",
+    "quality": "npm run test && npm run projects:check && npm run docs:build && npm run anim:lint && npm run readme:check && npm run links:check && npm run nav:check && npm run seo:check && npm run perf:budget",
     "test:browser": "playwright test",
     "site:measure": "node scripts/measure-site.mjs"
   },
