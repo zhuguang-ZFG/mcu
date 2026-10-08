@@ -223,7 +223,28 @@ export default defineConfig({
           text: 'GD32 双系路线',
           items: [
             { text: '导览（G 篇 ARM / V 篇 RISC-V）', link: '/gd32/' },
+          ],
+        },
+        {
+          text: 'G 篇 GD32F4xx（Cortex-M4）',
+          collapsed: false,
+          items: [
+            { text: 'G0 环境与工具链', link: '/gd32/00-env' },
             { text: 'G1 RCU 时钟树', link: '/gd32/01-rcu-clock' },
+            { text: 'G2 GPIO 与 AF 复用', link: '/gd32/02-gpio-af' },
+            { text: 'G3 USART 增强点', link: '/gd32/03-usart' },
+            { text: 'G4 外设差异', link: '/gd32/04-periph-diff' },
+          ],
+        },
+        {
+          text: 'V 篇 GD32VF103（RISC-V）',
+          collapsed: false,
+          items: [
+            { text: 'V0 RISC-V 工具链与启动', link: '/gd32/05-riscv-toolchain' },
+            { text: 'V1 Bumblebee 内核与 CLIC', link: '/gd32/06-clic-irq' },
+            { text: 'V2 RCU 与 108MHz', link: '/gd32/07-rcu-108m' },
+            { text: 'V3 MTIME 与裸机延时', link: '/gd32/08-mtime-delay' },
+            { text: 'V4 GPIO 最小系统', link: '/gd32/09-gpio-minimal' },
           ],
         },
       ],

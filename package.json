@@ -13,10 +13,11 @@
     "readme:sync": "node scripts/gen-progress.mjs --readme",
     "readme:check": "node scripts/gen-progress.mjs --readme --check",
     "links:check": "node scripts/links-check.mjs",
+    "nav:check": "node scripts/nav-check.mjs",
     "projects:check": "node scripts/project-catalog.mjs",
     "test": "node --test tests/*.test.mjs",
     "firmware:check": "node scripts/check-firmware.mjs",
-    "quality": "npm run test && npm run projects:check && npm run docs:build && npm run anim:lint && npm run readme:check && npm run links:check",
+    "quality": "npm run test && npm run projects:check && npm run docs:build && npm run anim:lint && npm run readme:check && npm run links:check && npm run nav:check",
     "test:browser": "playwright test",
     "site:measure": "node scripts/measure-site.mjs"
   },
