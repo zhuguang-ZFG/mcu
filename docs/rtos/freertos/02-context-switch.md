@@ -187,6 +187,13 @@ p pxCurrentTCB           # 已换人！对比两次地址
 | 启动时 MSP 的的来历 | [B4 启动过程](../../build/04-startup.md) 第一节 |
 | 选最高优先级任务 | [F3 调度器](03-scheduler.md)（位图 + CLZ） |
 
+## 延伸阅读
+
+懒堆叠与异常帧的权威出处：
+
+- **[\[C5\]](../../reference/bibliography.md#toolchain)** AN298 — 懒堆叠（lazy stacking）的官方应用笔记：FPCCR.LSPEN 怎么让硬件"先占座、后写真"、EXC_RETURN bit4 的含义，本章【注】的全文版。
+- **[\[A6\]](../../reference/bibliography.md#chips)** ARMv7-M 架构参考手册 — 异常入栈帧与 EXC_RETURN 的规范定义。
+
 ## 你做到了
 
 - "换魂术"全程目击并能逐行讲解；

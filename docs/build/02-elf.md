@@ -394,6 +394,13 @@ sh probe.sh tag
 - **"反汇编出现 undefined instruction"**：多半是数据被当代码（本章的 `MCU.....` 就是现场）。要读原始字节，用 `objdump -s -j .text` 或 `readelf -x`，别用 `-d`。
 - **符号找不到就先怀疑编译档**：函数里的 `int auto_var` 在符号表里查无此人——它活在栈上，链接期根本不存在（[C1](../c/01-memory-model.md) 已实测）。同理，`static` 局部变量有符号、`auto` 局部变量没有。
 
+## 延伸阅读
+
+两副目录的原始定义与两本教科书：
+
+- **[\[C3\]](../reference/bibliography.md#toolchain)** TIS ELF 1.2 — 节头表/程序头表的原始规范，二十来页讲完。
+- **[\[E2\]](../reference/bibliography.md#books)** Levine《Linkers and Loaders》第 3 章 · **[\[E3\]](../reference/bibliography.md#books)** 《程序员的自我修养》第 3 章 — ELF 结构的教科书式讲法，中英各一本。
+
 ## 你做到了
 
 - 五刀拆完一具真固件：ELF 头 → 节表 → 程序头 → 符号表 → 反汇编；

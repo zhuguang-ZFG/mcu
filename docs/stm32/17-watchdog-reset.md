@@ -87,6 +87,12 @@ RCC_CSR 在 RCC+0x74，先保存原始复位标志再写 RMVF 清除；不能读
 |---|---|---|---|---|
 | 待实测 | | | | |
 
+## 延伸阅读
+
+喂狗的方法论：
+
+- **[\[D12\]](../reference/bibliography.md#papers)** Ganssle《Great Watchdog Timers for Embedded Systems》— 为什么"主循环里定时喂狗"几乎等于没装狗，窗口看门狗（WWDG）的设计动机。
+
 ## 你做到了
 
 能从错误输入追到状态机和恢复路径，为双板记录器的完整链路做准备。

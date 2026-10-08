@@ -89,6 +89,12 @@ RTC_NOINIT_ATTR故障记录有magic/version/CRC，结合 esp_reset_reason 原值
 |---|---|---|---|---|
 | 待实测 | | | | |
 
+## 延伸阅读
+
+喂狗的方法论：
+
+- **[\[D12\]](../reference/bibliography.md#papers)** Ganssle《Great Watchdog Timers for Embedded Systems》— 任务看门狗该由谁喂、喂狗条件怎么写才能真的反映"系统健康"。
+
 ## 你做到了
 
 能从错误输入追到状态机和恢复路径，为双板记录器的完整链路做准备。

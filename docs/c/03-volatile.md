@@ -484,6 +484,13 @@ while (count--) {
 | "可加而不必加"的 volatile | `stm32f4xx_i2c.c:1261-1264`（第四节），库解剖见 `docs/stm32/15-spl-anatomy.md` |
 | 默认 `-O0` 的板级工程 | `code/stm32/00-blink/Makefile:20` |
 
+## 延伸阅读
+
+本章的结论有两份原文可查：
+
+- **[\[D7\]](../reference/bibliography.md#papers)** Eide & Regehr 2008 — 13 款编译器对 volatile 的错编实测，以及"把 volatile 访问包进函数"的对策；本章六变体表的学术版。
+- **[\[C1\]](../reference/bibliography.md#toolchain)** N1570 §5.1.2.3 — as-if 规则与"volatile 访问是可观察行为"的原文，本章结论的法律条文。
+
 ## 你做到了
 
 - 会取证：能给任意驱动代码生成 `-O0/-O2` 两份汇编，指出被缓存、被删、被合并的访存；

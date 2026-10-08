@@ -8,6 +8,12 @@ title: 更新日志
 
 站点统计（成稿章节 / 实验 / 动画 / 工程数）由 `npm run docs:gen` 扫描全站章节 frontmatter 得出，[首页学习地图](/)与本页同源。
 
+## 2026-10-09 · 可查证：参考文献总表 · 动画在慢机器上也能跑
+
+- **参考文献总表（此前没有）**：全站"手册说""标准规定""论文证明过"散落在各章，没有一处写明**哪一版、哪个 DOI、代码固定在哪个 tag**。新增 [参考文献](bibliography.md)，六个分区：A 芯片与内核文档（RM0090 Rev 22、DS8626 Rev 12、GD32F4xx UM Rev 3.0、Bumblebee Rev 1.0……核过 PDF 的才写修订号，没核的明标"未核版本"）、B 总线协议（UM10204 Rev 7、SPI Block Guide V03.06、ULPI 1.1、CAN 2.0/ISO 11898-1……）、C 语言与工具链（N1570、MISRA、TIS ELF 1.2、AAPCS32、AN298、RISC-V 20191213/20211203……）、D 经典论文 12 篇（Liu & Layland 1973、Sha 1990、TLSF 2004、Wilson 1995、Lamport 1977、McCreary & Gray 1975、Eide & Regehr 2008、Wang 2013、Koopman 2004、Dijkstra 1965……**DOI 全部经 Crossref 核对**题名/刊物/年份/页码）、E 书、F 代码基准。22 个成稿章节在"你做到了"之前新增**延伸阅读**，用 `[D2]` 标签指回总表——每条都写清"这篇和本章哪一句有关"，不是书单。**诚实标出的缺口**：RT-Thread 在 CI 里稀疏检出 `master` 而非固定 tag，R 篇行号可能漂移（F8）。
+- **演示中心在慢机器上从 3 fps 到 55 fps**：CI 画廊用例连续两次超时，本地 12× CPU 节流复现——69 条 SMIL 时间轴同时跑在主线程上，帧率掉到 3 fps，任何靠 rAF 的等待都饿死；手机上打开这页也是同样的卡。现在 `AnimFigure` 用 IntersectionObserver 对视口外（含 200px 预载带）的图 `pauseAnimations()`、回视口接着走（时间轴不丢、按钮不变）；SMIL 在 document `load` 就开跑、早于水合，所以 `<head>` 里再放一段内联脚本按同一口径先停一遍；进度条改动 `transform` 不动 `width`。浏览器用例改为 `expect.poll` 轮询并断言页尾图已自动停；CI 失败时上传 Playwright trace 留证。
+- **动画版式审计进 CI，按 Linux 字体度量**：`anim:audit` 命令行化并在 CI 的 ubuntu 上跑，首次就抓到本地全绿、CI 红 8 张——图里声明的 `'Segoe UI','Microsoft YaHei'` 在 CI 上没有，Chromium 退回 Noto Sans CJK，同一行字宽 2%（纯中文）～10%（等宽代码/十六进制）。审计加 `--font-scale`（只放大字宽、绕 text-anchor），**本地 `--font-scale 1.10` 全绿即可认为 CI 必绿**；按此标准改了 19 张（断行优于缩号）。经验规则写进 `animation.md` §7。
+
 ## 2026-10-08 · 极其精品：传播力 · 可证性能 · 无障碍 · 可信度
 
 前一天的打磨把「内容」做到位了，这一轮补的是**工程与传播层面**——实测发现四处"够不到顶"的地方，逐项补齐并都加了防回退闸门。

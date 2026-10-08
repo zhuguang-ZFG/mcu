@@ -194,6 +194,14 @@ if( pxMutexHolderTCB->uxPriority < pxCurrentTCB->uxPriority )  /* 持锁者比�
 | 还锁回落 | `queue.c` prvCopyDataToQueue 互斥锁分支 → xTaskPriorityDisinherit |
 | 反转实验 | [E04](../../lab/e04-priority-inversion.md) + 动画 [priority-inversion.svg](/anim/priority-inversion.svg) |
 
+## 延伸阅读
+
+优先级继承的理论与那次著名事故：
+
+- **[\[D2\]](../../reference/bibliography.md#papers)** Sha, Rajkumar, Lehoczky 1990 — 优先级继承协议的原始论文，也证明了它**不防死锁**（优先级天花板才防）；`xSemaphoreCreateMutex` 继承逻辑的理论出处。
+- **[\[D11\]](../../reference/bibliography.md#papers)** Reeves 1997 — 火星探路者优先级反转事故的 JPL 一手复盘，`configUSE_MUTEXES` 这一行的历史重量。
+- **[\[D10\]](../../reference/bibliography.md#papers)** Dijkstra 1965 — 信号量的起点。
+
 ## 你做到了
 
 - RTOS 最著名的灵异事件在你板子上复现并被你亲手破解；

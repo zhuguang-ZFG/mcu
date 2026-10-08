@@ -119,6 +119,12 @@ RT-Thread 的 Kconfig 是"菜单派"（[R6 Env 与 menuconfig](../rtthread/06-en
 - **堆管理迁移忘换家族**：FreeRTOS 的 `pvPortMalloc`/`vPortFree` 与 RT-Thread 的 `rt_malloc`/`rt_free` 不是同一族——混用就是内存灾难，迁移时全局替换并核对 free 家族。
 - **静态创建 API 形态差异**：FreeRTOS 的 `xTaskCreateStatic` 要传 StaticTask_t+栈数组两个缓冲；RT-Thread 的 `rt_thread_init` 要传 rt_thread 结构+栈数组+栈大小——参数个数与顺序不同，别按肌肉记忆填。
 
+## 延伸阅读
+
+两家在内存管理上分道扬镳的学术背景：
+
+- **[\[D3\]](../../reference/bibliography.md#papers)** Masmano et al. 2004（TLSF）· **[\[D4\]](../../reference/bibliography.md#papers)** Wilson et al. 1995（分配器综述）— 先读综述再读 TLSF，分歧的来龙去脉就清楚了。
+
 ## 你做到了
 
 - 一页纸看穿两个 OS；

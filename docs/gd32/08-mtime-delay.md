@@ -280,6 +280,12 @@ mtime_lo 进位回 0 的那一拍，mtime_hi 加 1。RV32 一次访存只有 32 
 | ECLIC 三动作（使能/level/priority/向量） | [V1 第七节](06-clic-irq.md) |
 | 回绕安全超时写法（先减再比） | [S5 第五节](../stm32/05-systick.md) |
 
+## 延伸阅读
+
+64 位电表的架构定义：
+
+- **[\[C8\]](../reference/bibliography.md#toolchain)** RISC-V Privileged 20211203 "Machine Timer Registers"一节 — mtime/mtimecmp 64 位、从不回绕、"比较到了就置 MTIP"；时钟源不归 ISA 管，所以 1/4 主频那笔账要看 **[\[A14\]](../reference/bibliography.md#chips)** Bumblebee Core Datasheet。
+
 ## 你做到了
 
 - 时基换了心脏也会开方：mtime 的驱动链、27MHz 账、读写纪律、续约语句一气呵成；

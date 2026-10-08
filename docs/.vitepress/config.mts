@@ -127,6 +127,7 @@ export default defineConfig({
         items: [
           { text: '术语速查', link: '/reference/glossary' },
           { text: '常见问题 FAQ', link: '/reference/faq' },
+          { text: '参考文献', link: '/reference/bibliography' },
           { text: '更新日志', link: '/reference/changelog' },
           { text: '关于我们与致谢', link: '/reference/about' },
         ],
@@ -323,6 +324,7 @@ export default defineConfig({
           items: [
             { text: '术语速查', link: '/reference/glossary' },
             { text: '常见问题 FAQ', link: '/reference/faq' },
+            { text: '参考文献', link: '/reference/bibliography' },
             { text: '更新日志', link: '/reference/changelog' },
             { text: '关于我们与致谢', link: '/reference/about' },
           ],

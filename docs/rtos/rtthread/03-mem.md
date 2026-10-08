@@ -167,6 +167,13 @@ finsh 提供：
 | 二级位图同源 | TLSF 两级位图 vs [R1](01-thread-sched.md) 调度二级位图 |
 | 对照 FreeRTOS | [F7](../freertos/07-heap.md) heap_1~5 vs 三套分治 |
 
+## 延伸阅读
+
+三套策略背后的论文：
+
+- **[\[D3\]](../../reference/bibliography.md#papers)** Masmano et al. 2004 — TLSF 原始论文：两级位图索引、O(1) 分配/释放、碎片有界的证明。
+- **[\[D4\]](../../reference/bibliography.md#papers)** Wilson et al. 1995 — 小内存堆、slab、memheap 三套策略背后的通用权衡。
+
 ## 你做到了
 
 - 内存管理的"确定性"维度被量化；

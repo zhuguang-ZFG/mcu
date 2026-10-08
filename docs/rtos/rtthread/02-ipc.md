@@ -165,6 +165,12 @@ RT-Thread 5.x 把所有 IPC 的公共部分抽到 `struct rt_ipc_object`（位�
 | finsh list_* 万能 | [R0](00-arch.md) 对象容器遍历；list_sem/mutex/event/mailbox/msgqueue |
 | 反转实验 | [E04](../../lab/e04-priority-inversion.md) 双 OS 双跑 |
 
+## 延伸阅读
+
+`rt_mutex` 优先级继承的理论出处：
+
+- **[\[D2\]](../../reference/bibliography.md#papers)** Sha, Rajkumar, Lehoczky 1990 — 继承协议的原始论文；记住它不防死锁，天花板协议才防。
+
 ## 你做到了
 
 - IPC 从"五个 API 要背"变成"一副骨架推演"；

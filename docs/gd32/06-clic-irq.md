@@ -312,6 +312,14 @@ shv=1 是**向量模式**——硬件直跳到该中断专属入口（向量直�
 | mtime/mtimecmp 精确映射基地址 | 官方固件驱动实证：0xD1000000（n200_timer.h:24-30）；nlbits 语义待 ISA 手册 |
 | `core_clk_aon` 与核心时钟的精确关系 | 已收案：同源同频（[V3](08-mtime-delay.md)，手册 §2.1） |
 
+## 延伸阅读
+
+ECLIC 的标准原型与权威寄存器表：
+
+- **[\[C9\]](../reference/bibliography.md#toolchain)** RISC-V CLIC 规范草案 — "级别 + 优先级"双字段、向量直跳模式的标准原型，ECLIC 是它的增强实现。
+- **[\[A14\]](../reference/bibliography.md#chips)** Bumblebee Core Datasheet — ECLIC 寄存器与 CSR 的权威表，GD32VF103 的中断源编号以它为准。
+- **[\[C8\]](../reference/bibliography.md#toolchain)** RISC-V Privileged 20211203 — mstatus/mtvec/mie 的架构定义。
+
 ## 你做到了
 
 - 中断控制器从 NVIC 换到 ECLIC，三处架构差异（控制器、两维优先级、向量直跳）入肌肉记忆；

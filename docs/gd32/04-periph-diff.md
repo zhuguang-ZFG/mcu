@@ -229,6 +229,13 @@ TRNG 的存在让 GD32 在安全/加密场景比 STM32F407 多一个硬件基础
 | ULPI 时钟源由 USBHS_GUSBCS.EMBPHY 选（外部 PHY 时钟 / CK48M） | UM Rev3.0 §4.2.2 p94（已核验） |
 | 命名风格 CTL 统一 | [G3 USART](03-usart.md) CR→CTL；[S15 SPL 解剖](../stm32/15-spl-anatomy.md) 读库姿势 |
 
+## 延伸阅读
+
+两家"同脚同 AF、位时序连复位值都一样"不是巧合，是都按同一份规范来：
+
+- **[\[B5\]](../reference/bibliography.md#buses)** ULPI 1.1 — USBHS 那 12 根信号的接口规范。
+- **[\[B6\]](../reference/bibliography.md#buses)** Bosch CAN 2.0 / ISO 11898-1 — 位时序（SJW/BS1/BS2）的定义，规范把参数定死了，寄存器自然长一样。
+
 ## 你做到了
 
 - GD32F4xx 与 STM32F407 的外设差异在你眼里是一张可查的表；

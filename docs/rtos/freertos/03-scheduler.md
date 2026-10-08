@@ -233,6 +233,12 @@ void vTaskDelay( const TickType_t xTicksToDelay )
 | tick 醒人剪枝 | `tasks.c` xTaskIncrementTick（xNextTaskUnblockTime 比较+队首循环） |
 | 延时挂表 | `tasks.c` vTaskDelay → prvAddCurrentTaskToDelayedList |
 
+## 延伸阅读
+
+本章讲"高优先级先跑"这台机器怎么造；优先级该怎么分才能保证期限，是另一篇文章：
+
+- **[\[D1\]](../../reference/bibliography.md#papers)** Liu & Layland 1973 — 速率单调（周期越短优先级越高）与 69.3% 利用率上界都出自这里；读完你会知道 `configMAX_PRIORITIES` 里的数字不该拍脑袋。
+
 ## 你做到了
 
 - 调度器从"魔法"变成"速查器+链表+三条抢占路径"；

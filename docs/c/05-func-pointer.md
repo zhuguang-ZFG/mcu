@@ -293,6 +293,13 @@ A 派 7 格（牺牲一格当哨兵：`w+1 == r` 判满，所以永远留一格�
 | 发布/获取屏障 | 同上 `atomic_signal_fence`（180/190/250/260 行） |
 | `const` 表落 `.rodata` 的证据 | `nm build/probe.m4.o`（`FSM` = `r`，`key_table` = `b`） |
 
+## 延伸阅读
+
+环形缓冲"不加锁也对"不是经验，是证明过的：
+
+- **[\[D5\]](../reference/bibliography.md#papers)** Lamport 1977 — 单生产者单消费者环形缓冲为什么不需要锁；本章"发布/获取顺序"那两道屏障的证明出处。
+- **[\[D10\]](../reference/bibliography.md#papers)** Dijkstra 1965 — 互斥问题的起点，一页纸。当缓冲区不再是单生产单消费，你要走的就是这篇开出来的路。
+
 ## 你做到了
 
 - 向量表在你眼里就是"Flash 里的函数指针数组"；

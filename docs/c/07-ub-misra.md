@@ -309,6 +309,14 @@ alias-violate.c:13:13: warning: dereferencing type-punned pointer will break str
 | UBSan 用例与跳过逻辑 | ub.c 全文；probe.sh 第 4 步 |
 | 掩码纪律 `1UL << (LED_R_PIN+16)` | code/stm32/00-blink 工程与 [S3](../stm32/03-gpio.md) |
 
+## 延伸阅读
+
+本章只讲了嵌入式最常撞的几条；完整清单与"UB 真会咬人"的证据在这里：
+
+- **[\[C1\]](../reference/bibliography.md#toolchain)** N1570 附录 J.2 — C11 全部未定义行为的官方清单，两百余条。
+- **[\[D8\]](../reference/bibliography.md#papers)** Wang et al. 2013 — 优化器利用 UB 删掉空指针检查、溢出检查的真实案例集（Linux、PostgreSQL……）。
+- **[\[C2\]](../reference/bibliography.md#toolchain)** MISRA C:2012 / C:2023 — 本章规则取舍的原文。
+
 ## 你做到了
 
 - 拿到一张"UB 雷区地图"和一套编译器防线；

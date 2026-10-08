@@ -91,6 +91,12 @@ F407 在 code/stm32/05-framed-protocol 执行 make；S3 在 code/esp32/06-framed
 |---|---|---|---|---|
 | 待实测 | | | | |
 
+## 延伸阅读
+
+CRC 多项式不是随手挑的：
+
+- **[\[D9\]](../reference/bibliography.md#papers)** Koopman & Chakravarty 2004 — 按报文长度选多项式的汉明距离表；CRC-16/CCITT 对本章这种短帧的检错能力，是查表查出来的，不是信仰。
+
 ## 你做到了
 
 能从错误输入追到状态机和恢复路径，为双板记录器的完整链路做准备。

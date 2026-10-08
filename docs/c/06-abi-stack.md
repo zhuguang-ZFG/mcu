@@ -310,6 +310,12 @@ non_leaf 内部 `bl sink`、`bl add2`，任何一次 `bl` 都会覆盖 lr，不�
 | 9/9 行为断言 | probe.c 103-109、127 行 |
 | push/pop 计数核对 | probe.sh 61-64 行（各恰 1 次） |
 
+## 延伸阅读
+
+9 条断言逐条对应的条款：
+
+- **[\[C4\]](../reference/bibliography.md#toolchain)** AAPCS32 — r0–r3 传参、r4–r11 被调用者保存、64 位参数落偶奇寄存器对、公共接口处栈 8 字节对齐，全在"Procedure Call Standard"一节。
+
 ## 你做到了
 
 - 看反汇编不再发怵：prologue/epilogue 一眼认出，`@ args = 8` 这种注释也会读了。

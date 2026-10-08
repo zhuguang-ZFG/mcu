@@ -174,6 +174,14 @@ heap_5 允许把堆拆成多个区域（HeapRegion 表）：比如 SRAM 放常�
 | 碎片实验 | [code/rtos/01-freertos-lab](https://github.com/zhuguang-ZFG/mcu/tree/main/code/rtos/01-freertos-lab) 场景 5 |
 | 动画 | [heap4-coalesce.svg](/anim/heap4-coalesce.svg) |
 
+## 延伸阅读
+
+五份简历背后的分配器理论：
+
+- **[\[D4\]](../../reference/bibliography.md#papers)** Wilson et al. 1995 — 分配器综述：首次适配/最佳适配/隔离适配各自的碎片代价，heap_4 为什么选"首次适配 + 相邻合并"。
+- **[\[E5\]](../../reference/bibliography.md#books)** Knuth TAOCP Vol.1 §2.5 — 边界标记法与伙伴系统，heap_4 合并相邻空闲块的祖师爷。
+- **[\[D3\]](../../reference/bibliography.md#papers)** Masmano et al. 2004 — TLSF：RT-Thread 走的另一条路（O(1)、碎片有界），与 heap_4 对照着看。
+
 ## 你做到了
 
 - 内存从"够不够"的焦虑变成"可测可控"的工程；

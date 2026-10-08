@@ -107,8 +107,8 @@ docs/                        VitePress 站点（全部教程内容，base 为 /m
 ├── esp32/                   ESP32-S3 + ESP-IDF
 ├── gd32/                    GD32 双系对照（G 篇 ARM / V 篇 RISC-V）
 ├── lab/                     实物实验中心（模板 + 8 个实验）
-├── reference/               术语速查 / FAQ / 更新日志 / 关于我们与致谢
-└── public/anim/             34 张 SMIL 机制动画（构建期内联进页面）
+├── reference/               术语速查 / FAQ / 参考文献 / 更新日志 / 关于我们与致谢
+└── public/anim/             SMIL 机制动画（构建期内联进页面；张数见上方进度块）
 code/                        与章节同构的示例工程（寄存器版，全部逐行注释）
 ├── stm32/ esp32/ rtos/ c/ gd32/
 └── toolchain/               不需要开发板的取证工程（如 02-elf；stm32/01-arch、09-adc 也各带一个 probe.sh）

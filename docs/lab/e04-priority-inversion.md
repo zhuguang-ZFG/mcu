@@ -97,6 +97,13 @@ RT-Thread 版已进 `code/rtos/02-rt-thread-lab`（R7 移植工程，同一命�
 1. 优先级继承为什么只是"缓解"不是"根治"？（提示：L 的临界区时长仍是 H 的下限）
 2. 优先级天花板协议（priority ceiling）与继承的差异是什么？查资料补一句话。
 
+## 延伸阅读
+
+你在板上复现的，是 1997 年火星上发生过的事：
+
+- **[\[D11\]](../reference/bibliography.md#papers)** Reeves 1997 — JPL 工程师的一手复盘；读完再看实验现象，会更有画面。
+- **[\[D2\]](../reference/bibliography.md#papers)** Sha, Rajkumar, Lehoczky 1990 — 修复方案（优先级继承）的论文。
+
 ## 你做到了
 
 - 亲手复现航天史上著名的 bug 并修复；

@@ -375,6 +375,12 @@ if (esp_ota_get_state_partition(running, &st) == ESP_OK
 | NVS 与 Wi-Fi 校准数据的渊源 | [P8 Wi-Fi 第五节](08-wifi.md) |
 | 手工 Flash 方案对照（擦除粒度/掉电/寿命） | [S13 Flash](../stm32/13-flash-iap.md) |
 
+## 延伸阅读
+
+NVS 页头与条目的 CRC32 不是装饰：
+
+- **[\[D9\]](../reference/bibliography.md#papers)** Koopman & Chakravarty 2004 — 多项式与报文长度决定检错能力；这篇解释了 32 位 CRC 对几十字节记录"够用"的边界在哪。
+
 ## 你做到了
 
 - 16MB 的每一寸都归你规划；

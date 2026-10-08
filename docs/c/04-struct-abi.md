@@ -236,6 +236,12 @@ C 标准把位域布局（分配方向、跨单元策略、填充）留给编译
 | 位域不可移植证据 | 同上 `bitfield_check()` |
 | 掩码宏替代方案 | 同上 `REG_FIELD_*_MASK` |
 
+## 延伸阅读
+
+字节账的条款出处：
+
+- **[\[C4\]](../reference/bibliography.md#toolchain)** AAPCS32 — 基本数据类型的尺寸、对齐与位域规则的原文；本章每张字节账都能在"Data types and alignment"一节找到条款。
+
 ## 你做到了
 
 - 再看到 `GPIOF->BSRR` 能心算出 `0x40021418`；

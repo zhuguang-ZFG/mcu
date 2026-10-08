@@ -247,6 +247,12 @@ L = 通道数−1 = 2（`ADC_SQR1(3)` = `(3-1)<<20`，`st-adc.h:787`）；通道
 | VREFINT 通道 17 | `.trellis/ref/st-adc.h` 383 行 |
 | 断言 5/5 汇总 | `code/stm32/09-adc/probe.sh` 59-60 行 |
 
+## 延伸阅读
+
+"12 刀砍到 4096 分之一"的电路从哪来：
+
+- **[\[D6\]](../reference/bibliography.md#papers)** McCreary & Gray 1975 — 片上 SAR ADC 的电容阵列电荷再分配法就是这篇定下的；也解释了采样电容为什么要先充够电（采样时间的物理来源）。
+
 ## 你做到了
 
 本章的真实定时采样实现已接入 [J1 F407 记录器](../projects/01-f407-logger.md)：ADC1由TIM2 TRGO触发，DMA2 Stream0传输，采样任务接收通知。工程位于 `code/stm32/07-sensor-logger`，复用实采驱动而不再复制一份同样的外设代码；原 `09-adc/probe.sh` 仍只承担SAR/采样时间的宿主模型取证。
