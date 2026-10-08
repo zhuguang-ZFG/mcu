@@ -3,7 +3,7 @@ idf_component_register(
     SRCS "main.c"
          "../../../common/reliability/protocol.c"
          "../../../common/reliability/transport.c"
-         "../../../common/reliability/service.c"
+         "../../../common/reliability/service.c" "../../../common/reliability/query.c"
          "../../../common/reliability/health.c"
          "../../../common/reliability/record.c"
     PRIV_INCLUDE_DIRS "../../../common/reliability"

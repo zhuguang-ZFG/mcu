@@ -61,7 +61,7 @@ static void supervise(void *u){
 }
 void app_main(void){
     uint32_t reset=(uint32_t)esp_reset_reason(),previous=0;
-    bool valid=fault_record_read(&retained,reset==ESP_RST_TASK_WDT||reset==ESP_RST_INT_WDT||reset==ESP_RST_PANIC,&previous);
+    bool valid=fault_record_take(&retained,reset==ESP_RST_TASK_WDT||reset==ESP_RST_INT_WDT||reset==ESP_RST_PANIC,&previous);
     ESP_LOGI("health","reset=%lu retained=%d overdue=%lu",(unsigned long)reset,valid,(unsigned long)previous);
     uart_config_t cfg={.baud_rate=115200,.data_bits=UART_DATA_8_BITS,.parity=UART_PARITY_DISABLE,.stop_bits=UART_STOP_BITS_1,.flow_ctrl=UART_HW_FLOWCTRL_DISABLE,.source_clk=UART_SCLK_DEFAULT};
     ESP_ERROR_CHECK(uart_driver_install(UART_NUM_1,1024,0,0,NULL,0));ESP_ERROR_CHECK(uart_param_config(UART_NUM_1,&cfg));
