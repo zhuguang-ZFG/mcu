@@ -111,6 +111,7 @@ export default defineConfig({
       { text: 'ESP32', link: '/esp32/' },
       { text: 'GD32', link: '/gd32/' },
       { text: '实验', link: '/lab/' },
+      
       { text: '动画', link: '/animations' },
       {
         text: '资料',
@@ -130,6 +131,7 @@ export default defineConfig({
             { text: '这条路怎么走', link: '/guide/' },
             { text: '实物装备清单', link: '/guide/hardware' },
             { text: '手册地图', link: '/guide/manuals' },
+            { text: '上板验证与回填指南', link: '/guide/verify-on-hardware' },
           ],
         },
       ],
