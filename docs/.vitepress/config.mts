@@ -3,12 +3,52 @@ import { animDuration, decorateAnim, readAnim } from './anim-decorate.mjs'
 import { codeLanguages } from './code-languages.mjs'
 import { renderSearch } from '../../scripts/search-render.mjs'
 
+const HOST = 'https://zhuguang-zfg.github.io'
+const BASE = '/mcu/'
+const SITE_DESC = '寄存器级 STM32F407 × ESP32-S3 深度教学：C 语言精髓 · RTOS 双精讲 · 全程实物实验'
+const OG_IMAGE = `${HOST}${BASE}og-cover.png`
+
+// 页面相对路径 → 规范 URL：index 归一为目录，与 VitePress 产物路径一致。
+const pageUrl = (page: string) => {
+  let p = page.replace(/\.md$/, '.html')
+  if (p === 'index.html') p = ''
+  else p = p.replace(/\/index\.html$/, '/')
+  return `${HOST}${BASE}${p}`
+}
+
 export default defineConfig({
-  base: '/mcu/',
+  base: BASE,
   title: '通往单片机之路',
-  description: '寄存器级 STM32F407 × ESP32-S3 深度教学：C 语言精髓 · RTOS 双精讲 · 全程实物实验',
+  description: SITE_DESC,
   lang: 'zh-CN',
-  head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/mcu/favicon.svg' }]],
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: `${BASE}favicon.svg` }],
+    ['meta', { name: 'theme-color', content: '#3eaf7c' }],
+    ['meta', { property: 'og:site_name', content: '通往单片机之路' }],
+    ['meta', { property: 'og:locale', content: 'zh_CN' }],
+    ['meta', { property: 'og:image', content: OG_IMAGE }],
+    ['meta', { property: 'og:image:width', content: '1200' }],
+    ['meta', { property: 'og:image:height', content: '630' }],
+    ['meta', { property: 'og:image:alt', content: '通往单片机之路：寄存器级 STM32F407 × ESP32-S3 深度教学' }],
+    ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+    ['meta', { name: 'twitter:image', content: OG_IMAGE }],
+  ],
+  // hostname 必须含 base 且以 / 结尾：VitePress 生成的是相对路径，靠它做相对解析。
+  sitemap: { hostname: `${HOST}${BASE}` },
+  // 每页分享卡与规范链接：链接被分享/收录时给出标题、描述与配图，而不是一张白板。
+  transformHead({ page, title, description }) {
+    const url = pageUrl(page)
+    const desc = description || SITE_DESC
+    return [
+      ['link', { rel: 'canonical', href: url }],
+      ['meta', { property: 'og:type', content: page === 'index.md' ? 'website' : 'article' }],
+      ['meta', { property: 'og:title', content: title }],
+      ['meta', { property: 'og:description', content: desc }],
+      ['meta', { property: 'og:url', content: url }],
+      ['meta', { name: 'twitter:title', content: title }],
+      ['meta', { name: 'twitter:description', content: desc }],
+    ]
+  },
   ignoreDeadLinks: false,
   markdown: {
     languages: codeLanguages,

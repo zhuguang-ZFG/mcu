@@ -6,8 +6,9 @@
 
 ## 2. Signatures
 
-- `npm run quality`：单元回归、工程清单、站点构建、动画、README、链接、导航可达性。
+- `npm run quality`：单元回归、工程清单、站点构建、动画、README、链接、导航可达性、分享/收录元数据。
 - `npm run nav:check`：扫描全部页面，检查每个页面都能从 `config.mts` 的 nav/sidebar 到达（页面→入口方向，正是死链检查的反面）。
+- `npm run seo:check`：检查构建产物含 sitemap.xml（每条 `<loc>` 必须带 `host+base` 前缀）、robots.txt、og-cover.png，且每页都有 og/twitter 分享卡与 canonical。需先构建。
 - `npm run firmware:check`：ARM/host 全工程、五场景切换、初始 SP 与 Thumb 复位向量验证。
 - `npm run test:browser`：构建后运行；先 `npx playwright install chromium`。本机可 `PLAYWRIGHT_CHANNEL=msedge`。
 - `npm run site:measure -- current [output-directory]`：测量产物与搜索延迟加载，默认输出 test-results/performance。
@@ -43,6 +44,7 @@
 
 - tests/catalog.test.mjs：空目录、失效入口、未登记工程、重复与目标错配。
 - tests/nav.test.mjs：sidebar 全量（正例）、漏登记被拦截（反例，GD32 回归）、锚点/尾斜杠归一。
+- tests/seo.test.mjs：meta 抽取与空值、单页分享卡齐全、og:image/url 必须绝对 URL、sitemap 丢 base 前缀被拦截（反例）、robots 缺项。
 - tests/metadata.test.mjs：缺项、非法数值/枚举、重复 YAML 字段。
 - tests/workflow.test.mjs：同提交依赖关系、PR 权限与失败传播。
 - tests/search.test.mjs、tests/browser/site.spec.mjs：高亮实际 token、保留正文、搜索结果、延迟索引、暂停/减少动效、移动端实验卡。
