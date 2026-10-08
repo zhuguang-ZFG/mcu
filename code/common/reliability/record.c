@@ -16,3 +16,9 @@ bool fault_record_read(const volatile fault_record_t *src, bool warm_watchdog_re
     if (read_le32(b)!=0x57444731UL || b[4]!=1 || b[5]!=0 || read_le16(b+10)!=protocol_crc(b,10)) return false;
     *mask=read_le32(b+6); return true;
 }
+bool fault_record_take(volatile fault_record_t *src,bool warm,uint32_t *mask)
+{
+    bool valid=fault_record_read(src,warm,mask);
+    if(src)src->bytes[0]=0; /* A later unrelated warm reset must not reuse old evidence. */
+    return valid;
+}

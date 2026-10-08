@@ -13,4 +13,5 @@ typedef struct {
 } device_service_t;
 void device_service_init(device_service_t *, uint8_t, uint32_t, bool, fault_fn, void *);
 void device_service_feed(device_service_t *, uint8_t, uint32_t);
+bool device_service_query(const device_service_t *,const frame_t *,frame_t *,uint32_t);
 #endif

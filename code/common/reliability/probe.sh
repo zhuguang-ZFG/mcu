@@ -5,7 +5,7 @@ mkdir -p build
 cc="${HOSTCC:-gcc}"
 python="${PYTHON:-python3}"
 flags="-std=c11 -Wall -Wextra -Werror -O2"
-sources="protocol.c health.c transport.c service.c record.c"
+sources="protocol.c health.c transport.c service.c query.c record.c"
 "$cc" $flags $sources tests.c -o build/tests.exe
 ./build/tests.exe
 "$cc" $flags protocol.c codec-tool.c -o build/codec-tool.exe

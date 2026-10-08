@@ -156,5 +156,7 @@ static void record_tests(void)
     for(unsigned i=0;i<12;i++) {
         r.bytes[i]^=1; assert(!fault_record_read(&r,true,&mask)); r.bytes[i]^=1;
     }
+    assert(fault_record_take(&r,true,&mask));
+    assert(!fault_record_take(&r,true,&mask));
 }
 int main(void) { codec_tests(); health_tests(); transport_tests(); record_tests(); puts("protocol, health, TX/RX backpressure, service and reset-record tests passed"); return 0; }
