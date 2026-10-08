@@ -50,6 +50,9 @@ test('animation controls and reduced motion work in both themes', async ({ page 
   expect(errors).toEqual([])
 })
 test('animation gallery lists every svg with working controls', async ({ page }) => {
+  // 画廊页一次加载全部 SMIL 动画（60+ 张），CI 共享 runner 上默认 30s 预算
+  // 偶发在 waitForFunction 前耗尽（同一提交重跑一次过、一次超时）。
+  test.slow()
   await page.goto('animations.html')
   const figures = page.locator('.anim-figure')
   await expect(figures).toHaveCount(svgNames.length)

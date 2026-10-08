@@ -1,6 +1,8 @@
 import { defineConfig } from '@playwright/test'
 export default defineConfig({
   testDir: './tests/browser',
+  // 仅 CI 允许重试一次：吸收 runner 负载抖动；本地保持 0 次，让真失败立刻暴露。
+  retries: process.env.CI ? 1 : 0,
   use: {
     baseURL: 'http://127.0.0.1:24318/mcu/',
     channel: process.env.PLAYWRIGHT_CHANNEL || undefined,
