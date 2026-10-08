@@ -51,6 +51,11 @@ jobs:
           arm-none-eabi-gcc --version
       - name: 固定 FreeRTOS 内核
         run: git clone --depth 1 --branch V11.1.0 https://github.com/FreeRTOS/FreeRTOS-Kernel.git .trellis/ref/freertos-v11/kernel
+      - name: 固定 RT-Thread 内核（Nano 最小集稀疏检出）
+        run: |
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/RT-Thread/rt-thread.git .trellis/ref/rt-thread
+          cd .trellis/ref/rt-thread
+          git sparse-checkout set src include libcpu/arm/cortex-m4 include/klibc src/klibc
       - name: 全工程编译与场景切换回归
         run: npm run firmware:check
 
