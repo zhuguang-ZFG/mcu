@@ -35,6 +35,12 @@ minutes: 35
 
 `esp_sleep_enable_timer_wakeup(5s)` + `esp_deep_sleep_start()`：5 秒后自动复位，串口打印 RTC 内存里的计数——睡-醒循环第一次跑通。
 
+## 动画：睡眠矩阵与唤醒路径
+
+Light 与 Deep 的四列差异、RTC 内存的“遗言”、ULP 守夜人——Deep 阶段数字域 CPU/SRAM 变灰断电，boot_count 跨复位累加，唤醒箭头周期射入。
+
+![ESP32 睡眠矩阵：Light 眯一会 · Deep 睡死 · ULP 守夜](/anim/esp32-sleep-matrix.svg)
+
 ## 小节结构
 
 | 小节 | 内容 | 四件套 |

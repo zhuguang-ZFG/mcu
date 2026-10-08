@@ -38,6 +38,12 @@ minutes: 45
 
 进入 code/esp32/07-watchdog-health，在 IDF5.5.2 环境运行 set-target esp32s3、build、size。数据口GPIO10/11，默认控制台输出复位原因。主机用 C8 的 INFO/STATUS 命令，无串口流量也应保持健康。
 
+## 动画：TWDT 订阅、喂狗与超时链条
+
+worker 上报进展、supervisor 巡检确认、reset_user 喂狗、TWDT 两秒倒数——喂狗脉冲还在闪就没有超时；fault 注入后链条断在哪一环，一图看完。
+
+![ESP32 任务看门狗：TWDT 的订阅、喂狗与超时链条](/anim/esp32-twdt-chain.svg)
+
 ## 进展与喂狗判据
 
 worker每100ms完成一轮工作，通信每轮有限读取字节/处理发送并上报；两者deadline均500ms。portMUX保护跨核共享的health状态，获取锁后再读取时间，避免等待锁期间把旧时间戳写回。监督50ms检查一次；只有 health_supervise 返回true才 reset_user，false表示应停止喂狗，不能把条件写反。
@@ -86,3 +92,5 @@ RTC_NOINIT_ATTR故障记录有magic/version/CRC，结合 esp_reset_reason 原值
 ## 你做到了
 
 能从错误输入追到状态机和恢复路径，为双板记录器的完整链路做准备。
+
+> AI生成

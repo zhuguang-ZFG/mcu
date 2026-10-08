@@ -35,6 +35,8 @@ title: 动画演示中心
 
 ![环形缓冲两派：满/空判定与回绕](/anim/ring-buffer.svg)
 
+![C8 帧协议：逐字节解析状态机与重新同步](/anim/c08-frame-parse.svg)
+
 ![结构体与 ABI：对齐、填充与位域陷阱](/anim/struct-alignment.svg)
 
 ![函数调用栈帧：压栈与弹栈](/anim/stack-frame.svg)
@@ -127,17 +129,27 @@ title: 动画演示中心
 
 ![IDF UART 驱动事件](/anim/idf-uart-events.svg)
 
+![IDF 总线驱动两级模型：先配线，再认人](/anim/esp32-driver-layers.svg)
+
 ![LEDC 定时器与通道](/anim/ledc-timer-channel.svg)
 
 ![TCP 握手：报文在路上](/anim/tcp-handshake.svg)
 
+![ESP-NOW 三步：init → add_peer → send](/anim/esp32-espnow-direct.svg)
+
 ![OTA 双槽轮流坐庄：下载 → 切槽 → 自检 → 回滚](/anim/esp32-ota-rollback.svg)
 
+![ESP32 睡眠矩阵：Light 眯一会 · Deep 睡死 · ULP 守夜](/anim/esp32-sleep-matrix.svg)
+
 ![实战派音频全链路：控制走 I2C，声音走 I2S](/anim/esp32-audio-path.svg)
+
+![ESP32 任务看门狗：TWDT 的订阅、喂狗与超时链条](/anim/esp32-twdt-chain.svg)
 
 ## GD32 双系对照
 
 ![GD32 RCU 时钟树：与 STM32 逐字段对照](/anim/gd32-rcu-clock.svg)
+
+![GD32VF103 108MHz：殊途同归的 4MHz 家族](/anim/gd32-vf103-clk108.svg)
 
 ![GD32 AF 复用：每脚 4 位的选择器，16 选 1 过门](/anim/gd32-af-mux.svg)
 
@@ -149,6 +161,8 @@ title: 动画演示中心
 
 ## RT-Thread 精讲
 
+![R0 对象模型：万物继承 rt_object](/anim/rtt-object-model.svg)
+
 ![R1 二级位图：32×8 实现 256 级优先级选优](/anim/rtt-bitmap-256.svg)
 
 ![R2 IPC 五种武器一副骨架](/anim/rtt-ipc-skeleton.svg)
@@ -156,6 +170,8 @@ title: 动画演示中心
 ![RT-Thread 内存池：块大小一刀切，换 O(1) 的确定性](/anim/rtt-mem-alloc.svg)
 
 ![R4 设备框架调用链：应用 → 框架 → 驱动 → 寄存器](/anim/rtt-device-chain.svg)
+
+![R5 finsh 命令分发：宏钉进段，shell 按名翻牌](/anim/rtt-finsh-dispatch.svg)
 
 ![R7 Nano 移植四件套装配](/anim/rtt-port-nano.svg)
 

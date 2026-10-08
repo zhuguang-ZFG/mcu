@@ -38,6 +38,12 @@ minutes: 45
 
 在仓库根执行 `sh code/common/reliability/probe.sh`。它编译生产 codec/health/transport/service，执行边界断言，再运行 `python3 scripts/device-console.py self-test` 的交叉验证。无需串口库或开发板。
 
+## 动画：逐字节解析状态机
+
+字节流如何变成可恢复的消息——EMPTY → COLLECT → 验证 → DISCARD 的每一步：游标沿字节流连续前进、状态随之切换，坏帧路径与重新同步一图看完。
+
+![C8 帧协议：逐字节解析状态机与重新同步](/anim/c08-frame-parse.svg)
+
 ## 帧布局与容量
 
 raw = version(1B) + type(1B) + sequence(2B LE) + length(2B LE) + payload(0..64B) + CRC(2B LE)。CRC-16/CCITT-FALSE 覆盖前面所有字节，检查串 123456789 的结果是 0x29B1。最大 raw 72B，COBS 编码后最多73B，加零分隔符74B。响应状态字节也占 payload 容量，不能给64字节再追加状态而越界。
@@ -88,3 +94,5 @@ F407 在 code/stm32/05-framed-protocol 执行 make；S3 在 code/esp32/06-framed
 ## 你做到了
 
 能从错误输入追到状态机和恢复路径，为双板记录器的完整链路做准备。
+
+> AI生成

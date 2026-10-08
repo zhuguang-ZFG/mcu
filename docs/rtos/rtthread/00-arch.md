@@ -35,6 +35,12 @@ minutes: 30
 
 打开 RT-Thread 源码 `include/rtdef.h` 找到 `struct rt_object` 与 `struct rt_thread`——亲眼看到"线程结构的第一个成员就是对象"，继承一目了然。
 
+## 动画：对象模型与容器
+
+rt_object 基类、rt_thread 的首成员继承、对象容器按类型分链——橙色遍历珠沿 thread 链移动，list_thread 的"一把梭"就是它在逐节点走。
+
+![R0 对象模型：万物继承 rt_object](/anim/rtt-object-model.svg)
+
 ## 小节结构
 
 | 小节 | 内容 | 四件套 |

@@ -35,6 +35,12 @@ minutes: 50
 
 I2C 先通：读 QMI8658 WHO_AM_I（寄存器 0x00），串口打印出期望的 ID 值 0x05——一次事务证明整条链路。E07 工程已提供完整源码，`idf.py flash monitor` 即可。
 
+## 动画：两级模型与事务队列
+
+先配线再认人的两级配置、SPI 事务在队列里连续飞向屏幕、I2C 一句 transmit_receive 走完全部时序礼仪——事务方块从 CPU 飞到 ST7789 的过程，就是屏刷带宽的来源。
+
+![IDF 总线驱动两级模型：先配线，再认人](/anim/esp32-driver-layers.svg)
+
 ## 板卡事实
 
 - 立创实战派 S3（N16R8 模组）板载：ST7789 彩屏（SPI，320×240）、触摸 FT6336G（I2C，INT=IO17）、姿态 QMI8658（I2C）、音频 ES8311/ES7210（I2C+I2S）。**全部 GPIO 分配与 I2C 地址以立创 wiki 原理图页为准**（wiki.lckfb.com/zh-hans/szpi-esp32s3/）。
