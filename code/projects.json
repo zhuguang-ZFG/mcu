@@ -78,6 +78,16 @@
     ]
   },
   {
+    "id": "rtos-02-rt-thread-lab",
+    "path": "code/rtos/02-rt-thread-lab",
+    "kind": "arm-make",
+    "entry": "Makefile",
+    "scenes": [
+      1,
+      6
+    ]
+  },
+  {
     "id": "stm32-00-blink",
     "path": "code/stm32/00-blink",
     "kind": "arm-make",

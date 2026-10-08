@@ -5,8 +5,8 @@ difficulty: 3
 minutes: 90
 code_status: ready
 hardware_status: pending
-code_note: FreeRTOS scene 6（信号量版+互斥量版）已进 rtos-01-freertos-lab 工程；RT-Thread 版待 R7 移植工程补。
-projects: ["rtos-01-freertos-lab"]
+code_note: FreeRTOS scene 6（信号量版+互斥量版）已进 rtos-01-freertos-lab；RT-Thread 版已进 rtos-02-rt-thread-lab（R7 移植工程）。
+projects: ["rtos-01-freertos-lab", "rtos-02-rt-thread-lab"]
 
 ---
 
@@ -67,7 +67,7 @@ projects: ["rtos-01-freertos-lab"]
 
 FreeRTOS scene 6 已进 `code/rtos/01-freertos-lab`（`make DEMO_SCENE=6` 信号量版 / `make DEMO_SCENE=6 USE_MUTEX=1` 互斥量版）。三任务优先级 1/2/3，L 临界区 3 秒、M 错峰 500ms 启动、H 延时 1 秒后要锁——时间戳日志直接打印 H 的等待时长。
 
-RT-Thread 版待 R7 移植工程补（rt_sem_create/rt_mutex_create + rt_sem_take/rt_mutex_take），剧本与 FreeRTOS 版同构。
+RT-Thread 版已进 `code/rtos/02-rt-thread-lab`（R7 移植工程，同一命令矩阵）：`make DEMO_SCENE=6` 信号量版 / `make DEMO_SCENE=6 USE_MUTEX=1` 互斥量版，剧本与 FreeRTOS 版同构（L=22 低 / M=21 / H=20，RT-Thread 数字越小优先级越高）。
 
 ## 预期现象
 
