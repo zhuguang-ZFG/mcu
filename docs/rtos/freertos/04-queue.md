@@ -183,6 +183,8 @@ void EXTI0_IRQHandler( void )
 - **深度设计**：按"生产-消费速度差×最长延迟"估，再用水位 API `uxQueueSpacesAvailable` / `uxQueueMessagesWaiting` 实测修正——**先估后测**，别拍脑袋；
 - **队列集**（Queue Set）：一个任务同时等多路来源时用 `xQueueSelectFromSet`，F6 事件组章会对比选型。
 
+## 记忆锚点
+
 ::: tip 一句话记住
 **队列=环形仓库+两张候客名单；发送按值 memcpy，满则睡空则睡；ISR 走专用通道延迟让出；信号量就是 uxItemSize=0 的队列。**
 :::

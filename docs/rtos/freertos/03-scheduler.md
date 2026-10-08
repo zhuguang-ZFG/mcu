@@ -189,6 +189,8 @@ void vTaskDelay( const TickType_t xTicksToDelay )
 
 `configGENERATE_RUN_TIME_STATS=1` + 一个高精度定时器（如 TIM2 跑 10kHz+），`vTaskGetRunTimeStats` 打印各任务绝对/相对占用。实验要求：两同优先级任务 ≈50/50；其中一个 +1 优先级 → 100/0。**调度行为是可测量的事实，不是信仰**——这也是全站"眼见为实"的落脚点。
 
+## 记忆锚点
+
 ::: tip 一句话记住
 **位图置位 CLZ 秒选（优化路径），标量递减慢扫（通用路径）；tick 三事：醒人、轮转、换片场；vTaskDelay 是挂表睡觉，不是原地死等。**
 :::
