@@ -32,3 +32,6 @@ code/c/03-volatile/opt_probe
 # Browser regression artifacts
 test-results/
 playwright-report/
+
+# Codex 会话记忆（不入库）
+.workbuddy-ai/

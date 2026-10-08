@@ -3,7 +3,7 @@
   "name": "knowledge-capstone",
   "title": "传感器记录器综合项目",
   "description": "依赖前三批；实现双板完整采集、滤波、通信、持久化与故障恢复。",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": null,
