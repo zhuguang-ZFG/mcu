@@ -36,7 +36,7 @@ test('animation controls and reduced motion work in both themes', async ({ page 
   page.on('pageerror', e=>errors.push(e.message))
   await page.goto('stm32/02-rcc-clock.html')
   const figure=page.locator('.anim-figure').first()
-  const button=figure.locator('button')
+  const button=figure.locator('.anim-figure__btn')
   await expect(button).toHaveText('暂停')
   await button.click()
   expect(await figure.evaluate(el=>el.querySelector('svg').animationsPaused())).toBe(true)

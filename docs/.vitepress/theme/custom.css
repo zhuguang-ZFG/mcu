@@ -539,3 +539,63 @@ html.dark {
 .dark .VPSidebarItem .item:focus-visible {
   outline-color: #4ade80;
 }
+
+/* ===== 动画放大查看（AnimFigure lightbox） ===== */
+.anim-figure__zoom {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-2);
+  font-size: 0.74rem;
+  line-height: 1;
+  padding: 4px 10px;
+  cursor: pointer;
+  margin-left: auto;
+}
+.anim-figure__zoom:hover {
+  border-color: var(--mcu-brand);
+  color: var(--mcu-brand);
+}
+.anim-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(15, 20, 35, 0.62);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3vh 3vw;
+}
+.anim-lightbox__card {
+  position: relative;
+  background: var(--mcu-anim-bg);
+  border-radius: 14px;
+  padding: 16px 18px 12px;
+  width: min(94vw, 900px);
+  max-height: 92vh;
+  overflow: auto;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
+.anim-lightbox__stage {
+  border-color: transparent;
+  box-shadow: none;
+  border-radius: 8px;
+}
+.anim-lightbox__close {
+  position: sticky;
+  float: right;
+  top: 0;
+  z-index: 1;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-2);
+  font-size: 0.8rem;
+  line-height: 1;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.anim-lightbox__close:hover {
+  border-color: var(--mcu-warn);
+  color: var(--mcu-warn);
+}
