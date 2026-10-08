@@ -28,6 +28,8 @@ sequence 与 response type，无关帧只记日志、不延长等待期限。
 """
 
 import argparse
+import json
+import math
 import binascii
 import csv
 import os
@@ -53,7 +55,7 @@ EXIT_OK, EXIT_SELFTEST, EXIT_REJECTED, EXIT_TIMEOUT, EXIT_SERIAL = 0, 1, 2, 3, 4
 
 INFO_SCHEMA = 1
 PLATFORM_NAMES = {1: "STM32F407", 2: "ESP32-S3"}
-CAPABILITIES = ((1 << 0, "protocol"), (1 << 1, "health"), (1 << 2, "test_fault"))
+CAPABILITIES = ((1 << 3, "logger"), (1 << 0, "protocol"), (1 << 1, "health"), (1 << 2, "test_fault"))
 STATUS_SCHEMA = 1
 STATUS_FLAGS = ((1 << 0, "grace"), (1 << 1, "restart_latched"))
 
@@ -269,6 +271,7 @@ class Transport:
 
     def close(self):
         self.ser.close()
+        self.logger.close()
 
 
 class SerialError(Exception):
@@ -508,6 +511,99 @@ def _c_cross_check(helper, failures):
 
 # ---------------------------------------------------------------- decoding
 
+def parse_tlvs(payload, offset):
+    fields = {}
+    while offset < len(payload):
+        if offset + 2 > len(payload):
+            raise FrameError("truncated TLV header")
+        tag, length = payload[offset:offset+2]
+        offset += 2
+        if offset + length > len(payload):
+            raise FrameError("truncated TLV value")
+        fields[tag] = payload[offset:offset+length]
+        offset += length
+    return fields
+
+
+def describe_logger_tlvs(payload, offset):
+    fields = parse_tlvs(payload, offset)
+    result = []
+    if 1 in fields and len(fields[1]) == 2:
+        sensor, running = fields[1]
+        result.append(f"sensor={sensor} running={bool(running)}")
+    if 2 in fields and len(fields[2]) == 13:
+        schema, period, shift, generation, saved = struct.unpack("<HHBII", fields[2])
+        result.append(f"config schema={schema} period={period}ms shift={shift} generation={generation} saved={saved}")
+    if 3 in fields and len(fields[3]) == 18:
+        samples, dropped, sensor_error, storage_error, high = struct.unpack("<IIIIH", fields[3])
+        result.append(f"samples={samples} dropped={dropped} sensor_error={sensor_error} storage_error={storage_error} queue_high={high}")
+    if 4 in fields and len(fields[4]) == 8:
+        acc, gyro = struct.unpack("<II", fields[4])
+        result.append(f"raw scale divisors={acc}/{gyro} (ADC uses raw counts)")
+    if 5 in fields and len(fields[5]) == 5:
+        valid, mask = struct.unpack("<BI", fields[5])
+        result.append(f"previous fault valid={bool(valid)} mask={mask:#x}")
+    return "\n  ".join(result)
+
+
+def parse_sample(payload):
+    if len(payload) != 64:
+        raise FrameError("SAMPLE must contain exactly 64 bytes")
+    values = struct.unpack("<IIIBBH6i6i", payload)
+    return dict(sequence=values[0], timestamp_ms=values[1], generation=values[2],
+                sensor=values[3], valid_mask=values[4], status=values[5],
+                raw=list(values[6:12]), filtered=list(values[12:18]))
+
+
+def run_logger_control(args):
+    kind = dict(start=3, stop=4, configure=5, save=6)[args.command]
+    payload = b""
+    if kind == 5:
+        if not (100 <= args.period <= 1000 and args.period % 10 == 0 and 0 <= args.filter_shift <= 6):
+            raise FrameError("period must be 100..1000ms in 10ms steps; filter-shift 0..6")
+        payload = struct.pack("<BHB", 1, args.period, args.filter_shift)
+    transport = device_session(args)
+    try:
+        frame = transport.request(kind, payload, args.timeout, retries=0)
+        code = frame["payload"][0] if frame["payload"] else None
+        print(f"{args.command}: {STATUS_NAMES.get(code, code)} payload={frame['payload'].hex()}")
+        return EXIT_OK if code == 0 else EXIT_REJECTED
+    finally:
+        transport.close()
+
+
+def run_record(args):
+    if not math.isfinite(args.seconds) or args.seconds <= 0 or not args.output:
+        raise FrameError("record requires --output and positive --seconds")
+    # Keep the decoded CSV separate from the existing raw-frame logging format.
+    target = args.output
+    args.output = None
+    transport = device_session(args)
+    count = 0
+    try:
+        with open(target, "w", newline="", encoding="utf-8") as f:
+            columns = ["sequence", "timestamp_ms", "generation", "sensor", "valid_mask", "status", "raw", "filtered"]
+            writer = csv.DictWriter(f, fieldnames=columns)
+            writer.writeheader()
+            deadline = time.monotonic() + args.seconds
+            while time.monotonic() < deadline:
+                data = transport.ser.read(256)
+                if data:
+                    transport.parser.feed(data)
+                for frame, _ in transport.received:
+                    if frame["type"] == 0x10:
+                        sample = parse_sample(frame["payload"])
+                        sample["raw"] = json.dumps(sample["raw"])
+                        sample["filtered"] = json.dumps(sample["filtered"])
+                        writer.writerow(sample)
+                        count += 1
+                transport.received.clear()
+        print(f"recorded {count} samples to {target}")
+        return EXIT_OK if count else EXIT_TIMEOUT
+    finally:
+        transport.close()
+
+
 def describe_info(payload):
     if len(payload) < 5:
         return "INFO 负载不足 5 字节"
@@ -516,7 +612,7 @@ def describe_info(payload):
     cap_names = [name for bit, name in CAPABILITIES if caps & bit] or ["无"]
     return (f"status={STATUS_NAMES.get(status, status)} schema={schema} "
             f"platform={PLATFORM_NAMES.get(platform, f'未知({platform})')} "
-            f"capabilities={caps:#06x} ({','.join(cap_names)})")
+            f"capabilities={caps:#06x} ({','.join(cap_names)})\n  {describe_logger_tlvs(payload, 5)}")
 
 
 def describe_f407_reset(reason):
@@ -551,7 +647,7 @@ def describe_status(payload, platform):
             f"uptime={uptime}ms\n  reset: {reset_text}\n"
             f"  required_mask={required:#04x} overdue_mask={overdue:#04x} "
             f"flags={flags:#04x} ({','.join(flag_names)})\n"
-            f"  rx_ok={rx_ok} rx_error={rx_error} tx_drop={tx_drop}")
+            f"  rx_ok={rx_ok} rx_error={rx_error} tx_drop={tx_drop}\n  {describe_logger_tlvs(payload, 25)}")
 
 
 # ---------------------------------------------------------------- commands
@@ -645,6 +741,14 @@ def build_parser():
     fault.add_argument("--fault", type=lambda x: int(x, 0), required=True)
     fault.add_argument("--task", type=lambda x: int(x, 0), default=0)
     sub.add_parser("log")
+    for name in ("start", "stop", "save"):
+        sub.add_parser(name)
+    configure = sub.add_parser("configure")
+    configure.add_argument("--period", type=int, default=100)
+    configure.add_argument("--filter-shift", type=int, default=2)
+    record = sub.add_parser("record")
+    record.add_argument("--seconds", type=float, default=10)
+
     # Accept common options before OR after the subcommand, as documented.
     for child in sub.choices.values():
         for flag, kind in [("--port", str), ("--baud", int), ("--timeout", float), ("--output", str)]:
@@ -660,6 +764,12 @@ def main(argv=None):
         if not args.port:
             print("串口子命令需要 --port（不做自动探测）", file=sys.stderr)
             return EXIT_SELFTEST
+        if not math.isfinite(args.timeout) or args.timeout <= 0:
+            raise FrameError("timeout must be positive and finite")
+        if args.command in ("start", "stop", "configure", "save"):
+            return run_logger_control(args)
+        if args.command == "record":
+            return run_record(args)
         if args.command == "info":
             return run_info(args)
         if args.command == "status":
@@ -673,6 +783,9 @@ def main(argv=None):
             return run_fault(args)
         if args.command == "log":
             return run_log(args)
+    except (FrameError, ValueError) as exc:
+        print(f"invalid input: {exc}", file=sys.stderr)
+        return EXIT_SELFTEST
     except TimeoutError as exc:
         print(f"超时：{exc}", file=sys.stderr)
         return EXIT_TIMEOUT
