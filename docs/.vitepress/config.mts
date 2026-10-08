@@ -33,6 +33,11 @@ export default defineConfig({
     ['meta', { property: 'og:image:alt', content: '通往单片机之路：寄存器级 STM32F407 × ESP32-S3 深度教学' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:image', content: OG_IMAGE }],
+    // 水合前的看门人：SVG 是 SSR 直出的，SMIL 在 document load 一到就全体开跑，
+    // 比 Vue 接管（AnimFigure 的 IntersectionObserver）早得多。演示中心 69 张一起跑，
+    // 慢机器上水合本身都要排队等帧。这里在 DOMContentLoaded（早于 load）先把
+    // 视口外（含 200px 预载带，与组件同一口径）的图停住，组件接管后按可见性续播。
+    ['script', {}, `document.addEventListener('DOMContentLoaded',function(){var m=200,h=innerHeight;document.querySelectorAll('.anim-figure__stage svg').forEach(function(s){var r=s.getBoundingClientRect();if((r.bottom<-m||r.top>h+m)&&s.pauseAnimations)s.pauseAnimations()})})`],
   ],
   // hostname 必须含 base 且以 / 结尾：VitePress 生成的是相对路径，靠它做相对解析。
   sitemap: { hostname: `${HOST}${BASE}` },

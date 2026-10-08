@@ -62,6 +62,12 @@
   并保留自闭合 `/`（少了它 `<rect/>` 会把后面的兄弟节点吞成子节点）。
 - `AnimFigure.vue` 提供播放/暂停、进度条、`prefers-reduced-motion` 默认停在静止帧；
   暂停走 `svg.pauseAnimations()`，所以**页面上暂停不影响独立打开的文件**。
+- **视口外自动停。** SMIL 跑在主线程，演示中心 69 张同时跑会把慢机器的帧率打到个位数（实测 12× CPU 节流下 3 fps，
+  CI 上连 Playwright 靠 rAF 的等待都会饿死）。组件用 `IntersectionObserver`（200px 预载带）对视口外的图 `pauseAnimations()`，
+  回到视口接着走；按钮只反映用户意图，自动停不改按钮文字，只加 `is-offscreen` class（进度条同步停）。
+  SMIL 在 document `load` 就开跑、早于水合，所以 `config.mts` 的 `<head>` 还有一段内联脚本在 `DOMContentLoaded` 先按同一口径停一遍。
+  同一页改成 55 fps——新增图不再需要担心"演示中心会不会卡"。
+- 进度条只动 `transform: scaleX()`：动 `width` 每帧重排，69 条一起动就是 69 次主线程布局。
 - 主题变量在 `custom.css` 的 `--mcu-anim-*`（`html.dark` 覆盖），class 规则挂在 `.anim-figure__stage svg` 下。
 
 ## 6. 自检

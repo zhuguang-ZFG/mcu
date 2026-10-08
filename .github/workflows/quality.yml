@@ -26,6 +26,13 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           npm run test:browser
+      # 失败留证：trace.zip 能回放每一步的耗时与页面状态，比日志里的一行超时有用得多
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: test-results/
+          if-no-files-found: ignore
       - name: 动画版式审计（出界 / 压字，Linux 字体度量）
         run: npm run anim:audit
       - id: catalog

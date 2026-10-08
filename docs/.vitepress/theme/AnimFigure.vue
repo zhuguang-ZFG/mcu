@@ -15,14 +15,19 @@ const props = defineProps({
 
 const stage = ref(null)
 const lightboxStage = ref(null)
-const paused = ref(false)
+const paused = ref(false)      // 用户意图：按了「暂停」
+const offscreen = ref(false)   // 视口外自动停：用户看不见的图不该烧 CPU（SSR/无 JS 时不标，进度条照常走）
 const reducedMotion = ref(false)
 const lightbox = ref(false)
 
+// SMIL 跑在主线程上。演示中心一页 69 张图同时跑，慢机器/手机的帧率会掉到个位数，
+// 连滚动都卡；所以离开视口（含 200px 预载带）就 pauseAnimations()，回来再续。
+// 续播从停下的那一刻接着走，读者感知不到——按钮只反映用户意图，不反映这个自动停。
+// 水合之前由 config.mts 里 <head> 的那段内联脚本先按同一口径停一遍（SMIL 在 load 就开跑，等不到这里）。
 function applyPlayState() {
   const svg = stage.value?.querySelector('svg')
   if (!svg || typeof svg.pauseAnimations !== 'function') return
-  if (paused.value) svg.pauseAnimations()
+  if (paused.value || offscreen.value) svg.pauseAnimations()
   else svg.unpauseAnimations()
 }
 
@@ -58,6 +63,8 @@ function onKey(e) {
   if (e.key === 'Escape') closeLightbox()
 }
 
+let observer = null
+
 onMounted(() => {
   // 尊重系统偏好但不替用户做决定：默认停在静止帧，点「播放」即可跑起来。
   reducedMotion.value = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -69,15 +76,31 @@ onMounted(() => {
     if (svg && d) svg.setCurrentTime(d * 0.9)
     paused.value = true
   }
+  // 先按"看不见"停住（SPA 内跳转到演示中心时没有看门人，v-html 一插入 SMIL 就开跑），
+  // observer 的首次回调随即按真实可见性续播；暂停/续播不丢时间轴，视觉上只是少走一帧。
+  offscreen.value = true
   applyPlayState()
+  if (typeof IntersectionObserver === 'function' && stage.value) {
+    observer = new IntersectionObserver((entries) => {
+      offscreen.value = !entries.some((e) => e.isIntersecting)
+      applyPlayState()
+    }, { rootMargin: '200px 0px' })
+    observer.observe(stage.value)
+  } else {
+    offscreen.value = false
+    applyPlayState()
+  }
   window.addEventListener('keydown', onKey)
 })
 
-onUnmounted(() => window.removeEventListener('keydown', onKey))
+onUnmounted(() => {
+  observer?.disconnect()
+  window.removeEventListener('keydown', onKey)
+})
 </script>
 
 <template>
-  <figure class="anim-figure" :data-anim="name" :class="{ 'is-paused': paused }">
+  <figure class="anim-figure" :data-anim="name" :class="{ 'is-paused': paused, 'is-offscreen': offscreen }">
     <div ref="stage" class="anim-figure__stage" v-html="markup" />
     <div class="anim-figure__bar">
       <button

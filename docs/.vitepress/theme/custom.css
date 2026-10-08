@@ -206,19 +206,24 @@ html.dark {
   background: var(--vp-c-divider);
   overflow: hidden;
 }
+/* 进度条只动 transform：动 width 每帧都要重排，演示中心 69 条一起动就是 69 次主线程布局。 */
 .anim-figure__progress i {
   display: block;
   height: 100%;
-  width: 0;
+  width: 100%;
+  transform-origin: left;
+  transform: scaleX(0);
   background: linear-gradient(90deg, var(--mcu-brand), var(--mcu-accent));
   animation: mcu-anim-timeline linear infinite;
 }
-.anim-figure.is-paused .anim-figure__progress i {
+/* 视口外自动停（见 AnimFigure.vue）也要停进度条，回到视口时它与 SMIL 时间轴仍同步。 */
+.anim-figure.is-paused .anim-figure__progress i,
+.anim-figure.is-offscreen .anim-figure__progress i {
   animation-play-state: paused;
 }
 @keyframes mcu-anim-timeline {
-  from { width: 0; }
-  to { width: 100%; }
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 }
 .anim-figure__caption {
   flex-basis: 100%;
@@ -236,7 +241,7 @@ html.dark {
 @media (prefers-reduced-motion: reduce) {
   .anim-figure__progress i {
     animation: none;
-    width: 100%;
+    transform: none;
   }
 }
 
