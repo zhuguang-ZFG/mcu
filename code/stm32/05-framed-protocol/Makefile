@@ -27,7 +27,7 @@ LDFLAGS  := $(MCU) -T stm32f407xx.ld \
             -nostartfiles
 
 OBJS     := $(BUILD)/startup_stm32f407xx.o $(BUILD)/main.o \
-            $(BUILD)/protocol.o $(BUILD)/transport.o $(BUILD)/service.o $(BUILD)/uart.o
+            $(BUILD)/protocol.o $(BUILD)/transport.o $(BUILD)/service.o $(BUILD)/query.o $(BUILD)/uart.o
 
 all: $(BUILD)/$(TARGET).elf $(BUILD)/$(TARGET).bin $(BUILD)/$(TARGET).hex
 	$(SIZE) $(BUILD)/$(TARGET).elf
@@ -85,3 +85,6 @@ clean:
 
 $(BUILD)/uart.o: ../platform/uart.c ../platform/uart.h | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD)/query.o: $(COMMON)/query.c | $(BUILD)
+	$(CC) $(CFLAGS) -I$(COMMON) -c $< -o $@

@@ -15,7 +15,7 @@ KERNEL ?= ../../../.trellis/ref/freertos-v11/kernel
 CC := arm-none-eabi-gcc
 MCU := -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 CFLAGS := $(MCU) -O2 -g3 -Wall -Wextra -Werror -MMD -MP -ffunction-sections -fdata-sections -I. -I$(KERNEL)/include -I$(KERNEL)/portable/GCC/ARM_CM4F -DMODE=$(MODE) -DFAULTS=$(FAULTS)
-OBJ_NAMES := startup main uart protocol transport service health record tasks queue list timers event_groups port heap_4 syscalls $(EXTRA_OBJECTS)
+OBJ_NAMES := startup main uart protocol transport service query health record tasks queue list timers event_groups port heap_4 syscalls $(EXTRA_OBJECTS)
 OBJS := $(addprefix $(BUILD)/,$(addsuffix .o,$(OBJ_NAMES)))
 .DEFAULT_GOAL := all
 vpath %.c . ../platform ../../common/reliability $(KERNEL) $(KERNEL)/portable/GCC/ARM_CM4F $(KERNEL)/portable/MemMang $(EXTRA_DIRS)

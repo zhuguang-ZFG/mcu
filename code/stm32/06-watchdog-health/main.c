@@ -79,7 +79,7 @@ void console_putc(char c){(void)c;}
 void vApplicationStackOverflowHook(TaskHandle_t t,char *n){(void)t;(void)n;taskDISABLE_INTERRUPTS();for(;;){}}
 int main(void){
     uint32_t reset=f407_reset_reason();
-    fault_record_read(&retained,(reset&((1UL<<29)|(1UL<<30)))!=0,(uint32_t *)&g_previous_fault);
+    fault_record_take(&retained,(reset&((1UL<<29)|(1UL<<30)))!=0,(uint32_t *)&g_previous_fault);
     if(!f407_uart_init())for(;;){}
     uint32_t deadlines[8]={MODE?30:500,MODE?30:500};
     if(!health_init(&health,3,deadlines,1000,0))for(;;){}

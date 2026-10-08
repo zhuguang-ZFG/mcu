@@ -12,7 +12,7 @@ static dma_cursor_t cursor;
 static volatile bool restart_dma;
 uint32_t f407_lock(void){uint32_t m;__asm__ volatile("mrs %0, primask\ncpsid i":"=r"(m)::"memory");return m;}
 void f407_unlock(uint32_t m){__asm__ volatile("msr primask, %0"::"r"(m):"memory");}
-uint32_t f407_reset_reason(void){uint32_t flags=REG32(RCC,0x74UL)&0xfe000000UL;REG32(RCC,0x74UL)|=1UL<<24;return flags;}
+uint32_t f407_reset_reason(void){uint32_t flags=REG32(RCC,RCC_RESET_OFFSET)&0xfe000000UL;REG32(RCC,RCC_RESET_OFFSET)|=1UL<<24;return flags;}
 static bool dma_start(void){
     REG32(S5,0UL)=0;
     unsigned limit=10000;while((REG32(S5,0UL)&1U)&&--limit){}
@@ -24,7 +24,7 @@ static bool dma_start(void){
     return true;
 }
 bool f407_uart_init(void){
-    if((REG32(RCC,8UL)&((3UL<<2)|(15UL<<4)|(7UL<<13)))!=0)return false;
+    if((REG32(RCC,8UL)&((3UL<<2)|(15UL<<4)|(7UL<<10)|(7UL<<13)))!=0)return false;
     REG32(RCC,0x30UL)|=(1UL<<22)|1UL;REG32(RCC,0x44UL)|=1UL<<4;(void)REG32(RCC,0x44UL);
     REG32(0x40020000UL,0UL)=(REG32(0x40020000UL,0UL)&~(15UL<<18))|(10UL<<18);
     REG32(0x40020000UL,0x24UL)=(REG32(0x40020000UL,0x24UL)&~0xff0UL)|0x770UL;
