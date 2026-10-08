@@ -35,6 +35,12 @@ minutes: 45
 
 播"滴"：内置一段 1kHz 正弦 PCM 数组（const，回 [C1](../c/01-memory-model.md)），I2S 写出——喇叭第一次在你代码控制下发声。
 
+## 动画：实战派音频全链路
+
+采集链与播放链一条传送带画完：麦 → ES7210 → I2S RX → S3（DMA→PSRAM）→ I2S TX → ES8311 → 功放 → 喇叭；I2C 控制面与 I2S 数据面分离，样本令牌在链路上持续流动。
+
+![实战派音频全链路：控制走 I2C，声音走 I2S](/anim/esp32-audio-path.svg)
+
 ## 板卡事实
 
 - 音频 codec：ES8311（DAC，I2C 配置+I2S 数据）；ES7210（四通道 ADC，I2C+I2S）；功放 NS4150B（D 类，单声道）；双麦 ZTS6216（模拟）。

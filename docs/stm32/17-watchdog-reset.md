@@ -38,6 +38,12 @@ minutes: 45
 
 `cd code/stm32/06-watchdog-health`，执行 `make MODE=0 FAULTS=0`，通过 ST-Link 烧录同一模式产物。数据口 PA9/PA10 为115200二进制协议，主机 INFO/STATUS 与 C8 相同。复位前关闭外部调试器的 watchdog freeze 设置，重新上电后再测。
 
+## 动画：看门狗双雄
+
+IWDG 倒数到 0 复位、喂狗等于重装；WWDG 只许在窗口内刷新——喂早了同样复位。两把尺子量两种健康："活着"与"节奏对"，动画把窗口的两头死路演出来。
+
+![看门狗双雄：IWDG 只管活着，WWDG 还管节奏](/anim/watchdog-window.svg)
+
 ## IWDG 的两个时间尺度
 
 监督每5ms检查 worker/communication 的500ms进展期限；健康才刷新 IWDG。IWDG prescaler=64、reload=999，以名义32kHz算约2秒。DS8626 Rev12 第105页表35给出LSI 17/32/47kHz，并注明条件与characterization；按这些频率换算约1.36–3.76秒，不是所持开发板的实测精度。硬件超时与任务期限是两个不同参数。
@@ -84,3 +90,5 @@ RCC_CSR 在 RCC+0x74，先保存原始复位标志再写 RMVF 清除；不能读
 ## 你做到了
 
 能从错误输入追到状态机和恢复路径，为双板记录器的完整链路做准备。
+
+> AI生成

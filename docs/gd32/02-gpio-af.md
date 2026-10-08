@@ -38,6 +38,12 @@ minutes: 30
 
 打开 `.trellis/ref/gd32/gd32f4xx_gpio.h` 第 52~63 行（寄存器偏移定义），对照 S3 板卡事实里的 STM32F4 偏移表（RM0090 §8.4：MODER 0x00 / OTYPER 0x04 / OSPEEDR 0x08 / PUPDR 0x0C / IDR 0x10 / ODR 0x14 / BSRR 0x18 / LCKR 0x1C / AFRL 0x20 / AFRH 0x24）——**前 10 个偏移逐个对得上，只有名字换了**。5 分钟点名完，你已经会 GD32 GPIO 的 80%。
 
+## 动画：AF 复用的 16 选 1 选择器
+
+一根引脚一根物理线，AF0~AF15 排队过门；每脚 4 位的 AFSEL 字段决定谁过门——PA8 写 AF0、CK_OUT0 上路的实例动画演一遍，"换号 = 换接线"一眼看懂。
+
+![GD32 AF 复用：每脚 4 位的选择器，16 选 1 过门](/anim/gd32-af-mux.svg)
+
 ## 小节结构
 
 | 小节 | 内容 |

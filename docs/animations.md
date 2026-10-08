@@ -31,6 +31,8 @@ title: 动画演示中心
 
 ![全局变量在 .bss/.data 的两地生活](/anim/memory-two-homes.svg)
 
+![指针三件事：取地址 · 存门牌 · 解引用登门](/anim/pointer-arrows.svg)
+
 ![环形缓冲两派：满/空判定与回绕](/anim/ring-buffer.svg)
 
 ![结构体与 ABI：对齐、填充与位域陷阱](/anim/struct-alignment.svg)
@@ -87,6 +89,8 @@ title: 动画演示中心
 
 ![低功耗三档对比：Sleep/Stop/Standby](/anim/stm32-pwr-three-modes.svg)
 
+![看门狗双雄：IWDG 只管活着，WWDG 还管节奏](/anim/watchdog-window.svg)
+
 ## FreeRTOS 精讲
 
 ![为什么需要 RTOS：超级循环 vs 平行世界](/anim/why-rtos.svg)
@@ -127,9 +131,15 @@ title: 动画演示中心
 
 ![TCP 握手：报文在路上](/anim/tcp-handshake.svg)
 
+![OTA 双槽轮流坐庄：下载 → 切槽 → 自检 → 回滚](/anim/esp32-ota-rollback.svg)
+
+![实战派音频全链路：控制走 I2C，声音走 I2S](/anim/esp32-audio-path.svg)
+
 ## GD32 双系对照
 
 ![GD32 RCU 时钟树：与 STM32 逐字段对照](/anim/gd32-rcu-clock.svg)
+
+![GD32 AF 复用：每脚 4 位的选择器，16 选 1 过门](/anim/gd32-af-mux.svg)
 
 ![ECLIC 两维优先级：level 定抢占，priority 定序](/anim/riscv-clic-priority.svg)
 
@@ -142,6 +152,8 @@ title: 动画演示中心
 ![R1 二级位图：32×8 实现 256 级优先级选优](/anim/rtt-bitmap-256.svg)
 
 ![R2 IPC 五种武器一副骨架](/anim/rtt-ipc-skeleton.svg)
+
+![RT-Thread 内存池：块大小一刀切，换 O(1) 的确定性](/anim/rtt-mem-alloc.svg)
 
 ![R4 设备框架调用链：应用 → 框架 → 驱动 → 寄存器](/anim/rtt-device-chain.svg)
 

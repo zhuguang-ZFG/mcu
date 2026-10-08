@@ -48,6 +48,12 @@ sh probe.sh        # 交叉汇编 + 宿主真跑 + const 反例，一次跑完
 
 有板子的再加一道：对 `code/stm32/00-blink` 构建产物跑 `arm-none-eabi-objdump -d`，找到 main 里写 BSRR 的那条 `str`——对照 `code/stm32/00-blink/main.c:60`，亲眼看 C 咒语变成机器指令。
 
+## 动画：指针三件事
+
+取地址是抄门牌、指针是存门牌的格子、解引用是顺箭头登门——`p+1` 为什么跳 4 格、野指针登门为什么有三种下场，动画逐阶段演一遍。
+
+![指针三件事：取地址 · 存门牌 · 解引用登门](/anim/pointer-arrows.svg)
+
 ## 小节结构
 
 | 小节 | 内容 | 四件套 |
@@ -253,3 +259,5 @@ probe.c:54:59: error: assignment of read-only location '*(const int *)p'  @ 全�
 <div class="achievement">
 ✅ 下一站：<a href="03-volatile.html">C3 volatile</a>——编译器优化如何"优化掉"你的寄存器读写，以及 volatile 的能力边界。
 </div>
+
+> AI生成

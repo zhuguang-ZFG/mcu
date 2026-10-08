@@ -37,6 +37,12 @@ minutes: 45
 
 hello 工程加 NVS：每次启动 `boot_count++` 存回，断电重启后打印——你的第一笔"持久化资产"。
 
+## 动画：OTA 双槽轮流坐庄
+
+ota_0/ota_1 两个槽轮流上岗、otadata 记票；升级期间旧固件一直在岗，新固件先过"试用期"——自检通过转正，失败自动回滚。双槽的保险机制一图演完。
+
+![OTA 双槽轮流坐庄：下载 → 切槽 → 自检 → 回滚](/anim/esp32-ota-rollback.svg)
+
 ## 板卡事实
 
 - 立创实战派 S3：16MB Flash（N16R8 模组），默认分区表多为 factory + 大容量存储区布局——以 `idf.py partition-table` 实际读出为准。
