@@ -52,7 +52,7 @@
     <animate attributeName="opacity" calcMode="discrete" values="1;0;0;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
     <rect x="40" y="270" width="640" height="118" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
     <text x="56" y="292" font-size="13" font-weight="bold" fill="#3451b2">① Sleep：只停 CPU 的脑——外设全醒，醒来零成本</text>
-    <text x="56" y="316" font-size="13" fill="#333">WFI 之后 CPU 时钟停、时钟树没动：GPIO/UART/DMA 照常工作，任意中断 µs 级唤醒，回到 WFI 下一条指令。</text>
+    <text x="56" y="316" font-size="13" fill="#333">WFI 后 CPU 时钟停、时钟树不动：GPIO/UART/DMA 照常跑，中断 µs 级唤醒，回到 WFI 下一条。</text>
     <text x="56" y="340" font-size="12" font-family="Consolas,monospace" fill="#333">__WFI();  /* 或 HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI) */</text>
     <text x="56" y="364" font-size="12" fill="#d97706">电流仍是 mA 级——CPU 停了但总线外设没停，省的是功耗大头里的小头。</text>
   </g>
@@ -62,7 +62,7 @@
     <animate attributeName="opacity" calcMode="discrete" values="0;1;0;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
     <rect x="40" y="270" width="640" height="118" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
     <text x="56" y="292" font-size="13" font-weight="bold" fill="#d97706">② Stop：1.2V 域时钟全停——记忆还在，钟没了</text>
-    <text x="56" y="316" font-size="13" fill="#333">调压器进低功耗模式，SRAM/寄存器内容保留；唤醒靠 EXTI 线（RTC 闹钟走 EXTI line17），醒来从 WFI 之后继续。</text>
+    <text x="56" y="316" font-size="13" fill="#333">调压器进低功耗，SRAM/寄存器都保留；靠 EXTI 唤醒（RTC 闹钟走 line17），醒来接着 WFI 之后跑。</text>
     <text x="56" y="340" font-size="12" font-family="Consolas,monospace" fill="#333">HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);</text>
     <text x="56" y="364" font-size="12" fill="#d97706">醒来 PLL 已停、HSI 16MHz 接管——要回 168MHz 必须重配 SystemClock_Config()。</text>
   </g>
@@ -72,7 +72,7 @@
     <animate attributeName="opacity" calcMode="discrete" values="0;0;1;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
     <rect x="40" y="270" width="640" height="118" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
     <text x="56" y="292" font-size="13" font-weight="bold" fill="#1a7f56">③ Standby：1.2V 域断电——只留备份域的遗言</text>
-    <text x="56" y="316" font-size="13" fill="#333">SRAM 全丢、寄存器全丢；只有备份域带电：RTC、4KB 备份 SRAM、备份寄存器——“遗言”只能写在这里。</text>
+    <text x="56" y="316" font-size="13" fill="#333">SRAM 全丢、寄存器全丢；只有备份域带电：RTC、4KB 备份 SRAM、备份寄存器——"遗言"只写这儿。</text>
     <text x="56" y="340" font-size="12" font-family="Consolas,monospace" fill="#333">if (PWR-&gt;CSR &amp; PWR_CSR_SBF) { /* SBF=1：刚从 Standby 醒来，非冷启动 */ }</text>
     <text x="56" y="364" font-size="12" fill="#3eaf7c">醒来即复位：从复位向量重来，运行上下文全没了——只有备份域记得睡前。</text>
   </g>
@@ -82,7 +82,7 @@
     <animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
     <rect x="40" y="270" width="640" height="118" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
     <text x="56" y="292" font-size="13" font-weight="bold" fill="#dc2626">④ 唤醒源是设计出来的：睡前必须配好</text>
-    <text x="56" y="316" font-size="13" fill="#333">EXTI（GPIO/事件）、RTC 闹钟、WKUP 引脚（PA0，Standby 专属）——都要睡前配置、使能、清唤醒标志。</text>
+    <text x="56" y="316" font-size="13" fill="#333">EXTI（GPIO/事件）、RTC 闹钟、WKUP 引脚（PA0，仅 Standby）——都要睡前配置、使能、清标志。</text>
     <text x="56" y="340" font-size="12" font-family="Consolas,monospace" fill="#333">HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);  /* Standby 唯一的引脚唤醒：PA0 上升沿 */</text>
     <text x="56" y="364" font-size="12" fill="#dc2626">漏配唤醒源 = 睡死：没人叫得醒，只能等 IWDG 复位——选档先列唤醒源清单。</text>
   </g>

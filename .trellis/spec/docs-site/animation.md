@@ -87,7 +87,15 @@ npm run docs:gen && npm run docs:build   # 死链门禁必须零错误
 ```bash
 npm run anim:audit                        # 全量，非零退出即有问题
 node scripts/anim-audit.mjs dual-os-compare --step 0.5   # 单图、更密采样
+node scripts/anim-audit.mjs --font-scale 1.10            # 提交前必跑：模拟 CI 的 Linux 字体（见下）
 ```
+
+**本地绿 ≠ CI 绿：字体不同。** 图里声明的是 `'Segoe UI','Microsoft YaHei'`，本地 Windows 真有这两套；
+CI 的 ubuntu 上都没有，Chromium 退回 DejaVu Sans / Noto Sans CJK。实测同一行字在 CI 上宽
+**2%（纯中文）～10%（等宽代码、寄存器名、十六进制）**——首次进 CI 时 69 张里 8 张出界/压字，本地全绿。
+`--font-scale` 按倍率放大每个 `<text>` 的宽度（绕 `text-anchor` 锚点，竖向不动），
+**`--font-scale 1.10` 本地全绿即可认为 CI 必绿**（1.10 是实测上限；它比 CI 严，所以多出来的报警也要修）。
+反过来的经验规则：从 x=56 起笔的 13px 单行说明，本地右端别超过 **656**；等宽代码行更保守，断行优于缩号。
 
 为什么要等距加采样：只取阶段中点时，`dual-os-compare` 的天平托盘标签随 4s 摆动周期
 压进下方说明行（±4.5° × 160px 臂长 = 12.6px 下沉）在所有阶段中点都恰好不相交，

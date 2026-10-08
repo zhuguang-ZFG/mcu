@@ -3,7 +3,7 @@
   <desc>四阶段动画：发送者 xTaskNotifyGive 把 TCB 里的 ulNotifiedValue +1；接收者 ulTaskNotifyTake 阻塞到非零并清零。对照路径：计数语义来 3 次取走得 3；覆盖语义 xTaskNotify eSetValueWithOverwrite 来 3 次只剩最新值。三次投递各画成一个从生产者爬进值格的脉冲，覆盖侧三个脉冲落进同一个格子（最后一个才是留下来的那个），Take 那一步用箭头把整格一次搬到消费者；没人通知时消费者按慢节拍阻塞等待。</desc>
   <rect width="720" height="430" fill="#f6f8fa"/>
   <text x="24" y="30" font-size="17" font-weight="bold" fill="#3451b2">任务通知：写进对方 TCB 的 32 位邮箱</text>
-  <text x="24" y="50" font-size="12" fill="#666">零队列、零拷贝、一次写操作 · 计数语义攒欠账 · 覆盖语义只看最新 · 槽位数 = configTASK_NOTIFICATION_ARRAY_ENTRIES</text>
+  <text x="24" y="50" font-size="12" fill="#666">零队列、零拷贝、一次写 · 计数语义攒欠账 · 覆盖语义只看最新 · 槽位数 = configTASK_NOTIFICATION_ARRAY_ENTRIES</text>
 
   <!-- ===== 左：计数语义 ===== -->
   <rect x="30" y="80" width="320" height="230" fill="#ffffff" stroke="#3eaf7c" stroke-width="2" rx="8"/>

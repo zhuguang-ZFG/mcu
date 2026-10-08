@@ -39,7 +39,8 @@
   <!-- NDTR 计数牌 -->
   <rect x="400" y="90" width="270" height="56" fill="#ffffff" stroke="#3451b2" rx="6"/>
   <text x="415" y="112" font-size="12" font-weight="bold" fill="#3451b2">NDTR（还要搬几个）</text>
-  <text x="415" y="132" font-size="14" font-weight="bold" font-family="Consolas,monospace" fill="#d97706">64 → 32 → 0 → 回装 64
+  <!-- 箭头两侧不留空格：14px 等宽在宽字体下会顶到 x=580 的 TCIF 铃铛 -->
+  <text x="415" y="132" font-size="14" font-weight="bold" font-family="Consolas,monospace" fill="#d97706">64→32→0→回装 64
     <animate attributeName="opacity" calcMode="discrete" values="1;1;1;1;1;1;1;1" keyTimes="0;0.125;0.25;0.375;0.5;0.625;0.75;1" dur="16s" repeatCount="indefinite"/>
   </text>
 

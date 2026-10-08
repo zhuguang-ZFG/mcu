@@ -9,8 +9,11 @@
   <g font-size="13" font-weight="bold" fill="#24292f">
     <text x="80" y="95" text-anchor="end">CS 片选</text>
     <text x="80" y="140" text-anchor="end">SCK 时钟</text>
-    <text x="80" y="210" text-anchor="end">MOSI 主→从</text>
-    <text x="80" y="280" text-anchor="end">MISO 从→主</text>
+    <!-- 数据线标签拆两行：13px 的「MOSI 主→从」靠右对齐到 x=80 时，宽字体下左端会跑出画布 -->
+    <text x="80" y="204" text-anchor="end">MOSI</text>
+    <text x="80" y="220" text-anchor="end" font-size="11" font-weight="normal" fill="#57606a">主 → 从</text>
+    <text x="80" y="274" text-anchor="end">MISO</text>
+    <text x="80" y="290" text-anchor="end" font-size="11" font-weight="normal" fill="#57606a">从 → 主</text>
   </g>
 
   <!-- 位序号 -->

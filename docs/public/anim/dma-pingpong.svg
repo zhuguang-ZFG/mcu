@@ -35,7 +35,7 @@
 
   <!-- 缓冲 A -->
   <rect x="400" y="80" width="200" height="70" fill="#f8fafc" stroke="#94a3b8" rx="8"/>
-  <text x="416" y="102" font-size="12" font-weight="bold" fill="#3451b2">缓冲区 A（RAM）</text>
+  <text x="416" y="102" font-size="12" font-weight="bold" fill="#3451b2">缓冲区 A</text>
   <!-- 所有者徽章：DMA 填 A 期间归 DMA，满了以后归 CPU -->
   <text x="584" y="102" font-size="11" font-weight="bold" text-anchor="end" fill="#3451b2">所有者:DMA<animate attributeName="opacity" calcMode="discrete" values="1;1;0;0;0;0;1;1" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/></text>
   <text x="584" y="102" font-size="11" font-weight="bold" text-anchor="end" fill="#3eaf7c" opacity="0">所有者:CPU<animate attributeName="opacity" calcMode="discrete" values="0;0;1;1;0;0;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/></text>
@@ -47,7 +47,7 @@
 
   <!-- 缓冲 B -->
   <rect x="400" y="170" width="200" height="70" fill="#f8fafc" stroke="#94a3b8" rx="8"/>
-  <text x="416" y="192" font-size="12" font-weight="bold" fill="#3451b2">缓冲区 B（RAM）</text>
+  <text x="416" y="192" font-size="12" font-weight="bold" fill="#3451b2">缓冲区 B</text>
   <text x="584" y="192" font-size="11" font-weight="bold" text-anchor="end" fill="#3451b2" opacity="0">所有者:DMA<animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;1;0;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/></text>
   <text x="584" y="192" font-size="11" font-weight="bold" text-anchor="end" fill="#3eaf7c" opacity="0">所有者:CPU<animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;1;1;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/></text>
   <rect x="416" y="202" width="168" height="18" fill="#e2e8f0" rx="3"/>
@@ -80,9 +80,10 @@
   <g opacity="0">
     <animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;1;0;0;0" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/>
     <line x1="640" y1="70" x2="640" y2="250" stroke="#dc2626" stroke-width="2" stroke-dasharray="5 4"/>
-    <text x="650" y="80" font-size="11" font-weight="bold" fill="#dc2626">CPU 截止线：</text>
-    <text x="650" y="98" font-size="11" fill="#dc2626">B 被填满之前</text>
-    <text x="650" y="116" font-size="11" fill="#dc2626">必须处理完 A</text>
+    <!-- 截止线右侧只有 70px，三行标签各控制在 5 个字内，否则宽字体下顶出画布 -->
+    <text x="648" y="80" font-size="11" font-weight="bold" fill="#dc2626">截止线：</text>
+    <text x="648" y="98" font-size="11" fill="#dc2626">B 填满前</text>
+    <text x="648" y="116" font-size="11" fill="#dc2626">处理完 A</text>
   </g>
 
   <!-- 超期覆盖反例：CPU 没处理完，DMA 又回来填 A -->
@@ -90,8 +91,8 @@
     <animate attributeName="opacity" calcMode="discrete" values="0;0;0;0;0;0;1;1" keyTimes="0;0.15;0.30;0.45;0.60;0.75;0.90;1" dur="16s" repeatCount="indefinite"/>
     <rect x="400" y="80" width="200" height="70" fill="none" stroke="#dc2626" stroke-width="3" rx="8"/>
     <path d="M340,150 L396,115" stroke="#dc2626" stroke-width="3" fill="none" marker-end="url(#arrR)"/>
-    <text x="620" y="120" font-size="12" font-weight="bold" fill="#dc2626">CPU 还没读完 A</text>
-    <text x="620" y="140" font-size="12" fill="#dc2626">DMA 又写回来了</text>
+    <text x="620" y="120" font-size="12" font-weight="bold" fill="#dc2626">CPU 没读完 A</text>
+    <text x="620" y="140" font-size="12" fill="#dc2626">DMA 又写回来</text>
     <text x="620" y="156" font-size="12" fill="#dc2626">→ 整块丢</text>
   </g>
 

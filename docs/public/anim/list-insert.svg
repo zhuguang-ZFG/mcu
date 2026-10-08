@@ -18,11 +18,17 @@
     <text x="475" y="126" fill="#888" font-weight="bold">xListEnd</text>
     <text x="475" y="144" fill="#888">哨兵（首尾一体）</text>
   </g>
-  <!-- 新节点 TCB_C 值=5（0.28→0.33 之间从右上角候补位斜插进 A、B 之间：插队是"穿针"，不是凭空出现） -->
+  <!-- 静态链接箭头先画：新节点落位后要盖住 A→B 这根旧指针的尾巴，重连的橙色箭头在最上层 -->
+  <path d="M150,130 L230,130" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrG)"/>
+  <path d="M340,130 L420,130" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrG)"/>
+  <path d="M530,130 L600,130 L600,70 L40,70 L40,104" stroke="#cbd5e1" stroke-width="2" fill="none" stroke-dasharray="5 3"/>
+  <!-- 新节点 TCB_C 值=5（0.28→0.33 之间从右上角候补位斜插进 A、B 之间：插队是"穿针"，不是凭空出现）
+       落点 x=186、卡宽 116：把 TCB_B 的标签整个盖住，自己的标签右端离它 2px 以上——
+       Linux 字体下「TCB_C（新）」宽 3px，落点 190 时两行标签会碰上 -->
   <g transform="translate(604,48)">
     <animateTransform attributeName="transform" type="translate"
-      values="604 48;604 48;190 104;190 104;604 48" keyTimes="0;0.28;0.33;0.97;1" dur="15s" repeatCount="indefinite"/>
-    <rect width="110" height="52" fill="#fef3c7" stroke="#d97706" stroke-width="2" rx="6"/>
+      values="604 48;604 48;186 104;186 104;604 48" keyTimes="0;0.28;0.33;0.97;1" dur="15s" repeatCount="indefinite"/>
+    <rect width="116" height="52" fill="#fef3c7" stroke="#d97706" stroke-width="2" rx="6"/>
     <text x="45" y="32" font-size="11" fill="#92400e" font-weight="bold" text-anchor="middle">TCB_C（新）</text>
     <text x="45" y="46" font-size="11" fill="#92400e" text-anchor="middle" font-family="Consolas,monospace">值=5</text>
   </g>
@@ -32,18 +38,15 @@
     <animateMotion calcMode="linear" values="475,130;475,130;600,130;600,70;40,70;95,130;95,130"
       keyTimes="0;0.14;0.18;0.21;0.23;0.28;1" dur="15s" repeatCount="indefinite"/>
   </circle>
-  <!-- 链接箭头（静态 + 重连高亮） -->
-  <path d="M150,130 L230,130" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrG)"/>
-  <path d="M340,130 L420,130" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrG)"/>
-  <path d="M530,130 L600,130 L600,70 L40,70 L40,104" stroke="#cbd5e1" stroke-width="2" fill="none" stroke-dasharray="5 3"/>
+  <!-- 重连高亮 -->
   <g opacity="0" stroke="#d97706" stroke-width="2.5" fill="none">
     <animate attributeName="opacity" calcMode="discrete" values="0;0;0;1;1;1;1;0" keyTimes="0;0.14;0.28;0.42;0.56;0.70;0.84;1" dur="15s" repeatCount="indefinite"/>
     <!-- 改指针：两根箭头从发端爬到收端，箭头骑在尖端，表示"这一根 pxNext 刚刚被改写" -->
     <line x1="150" y1="130" x2="150" y2="130" marker-end="url(#arrO2)">
-      <animate attributeName="x2" values="150;150;190;190" keyTimes="0;0.42;0.47;1" dur="15s" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="150;150;186;186" keyTimes="0;0.42;0.47;1" dur="15s" repeatCount="indefinite"/>
     </line>
-    <line x1="300" y1="130" x2="300" y2="130" marker-end="url(#arrO2)">
-      <animate attributeName="x2" values="300;300;340;340" keyTimes="0;0.50;0.55;1" dur="15s" repeatCount="indefinite"/>
+    <line x1="302" y1="130" x2="302" y2="130" marker-end="url(#arrO2)">
+      <animate attributeName="x2" values="302;302;340;340" keyTimes="0;0.50;0.55;1" dur="15s" repeatCount="indefinite"/>
     </line>
   </g>
   <defs>

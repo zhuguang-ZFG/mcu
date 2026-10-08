@@ -134,7 +134,8 @@
     <circle r="4.5" fill="#3451b2">
       <animateMotion calcMode="linear" path="M200,227 L270,227 L330,227 L400,227 L450,188 L514,188 L520,188 L555,194 L555,230" dur="4s" repeatCount="indefinite"/>
     </circle>
-    <text x="340" y="186" font-size="12" font-weight="bold" fill="#3451b2" text-anchor="middle">PLL 锁定（PLLRDY）：8÷8×336÷2 = 168MHz</text>
+    <!-- 居中点 340→300：原右端 468 顶到 /P=2 标签（466 起），宽字体下相叠 -->
+    <text x="300" y="186" font-size="12" font-weight="bold" fill="#3451b2" text-anchor="middle">PLL 锁定（PLLRDY）：8÷8×336÷2 = 168MHz</text>
   </g>
 
   <!-- ===== 阶段 ④：MCO1 理论对账（待上板实测）——节拍一路爬到 PA8，然后每秒出一趟 ===== -->

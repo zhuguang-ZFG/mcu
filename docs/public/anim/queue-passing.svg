@@ -107,7 +107,7 @@
   <!-- 拷贝示意 -->
   <rect x="240" y="240" width="440" height="60" fill="#f8fafc" stroke="#cbd5e1" rx="8"/>
   <text x="256" y="264" font-size="12" font-weight="bold" fill="#3451b2">为什么是"拷贝"不是"指针"？</text>
-  <text x="256" y="284" font-size="11" fill="#666">生产者的局部变量下一秒就没了；拷贝进队列，数据自己的生命自己管——悬垂指针免疫。</text>
+  <text x="256" y="284" font-size="11" fill="#666">生产者的局部变量下一秒就没了；拷贝进队列，数据的生命自己管——悬垂指针免疫。</text>
 
   <!-- 阶段字幕 -->
   <g font-size="13" font-weight="bold" fill="#3451b2">

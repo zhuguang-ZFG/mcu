@@ -10,9 +10,11 @@
   <text x="56" y="86" font-size="12" font-weight="bold" fill="#3451b2">arm-none-eabi-gcc -### 的内部分工</text>
   <g font-size="11" font-family="Consolas,monospace" fill="#333">
     <text x="56" y="108">① cc1 -E → main.i</text>
-    <text x="220" y="108">② cc1 -S → main.s</text>
-    <text x="398" y="108">③ as -c → main.o</text>
-    <text x="558" y="108">④ collect2/ld → blink.elf</text>
+    <text x="218" y="108">② cc1 -S → main.s</text>
+    <text x="388" y="108">③ as -c → main.o</text>
+    <!-- ④ 站左移：11px 等宽在 Linux 回退字体（DejaVu Sans Mono）下宽约 10%，
+         x=558 时右端会越过 720 被裁掉 -->
+    <text x="540" y="108">④ collect2/ld → blink.elf</text>
   </g>
 
   <!-- 传送带 -->
@@ -27,9 +29,11 @@
     <rect x="40" y="184" width="640" height="150" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
     <text x="56" y="208" font-size="13" font-weight="bold" fill="#3451b2">① 预处理 -E：宏在纸上摊平（纯文本，不查语法）</text>
     <text x="56" y="234" font-size="13" font-family="Consolas,monospace" fill="#333">main.c（65 行） → main.i（1575 行）：#include 整份贴进来 + 宏替换 + 条件编译裁剪</text>
-    <text x="56" y="260" font-size="13" font-family="Consolas,monospace" fill="#333">(*(volatile uint32_t *)(((0x40000000UL + 0x20000UL) + 0x3800UL) + 0x30UL)) |= (1UL &lt;&lt; 5);</text>
-    <text x="56" y="288" font-size="12" fill="#666">RCC_BASE 的宏在使用处已被摊平成纯算术式——指针、volatile、位运算的语义从这一行就已确定。</text>
-    <text x="56" y="314" font-size="12" fill="#d97706">报错关键字：fatal error: ... No such file or directory → 只出现在这一阶段</text>
+    <!-- 一行 88 列的代码在宽字体下必然出界，按运算符断成两行 -->
+    <text x="56" y="256" font-size="13" font-family="Consolas,monospace" fill="#333">(*(volatile uint32_t *)(((0x40000000UL + 0x20000UL)</text>
+    <text x="84" y="272" font-size="13" font-family="Consolas,monospace" fill="#333">+ 0x3800UL) + 0x30UL)) |= (1UL &lt;&lt; 5);</text>
+    <text x="56" y="296" font-size="12" fill="#666">RCC_BASE 的宏在使用处已被摊平成纯算术式——指针、volatile、位运算的语义从这一行就已确定。</text>
+    <text x="56" y="322" font-size="12" fill="#d97706">报错关键字：fatal error: ... No such file or directory → 只出现在这一阶段</text>
   </g>
 
   <!-- 阶段二：编译 -->
@@ -51,7 +55,7 @@
     <text x="56" y="208" font-size="13" font-weight="bold" fill="#3451b2">③ 汇编：as 产出 .o——机器码有了，地址还没有</text>
     <text x="56" y="234" font-size="13" font-family="Consolas,monospace" fill="#333">main.s → main.o（可重定位目标文件）</text>
     <text x="56" y="260" font-size="13" font-family="Consolas,monospace" fill="#333">objdump -h main.o:  .text  000000a8  00000000  00000000</text>
-    <text x="56" y="286" font-size="13" fill="#333">地址栏是 <tspan fill="#dc2626" font-weight="bold">0</tspan>——"放哪个地址"还没决定；startup.o 里躺着 7 个 <tspan font-family="Consolas,monospace">U</tspan>（_sdata/_estack/main…），等链接器补。</text>
+    <text x="56" y="286" font-size="13" fill="#333">地址栏是 <tspan fill="#dc2626" font-weight="bold">0</tspan>——"放哪个地址"没决定；startup.o 里躺着 7 个 <tspan font-family="Consolas,monospace">U</tspan>（_sdata/_estack/main…），等链接器补。</text>
     <text x="56" y="314" font-size="12" fill="#666">main.o 一个 U 都没有：外设访问是硬编码常量，不需要符号决议。</text>
   </g>
 

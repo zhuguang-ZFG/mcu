@@ -47,9 +47,11 @@
     <animate attributeName="opacity" calcMode="discrete" values="1;0;0;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
     <rect x="40" y="248" width="640" height="128" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
     <text x="56" y="270" font-size="13" font-weight="bold" fill="#3451b2">① TIM6 打拍：计数满 → 更新事件 → TRGO</text>
-    <text x="56" y="294" font-size="13" fill="#333">TIM6 在 APB1（84MHz 定时器时钟），PSC/ARR 决定更新率；CR2.MMS=010 让更新事件作 TRGO 输出。</text>
-    <text x="56" y="320" font-size="12" font-family="Consolas,monospace" fill="#333">TIM6->CR2 = (TIM6->CR2 &amp; ~TIM_CR2_MMS_Msk) | TIM_CR2_MMS_1_Msk;  // update→TRGO</text>
-    <text x="56" y="346" font-size="12" fill="#d97706">TIM6 没有通道引脚——它专为"打拍触发"存在，不打拍时就是浪费一个定时器。</text>
+    <!-- 说明句断成两行：单行 13px 混排超过 600px 在 Linux 回退字体下会被裁掉 -->
+    <text x="56" y="292" font-size="13" fill="#333">TIM6 在 APB1（84MHz 定时器时钟），PSC/ARR 决定更新率；</text>
+    <text x="56" y="310" font-size="13" fill="#333">CR2.MMS=010 让更新事件作 TRGO 输出。</text>
+    <text x="56" y="332" font-size="12" font-family="Consolas,monospace" fill="#333">TIM6->CR2 = (TIM6->CR2 &amp; ~TIM_CR2_MMS_Msk) | TIM_CR2_MMS_1_Msk;  // update→TRGO</text>
+    <text x="56" y="354" font-size="12" fill="#d97706">TIM6 没有通道引脚——它专为"打拍触发"存在，不打拍时就是浪费一个定时器。</text>
   </g>
 
   <!-- 阶段二：DMA 递谱 -->
@@ -57,9 +59,10 @@
     <animate attributeName="opacity" calcMode="discrete" values="0;1;0;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
     <rect x="40" y="248" width="640" height="128" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
     <text x="56" y="270" font-size="13" font-weight="bold" fill="#d97706">② DMA 递谱：TRGO → DAC 请求 → 取下一个样本</text>
-    <text x="56" y="294" font-size="13" fill="#333">DAC1 的 DMA 请求在 DMA1 Stream5 Channel7（RM0090 Table 43）。MINC 让内存指针递增、CIRC 让传完回卷。</text>
-    <text x="56" y="320" font-size="12" font-family="Consolas,monospace" fill="#333">DMA1_Stream5->PAR = &amp;DAC->DHR12R1;  M0AR = sine_table;  NDTR = 64;  CR = CH7|MINC|CIRC|...</text>
-    <text x="56" y="346" font-size="12" fill="#d97706">启动顺序：先 DAC（TEN1+DMAEN1）再使能 DMA 流——反过来第一样本会被覆盖。</text>
+    <text x="56" y="292" font-size="13" fill="#333">DAC1 的 DMA 请求在 DMA1 Stream5 Channel7（RM0090 Table 43）。</text>
+    <text x="56" y="310" font-size="13" fill="#333">MINC 让内存指针递增、CIRC 让传完回卷。</text>
+    <text x="56" y="332" font-size="12" font-family="Consolas,monospace" fill="#333">DMA1_Stream5->PAR = &amp;DAC->DHR12R1;  M0AR = sine_table;  NDTR = 64;  CR = CH7|MINC|CIRC|...</text>
+    <text x="56" y="354" font-size="12" fill="#d97706">启动顺序：先 DAC（TEN1+DMAEN1）再使能 DMA 流——反过来第一样本会被覆盖。</text>
   </g>
 
   <!-- 阶段三：DAC 开嗓 -->
@@ -67,9 +70,10 @@
     <animate attributeName="opacity" calcMode="discrete" values="0;0;1;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
     <rect x="40" y="248" width="640" height="128" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
     <text x="56" y="270" font-size="13" font-weight="bold" fill="#1a7f56">③ DAC 开嗓：DHR12R1 → DOR1 → 电压</text>
-    <text x="56" y="294" font-size="13" fill="#333">触发沿把 DHR12R1（数据保持）搬到 DOR1（输出寄存器），电阻梯形网络按 12 位数字输出对应电压。</text>
-    <text x="56" y="320" font-size="12" font-family="Consolas,monospace" fill="#333">DAC->CR |= DAC_CR_TEN1_Msk | DAC_CR_DMAEN1_Msk;  // 触发使能 + DMA 请求使能</text>
-    <text x="56" y="346" font-size="12" fill="#3eaf7c">写 2048 → 输出 VREF/2；12 位右对齐，写错对齐寄存器幅度只剩 1/16。</text>
+    <text x="56" y="292" font-size="13" fill="#333">触发沿把 DHR12R1（数据保持）搬到 DOR1（输出寄存器），</text>
+    <text x="56" y="310" font-size="13" fill="#333">电阻梯形网络按 12 位数字输出对应电压。</text>
+    <text x="56" y="332" font-size="12" font-family="Consolas,monospace" fill="#333">DAC->CR |= DAC_CR_TEN1_Msk | DAC_CR_DMAEN1_Msk;  // 触发使能 + DMA 请求使能</text>
+    <text x="56" y="354" font-size="12" fill="#3eaf7c">写 2048 → 输出 VREF/2；12 位右对齐，写错对齐寄存器幅度只剩 1/16。</text>
   </g>
 
   <!-- 阶段四：波形出来 -->

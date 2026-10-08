@@ -60,9 +60,11 @@
     <animate attributeName="opacity" calcMode="discrete" values="0;1;0;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
     <rect x="40" y="266" width="640" height="128" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
     <text x="56" y="288" font-size="13" font-weight="bold" fill="#d97706">② 第二棒：bootloader——验货 + 选货</text>
-    <text x="56" y="312" font-size="13" fill="#333">初始化 Flash/Cache（否则读不到）→ 读分区表 → 按序选 app：<tspan font-family="Consolas,monospace">factory → ota_0 → ota_1</tspan>，校验失败就回退。</text>
-    <text x="56" y="338" font-size="12" font-family="Consolas,monospace" fill="#333">bootloader_utility_load_boot_image(&amp;bs, boot_index);   // bootloader_start.c:62</text>
-    <text x="56" y="364" font-size="12" fill="#d97706">日志出现 invalid header / image verification failed = 校验失败在回退。</text>
+    <!-- 流程句断成两行，单行 647px 在 Linux 回退字体下出界 -->
+    <text x="56" y="310" font-size="13" fill="#333">初始化 Flash/Cache（否则读不到 app）→ 读分区表 → 按序选 app：</text>
+    <text x="56" y="328" font-size="13" fill="#333"><tspan font-family="Consolas,monospace">factory → ota_0 → ota_1</tspan>，校验失败就回退到上一个。</text>
+    <text x="56" y="350" font-size="12" font-family="Consolas,monospace" fill="#333">bootloader_utility_load_boot_image(&amp;bs, boot_index);   // bootloader_start.c:62</text>
+    <text x="56" y="372" font-size="12" fill="#d97706">日志出现 invalid header / image verification failed = 校验失败在回退。</text>
   </g>
 
   <!-- 阶段三：app -->

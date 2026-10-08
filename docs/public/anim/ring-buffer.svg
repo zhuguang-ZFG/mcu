@@ -26,8 +26,9 @@
   </g>
   <text x="190" y="152" font-size="11" fill="#94a3b8" text-anchor="middle">物理 8 格</text>
   <text x="190" y="166" font-size="11" fill="#94a3b8" text-anchor="middle">首尾相接</text>
-  <text x="190" y="264" font-size="11" fill="#d97706" text-anchor="middle">w 由生产者（中断）推进</text>
-  <text x="190" y="278" font-size="11" fill="#3451b2" text-anchor="middle">r 由消费者（主循环）推进</text>
+  <!-- 两行指针说明整体上提 3px：r 行与 y=290 的阶段标题墨迹只差 0.5px，Linux 字体下会碰上 -->
+  <text x="190" y="261" font-size="11" fill="#d97706" text-anchor="middle">w 由生产者（中断）推进</text>
+  <text x="190" y="275" font-size="11" fill="#3451b2" text-anchor="middle">r 由消费者（主循环）推进</text>
 
   <!-- ===== 右：两派容量对照卡（常驻） ===== -->
   <rect x="340" y="60" width="160" height="74" rx="8" fill="#fff7ed" stroke="#d97706"/>
@@ -70,7 +71,7 @@
     <rect x="40" y="266" width="640" height="128" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
     <text x="56" y="290" font-size="13" font-weight="bold" fill="#1a7f56">③ B 派：单调索引——指针永不取模，容量 8/8</text>
     <text x="56" y="314" font-size="12" font-family="Consolas,monospace" fill="#333">满: if ((uint8_t)(w - r) &gt;= CAP) 拒写      寻址: data[w % CAP]</text>
-    <text x="56" y="338" font-size="13" fill="#333">w 一路加到 255 再自然回绕到 0；模 256 的无符号减法让"在飞数"跨回绕依旧正确——不用写任何回绕判断。</text>
+    <text x="56" y="338" font-size="13" fill="#333">w 一路加到 255 再自然回绕到 0；模 256 的无符号减法让"在飞数"跨回绕依旧正确——不用写回绕判断。</text>
     <text x="56" y="364" font-size="12" fill="#1a7f56">实测：B 派可用 8 格，长跑确实跨过 255→0，且 q.w == n_put % 256 逐拍吻合。</text>
   </g>
 

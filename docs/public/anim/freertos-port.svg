@@ -58,7 +58,7 @@
     <animate attributeName="opacity" calcMode="discrete" values="0;1;0;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite"/>
     <rect x="40" y="250" width="640" height="150" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
     <text x="56" y="274" font-size="13" font-weight="bold" fill="#1a7f56">② 两种接法与接管的物证</text>
-    <text x="56" y="300" font-size="13" fill="#333">（A）改向量表——侵入启动文件；（B）#define 三行映射（FreeRTOSConfig.h:74-77）——两边都不用妥协。</text>
+    <text x="56" y="300" font-size="13" fill="#333">（A）改向量表——侵入启动文件；（B）#define 三行映射（FreeRTOSConfig.h:74-77）——不用妥协。</text>
     <text x="56" y="328" font-size="12" font-family="Consolas,monospace" fill="#666">#define vPortSVCHandler SVC_Handler   /* 启动文件保持标准 CMSIS 命名 */</text>
     <text x="56" y="356" font-size="12" font-family="Consolas,monospace" fill="#666">08003180 T SVC_Handler  080032b0 T PendSV_Handler  08003318 T SysTick_Handler</text>
     <text x="56" y="384" font-size="12" fill="#1a7f56">注释掉三行 #define 再编译——链接错误里点名的就是没接管的证据（实物实验）。</text>

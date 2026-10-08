@@ -7,7 +7,13 @@
 //   node scripts/anim-audit.mjs                 # 全量
 //   node scripts/anim-audit.mjs context-switch  # 只审指定图（可多个）
 //   node scripts/anim-audit.mjs --step 0.5      # 额外每 0.5s 采样一次（默认 1s；0 关闭）
+//   node scripts/anim-audit.mjs --font-scale 1.08  # 模拟更宽的回退字体（本地复现 CI 的 Linux 字体度量）
 //   node scripts/anim-audit.mjs --json          # 机器可读输出
+//
+// 为什么需要 --font-scale：图里写的是 'Segoe UI','Microsoft YaHei' 字栈，Windows 本地用雅黑，
+// CI 的 ubuntu-latest 上没有雅黑，Chromium 退回 Noto Sans CJK——同一串中文宽约 5~8%。
+// 于是"本地全绿、CI 报 8 张出界"成了常态，且本地无从复现。这个开关按倍率放大文字的墨水盒
+// （宽度绕水平中心、竖向绕基线），把 CI 的字体度量搬到本地来。
 import { readdirSync, readFileSync } from 'node:fs'
 import { resolve, basename } from 'node:path'
 import { chromium } from '@playwright/test'
@@ -15,14 +21,15 @@ import { chromium } from '@playwright/test'
 const args = process.argv.slice(2)
 const flag = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d }
 const step = Number(flag('--step', '1'))
+const fontScale = Number(flag('--font-scale', '1'))
 const asJson = args.includes('--json')
-const picked = args.filter((a, i) => !a.startsWith('--') && args[i - 1] !== '--step')
+const picked = args.filter((a, i) => !a.startsWith('--') && args[i - 1] !== '--step' && args[i - 1] !== '--font-scale')
 
 const dir = resolve('docs/public/anim')
 const names = (picked.length ? picked : readdirSync(dir).filter(f => f.endsWith('.svg')).map(f => basename(f, '.svg'))).sort()
 
 // 在页面里执行的审计函数：输入 svg 文本，返回问题列表
-function auditInPage({ svgText, step }) {
+function auditInPage({ svgText, step, fontScale }) {
   const EPS = 0.5
   const box = document.createElement('div')
   box.style.cssText = 'position:fixed;left:0;top:0'
@@ -43,18 +50,26 @@ function auditInPage({ svgText, step }) {
   const boxOf = el => {
     const r = el.getBoundingClientRect()
     const out = { x: r.x - rect0.x, y: r.y - rect0.y, w: r.width, h: r.height }
+    let baseline = null
     if (el.tagName === 'text') {
       try {
         const st = getComputedStyle(el)
         mctx.font = `${st.fontStyle} ${st.fontWeight} ${st.fontSize} ${st.fontFamily}`
         const m = mctx.measureText(el.textContent)
-        const scale = r.height / (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)
-        const baseline = out.y + m.fontBoundingBoxAscent * scale
-        out.iy0 = baseline - m.actualBoundingBoxAscent * scale
-        out.iy1 = baseline + m.actualBoundingBoxDescent * scale
+        const k = r.height / (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)
+        baseline = out.y + m.fontBoundingBoxAscent * k
+        out.iy0 = baseline - m.actualBoundingBoxAscent * k
+        out.iy1 = baseline + m.actualBoundingBoxDescent * k
       } catch { /* 退回 em 盒 */ }
     }
     out.iy0 = out.iy0 ?? out.y; out.iy1 = out.iy1 ?? out.y + out.h
+    if (fontScale !== 1 && el.tagName === 'text') {
+      // 只放大字宽（绕锚点）：Linux 回退字体与雅黑的差异主要在字宽，
+      // 竖向墨迹高度几乎不变——放大竖向会造出 CI 上不存在的压字。
+      const anchor = getComputedStyle(el).textAnchor
+      const ax = anchor === 'middle' ? out.x + out.w / 2 : anchor === 'end' ? out.x + out.w : out.x
+      out.w *= fontScale; out.x = anchor === 'middle' ? ax - out.w / 2 : anchor === 'end' ? ax - out.w : ax
+    }
     return out
   }
   const ts = new Set([master * 0.02, master * 0.9])
@@ -97,7 +112,7 @@ const report = []
 for (const name of names) {
   const svgText = readFileSync(resolve(dir, name + '.svg'), 'utf8')
   try {
-    const r = await page.evaluate(auditInPage, { svgText, step })
+    const r = await page.evaluate(auditInPage, { svgText, step, fontScale })
     report.push({ name, ...r })
   } catch (e) {
     report.push({ name, error: String(e), problems: [{ detail: '异常 ' + e, ts: [] }] })

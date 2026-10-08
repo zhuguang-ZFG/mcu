@@ -67,7 +67,7 @@
     <text x="56" y="120" font-size="13" font-family="Consolas,monospace" fill="#333">arm-none-eabi-addr2line -e fault_ctx.elf 0x080008e</text>
     <text x="56" y="150" font-size="14" font-weight="bold" fill="#3eaf7c" font-family="Consolas,monospace">→ fault_ctx.c:70</text>
     <text x="56" y="184" font-size="13" fill="#333">那行正是 <tspan font-family="Consolas,monospace" font-weight="bold">*g_null_ptr = 0xDEADBEEF;</tspan>——空指针写的真凶行。</text>
-    <text x="56" y="210" font-size="12" fill="#d97706">注意：nm 的函数入口是 0x08000084（函数第一行），真凶是 0x080008e（出错那条指令）——差 10 字节、差 1 行。</text>
+    <text x="56" y="210" font-size="12" fill="#d97706">nm 的函数入口是 0x08000084（函数第一行），真凶是 0x080008e（出错那条指令）——差 10 字节、差 1 行。</text>
   </g>
 
   <!-- 阶段字幕 -->
