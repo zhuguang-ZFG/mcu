@@ -42,6 +42,8 @@ export function collectPages(docsDir) {
         walk(abs)
       } else if (e.name.endsWith('.md')) {
         let rel = path.relative(docsDir, abs).replace(/\\/g, '/').replace(/\.md$/, '')
+        // 404 是错误兜底页：读者不会从导航进入它，也不该要求它有导航入口。
+        if (rel === '404') continue
         if (rel === 'index') rel = ''
         else if (rel.endsWith('/index')) rel = rel.slice(0, -'/index'.length)
         out.push('/' + rel)

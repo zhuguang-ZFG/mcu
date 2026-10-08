@@ -97,6 +97,8 @@ if (isMain) {
   const bad = []
   for (const file of pages) {
     const rel = path.relative(dist, file)
+    // 404 是客户端渲染的空壳（产物里只有 <div id="app"></div>，内容由 JS 注入），
+    // 静态审计扫不到任何标签，跳过以免误报。其余页面均为 SSR，正常检查。
     if (rel === '404.html') continue
     const issues = auditPage(fs.readFileSync(file, 'utf8'))
     if (issues.length) bad.push({ rel, issues })

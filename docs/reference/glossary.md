@@ -32,6 +32,7 @@ title: 术语速查：一句话讲透一个名词
 
 | 术语 | 一句话 | 别误会成 | 深读 |
 |---|---|---|---|
+| GPIO | 通用输入输出：一个引脚可被软件配成输入读电平、或输出驱动高低 | "通用"不等于"随意"——复用功能、推挽/开漏、上下拉、速度都还要另外配 | [S3 GPIO](/stm32/03-gpio.md) |
 | 时钟树 🔧 | 晶振/内部 RC 经分频、倍频后分配到内核与各总线外设的那张"供水管网" | 频率不是越高越好，Flash 等待周期与 APB 上限会先卡住你 | [S2 RCC 时钟树](/stm32/02-rcc-clock.md) |
 | HSE / HSI / PLL | 外部晶振 / 内部 RC 振荡器 / 锁相环倍频输出 | PLL 要轮询就绪位再切换时钟源，不是一写就生效 | [S2 RCC 时钟树](/stm32/02-rcc-clock.md) |
 | AHB / APB | 高速总线与外设总线两级分频，外设挂在 APB1/APB2 上 | 挂在 APB 上的外设时钟 ≠ 系统时钟，计算分频时要顺着往下算 | [S2 RCC 时钟树](/stm32/02-rcc-clock.md) |
@@ -47,6 +48,18 @@ title: 术语速查：一句话讲透一个名词
 | 波特率 | 每秒符号数，收端要靠过采样找回每个位的中心 | 时钟源算错，"9600"就不是你以为的 9600 | [S7 USART](/stm32/07-usart.md) |
 | HardFault | 出大错时硬件统一跳过去的异常出口 | 它不是 bug 本身，是 bug 的墓碑——要靠压栈现场反查元凶 | [S16 HardFault 与排错](/stm32/16-debug-hardfault.md) |
 | IAP | 应用自己在运行中写内部 Flash，常用于升级 | 写 Flash 期间取指会卡，要么同扇区不执行，要么搬进 RAM | [S13 内部 Flash 与 IAP](/stm32/13-flash-iap.md) |
+| Flash 存储器 | 掉电不丢的程序与数据存储器，按扇区擦除、按页/字写入 | 写之前必须先擦，且擦写次数有限；写 Flash 期间取指会卡住 | [S13 内部 Flash 与 IAP](/stm32/13-flash-iap.md) |
+| RCC | 复位与时钟控制：选时钟源、配 PLL、分频到各总线并逐个使能外设时钟 | 外设时钟默认是关的，不使能就读写寄存器会得到 0 或直接 HardFault | [S2 RCC 时钟树](/stm32/02-rcc-clock.md) |
+| USART / UART | 串行收发器：UART 指异步那一档，USART 还能对外出时钟 | "串口"是口语，硬件上它是个 USART 外设；TTL 电平不等于 RS232 | [S7 USART](/stm32/07-usart.md) |
+| SPI | 四线同步串行总线（SCK/MOSI/MISO/CS），靠 CPOL/CPHA 两个位配对模式 | 模式配错照样能通信，但数据整个偏一位；片选要软件自己管 | [S12 SPI](/stm32/12-spi.md) |
+| I2C | 两线（SDA/SCL）多主多从总线，靠地址寻址 + 开漏线与仲裁 | 上拉电阻不能省；时钟延展和重复起始是抓包时最容易懵的两件事 | [S11 I2C](/stm32/11-i2c.md) |
+| ADC | 把模拟电压量化成数字量的转换器，有规则组与注入组两套通道 | 采样时间不够读数会偏低；参考电压不稳，位数再多也没意义 | [S9 ADC](/stm32/09-adc.md) |
+| DAC | 把数字量还原成模拟电压的输出通道 | 输出带载能力很弱，要推负载得外加运放 | [S10 DAC](/stm32/10-dac.md) |
+| TIM / PWM | 定时器做计数、输入捕获、输出比较；PWM 是比较输出的一种用法 | 周期与占空比是两个不同寄存器（ARR / CCR），改一个不等于改另一个 | [S6 TIM 定时器](/stm32/06-tim.md) |
+| RTC | 掉电后靠备用电源继续走的日历时钟 | 它挂在独立的低速时钟域上，读写有同步要求，不能当普通寄存器用 | [S14 电源与功耗](/stm32/14-pwr.md) |
+| FPU | 硬件浮点单元，让 float 运算由指令直接完成而非软件模拟 | 编译器不开浮点选项，FPU 就白装了；异常时浮点上下文要额外压栈 | [S16 HardFault 与排错](/stm32/16-debug-hardfault.md) |
+| CMSIS | ARM 定的内核与外设软件接口标准，让代码与工具链、厂商解耦 | 它不是库，是一层头文件与命名约定 | [S1 架构概览](/stm32/01-arch.md) |
+| SPL | ST 标准外设库：把寄存器操作封装成结构体 + 函数 | 本站主线是寄存器版，SPL 只作对照阅读，别两套混着用 | [S15 SPL 解剖](/stm32/15-spl-anatomy.md) |
 
 ## RTOS
 
@@ -67,6 +80,10 @@ title: 术语速查：一句话讲透一个名词
 | heap_4 | 可合并空闲块的动态分配实现 | 能合并仍会产生碎片，长跑项目要看最坏值不只看总量 | [F7 内存管理](/rtos/freertos/07-heap.md) |
 | 设备框架 | 把外设抽象成统一接口，应用只认句柄与操作集 | 抽象不等于慢，抽象掉的是重复代码 | [R4 设备框架](/rtos/rtthread/04-device.md) |
 | finsh / MSH | 串口控制台里直接敲命令调函数 | 它要占 Flash 参与链接，命令表得让对象真正被编进来 | [R5 finsh 控制台](/rtos/rtthread/05-finsh.md) |
+| FreeRTOS | 本站精讲的开源实时内核：任务、队列、信号量/互斥量、通知、软件定时器 | 它是内核不是操作系统——没有文件系统、没有网络栈，那些是组件 | [F0 为什么需要 RTOS](/rtos/freertos/00-why-rtos.md) |
+| RT-Thread | 国产开源 RTOS，除内核外自带设备框架、finsh 控制台与组件生态 | "内核 + 组件"两层要分开看，别把一个组件的行为算到内核头上 | [R0 架构与设计](/rtos/rtthread/00-arch.md) |
+| tick（系统节拍） | 内核的心跳：每到一个 tick 检查延时到期、同级轮转与超时 | tick 频率越高越灵敏但开销越大；vTaskDelay 是以 tick 为单位睡 | [F3 调度器](/rtos/freertos/03-scheduler.md) |
+| 信号量 | 用于同步的令牌（二值）或资源计数（计数），不携带数据 | 信号量没有所有权与优先级继承，拿它当锁护数据等于裸奔 | [F5 信号量与互斥量](/rtos/freertos/05-sem-mutex.md) |
 
 ## ESP32 / ESP-IDF
 
@@ -89,6 +106,10 @@ title: 术语速查：一句话讲透一个名词
 | RCU | GD32 的时钟控制单元，岗位等于 STM32 的 RCC | 寄存器同名不同名都有，逐个字段对账才算读完 | [G1 RCU 时钟树](/gd32/01-rcu-clock.md) |
 | CK_SYS / CK_AHB / CK_APBx | 从源时钟逐级分频下来的实际频率账 | "主频 200MHz"不等于每个外设都吃到 200MHz | [G1 RCU 时钟树](/gd32/01-rcu-clock.md) |
 | IRC16M | GD32 的内部 16MHz RC 振荡器，对应 STM32 的 HSI 岗位 | 精度与温漂不如晶振，做时间基准要心里有数 | [G1 RCU 时钟树](/gd32/01-rcu-clock.md) |
+| RISC-V | 开源指令集架构；V 篇的 GD32VF103 用它而非 ARM Cortex-M | 指令集不同意味着工具链、启动与中断控制器全都要换一套 | [V1 Bumblebee 内核与 CLIC](/gd32/06-clic-irq.md) |
+| Bumblebee 内核 | 芯来科技为 GD32VF103 实现的 RISC-V 内核 | 它不是标准 RISC-V 的全部，CLIC 等部分是厂商扩展 | [V1 Bumblebee 内核与 CLIC](/gd32/06-clic-irq.md) |
+| CLIC | 内核局部中断控制器，替代 ARM 的 NVIC 岗位 | 中断入口与优先级模型都和 NVIC 不同，别照搬 NVIC 的代码 | [V1 Bumblebee 内核与 CLIC](/gd32/06-clic-irq.md) |
+| MTIME / MTIMECMP | RISC-V 的系统计时器与比较寄存器，裸机延时的时间基准 | 它不属于某个外设总线，是内核级的时间源 | [V3 MTIME 与裸机延时](/gd32/08-mtime-delay.md) |
 
 ## 实物与仪器
 
