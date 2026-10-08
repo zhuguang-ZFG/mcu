@@ -32,6 +32,7 @@
 <!-- readme:progress:start -->
 | 板块 | 成稿 / 规划（已建档） | 现在就能点进去读 |
 |---|---|---|
+| [双板综合项目](docs/projects/index.md) | 2 / 2（2） | [J1 STM32F407 传感器记录器](docs/projects/01-f407-logger.md) · [J2 ESP32-S3 传感器记录器](docs/projects/02-s3-logger.md) |
 | [C 语言精髓](docs/c/index.md) | 9 / 9（9） | [C0 为什么嵌入式 C 是另一种 C](docs/c/00-c-in-mcu.md) · [C1 内存模型](docs/c/01-memory-model.md) · [C2 指针](docs/c/02-pointer.md) · [C3 volatile](docs/c/03-volatile.md) · [C4 结构体与 ABI](docs/c/04-struct-abi.md) · [C5 函数指针、状态机与环形缓冲](docs/c/05-func-pointer.md) · [C6 调用约定与栈帧](docs/c/06-abi-stack.md) · [C7 未定义行为与 MISRA-C 精要](docs/c/07-ub-misra.md) · [C8 串口协议](docs/c/08-framed-protocol.md) |
 | [构建与运行全过程](docs/build/index.md) | 8 / 8（8） | [B0 工具链全景](docs/build/00-toolchain.md) · [B1 四步构建](docs/build/01-four-steps.md) · [B2 ELF 解剖](docs/build/02-elf.md) · [B3 链接脚本](docs/build/03-linker-script.md) · [B4 启动过程](docs/build/04-startup.md) · [B5 map 与体积](docs/build/05-map-size.md) · [B6 烧录与调试](docs/build/06-flash-debug.md) · [B7 构建系统](docs/build/07-build-system.md) |
 | [STM32F407 寄存器主线](docs/stm32/index.md) | 18 / 18（18） | [S0 环境搭建](docs/stm32/00-env.md) · [S1 F407 架构总览](docs/stm32/01-arch.md) · [S2 RCC 时钟树](docs/stm32/02-rcc-clock.md) · [S3 GPIO](docs/stm32/03-gpio.md) · [S4 NVIC 与 EXTI](docs/stm32/04-nvic-exti.md) · [S5 SysTick](docs/stm32/05-systick.md) · [S6 定时器 TIM](docs/stm32/06-tim.md) · [S7 USART](docs/stm32/07-usart.md) · [S8 DMA](docs/stm32/08-dma.md) · [S9 ADC](docs/stm32/09-adc.md) · [S10 DAC](docs/stm32/10-dac.md) · [S11 I2C](docs/stm32/11-i2c.md) · [S12 SPI](docs/stm32/12-spi.md) · [S13 内部 Flash 与 IAP](docs/stm32/13-flash-iap.md) · [S14 低功耗](docs/stm32/14-pwr.md) · [S15 SPL 标准库解剖](docs/stm32/15-spl-anatomy.md) · [S16 HardFault 与排错](docs/stm32/16-debug-hardfault.md) · [S17 看门狗](docs/stm32/17-watchdog-reset.md) |
@@ -42,10 +43,10 @@
 | [GD32 双系对照](docs/gd32/index.md) | 10 / 10（10） | [G0 环境与工具链](docs/gd32/00-env.md) · [G1 RCU 时钟树](docs/gd32/01-rcu-clock.md) · [G2 GPIO 与 AF 复用对照](docs/gd32/02-gpio-af.md) · [G3 USART 增强点](docs/gd32/03-usart.md) · [G4 GD32 外设差异](docs/gd32/04-periph-diff.md) · [V0 RISC-V 工具链与启动文件](docs/gd32/05-riscv-toolchain.md) · [V1 Bumblebee 内核与 CLIC 中断](docs/gd32/06-clic-irq.md) · [V2 RCU 与 108MHz](docs/gd32/07-rcu-108m.md) · [V3 MTIME 与裸机延时](docs/gd32/08-mtime-delay.md) · [V4 GPIO 最小系统](docs/gd32/09-gpio-minimal.md) |
 | [实物实验中心](docs/lab/index.md) | 8 / 8（8） | [实验 E01 点亮霸天虎的 RGB 红灯](docs/lab/e01-blink.md) · [实验 E02 逻辑分析仪抓 UART 帧](docs/lab/e02-logic-uart.md) · [实验 E03 示波器看 PWM](docs/lab/e03-scope-pwm.md) · [实验 E04 优先级反转复现](docs/lab/e04-priority-inversion.md) · [实验 E05 I2C 抓包读 EEPROM](docs/lab/e05-i2c-eeprom.md) · [实验 E06 低功耗电流实测](docs/lab/e06-lowpower-current.md) · [实验 E07 S3 板载姿态传感器](docs/lab/e07-qmi8658.md) · [实验 E08 S3 音频链路放音](docs/lab/e08-audio-play.md) |
 
-- 成稿章节 **78 / 78**（上表「实物实验」那一行的 8 篇另计，不进章节数），通读约 **2865 分钟**（≈ 47.8 小时）；
+- 成稿章节 **80 / 80**（上表「实物实验」那一行的 8 篇另计，不进章节数），通读约 **2985 分钟**（≈ 49.8 小时）；
 - 实物实验 **8 / 8**（文稿成稿；完整配套工程 7 项，上板验证 0 项）；
 - 机制动画 **55** 张，在 `docs/public/anim/`，动效与版式规范见 `.trellis/spec/docs-site/animation.md`；
-- 示例工程 **34** 个，在 `code/`，与章节同构；
+- 示例工程 **37** 个，在 `code/`，与章节同构；
 - 章节 frontmatter 元数据校验已通过（缺项或非法值会阻止构建）。
 <!-- readme:progress:end -->
 

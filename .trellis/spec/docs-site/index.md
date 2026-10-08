@@ -4,6 +4,7 @@ VitePress 站点的一切（页面、侧边栏、主题、动画、图片）。
 
 | 文件 | 内容 |
 |---|---|
+| [logger-contract.md](logger-contract.md) | 双板综合项目、SAMPLE/TLV、配置恢复与运行期并发合同 |
 | [quality-contract.md](quality-contract.md) | 工程清单、严格元数据、实验验证状态、CI 与浏览器回归合同 |
 | [structure.md](structure.md) | 目录约定、config/sidebar 纪律、frontmatter 与编号体系 |
 | [content.md](content.md) | 章节页模板执行细则、风格落地检查、动画与图片操作 |

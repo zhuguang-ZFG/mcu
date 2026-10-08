@@ -2,6 +2,8 @@
 
 ## 目录与文件约定
 
+- 综合项目使用 `docs/projects/`、`J1/J2` 前缀；同样进入课程计划、sidebar、TRACKS 和源码导入检查。J页独立显示代码就绪与待上板状态。
+
 - 章节页：`docs/<track>/<nn>-<slug>.md`，track ∈ `guide/c/build/stm32/rtos/esp32/gd32/lab`；`reference/` 放读者支撑页（术语速查/FAQ/关于/更新日志），无编号前缀，但同样要进 nav 与 sidebar。
 - 编号前缀（frontmatter title 与 H1 一致）：`C`=c、`B`=build、`S`=stm32、`F`=rtos/freertos、`R`=rtos/rtthread、`对比`=rtos/compare、`P`=esp32、`G`=gd32、`实验 E`=lab。实例见 `docs/stm32/03-gpio.md`（"S3 GPIO"）。
 - 每个 track 有 `index.md` 导览（路线表+精髓一句话），实例 `docs/rtos/index.md`。

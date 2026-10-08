@@ -1,4 +1,15 @@
 import { test, expect } from '@playwright/test'
+
+test('both complete logger chapters expose actual source and pending hardware status', async ({ page }) => {
+  await page.setViewportSize({width:390,height:844})
+  for(const route of ['projects/01-f407-logger.html','projects/02-s3-logger.html']){
+    await page.goto(route)
+    await expect(page.locator('.mcu-lab-status')).toContainText('工程已提供')
+    await expect(page.locator('.mcu-lab-status')).toContainText('待上板实测')
+    await expect(page.locator('.vp-doc')).toContainText('logger_create_tasks')
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true)
+  }
+})
 import { readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'

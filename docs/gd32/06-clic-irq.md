@@ -195,11 +195,11 @@ ECLIC 的"向量直跳"省了 ARM 那张大表，但代价是每个要用向量�
 | 是否 CSR | 否 | **否**（常被误以为 CSR） |
 | IRQn | -1（内核异常） | `CLIC_INT_TMR = 7`（ECLIC，gd32vf103.h:102） |
 | 重装 | 写 LOAD 自动重装 | **软件写 mtimecmp = mtime + 周期** |
-| RTOS tick | 直接用 | 直接用（[V3](08-mtime-delay.html) 详述） |
+| RTOS tick | 直接用 | 直接用（[V3](08-mtime-delay.md) 详述） |
 
 **驱动频率**（手册 §3.1 + GD32VF103 注记）：mtime 由 SoC 的 `mtime_toggle_a` 脉冲驱动，每检测到一个边沿 mtime 加 1。GD32VF103 上 `rtc_clk = core_clk_aon / 4`，所以 **mtime 自增频率 = core_clk_aon / 4**。若核心跑 108MHz，mtime 约 27MHz 自增（`core_clk_aon` 与核心时钟的精确关系**待 UM 核验**）。
 
-**推论**：MTIME 是 64 位递增 + 软件比较，意味着"周期定时"要软件每次中断后把 mtimecmp 加一个周期（不像 SysTick 硬件自动重装）——这是 RTOS port 到 RISC-V 必须处理的差异（[V3](08-mtime-delay.html) 详述）。SysTick 的"写一次 LOAD 一劳永逸"在 MTIME 上不成立。
+**推论**：MTIME 是 64 位递增 + 软件比较，意味着"周期定时"要软件每次中断后把 mtimecmp 加一个周期（不像 SysTick 硬件自动重装）——这是 RTOS port 到 RISC-V 必须处理的差异（[V3](08-mtime-delay.md) 详述）。SysTick 的"写一次 LOAD 一劳永逸"在 MTIME 上不成立。
 
 ## 七、对照落地：配通 EXTI0，与 S4 六步逐条对比
 
@@ -240,7 +240,7 @@ GD32VF103 的"混血"在这里体现得最清楚：外设层（EXTI/AFIO/GPIO）
 - 用 GDB 读 `mtvec`（`info registers mtvec`）与 cliccfg，看 ECLIC 全局配置（精确寄存器布局待 ISA 手册）。
 - 配 EXTI0 为 shv=1 向量模式，按键触发，在 ISR 入口设断点——应直接断在专属入口，不停在公共入口。
 - 配同 EXTI0 为 shv=0 非向量模式，再触发——应先停在公共入口，单步后分发到 ISR。两种模式对比"向量直跳"。
-- MTIME 实验（[V3](08-mtime-delay.html) 详述）：读 mtime 两次间隔，反推自增频率，验证 `core_clk_aon / 4`。
+- MTIME 实验（[V3](08-mtime-delay.md) 详述）：读 mtime 两次间隔，反推自增频率，验证 `core_clk_aon / 4`。
 
 ## 常见坑
 
@@ -316,7 +316,7 @@ shv=1 是**向量模式**——硬件直跳到该中断专属入口（向量直�
 
 - 中断控制器从 NVIC 换到 ECLIC，三处架构差异（控制器、两维优先级、向量直跳）入肌肉记忆；
 - 中断号不再"IRQn + 16"，能从 `gd32vf103.h` 直接读 ECLIC 索引，知道同一条 EXTI0 线在两颗芯片上编号差很远；
-- MTIME 不是 SysTick：64 位递增、内存映射、软件比较、`mtime_toggle_a` 驱动——RTOS tick 的地基（[V3](08-mtime-delay.html) 接着盖）；
+- MTIME 不是 SysTick：64 位递增、内存映射、软件比较、`mtime_toggle_a` 驱动——RTOS tick 的地基（[V3](08-mtime-delay.md) 接着盖）；
 - 手握"EXTI 外设照搬 F1、第 6 步换 ECLIC 三动作"的清单，能在 GD32VF103 上配通任意外部中断。
 
 <div class="achievement">

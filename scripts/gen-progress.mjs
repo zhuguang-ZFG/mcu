@@ -19,6 +19,7 @@ const DOCS = path.join(ROOT, 'docs')
 const OUT = path.join(DOCS, '.vitepress', 'data', 'progress.json')
 
 const TRACKS = [
+  { key:'projects', name:'双板综合项目', dir:'projects' },
   { key: 'c', name: 'C 语言精髓', dir: 'c' },
   { key: 'build', name: '构建与运行全过程', dir: 'build' },
   { key: 'stm32', name: 'STM32F407 寄存器主线', dir: 'stm32' },
@@ -51,7 +52,7 @@ const tracks = TRACKS.map((t) => {
       status: fm.status === 'done' ? 'done' : 'building',
       difficulty: fm.difficulty,
       minutes: fm.minutes,
-      ...(t.key === 'lab' ? readLabMetadata(fm, catalog, DOCS, rel) : {}),
+      ...((t.key === 'lab' || fm.hardware_status) ? readLabMetadata(fm, catalog, DOCS, rel) : {}),
     }
   })
   const built = chapters.length

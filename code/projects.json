@@ -278,5 +278,41 @@
         "dir": "build/mode-3-faults-1"
       }
     ]
+  },
+  {
+    "id": "common-logger",
+    "path": "code/common/logger",
+    "kind": "host-probe",
+    "entry": "probe.sh"
+  },
+  {
+    "id": "stm32-07-sensor-logger",
+    "path": "code/stm32/07-sensor-logger",
+    "kind": "arm-make",
+    "entry": "Makefile",
+    "variants": [
+      {
+        "args": [
+          "MODE=0",
+          "FAULTS=0"
+        ],
+        "dir": "build/mode-0-faults-0"
+      },
+      {
+        "args": [
+          "MODE=0",
+          "FAULTS=1"
+        ],
+        "dir": "build/mode-0-faults-1"
+      }
+    ]
+  },
+  {
+    "id": "esp32-08-sensor-logger",
+    "path": "code/esp32/08-sensor-logger",
+    "kind": "esp-idf",
+    "entry": "CMakeLists.txt",
+    "target": "esp32s3",
+    "faults": true
   }
 ]

@@ -115,6 +115,7 @@ export default defineConfig({
       { text: 'ESP32', link: '/esp32/' },
       { text: 'GD32', link: '/gd32/' },
       { text: '实验', link: '/lab/' },
+      { text: '综合项目', link: '/projects/' },
       { text: '动画', link: '/animations' },
       {
         text: '资料',
@@ -127,6 +128,7 @@ export default defineConfig({
       },
     ],
     sidebar: {
+      '/projects/': [{ text:'综合项目', items:[{text:'导览',link:'/projects/'},{text:'J1 F407记录器',link:'/projects/01-f407-logger'},{text:'J2 S3记录器',link:'/projects/02-s3-logger'}] }],
       '/guide/': [
         {
           text: '导读',

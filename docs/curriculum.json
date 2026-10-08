@@ -865,5 +865,31 @@
       "F8"
     ],
     "parallel": []
+  },
+  {
+    "id": "J1",
+    "track": "projects",
+    "path": "docs/projects/01-f407-logger.md",
+    "title": "J1 STM32F407 传感器记录器",
+    "must": [
+      "C8",
+      "F8",
+      "S9",
+      "S17"
+    ],
+    "parallel": []
+  },
+  {
+    "id": "J2",
+    "track": "projects",
+    "path": "docs/projects/02-s3-logger.md",
+    "title": "J2 ESP32-S3 传感器记录器",
+    "must": [
+      "C8",
+      "F8",
+      "P6",
+      "P13"
+    ],
+    "parallel": []
   }
 ]
