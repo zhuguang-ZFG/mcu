@@ -36,15 +36,18 @@ for (const p of projects.filter(p => p.kind !== 'esp-idf')) {
       assert.equal(bin.readUInt32LE(0), parseInt(stack[1], 16), `${p.id}: initial SP`)
       assert.equal(bin.readUInt32LE(4), parseInt(reset[1], 16) | 1, `${p.id}: reset vector`)
     }
-    if (p.scenes) {
-      const hash = n => createHash('sha256').update(fs.readFileSync(path.join(cwd, `build/scene-${n}/freertos-lab.bin`))).digest('hex')
-      const first = hash(1), second = hash(2)
-      assert.notEqual(first, second, 'scene 1 and 2 must differ')
-      for (const scene of [1, 2, 1]) run(make, [`DEMO_SCENE=${scene}`], cwd)
-      assert.equal(hash(1), first)
-      assert.equal(hash(2), second)
-      assert.match(run(make, ['-n', 'DEMO_SCENE=2', 'flash'], cwd), /program build\/scene-2\/freertos-lab\.elf/)
-      const bad = spawnSync(make, ['-n', 'DEMO_SCENE=7'], { cwd, encoding: 'utf8' })
+if (p.scenes && p.scenes.length >= 2) {
+      // 场景独立性：不同 DEMO_SCENE 产物必须不同；切回首个场景须可复现。
+      const binName = n => fs.readdirSync(path.join(cwd, `build/scene-${n}`)).find(f => f.endsWith('.bin'))
+      const hash = n => createHash('sha256').update(fs.readFileSync(path.join(cwd, `build/scene-${n}`, binName(n)))).digest('hex')
+      const first = hash(p.scenes[0]), second = hash(p.scenes[1])
+      assert.notEqual(first, second, 'scene variants must differ')
+      for (const scene of [p.scenes[0], p.scenes[1], p.scenes[0]]) run(make, [`DEMO_SCENE=${scene}`], cwd)
+      assert.equal(hash(p.scenes[0]), first)
+      assert.equal(hash(p.scenes[1]), second)
+      const elfName = binName(p.scenes[1]).replace(/\.bin$/, '.elf')
+      assert.match(run(make, ['-n', `DEMO_SCENE=${p.scenes[1]}`, 'flash'], cwd), new RegExp(`program build\\/scene-${p.scenes[1]}\\/${elfName}`))
+      const bad = spawnSync(make, ['-n', `DEMO_SCENE=${p.scenes[p.scenes.length - 1] + 1}`, 'flash'], { cwd, encoding: 'utf8' })
       assert.notEqual(bad.status, 0, 'invalid scene must fail')
     }
     if(p.variants){
