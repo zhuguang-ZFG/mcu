@@ -209,6 +209,8 @@ SPL（StdPeriph）未随 ST 官方 GitHub 分发，本轮仍缺一手源码；�
 4. 写完 `RCC_CFGR.SW` 立刻读 `SWS`，可能看到什么？该怎么办？
 <details><summary>参考答案</summary>可能看到旧值——硬件切换需要时间。正确做法是轮询 SWS 直到它等于你写的 SW，并加超时；读不到回执就当切换失败处理。</details>
 
+<QuizBank chapter="s02-rcc-clock" />
+
 ## 对照表：本章概念 → 仓库与上游落点
 
 | 概念 | 落点 |

@@ -251,6 +251,8 @@ SPL 的 `TIM_TimeBaseInit()` / `TIM_OC1Init()`、HAL 的 `HAL_TIM_PWM_Init()` / 
 4. 输入捕获里"相邻两个上升沿的 CCR 差值"在 CNT 回绕时怎么算才对？
 <details><summary>参考答案</summary>先确认计数模数等于 2^32、间隔小于整圈且未丢边沿，本例 TIM2 才可用 uint32_t 模差；ARR=999 的 TIM3 不能套用。</details>
 
+<QuizBank chapter="s06-tim" />
+
 ## 对照表：本章概念 → 仓库与上游落点
 
 | 概念 | 落点 |

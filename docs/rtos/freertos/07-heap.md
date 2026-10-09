@@ -349,6 +349,8 @@ $5 = "sensor_task\000..."    ← 肇事者
 4. 动态创建的任务，它的栈存在哪里？静态创建的呢？
 <details><summary>参考答案</summary>动态创建（xTaskCreate）的栈由内核 pvPortMalloc 从 heap_4 的池子里分；静态创建（xTaskCreateStatic）的栈由调用方提供的静态数组给。MSP 主栈（中断用）在链接脚本里，与堆无关。"栈不在堆里"只对后两种成立。</details>
 
+<QuizBank chapter="f7-heap" />
+
 ## 对照表：本章概念 → 仓库与上游落点
 
 | 概念 | 落点 |

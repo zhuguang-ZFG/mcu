@@ -8,6 +8,7 @@ import LabStatus from './LabStatus.vue'
 import LabOverview from './LabOverview.vue'
 import RegisterExplorer from './RegisterExplorer.vue'
 import ClockCalc from './ClockCalc.vue'
+import QuizBank from './QuizBank.vue'
 import './custom.css'
 
 export default {
@@ -21,5 +22,6 @@ export default {
     app.component('LabOverview', LabOverview)
     app.component('RegisterExplorer', RegisterExplorer)
     app.component('ClockCalc', ClockCalc)
+    app.component('QuizBank', QuizBank)
   },
 } satisfies Theme
