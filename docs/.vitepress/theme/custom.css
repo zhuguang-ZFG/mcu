@@ -622,3 +622,244 @@ html.dark {
   border-color: var(--mcu-warn);
   color: var(--mcu-warn);
 }
+
+/* ===== 视觉增强：代码块美化 ===== */
+.vp-doc div[class*='language-'] {
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin: 1.2em 0;
+}
+.vp-doc div[class*='language-']::before {
+  content: attr(class);
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.vp-doc pre {
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+.vp-doc pre code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, Consolas, monospace;
+}
+
+/* ===== 视觉增强：自定义 Callout 盒子 ===== */
+.mcu-callout {
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 1.4em 0;
+  position: relative;
+  overflow: hidden;
+}
+.mcu-callout::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+.mcu-callout-title {
+  font-weight: 600;
+  font-size: 1.05em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mcu-callout-content {
+  font-size: 0.95em;
+  line-height: 1.7;
+}
+.mcu-callout-content p {
+  margin: 0.5em 0;
+}
+.mcu-callout-content p:first-child {
+  margin-top: 0;
+}
+.mcu-callout-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Tip 盒子 */
+.mcu-callout.tip {
+  background: linear-gradient(135deg, rgba(62, 175, 124, 0.08), rgba(62, 175, 124, 0.04));
+  border: 1px solid rgba(62, 175, 124, 0.2);
+}
+.mcu-callout.tip::before {
+  background: var(--mcu-accent);
+}
+.mcu-callout.tip .mcu-callout-title {
+  color: var(--mcu-accent);
+}
+
+/* Warning 盒子 */
+.mcu-callout.warning {
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.08), rgba(217, 119, 6, 0.04));
+  border: 1px solid rgba(217, 119, 6, 0.2);
+}
+.mcu-callout.warning::before {
+  background: var(--mcu-warn);
+}
+.mcu-callout.warning .mcu-callout-title {
+  color: var(--mcu-warn);
+}
+
+/* Info 盒子 */
+.mcu-callout.info {
+  background: linear-gradient(135deg, rgba(52, 81, 178, 0.08), rgba(52, 81, 178, 0.04));
+  border: 1px solid rgba(52, 81, 178, 0.2);
+}
+.mcu-callout.info::before {
+  background: var(--mcu-brand);
+}
+.mcu-callout.info .mcu-callout-title {
+  color: var(--mcu-brand);
+}
+
+/* Danger 盒子 */
+.mcu-callout.danger {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.08), rgba(220, 38, 38, 0.04));
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+.mcu-callout.danger::before {
+  background: #dc2626;
+}
+.mcu-callout.danger .mcu-callout-title {
+  color: #dc2626;
+}
+
+/* ===== 视觉增强：章节状态徽章 ===== */
+.mcu-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 12px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.mcu-status-badge.done {
+  background: rgba(62, 175, 124, 0.15);
+  color: var(--mcu-accent);
+}
+.mcu-status-badge.wip {
+  background: rgba(217, 119, 6, 0.15);
+  color: var(--mcu-warn);
+}
+.mcu-status-badge.planned {
+  background: rgba(102, 102, 102, 0.15);
+  color: #666;
+}
+
+/* ===== 视觉增强：目录美化 ===== */
+.vp-doc .table-of-contents {
+  background: var(--vp-c-bg-soft);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 1.5em 0;
+  border: 1px solid var(--vp-c-divider);
+}
+.vp-doc .table-of-contents-title {
+  font-weight: 600;
+  font-size: 0.95em;
+  color: var(--mcu-brand);
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--mcu-brand);
+}
+.vp-doc .table-of-contents ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.vp-doc .table-of-contents li {
+  margin: 6px 0;
+  line-height: 1.6;
+}
+.vp-doc .table-of-contents a {
+  color: var(--vp-c-text-2);
+  text-decoration: none;
+  transition: color 0.2s, padding-left 0.2s;
+  display: block;
+  padding: 2px 0;
+}
+.vp-doc .table-of-contents a:hover {
+  color: var(--mcu-brand);
+  padding-left: 6px;
+}
+
+/* ===== 视觉增强：链接下划线动效 ===== */
+.vp-doc a {
+  position: relative;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.vp-doc a:not(.header-anchor):not(.mcu-chip):not(.mcu-track__name)::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 0;
+  height: 1.5px;
+  background: var(--mcu-brand);
+  transition: width 0.3s ease;
+}
+.vp-doc a:not(.header-anchor):not(.mcu-chip):not(.mcu-track__name):hover::after {
+  width: 100%;
+}
+
+/* ===== 视觉增强：图片阴影 ===== */
+.vp-doc img:not([src*="/anim/"]) {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.vp-doc img:not([src*="/anim/"]):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== 视觉增强：引用块渐变左边框 ===== */
+.vp-doc blockquote {
+  position: relative;
+  background: linear-gradient(135deg, var(--vp-c-bg-soft), var(--vp-c-bg));
+}
+.vp-doc blockquote::after {
+  content: '"';
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  font-size: 3em;
+  color: var(--mcu-brand);
+  opacity: 0.15;
+  font-family: Georgia, serif;
+}
+
+/* ===== 移动端优化 ===== */
+@media (max-width: 768px) {
+  .vp-doc h1 {
+    font-size: 1.8em;
+  }
+  .vp-doc h2 {
+    font-size: 1.5em;
+  }
+  .vp-doc h3 {
+    font-size: 1.25em;
+  }
+  .vp-doc table {
+    font-size: 0.9em;
+  }
+  .vp-doc pre {
+    font-size: 0.85em;
+  }
+  .mcu-callout {
+    padding: 12px 16px;
+  }
+}
