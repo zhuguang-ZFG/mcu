@@ -61,6 +61,40 @@ title: 术语速查：一句话讲透一个名词
 | CMSIS | ARM 定的内核与外设软件接口标准，让代码与工具链、厂商解耦 | 它不是库，是一层头文件与命名约定 | [S1 架构概览](/stm32/01-arch.md) |
 | SPL | ST 标准外设库：把寄存器操作封装成结构体 + 函数 | 本站主线是寄存器版，SPL 只作对照阅读，别两套混着用 | [S15 SPL 解剖](/stm32/15-spl-anatomy.md) |
 
+## ESP32-S3
+
+| 术语 | 一句话 | 别误会成 | 深读 |
+|---|---|---|---|
+| IDF | Espressif 官方开发框架：FreeRTOS + 协议栈 + 驱动全家桶 | 不是"只能 ESP32 用"，它是框架名，芯片是芯片 | [P0 环境搭建](/esp32/00-env.md) |
+| menuconfig | IDF 的图形化配置工具，生成 sdkconfig 头文件 | 不是"改完就生效"，要重新 build 才编进固件 | [P3 IDF 解剖](/esp32/03-idf-anatomy.md) |
+| NVS | Non-Volatile Storage：Flash 分区里的键值存储 | 不是"随便写 Flash"，有磨损均衡和掉电保护 | [P10 Flash/NVS/OTA](/esp32/10-flash-nvs-ota.md) |
+| OTA | Over-The-Air：远程升级固件 | 不是"无线下载就行"，要有双分区回滚机制 | [P10 Flash/NVS/OTA](/esp32/10-flash-nvs-ota.md) |
+| GPIO 矩阵 | 把任意 GPIO 路由到任意外设的信号交换矩阵 | 不是"引脚随便选"，高速信号仍走 IO_MUX 专线 | [P2 GPIO 矩阵](/esp32/02-gpio-matrix.md) |
+| IRAM | 指令 RAM：Cache 关闭时仍能从 Flash 执行的代码 | 不是"所有代码都能放"，ISR 必须进 IRAM | [P4 中断与双核](/esp32/04-irq-dualcore.md) |
+| TWDT | Task Watchdog Timer：内核级任务看门狗 | 不是"软件喂狗"，是硬件监控每个 CPU 核心 | [P13 看门狗与健康监督](/esp32/13-watchdog-health.md) |
+| ULP | Ultra Low Power：独立低功耗协处理器 | 不是"主核休眠就行"，ULP 能在主核休眠时跑简单任务 | [P11 低功耗](/esp32/11-lowpower.md) |
+| LEDC | LED Controller：硬件 PWM 发生器，支持渐变 | 不是"只能驱动 LED"，电机调速、音频都能用 | [P7 定时器与 LEDC](/esp32/07-timer-ledc.md) |
+| I2S | Inter-IC Sound：串行音频总线 | 不是"只能传声音"，高速同步数据也能用 | [P12 音频链路](/esp32/12-audio-path.md) |
+
+## GD32
+
+| 术语 | 一句话 | 别误会成 | 深读 |
+|---|---|---|---|
+| RCU | Reset and Clock Unit：GD32 的时钟控制单元，相当于 STM32 的 RCC | 不是"换个名字而已"，寄存器位域和切换流程有差异 | [G1 RCU 时钟树](/gd32/01-rcu-clock.md) |
+| ECLIC | Enhanced Core-Local Interrupt Controller：Bumblebee 内核的中断控制器 | 不是"RISC-V 版 NVIC"，支持二维优先级和快速中断 | [V1 CLIC 中断](/gd32/06-clic-irq.md) |
+| MTIME | Machine Timer：RISC-V 标准的 64 位机器定时器 | 不是"SysTick 替代品"，读写要分高低 32 位防撕裂 | [V3 MTIME 时基](/gd32/08-mtime-delay.md) |
+| Bumblebee | 芯来科技的 RISC-V 内核名，GD32VF103 使用 | 不是"开源 RISC-V 核"，是商业核但文档公开 | [V0 RISC-V 工具链](/gd32/05-riscv-toolchain.md) |
+
+## 项目与系统
+
+| 术语 | 一句话 | 别误会成 | 深读 |
+|---|---|---|---|
+| 四层架构 | 外设适配 / 公共核心 / RTOS 运行层 / 主机的分层设计 | 不是"层越多越好"，是为跨平台复用和可测试性 | [J1 F407 记录器](/projects/01-f407-logger.md) |
+| 影子拷贝 | 保存配置时先 memcpy 到临时缓冲区再释放锁写慢速外设 | 不是"多此一举"，是避免慢存储阻塞实时采样 | [J1 F407 记录器](/projects/01-f407-logger.md) |
+| 期限监控 | 要求任务在固定窗口内完成固定工作，否则视为卡死 | 不是"心跳包"，能检测到"活着但停滞"的隐性故障 | [J1 F407 记录器](/projects/01-f407-logger.md) |
+| 配置代次 | 用有界模序号区分新旧配置，防止回退到旧版本 | 不是"时间戳"，模序号能处理回绕 | [J1 F407 记录器](/projects/01-f407-logger.md) |
+| 双槽轮转 | EEPROM 配置保存用两个槽交替写入，保证断电安全 | 不是"备份"，是原子切换机制 | [J1 F407 记录器](/projects/01-f407-logger.md) |
+
 ## RTOS
 
 | 术语 | 一句话 | 别误会成 | 深读 |

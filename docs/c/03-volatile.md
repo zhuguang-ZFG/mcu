@@ -48,6 +48,14 @@ arm-none-eabi-gcc -std=c11 -Wall -Wextra -mcpu=cortex-m4 -mthumb -O2 -S -o opt_p
 
 ## 动画：同一段轮询的两条命运
 
+![volatile 的访存合同：读一次 vs 每次读](/anim/volatile-as-if.svg)
+
+## 视频讲解
+
+本章有配套视频（约 12 分钟），用 4 个犯罪现场、6 个变体实验把 volatile 讲透。视频将在 B 站发布后在此更新链接。
+
+视频脚本与分镜见 [c3-volatile-storyboard.md](/video/c3-volatile-storyboard.md)（仓库内，未发布到站点）。
+
 四阶段：优化器的世界观 → 不加 volatile 的下场 → 加 volatile 的下场 → 边界在哪里。
 
 ![volatile 的访存合同：读一次 vs 每次读](/anim/volatile-as-if.svg)
