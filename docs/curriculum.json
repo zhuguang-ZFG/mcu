@@ -307,7 +307,10 @@
     "track": "stm32",
     "path": "docs/stm32/10-dac.md",
     "title": "S10 DAC：芯片也能输出模拟量",
-    "must": [],
+    "must": [
+      "S2",
+      "S3"
+    ],
     "parallel": [
       "S6",
       "S8",
@@ -389,8 +392,12 @@
     "track": "esp32",
     "path": "docs/esp32/00-env.md",
     "title": "P0 环境搭建：ESP-IDF 与小智板的第一次对话",
-    "must": [],
-    "parallel": []
+    "must": [
+      "C0"
+    ],
+    "parallel": [
+      "S0"
+    ]
   },
   {
     "id": "P1",
@@ -410,9 +417,10 @@
     "track": "esp32",
     "path": "docs/esp32/02-gpio-matrix.md",
     "title": "P2 GPIO 与引脚矩阵：引脚自由换岗的秘密",
-    "must": [],
+    "must": [
+      "P1"
+    ],
     "parallel": [
-      "P1",
       "S3"
     ]
   },
@@ -446,11 +454,12 @@
     "track": "esp32",
     "path": "docs/esp32/05-uart-driver.md",
     "title": "P5 UART 驱动解析：成熟驱动长什么样",
-    "must": [],
+    "must": [
+      "P4",
+      "S7"
+    ],
     "parallel": [
-      "S7",
-      "F4",
-      "P4"
+      "F4"
     ]
   },
   {
@@ -504,9 +513,10 @@
     "track": "esp32",
     "path": "docs/esp32/10-flash-nvs-ota.md",
     "title": "P10 Flash、分区表、NVS 与 OTA",
-    "must": [],
+    "must": [
+      "P1"
+    ],
     "parallel": [
-      "P1",
       "S13"
     ]
   },
@@ -515,10 +525,11 @@
     "track": "esp32",
     "path": "docs/esp32/11-lowpower.md",
     "title": "P11 低功耗：睡眠矩阵与 ULP",
-    "must": [],
-    "parallel": [
-      "S14",
+    "must": [
       "P10"
+    ],
+    "parallel": [
+      "S14"
     ]
   },
   {
@@ -538,8 +549,12 @@
     "track": "gd32",
     "path": "docs/gd32/01-rcu-clock.md",
     "title": "G1 RCU 时钟树：200MHz 是怎么算出来的",
-    "must": [],
-    "parallel": []
+    "must": [
+      "G0"
+    ],
+    "parallel": [
+      "S2"
+    ]
   },
   {
     "id": "F0",
@@ -657,10 +672,11 @@
     "track": "rtthread",
     "path": "docs/rtos/rtthread/00-arch.md",
     "title": "R0 RT-Thread 架构：万物皆对象",
-    "must": [],
-    "parallel": [
+    "must": [
       "F1",
-      "C4",
+      "C4"
+    ],
+    "parallel": [
       "B3"
     ]
   },
@@ -693,11 +709,11 @@
     "track": "rtthread",
     "path": "docs/rtos/rtthread/03-mem.md",
     "title": "R3 RT-Thread 内存管理：确定性之美",
-    "must": [],
-    "parallel": [
+    "must": [
       "F7",
       "C1"
-    ]
+    ],
+    "parallel": []
   },
   {
     "id": "R4",
@@ -728,110 +744,163 @@
     "track": "rtthread",
     "path": "docs/rtos/rtthread/06-env-menuconfig.md",
     "title": "R6 Env 与 menuconfig：RT-Thread 的点单系统",
-    "must": [],
-    "parallel": [
+    "must": [
       "B7"
-    ]
+    ],
+    "parallel": []
   },
   {
     "id": "R7",
     "track": "rtthread",
     "path": "docs/rtos/rtthread/07-port-f407.md",
     "title": "R7 移植 RT-Thread 到霸天虎：两步走",
-    "must": [],
-    "parallel": [
-      "F8",
+    "must": [
       "R0",
-      "R6"
-    ]
+      "R6",
+      "F8"
+    ],
+    "parallel": []
   },
   {
     "id": "X0",
     "track": "compare",
     "path": "docs/rtos/compare/00-side-by-side.md",
     "title": "对比 0 同概念双实现对照",
-    "must": [],
-    "parallel": []
+    "must": [
+      "F1",
+      "R0"
+    ],
+    "parallel": [
+      "F3",
+      "R1"
+    ]
   },
   {
     "id": "X1",
     "track": "compare",
     "path": "docs/rtos/compare/01-choose.md",
     "title": "对比 1 选型决策树",
-    "must": [],
-    "parallel": []
+    "must": [
+      "X0"
+    ],
+    "parallel": [
+      "F8",
+      "R7"
+    ]
   },
   {
     "id": "G0",
     "track": "gd32",
     "path": "docs/gd32/00-env.md",
     "title": "G0 环境与工具链",
-    "must": [],
-    "parallel": []
+    "must": [
+      "C0",
+      "C2"
+    ],
+    "parallel": [
+      "S0"
+    ]
   },
   {
     "id": "G2",
     "track": "gd32",
     "path": "docs/gd32/02-gpio-af.md",
     "title": "G2 GPIO 与 AF 对照",
-    "must": [],
-    "parallel": []
+    "must": [
+      "G0"
+    ],
+    "parallel": [
+      "S3"
+    ]
   },
   {
     "id": "G3",
     "track": "gd32",
     "path": "docs/gd32/03-usart.md",
     "title": "G3 USART 增强点",
-    "must": [],
-    "parallel": []
+    "must": [
+      "G2"
+    ],
+    "parallel": [
+      "S7"
+    ]
   },
   {
     "id": "G4",
     "track": "gd32",
     "path": "docs/gd32/04-periph-diff.md",
     "title": "G4 GD32 外设差异",
-    "must": [],
-    "parallel": []
+    "must": [
+      "G2",
+      "G3"
+    ],
+    "parallel": [
+      "S11",
+      "S12"
+    ]
   },
   {
     "id": "V0",
     "track": "gd32",
     "path": "docs/gd32/05-riscv-toolchain.md",
     "title": "V0 RISC-V 工具链与启动",
-    "must": [],
-    "parallel": []
+    "must": [
+      "C0",
+      "C1"
+    ],
+    "parallel": [
+      "B0",
+      "B4",
+      "G0"
+    ]
   },
   {
     "id": "V1",
     "track": "gd32",
     "path": "docs/gd32/06-clic-irq.md",
     "title": "V1 CLIC 中断",
-    "must": [],
-    "parallel": []
+    "must": [
+      "V0"
+    ],
+    "parallel": [
+      "S4"
+    ]
   },
   {
     "id": "V2",
     "track": "gd32",
     "path": "docs/gd32/07-rcu-108m.md",
     "title": "V2 RCU 时钟",
-    "must": [],
-    "parallel": []
+    "must": [
+      "V0"
+    ],
+    "parallel": [
+      "S2"
+    ]
   },
   {
     "id": "V3",
     "track": "gd32",
     "path": "docs/gd32/08-mtime-delay.md",
     "title": "V3 MTIME 时基",
-    "must": [],
-    "parallel": []
+    "must": [
+      "V2"
+    ],
+    "parallel": [
+      "S5"
+    ]
   },
   {
     "id": "V4",
     "track": "gd32",
     "path": "docs/gd32/09-gpio-minimal.md",
     "title": "V4 GPIO 最小系统",
-    "must": [],
-    "parallel": []
+    "must": [
+      "V0"
+    ],
+    "parallel": [
+      "S3"
+    ]
   },
   {
     "id": "C8",
