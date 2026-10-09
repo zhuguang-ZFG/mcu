@@ -35,3 +35,9 @@ playwright-report/
 
 # Codex �Ự���䣨����⣩
 .workbuddy-ai/
+
+# 视频素材与产物（体积大，不进仓库）
+docs/video/
+
+# 本地工具配置
+.qoder/
