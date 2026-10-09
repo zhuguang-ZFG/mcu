@@ -2,7 +2,7 @@
 title: F7 内存管理：heap_1 到 heap_5 的人生选择
 status: done
 difficulty: 3
-minutes: 25
+minutes: 50
 ---
 
 # F7 内存管理：heap_1 到 heap_5 的人生选择
@@ -83,6 +83,94 @@ heap_4 的空闲链表**按地址从小到大排序**（不是按大小）。释
 3. **后邻块**的首地址若正好接上我，就把它也并进来。
 
 推论：**只有相邻的空闲块才会合并**。交替分配释放留下的"洞"，永远不会自动拼成大块——这就是碎片的物理来源。
+
+### heap_4 源码走读：prvInsertBlockIntoFreeList
+
+释放时的合并逻辑（`heap_4.c:492`）用三行 C 完成：
+
+```c
+/* 空闲链表按地址排序。pxBlockToInsert 是刚释放的块。*/
+
+/* 1. 找到插入位置：遍历链表，找到第一个地址比我大的块 */
+pxIterator = (BlockLink_t*)&xStart;
+while (pxIterator->pxNextFreeBlock < pxBlockToInsert) {
+    pxIterator = pxIterator->pxNextFreeBlock;
+}
+
+/* 2. 后邻块：我后面那块如果是空闲的，且紧挨着我 → 合并 */
+pxNextBlock = (uint8_t*)pxBlockToInsert + pxBlockToInsert->xBlockSize;
+if ((uint8_t*)pxIterator->pxNextFreeBlock == pxNextBlock) {
+    /* 把后邻块从链表摘除，大小加到我头上 */
+    pxBlockToInsert->xBlockSize += pxIterator->pxNextFreeBlock->xBlockSize;
+    pxIterator->pxNextFreeBlock = pxIterator->pxNextFreeBlock->pxNextFreeBlock;
+}
+
+/* 3. 前邻块：我前面那块如果是空闲的，且紧挨着我 → 合并 */
+pxPrevBlock = (uint8_t*)pxIterator + pxIterator->xBlockSize;
+if ((uint8_t*)pxPrevBlock == (uint8_t*)pxBlockToInsert) {
+    /* 把我加到前邻块头上 */
+    pxIterator->xBlockSize += pxBlockToInsert->xBlockSize;
+} else {
+    /* 不邻接，正常插入链表 */
+    pxBlockToInsert->pxNextFreeBlock = pxIterator->pxNextFreeBlock;
+    pxIterator->pxNextFreeBlock = pxBlockToInsert;
+}
+```
+
+**关键设计**：
+- **边界标记法**：每个块的头部存 `xBlockSize`（含头部自身大小），通过"前块地址 + 前块大小"就能找到当前块的起始位置——不需要双向链表。
+- **首次适配**：分配时从链表头开始找，第一个够大的就用。简单、快，但容易产生碎片。
+- **O(n) 遍历**：释放和分配都要遍历链表。对于嵌入式的小堆（几 KB 到几十 KB），这比复杂数据结构的开销更划算。
+
+## 静态分配：xTaskCreateStatic —— 零动态分配的安全答案
+
+安全关键系统（汽车、医疗、航空）不允许运行时分配失败。FreeRTOS 提供**静态创建 API**：调用方自己提供 TCB 和栈的存储，内核零 malloc。
+
+```c
+/* 静态分配：调用方提供所有存储 */
+static StaticTask_t taskTCB;                    // TCB 结构体
+static StackType_t taskStack[256];              // 栈数组（256 × 4 = 1024 字节）
+
+TaskHandle_t handle = xTaskCreateStatic(
+    sensor_task,        // 函数
+    "sensor",           // 名字
+    256,                // 栈深（字数，不是字节）
+    NULL,               // 参数
+    2,                  // 优先级
+    taskStack,          // ← 栈数组
+    &taskTCB            // ← TCB 存储
+);
+configASSERT(handle != NULL);                   // 永远成功，不会返回 NULL
+```
+
+**与动态创建的对比**：
+
+| | xTaskCreate（动态） | xTaskCreateStatic（静态） |
+|---|---|---|
+| TCB 来源 | `pvPortMalloc` 从堆分配 | 调用方提供 `StaticTask_t` |
+| 栈来源 | `pvPortMalloc` 从堆分配 | 调用方提供 `StackType_t[]` |
+| 分配失败 | 可能（堆不够） | **不可能**（编译期确定） |
+| 内存释放 | `vTaskDelete` 归还堆 | 不释放（静态生命周期） |
+| 配置宏 | `configSUPPORT_DYNAMIC_ALLOCATION=1` | `configSUPPORT_STATIC_ALLOCATION=1` |
+| 适合 | 原型开发、非关键任务 | 安全关键、长期运行产品 |
+
+**静态分配的代价**：
+- 每个任务的 TCB + 栈在编译期就占好 RAM，不能运行时增减任务。
+- 需要实现 `vApplicationGetIdleTaskMemory` 和 `vApplicationGetTimerTaskMemory`，为内核的 Idle 和 Timer 任务提供静态存储。
+
+```c
+/* 必须实现：为 Idle 任务提供静态存储 */
+void vApplicationGetIdleTaskMemory(StaticTask_t **ppxIdleTaskTCB,
+                                    StackType_t **ppxIdleTaskStack)
+{
+    static StaticTask_t idleTCB;
+    static StackType_t idleStack[configMINIMAL_STACK_SIZE];
+    *ppxIdleTaskTCB = &idleTCB;
+    *ppxIdleTaskStack = idleStack;
+}
+```
+
+**选型建议**：长期产品优先静态分配（零失败风险）。如果必须动态创建任务（如运行时加载插件），用 heap_4 + 严格的 `configTOTAL_HEAP_SIZE` 计算 + `xPortGetMinimumEverFreeHeapSize` 监控。
 
 ## 三、碎片实验：总空闲 ≠ 最大连续块
 
