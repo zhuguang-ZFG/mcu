@@ -39,6 +39,8 @@ title: 动画演示中心
 
 ![C8 帧协议：逐字节解析状态机与重新同步](/anim/c08-frame-parse.svg)
 
+![函数指针与状态机：查表派发的机器码](/anim/fsm-dispatch.svg)
+
 ![结构体与 ABI：对齐、填充与位域陷阱](/anim/struct-alignment.svg)
 
 ![函数调用栈帧：压栈与弹栈](/anim/stack-frame.svg)
@@ -84,6 +86,8 @@ title: 动画演示中心
 ![位带别名：位操作到字操作](/anim/bitband-alias.svg)
 
 ![中断现场入场：硬件压栈八字](/anim/irq-entry.svg)
+
+![NVIC PRIGROUP：4 位优先级的切法](/anim/nvic-prigroup.svg)
 
 ![SysTick 倒数与 COUNTFLAG 读清](/anim/systick-tick.svg)
 
@@ -170,6 +174,8 @@ title: 动画演示中心
 ![ESP-NOW 三步：init → add_peer → send](/anim/esp32-espnow-direct.svg)
 
 ![OTA 双槽轮流坐庄：下载 → 切槽 → 自检 → 回滚](/anim/esp32-ota-rollback.svg)
+
+![NVS 页面生命周期：追加写、搬迁与擦除](/anim/nvs-page-lifecycle.svg)
 
 ![ESP32 睡眠矩阵：Light 眯一会 · Deep 睡死 · ULP 守夜](/anim/esp32-sleep-matrix.svg)
 
