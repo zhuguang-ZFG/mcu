@@ -62,8 +62,9 @@ git sparse-checkout set src include libcpu/arm/cortex-m4 include/klibc src/klibc
 ## 烧录后应见（R7 验收）
 
 - scene 1：两线程异频闪灯（PF7 快 200ms、PF8 慢 500ms），串口打印 scene 标识
-- scene 6：串口依次输出 `L take → L got lock → mid running… → high want lock → high got lock, waited N ticks`；
-  信号量版 H 等待明显更长（被 M 插队），互斥量版等待 ≈ 0（继承生效）
+- scene 6：串口依次输出带毫秒时间戳的 `L take → L got lock → M burst start → H want lock → … → H got lock, waited N ms`（单次剧本，复位重演）；
+  理论值：信号量版 H 等 ≈6000ms（M 的 4000ms 突发全部插在 L 和 H 之间），互斥量版 ≈2500ms（继承让 L 压住 M，H 只等 L 做完剩余临界区，不是 0）。推导见 [E04 理论时间线](../../../docs/lab/e04-priority-inversion.md)
+- L 的临界区必须是真 CPU 工作（`cpu_work_ms`），写成 `rt_thread_mdelay` 会让两版结果相同；线程用 `spawn()` 创建并 `rt_thread_startup`，漏掉 startup 线程不会运行
 - 上板实测结果待回填（`hardware_status: pending`），无实物时以模型/编译为准
 
 ## 对照参考

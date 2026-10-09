@@ -55,6 +55,36 @@ F407 家族板卡形态参考：图为一款第三方 F407VET6 板（LQFP100、�
 | 电位器 + 光敏电阻 + 有源蜂鸣器 | [S9 ADC](../stm32/09-adc.md) 模拟量实验 |
 | SSD1306 OLED（I2C 接口） | [S11 I2C](../stm32/11-i2c.md) 扩展实验（S3 板自带屏，不需要） |
 
+### 工具实拍参考
+
+六张开源许可的工具/器件照片，帮你在淘宝详情页里认出"该买的是哪种东西"。具体型号不必一致，形态和接口对得上就行。
+
+![SEGGER J-Link EDU 调试器：灰色外壳，一端 USB，另一端 20 针 JTAG/SWD 排座](/images/tools/jlink-edu.jpg)
+
+**调试器**：J-Link EDU，正面印着 "JTAG / SWD + SWO"，20 针排座是 ARM 标准 JTAG 接口。ST-Link V2 克隆体积更小（U 盘形状、4~10 针杜邦排针），功能上对霸天虎一样够用；接线只需 SWDIO/SWCLK/GND（必要时加 3V3 参考）。来源：[Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Segger_J-Link_EDU.jpg)（CC BY-SA 3.0，作者 SEGGER Microcontroller GmbH & Co）。
+
+![FTDI TTL-232R 线缆：一端 USB-A 插头，另一端 6 针彩色线排母](/images/tools/usb-ttl-cable.jpg)
+
+**USB 转 TTL**：图为线缆式 FTDI TTL-232R，6 针排母分别是 GND/CTS/VCC/TXD/RXD/RTS。注意插头上印着 **5V**：这是 5V 电平版本，接 3.3V 的 STM32/ESP32 要选 **3V3 版**或带电平跳线的 CH340/CP2102 小板，并且 TX↔RX 交叉接。来源：[Wikimedia Commons](https://commons.wikimedia.org/wiki/File:FTDI_USB-TTL_Cable_1_(3614831958).jpg)（CC BY 2.0，作者 Windell Oskay）。
+
+![自制 8 通道 USB 逻辑分析仪：开盖外壳、彩色排线与测试钩](/images/tools/logic-analyzer-8ch.jpg)
+
+**逻辑分析仪**：图为一台**自制** 8 通道 USB 分析仪，用来示意"8 根通道线 + 测试钩"的形态；淘宝 ¥30 的 24MHz saleae 兼容款是火柴盒大小的铝壳，接法一样：每根通道线夹一个信号，**GND 必须与被测板共地**。来源：[Wikimedia Commons](https://commons.wikimedia.org/wiki/File:8_Channel_USB_logic_analyzer_(5172098012).jpg)（CC BY-SA 2.0，作者 Dilshan Jayakody）。
+
+![RIGOL DS1054Z 四通道数字示波器，屏幕显示一条正弦波](/images/tools/oscilloscope-ds1054z.jpg)
+
+**示波器**：RIGOL DS1054Z（4 通道、50MHz、1GSa/s），入门级常见款。屏幕上的正弦波正是逻辑分析仪看不到的模拟量；探头档位（图中 Probe 10X）要与探头本身的 ×1/×10 开关一致，否则幅值读数差 10 倍。来源：[Wikimedia Commons](https://commons.wikimedia.org/wiki/File:RIGOL_DS1054Z_Digital_Storage_Oscilloscope.jpg)（CC BY-SA 4.0，作者 Draconichiaro）。
+
+![DT830D 数字万用表：旋钮档位含直流电压、直流电流 200μ/2m/20m/200m/10A、电阻](/images/tools/multimeter-dt830d.jpg)
+
+**万用表**：最便宜的 DT830 系列就能测电压和 mA 级电流。测电流要把红表笔挪到 **VΩmA 孔并串入回路**，档位从大往小拨；图中 10A 孔标着 UNFUSED（无保险丝），误接短路会直接烧表。待机电流低到 μA 级时，这类表的分辨率就不够了（[E06](../lab/e06-lowpower-current.md) 会讲怎么判断）。来源：[Wikimedia Commons](https://commons.wikimedia.org/wiki/File:DT830D_DIGITAL_MULTIMETER.jpg)（CC0，作者 Ranjithkumar Murugesan）。
+
+![24C02 EEPROM 芯片，SOIC-8 贴片封装，表面丝印 24C02](/images/tools/eeprom-24c02.jpg)
+
+**24C02 EEPROM**：[E05](../lab/e05-i2c-eeprom.md) 的被测器件，2Kbit（256 字节），SOIC-8 封装；圆点标记 1 脚（A0），引脚逆时针编号，1 脚正对面的 8 脚是 VCC、同排末端的 4 脚是 GND。买现成的 AT24C02 小模块（带上拉电阻和排针）比焊裸片省事。来源：[Wikimedia Commons](https://commons.wikimedia.org/wiki/File:24C02_Package.jpg)（CC BY-SA 2.0，作者 cole8888）。
+
+> 同样是**资料参考图**：照片里的仪器不是作者实验用机，读数也不是本站实测数据。
+
 ## 软件全部免费
 
 - STM32 侧：Arm GNU Toolchain + make + OpenOCD + VSCode（[S0](../stm32/00-env.md) 手把手装）
@@ -82,6 +112,12 @@ F407 家族板卡形态参考：图为一款第三方 F407VET6 板（LQFP100、�
 | `/images/boards/lichuang-s3-board.jpg` | 本页、[实验中心](../lab/index.md) | [78/xiaozhi-esp32](https://github.com/78/xiaozhi-esp32) | MIT |
 | `/images/boards/esp32s3-wroom1-module.jpg` | 本页、[P0 环境](../esp32/00-env.md) | [Wikimedia Commons · VectorVoyager](https://commons.wikimedia.org/wiki/File:ESP32-S3_on_paper.jpg) | CC BY-SA 4.0 |
 | `/images/boards/stm32f407-board.jpg` | 本页、[S0 环境](../stm32/00-env.md) | [Wikimedia Commons · Ordercrazy](https://commons.wikimedia.org/wiki/File:Embedded_World_2016,_STM32_F407_VGT6.jpg) | CC0 |
+| `/images/tools/jlink-edu.jpg` | 本页 | [Wikimedia Commons · SEGGER](https://commons.wikimedia.org/wiki/File:Segger_J-Link_EDU.jpg) | CC BY-SA 3.0 |
+| `/images/tools/usb-ttl-cable.jpg` | 本页 | [Wikimedia Commons · Windell Oskay](https://commons.wikimedia.org/wiki/File:FTDI_USB-TTL_Cable_1_(3614831958).jpg) | CC BY 2.0 |
+| `/images/tools/logic-analyzer-8ch.jpg` | 本页、[E02](../lab/e02-logic-uart.md) | [Wikimedia Commons · Dilshan Jayakody](https://commons.wikimedia.org/wiki/File:8_Channel_USB_logic_analyzer_(5172098012).jpg) | CC BY-SA 2.0 |
+| `/images/tools/oscilloscope-ds1054z.jpg` | 本页、[E03](../lab/e03-scope-pwm.md) | [Wikimedia Commons · Draconichiaro](https://commons.wikimedia.org/wiki/File:RIGOL_DS1054Z_Digital_Storage_Oscilloscope.jpg) | CC BY-SA 4.0 |
+| `/images/tools/multimeter-dt830d.jpg` | 本页、[E06](../lab/e06-lowpower-current.md) | [Wikimedia Commons · Ranjithkumar Murugesan](https://commons.wikimedia.org/wiki/File:DT830D_DIGITAL_MULTIMETER.jpg) | CC0 |
+| `/images/tools/eeprom-24c02.jpg` | 本页、[E05](../lab/e05-i2c-eeprom.md) | [Wikimedia Commons · cole8888](https://commons.wikimedia.org/wiki/File:24C02_Package.jpg) | CC BY-SA 2.0 |
 
 实验实测照片（待上板后补充）将存放于 `docs/public/photos/`，命名与回填规范见[上板验证指南](verify-on-hardware.md)。
 

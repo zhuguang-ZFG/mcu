@@ -40,6 +40,10 @@ projects: ["stm32-04-i2c-eeprom"]
 
 > 板卡外观与原理图见 [野火霸天虎官方资料页](https://doc.embedfire.com/products/link/zh/latest/mcu/stm32/stm32f407_batianhu.html)。
 
+![24C02 EEPROM 芯片，SOIC-8 贴片封装，表面丝印 24C02](/images/tools/eeprom-24c02.jpg)
+
+被测芯片形态参考（资料参考图，不是上板验证证据）：SOIC-8 封装，圆点为 1 脚（A0），逆时针编号，8 脚 VCC、4 脚 GND。来源：[Wikimedia Commons](https://commons.wikimedia.org/wiki/File:24C02_Package.jpg)（CC BY-SA 2.0，作者 cole8888）。
+
 ## 原理一句话
 
 I2C 的每次交互都是"START + 地址帧 + ACK + 数据帧(+ACK) + STOP"的积木组合——寄存器级驱动就是按事件位依次搭建这些积木。
@@ -49,6 +53,10 @@ I2C 的每次交互都是"START + 地址帧 + ACK + 数据帧(+ACK) + STOP"的�
 - PB6→SCL、PB7→SDA、GND 共地、3.3V 供电；
 - 分析仪 CH0→SDA、CH1→SCL；
 - 若无上拉：SCL/SDA 各经 4.7kΩ 上拉到 3.3V。
+
+![E05 接线与事务：PB6/PB7 接 AT24C02，SCL/SDA 上拉，分析仪 CH0 接 SDA、CH1 接 SCL；下方为写事务与随机读事务的字节条](/images/labs/e05-i2c-wiring.svg)
+
+START/STOP/ACK 的逐拍电平变化见 [S11 I2C](../stm32/11-i2c.md) 的时序动画。
 
 ## 步骤
 

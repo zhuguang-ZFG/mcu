@@ -45,6 +45,10 @@ I2S 把内存里的 PCM 样本按"位时钟×声道帧"的节奏推给 codec，c
 
 板载全集成，零接线；引脚与 PCA9557 功放控制见下面的已核对接线说明。
 
+![E08 音频链路：PCM 经 I2S（GPIO38/14/13/45）送 ES8311，再经功放到喇叭；I2C GPIO1/2 配 codec，PCA9557 bit1 开功放；下方为 Philips 帧](/images/labs/e08-audio-chain.svg)
+
+控制走 I2C、声音走 I2S 的动态过程见 [P12 音频链路](../esp32/12-audio-path.md)。
+
 ## 步骤
 
 1. 进入 `code/esp32/05-audio-play`，在 IDF 5.5.2 终端运行 `idf.py set-target esp32s3`、`idf.py build`、`idf.py -p COMx flash monitor`，COMx 换为实际串口。首次构建自动下载固定版本 esp_codec_dev 1.3.4。

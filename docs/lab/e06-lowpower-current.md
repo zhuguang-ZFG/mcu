@@ -37,6 +37,10 @@ projects: []
 | 双板各一 | 2 | 烧好低功耗固件 |
 | 电池盒/稳压电源 | 1 | 旁路板载 LDO 更佳 |
 
+![DT830D 数字万用表：旋钮档位含直流电压、直流电流 200μ/2m/20m/200m/10A、电阻](/images/tools/multimeter-dt830d.jpg)
+
+万用表形态参考（资料参考图，不是上板验证证据）：DT830 系列最低电流档 200µA，测深睡眠电流分辨率往往不够，要换带 µA 档的表或功耗仪。来源：[Wikimedia Commons](https://commons.wikimedia.org/wiki/File:DT830D_DIGITAL_MULTIMETER.jpg)（CC0，作者 Ranjithkumar Murugesan）。
+
 > 板卡外观与引脚分配见 [野火霸天虎资料页](https://doc.embedfire.com/products/link/zh/latest/mcu/stm32/stm32f407_batianhu.html) / [立创 S3 wiki](https://wiki.lckfb.com/zh-hans/szpi-esp32s3/)。
 
 ## 原理一句话
@@ -60,6 +64,10 @@ projects: []
 
 - 万用表串在电源正极与板子供电输入之间（电流档，先 mA 档起步防过流，稳定后换 µA 档）；
 - **拔掉仿真器与一切外接模块**（它们都在吃电）。
+
+![E06 测电流接法：万用表电流档串在电源正极与板子 VIN 之间，测前拔掉调试器与外接模块；下方为平均电流示意与续航算例](/images/labs/e06-current-meter.svg)
+
+图中算例数值是假设，用来演示公式，不是实测。各睡眠档关掉了什么，见 [S14](../stm32/14-pwr.md) 与 [P11](../esp32/11-lowpower.md) 的动画。
 
 ## 步骤
 

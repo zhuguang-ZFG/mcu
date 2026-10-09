@@ -275,44 +275,69 @@ static void scene_start(void)
  */
 static SemaphoreHandle_t g_lock;   /* 同一个句柄，编译期选 sem 或 mutex */
 
+/*
+ * 反转只在"真占 CPU"时出现：如果 L 的临界区写成 vTaskDelay(3000)，L 是睡着的，
+ * M 抢不抢它都 3 秒后醒，H 的等待两版一样长，实验就演不出来。
+ * 所以 L 用 cpu_work_ms 消耗"自己真正跑到的"毫秒数（被抢占的时间不算）；
+ * M 用 busy_until 连续占满 CPU 一段墙钟时间，期间不阻塞。
+ */
+static void cpu_work_ms(uint32_t ms)
+{
+    while (ms > 0) {
+        TickType_t t = xTaskGetTickCount();
+        while (xTaskGetTickCount() == t) { }   /* 跑满当前这一拍 */
+        if (xTaskGetTickCount() - t == 1U) {   /* 只经过 1 拍 = 这 1ms 是我自己跑的 */
+            ms--;
+        }                                      /* 跨了多拍 = 中间被抢占过，不计 */
+    }
+}
+
+static void busy_until(TickType_t deadline)
+{
+    while ((int32_t)(xTaskGetTickCount() - deadline) < 0) { }
+}
+
+static void park_forever(void)
+{
+    for (;;) {
+        vTaskDelay(portMAX_DELAY);   /* 单次剧本：演完就睡，日志只有一轮，复位重演 */
+    }
+}
+
 static void task_low(void *arg)
 {
     (void)arg;
-    for (;;) {
-        log_line("L take", 0);
-        xSemaphoreTake(g_lock, portMAX_DELAY);
-        log_line("L got lock, working 3s", 0);
-        vTaskDelay(pdMS_TO_TICKS(3000));   /* 临界区：3 秒 */
-        log_line("L give", 0);
-        xSemaphoreGive(g_lock);
-        vTaskDelay(pdMS_TO_TICKS(5000));   /* 睡 5s 后再来 */
-    }
+    log_line("L take", 0);
+    xSemaphoreTake(g_lock, portMAX_DELAY);
+    log_line("L got lock, cpu work 3000ms", 0);
+    cpu_work_ms(3000);                 /* 临界区：3000ms 的真实 CPU 工作量 */
+    log_line("L give", 0);
+    xSemaphoreGive(g_lock);
+    park_forever();
 }
 
 static void task_mid(void *arg)
 {
     (void)arg;
-    vTaskDelay(pdMS_TO_TICKS(500));       /* 错峰：等 L 拿到锁后再启动 */
-    for (;;) {
-        log_line("M running", 0);          /* 死循环干活，不碰锁 */
-        vTaskDelay(pdMS_TO_TICKS(100));
-    }
+    vTaskDelay(pdMS_TO_TICKS(500));    /* 错峰：等 L 拿到锁后再启动 */
+    log_line("M burst start, until ms", 4500);
+    busy_until(pdMS_TO_TICKS(4500));   /* 不碰锁、不阻塞，连续占 CPU 到 t=4500ms */
+    log_line("M burst end", 0);
+    park_forever();
 }
 
 static void task_high(void *arg)
 {
     (void)arg;
-    vTaskDelay(pdMS_TO_TICKS(1000));      /* 等 L 进临界区、M 在跑后再要锁 */
-    for (;;) {
-        log_line("H want lock", 0);
-        uint32_t t0 = xTaskGetTickCount();
-        xSemaphoreTake(g_lock, portMAX_DELAY);
-        uint32_t waited = xTaskGetTickCount() - t0;
-        log_line("H got lock, waited ms", waited);
-        log_line("H give", 0);
-        xSemaphoreGive(g_lock);
-        vTaskDelay(pdMS_TO_TICKS(5000));
-    }
+    vTaskDelay(pdMS_TO_TICKS(1000));   /* 等 L 进临界区、M 在跑后再要锁 */
+    log_line("H want lock", 0);
+    uint32_t t0 = xTaskGetTickCount();
+    xSemaphoreTake(g_lock, portMAX_DELAY);
+    uint32_t waited = xTaskGetTickCount() - t0;
+    log_line("H got lock, waited ms", waited);   /* 理论值：信号量版 ≈6000，互斥量版 ≈2500 */
+    log_line("H give", 0);
+    xSemaphoreGive(g_lock);
+    park_forever();
 }
 
 static void scene_start(void)

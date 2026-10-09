@@ -9,6 +9,7 @@
 //   node scripts/anim-audit.mjs --step 0.5      # 额外每 0.5s 采样一次（默认 1s；0 关闭）
 //   node scripts/anim-audit.mjs --font-scale 1.08  # 模拟更宽的回退字体（本地复现 CI 的 Linux 字体度量）
 //   node scripts/anim-audit.mjs --json          # 机器可读输出
+//   node scripts/anim-audit.mjs --dir docs/public/images/labs  # 审静态示意图目录（同一套出界/压字规则）
 //
 // 为什么需要 --font-scale：图里写的是 'Segoe UI','Microsoft YaHei' 字栈，Windows 本地用雅黑，
 // CI 的 ubuntu-latest 上没有雅黑，Chromium 退回 Noto Sans CJK——同一串中文宽约 5~8%。
@@ -23,9 +24,10 @@ const flag = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] 
 const step = Number(flag('--step', '1'))
 const fontScale = Number(flag('--font-scale', '1'))
 const asJson = args.includes('--json')
-const picked = args.filter((a, i) => !a.startsWith('--') && args[i - 1] !== '--step' && args[i - 1] !== '--font-scale')
+const valued = ['--step', '--font-scale', '--dir']
+const picked = args.filter((a, i) => !a.startsWith('--') && !valued.includes(args[i - 1]))
 
-const dir = resolve('docs/public/anim')
+const dir = resolve(flag('--dir', 'docs/public/anim'))
 const names = (picked.length ? picked : readdirSync(dir).filter(f => f.endsWith('.svg')).map(f => basename(f, '.svg'))).sort()
 
 // 在页面里执行的审计函数：输入 svg 文本，返回问题列表
@@ -42,7 +44,7 @@ function auditInPage({ svgText, step, fontScale }) {
   void svg.getBoundingClientRect()
   const durs = [...svg.querySelectorAll('animate,animateTransform,animateMotion')]
     .map(a => parseFloat(a.getAttribute('dur'))).filter(n => !isNaN(n))
-  const master = Math.max(...durs)
+  const master = durs.length ? Math.max(...durs) : 0   // 静态示意图无 dur：只审 t=0 这一帧
   const rect0 = svg.getBoundingClientRect()
   const mctx = document.createElement('canvas').getContext('2d')
 
@@ -79,7 +81,7 @@ function auditInPage({ svgText, step, fontScale }) {
     for (let i = 0; i + 1 < kt.length; i++) ts.add(master * (kt[i] + kt[i + 1]) / 2)
   }
   if (step > 0) for (let t = step; t < master; t += step) ts.add(t)
-  const times = [...ts].filter(t => t >= 0 && t <= master).sort((a, b) => a - b)
+  const times = master ? [...ts].filter(t => t >= 0 && t <= master).sort((a, b) => a - b) : [0]
 
   const problems = new Map()
   const push = (key, t, detail) => { if (!problems.has(key)) problems.set(key, { detail, ts: [] }); problems.get(key).ts.push(+t.toFixed(2)) }

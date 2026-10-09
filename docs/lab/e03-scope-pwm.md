@@ -39,6 +39,10 @@ projects: ["stm32-02-tim-pwm", "esp32-03-ledc-fade"]
 
 > 板卡外观与引脚分配见 [野火霸天虎资料页](https://doc.embedfire.com/products/link/zh/latest/mcu/stm32/stm32f407_batianhu.html) / [立创 S3 wiki](https://wiki.lckfb.com/zh-hans/szpi-esp32s3/)。
 
+![RIGOL DS1054Z 四通道数字示波器，屏幕显示一条正弦波](/images/tools/oscilloscope-ds1054z.jpg)
+
+示波器形态参考（资料参考图，不是上板验证证据）：RIGOL DS1054Z。仪器的 Probe 档位要与探头上的 ×1/×10 开关一致，否则幅值差 10 倍。来源：[Wikimedia Commons](https://commons.wikimedia.org/wiki/File:RIGOL_DS1054Z_Digital_Storage_Oscilloscope.jpg)（CC BY-SA 4.0，作者 Draconichiaro）。
+
 ## 原理一句话
 
 PWM=周期内高电平时间占比；占空比=CCR/(ARR+1)（STM32）或 duty/2^bits（LEDC）——波形的每个参数都能从寄存器值算出来。
@@ -46,6 +50,10 @@ PWM=周期内高电平时间占比；占空比=CCR/(ARR+1)（STM32）或 duty/2^
 ## 接线
 
 - 探头接 PWM 输出脚（霸天虎本批固件固定 **PA6**，TIM3_CH1 AF2；S3 本批固件固定 **GPIO10**，LEDC 低速通道 0，多功能扩展口），地夹共地。
+
+![E03 探头接法与读图：CNT 锯齿与 CCR 比较得到 PA6 方波，周期 1ms、高电平 0.5ms](/images/labs/e03-pwm-probe.svg)
+
+计数器与比较值的动态过程见 [S6 TIM](../stm32/06-tim.md)；LEDC 的定时器/通道关系见 [P7](../esp32/07-timer-ledc.md)。
 
 ## 步骤
 

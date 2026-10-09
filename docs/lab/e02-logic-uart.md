@@ -39,6 +39,10 @@ projects: ["stm32-03-uart-dma"]
 
 > 板卡外观与原理图见 [野火霸天虎官方资料页](https://doc.embedfire.com/products/link/zh/latest/mcu/stm32/stm32f407_batianhu.html)。
 
+![自制 8 通道 USB 逻辑分析仪：开盖外壳、彩色排线与测试钩](/images/tools/logic-analyzer-8ch.jpg)
+
+逻辑分析仪形态参考（资料参考图，不是上板验证证据）：图为自制 8 通道款，¥30 的 24MHz saleae 兼容款是火柴盒大小的铝壳，接法相同。来源：[Wikimedia Commons](https://commons.wikimedia.org/wiki/File:8_Channel_USB_logic_analyzer_(5172098012).jpg)（CC BY-SA 2.0，作者 Dilshan Jayakody）。
+
 ## 原理一句话
 
 UART 是异步协议：没有时钟线，收发双方靠约定的波特率切时间片——分析仪按同样规则切片，就能把波形还原成字节。
@@ -48,6 +52,10 @@ UART 是异步协议：没有时钟线，收发双方靠约定的波特率切时
 - 分析仪 CH0 → 霸天虎 PA9（USART1_TX），GND ↔ GND；
 - USB-TTL TX → PA10、RX → PA9、GND 共地，用于向固件发送待回显的字符；
 - 纪律：共地必须有，只接两根线即可，别接 3.3V。
+
+![E02 接线与预期波形：USB-TTL 收发、分析仪 CH0 旁听 PA9；字母 A 低位先行展开为 1000 0010](/images/labs/e02-uart-capture.svg)
+
+一帧怎么逐位移出去，见 [S7 USART](../stm32/07-usart.md) 的帧动画。
 
 ## 步骤
 
