@@ -7,6 +7,7 @@ import AnimFigure from './AnimFigure.vue'
 import LabStatus from './LabStatus.vue'
 import LabOverview from './LabOverview.vue'
 import RegisterExplorer from './RegisterExplorer.vue'
+import ClockCalc from './ClockCalc.vue'
 import './custom.css'
 
 export default {
@@ -19,5 +20,6 @@ export default {
     app.component('LabStatus', LabStatus)
     app.component('LabOverview', LabOverview)
     app.component('RegisterExplorer', RegisterExplorer)
+    app.component('ClockCalc', ClockCalc)
   },
 } satisfies Theme
