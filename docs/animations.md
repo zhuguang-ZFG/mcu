@@ -103,6 +103,8 @@ title: 动画演示中心
 
 ![SPI 时序：主从沿采样](/anim/spi-timing.svg)
 
+![SPI 移位寄存器环：为什么发送 == 接收](/anim/spi-shift-register.svg)
+
 ![TIM PWM：计数器到占空比](/anim/tim-pwm-counter.svg)
 
 ![TIM 输入捕获：边沿定格](/anim/tim-input-capture.svg)
@@ -134,6 +136,8 @@ title: 动画演示中心
 ![信号量与互斥锁](/anim/semaphore-mutex.svg)
 
 ![优先级反转与继承](/anim/priority-inversion.svg)
+
+![优先级继承协议：互斥锁如何消除反转](/anim/priority-inheritance.svg)
 
 ![任务通知：轻量信号量](/anim/task-notification.svg)
 

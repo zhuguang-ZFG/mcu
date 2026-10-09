@@ -131,6 +131,7 @@ export default defineConfig({
           { text: '参考文献', link: '/reference/bibliography' },
           { text: '更新日志', link: '/reference/changelog' },
           { text: '关于我们与致谢', link: '/reference/about' },
+          { text: '视觉增强示例', link: '/visual-enhancements' },
           { text: '视频资源', link: '/video/c3-volatile-storyboard' },
           { text: '硬件实测计划', link: '/hardware-test-plan' },
         ],
@@ -337,7 +338,9 @@ export default defineConfig({
         {
           text: '视频资源',
           items: [
+            { text: 'C2 指针分镜脚本', link: '/video/c2-pointer-storyboard' },
             { text: 'C3 volatile 分镜脚本', link: '/video/c3-volatile-storyboard' },
+            { text: 'F3 调度器分镜脚本', link: '/video/f3-scheduler-storyboard' },
           ],
         },
       ],
