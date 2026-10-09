@@ -9,6 +9,7 @@
  */
 import fs from 'node:fs'
 import path from 'node:path'
+import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { loadCurriculum } from './curriculum.mjs'
 import { loadProjects } from './project-catalog.mjs'
@@ -89,6 +90,64 @@ console.log(
   `成稿章节 ${totals.chaptersDone}/${totals.chapters} · 实验 ${totals.experimentsDone}/${totals.experiments} · ` +
     `动画 ${totals.animations} · 示例工程 ${totals.projects}`
 )
+
+/* ---------------- 最近更新流：从 git 历史取最近改动的章节页，供首页"最近更新"板块 ---------------- */
+// 与进度数字同一个道理——"最近更新了什么"也不能靠手写，手写的第一版就会开始说谎。
+// 无 .git（如源码包构建）或 git 失败时降级为空列表，首页板块自动隐藏，不阻断构建。
+const UPDATES_OUT = path.join(DOCS, '.vitepress', 'data', 'updates.json')
+const UPDATE_LIMIT = 8
+
+const trackOf = (rel) => {
+  const t = TRACKS.map((x) => (rel === x.dir || rel.startsWith(x.dir + '/') ? x : null)).find(Boolean)
+  if (t) return t
+  return rel.startsWith('video/') ? { name: '视频脚本' } : null
+}
+
+function collectUpdates() {
+  let raw
+  try {
+    raw = execFileSync(
+      'git',
+      ['log', '-n', '300', '--no-merges', '--name-only', '--date=short', '--pretty=format:@%ad'],
+      { cwd: ROOT, encoding: 'utf8', maxBuffer: 8 << 20, stdio: ['ignore', 'pipe', 'ignore'] }
+    )
+  } catch {
+    return []
+  }
+  const seen = new Set()
+  const items = []
+  let date = ''
+  for (const line of raw.split(/\r?\n/)) {
+    if (line.startsWith('@')) { date = line.slice(1).trim(); continue }
+    const f = line.trim()
+    if (!f.startsWith('docs/') || !f.endsWith('.md') || f.includes('/public/') || f.includes('/.vitepress/')) continue
+    const rel = f.slice('docs/'.length)
+    // 只收子目录章节页；根目录 index.md / 404.md 属于站点外壳，不是"内容更新"
+    if (!rel.includes('/')) continue
+    const id = rel.replace(/\.md$/, '')
+    if (seen.has(id)) continue
+    seen.add(id)
+    let title
+    try {
+      title = readFrontmatter(path.join(DOCS, rel)).title
+    } catch {
+      // 非章节页（如视频分镜）没有 frontmatter，取正文首个一级标题
+      const body = fs.readFileSync(path.join(DOCS, rel), 'utf8')
+      title = body.match(/^#\s+(.+)$/m)?.[1]?.trim() || path.basename(id)
+    }
+    const t = trackOf(id)
+    items.push({
+      route: '/' + id + '.html',
+      title,
+      track: t ? t.name : '站点',
+      date,
+    })
+    if (items.length >= UPDATE_LIMIT) break
+  }
+  return items
+}
+
+fs.writeFileSync(UPDATES_OUT, JSON.stringify({ items: collectUpdates() }, null, 2) + '\n', 'utf8')
 
 /* ---------------- README 进度块：与首页同源，杜绝"数字三处各说各话"复发 ---------------- */
 // README 里的成稿数/动画数/工程数与"现在能读到哪些章"必须由同一份扫描结果渲染。

@@ -9,6 +9,9 @@ import LabOverview from './LabOverview.vue'
 import RegisterExplorer from './RegisterExplorer.vue'
 import ClockCalc from './ClockCalc.vue'
 import QuizBank from './QuizBank.vue'
+import PathFinder from './PathFinder.vue'
+import McuCta from './McuCta.vue'
+import McuUpdates from './McuUpdates.vue'
 import './custom.css'
 
 export default {
@@ -23,5 +26,8 @@ export default {
     app.component('RegisterExplorer', RegisterExplorer)
     app.component('ClockCalc', ClockCalc)
     app.component('QuizBank', QuizBank)
+    app.component('PathFinder', PathFinder)
+    app.component('McuCta', McuCta)
+    app.component('McuUpdates', McuUpdates)
   },
 } satisfies Theme

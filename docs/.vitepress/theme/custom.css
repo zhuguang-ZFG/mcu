@@ -342,7 +342,7 @@ html.dark {
   transform: translateY(4px);
   transition: opacity 0.4s ease var(--d, 0s), transform 0.4s ease var(--d, 0s);
 }
-.mcu-map.is-visible .vp-doc .mcu-chips li {
+.mcu-map.is-visible .mcu-chips li {
   opacity: 1;
   transform: none;
 }
@@ -357,7 +357,7 @@ html.dark {
 /* 尊重系统"减少动效"：不动、不渐入、进度条直接落位 */
 .mcu-map.is-reduced .mcu-map__stats,
 .mcu-map.is-reduced .mcu-track,
-.mcu-map.is-reduced .vp-doc .mcu-chips li {
+.mcu-map.is-reduced .mcu-chips li {
   opacity: 1;
   transform: none;
   transition: none;
@@ -1415,11 +1415,296 @@ html {
   .VPLocalNav,
   .VPDocAside,
   .mcu-hero,
-  .mcu-features {
+  .mcu-features,
+  .mcu-scroll-progress {
     display: none !important;
   }
-  
+
   .vp-doc {
     font-size: 12pt;
   }
+}
+
+/* ===== Scroll progress bar ===== */
+.mcu-scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--mcu-brand), var(--mcu-accent), var(--mcu-brand));
+  background-size: 200% 100%;
+  animation: mcu-progress-shimmer 2s linear infinite;
+  z-index: 9999;
+  transition: width 0.1s ease-out;
+  box-shadow: 0 0 8px rgba(52, 81, 178, 0.4);
+}
+
+@keyframes mcu-progress-shimmer {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+/* ===== Section reveal animations ===== */
+.mcu-start,
+.mcu-map {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mcu-start.is-visible,
+.mcu-map.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* ===== Enhanced hero section gradient mesh ===== */
+.mcu-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(52, 81, 178, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(62, 175, 124, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 80%, rgba(52, 81, 178, 0.04) 0%, transparent 50%);
+  animation: mcu-mesh-drift 20s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+:root.dark .mcu-hero::before {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(52, 81, 178, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(62, 175, 124, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 80%, rgba(52, 81, 178, 0.08) 0%, transparent 50%);
+}
+
+@keyframes mcu-mesh-drift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(2%, -1%) rotate(1deg); }
+  66% { transform: translate(-1%, 2%) rotate(-1deg); }
+}
+
+/* ===== Feature card entrance is handled by McuFeatures.vue IntersectionObserver ===== */
+
+/* ===== Stat number count-up glow ===== */
+.mcu-hero-stats .mcu-stat:nth-child(1) .mcu-stat-num {
+  animation: mcu-stat-glow 3s ease-in-out infinite;
+}
+.mcu-hero-stats .mcu-stat:nth-child(2) .mcu-stat-num {
+  animation: mcu-stat-glow 3s ease-in-out infinite 0.5s;
+}
+.mcu-hero-stats .mcu-stat:nth-child(3) .mcu-stat-num {
+  animation: mcu-stat-glow 3s ease-in-out infinite 1s;
+}
+
+@keyframes mcu-stat-glow {
+  0%, 100% { text-shadow: 0 0 10px rgba(52, 81, 178, 0.2); }
+  50% { text-shadow: 0 0 20px rgba(52, 81, 178, 0.5), 0 0 40px rgba(52, 81, 178, 0.2); }
+}
+
+/* ===== Badge shimmer ===== */
+.mcu-hero-badge {
+  position: relative;
+  overflow: hidden;
+}
+
+.mcu-hero-badge::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  animation: mcu-badge-shimmer 4s ease-in-out infinite;
+}
+
+@keyframes mcu-badge-shimmer {
+  0% { left: -100%; }
+  50%, 100% { left: 100%; }
+}
+
+/* ===== Learning map section polish ===== */
+.mcu-map {
+  position: relative;
+}
+
+.mcu-map::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--vp-c-divider), transparent);
+}
+
+/* ===== Table row enter animation ===== */
+.vp-doc table tr {
+  transition: background 0.2s ease;
+}
+
+/* ===== Custom block enhanced shadows ===== */
+.vp-doc .custom-block {
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.vp-doc .custom-block:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+html.dark .vp-doc .custom-block:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== Nav link hover glow ===== */
+.VPNavBarMenuLink a:hover,
+.VPNavBarMenuGroup button:hover {
+  text-shadow: 0 0 10px rgba(52, 81, 178, 0.3);
+}
+
+/* ===== Sidebar item active glow ===== */
+.VPSidebarItem.is-active > .item .link {
+  box-shadow: inset 0 0 20px rgba(52, 81, 178, 0.04);
+}
+
+/* ===== Footer polish ===== */
+.VPFooter {
+  border-top: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg-soft);
+  backdrop-filter: blur(8px);
+}
+
+/* ===== Responsive hero adjustments ===== */
+@media (max-width: 960px) {
+  .mcu-hero {
+    min-height: 70vh;
+  }
+}
+
+@media (max-width: 640px) {
+  .mcu-hero::before {
+    display: none;
+  }
+}
+
+/* ===== Respect reduced motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .mcu-scroll-progress,
+  .mcu-hero::before,
+  .mcu-hero-badge::after {
+    animation: none;
+  }
+  .mcu-start,
+  .mcu-map {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .mcu-features .mcu-feature-card {
+    animation: none;
+    opacity: 1;
+  }
+  .mcu-hero-stats .mcu-stat-num {
+    animation: none;
+    text-shadow: none;
+  }
+}
+
+/* ===== Home page section spacing ===== */
+.mcu-start h2 {
+  position: relative;
+  display: inline-block;
+}
+
+.mcu-start h2::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--mcu-brand), var(--mcu-accent));
+}
+
+/* ===== VitePress feature cards: enhanced icon ===== */
+.VPFeature .icon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.VPFeature:hover .icon {
+  transform: scale(1.1);
+}
+
+/* ===== Nav brand badge glow ===== */
+.VPNavBar .VPNavBarTitle .title {
+  transition: text-shadow 0.3s;
+}
+
+.VPNavBar .VPNavBarTitle:hover .title {
+  text-shadow: 0 0 12px rgba(52, 81, 178, 0.2);
+}
+
+/* ===== Doc footer enhanced ===== */
+.vp-doc .prev-next {
+  border-top: 1px solid var(--vp-c-divider);
+  margin-top: 3em;
+  padding-top: 1.5em;
+}
+
+.vp-doc .pager-link {
+  transition: all 0.2s;
+  border-radius: 10px;
+}
+
+.vp-doc .pager-link:hover {
+  border-color: var(--mcu-brand);
+  box-shadow: 0 2px 12px rgba(52, 81, 178, 0.08);
+}
+
+/* ===== Edit link subtle animation ===== */
+.vp-doc .edit-link {
+  transition: color 0.2s, transform 0.2s;
+}
+
+.vp-doc .edit-link:hover {
+  color: var(--mcu-brand);
+}
+
+.vp-doc .edit-link:hover svg {
+  transform: translateX(2px);
+}
+
+.vp-doc .edit-link svg {
+  transition: transform 0.2s;
+}
+
+/* ===== Outline/TOC active item pulse ===== */
+.VPDocAsideOutline .outline-marker {
+  transition: height 0.2s ease, background 0.2s;
+  box-shadow: 0 0 6px rgba(52, 81, 178, 0.3);
+}
+
+/* ===== Search dialog backdrop blur ===== */
+.VPDoc .VPNav .VPNavBarSearch {
+  transition: opacity 0.2s;
+}
+
+/* ===== Last updated text polish ===== */
+.vp-doc .last-updated {
+  font-size: 0.82em;
+  color: var(--vp-c-text-3);
+}
+
+.vp-doc .last-updated .prefix {
+  font-weight: 500;
+  color: var(--vp-c-text-2);
 }

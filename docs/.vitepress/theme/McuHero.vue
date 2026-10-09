@@ -1,9 +1,61 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { withBase } from 'vitepress'
 
 const particles = ref<Array<{ id: number; x: number; y: number; size: number; delay: number }>>([])
+const hexColumns = ref<Array<{ id: number; x: number; values: string[]; speed: number; delay: number }>>([])
+const typedText = ref('')
+const typedIndex = ref(0)
+const charIndex = ref(0)
+const isDeleting = ref(false)
+const traceOffset = ref({ x: 0, y: 0 })
+const cursorFading = ref(false)
+
+const phrases = [
+  '从寄存器到实时系统，用动画和实验点亮嵌入式技能树',
+  'RCC → GPIO → TIM → UART → DMA，逐个击破',
+  '80 章体系 · 97 张动画 · 41 个工程 · 8 个硬件实验',
+  'STM32F407 × ESP32-S3 双路线，寄存器级深度',
+  '野火霸天虎 + 立创实战派，全程实物实验验证',
+]
+
+let typeTimer: ReturnType<typeof setTimeout> | null = null
+let heroEl: HTMLElement | null = null
+
+function typeEffect() {
+  const current = phrases[typedIndex.value]
+  if (!isDeleting.value) {
+    typedText.value = current.slice(0, charIndex.value + 1)
+    charIndex.value++
+    if (charIndex.value === current.length) {
+      isDeleting.value = true
+      typeTimer = setTimeout(typeEffect, 2000)
+      return
+    }
+  } else {
+    typedText.value = current.slice(0, charIndex.value - 1)
+    charIndex.value--
+    if (charIndex.value === 0) {
+      isDeleting.value = false
+      typedIndex.value = (typedIndex.value + 1) % phrases.length
+      cursorFading.value = true
+      setTimeout(() => { cursorFading.value = false }, 150)
+    }
+  }
+  typeTimer = setTimeout(typeEffect, 50)
+}
+
+function handleParallax(e: MouseEvent) {
+  if (!heroEl) return
+  const rect = heroEl.getBoundingClientRect()
+  const x = (e.clientX - rect.left) / rect.width - 0.5
+  const y = (e.clientY - rect.top) / rect.height - 0.5
+  traceOffset.value = { x: x * 10, y: y * 6 }
+}
 
 onMounted(() => {
+  heroEl = document.querySelector('.mcu-hero')
+
   particles.value = Array.from({ length: 20 }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
@@ -11,6 +63,25 @@ onMounted(() => {
     size: Math.random() * 3 + 1,
     delay: Math.random() * 5,
   }))
+
+  hexColumns.value = Array.from({ length: 8 }, (_, i) => ({
+    id: i,
+    x: (i / 8) * 100 + Math.random() * 10,
+    values: Array.from({ length: 6 }, () =>
+      '0x' + Math.floor(Math.random() * 0xFFFFFF).toString(16).toUpperCase().padStart(6, '0')
+    ),
+    speed: 18 + Math.random() * 8,
+    delay: Math.random() * 5,
+  }))
+
+  typeTimer = setTimeout(typeEffect, 1000)
+
+  heroEl?.addEventListener('mousemove', handleParallax, { passive: true })
+})
+
+onUnmounted(() => {
+  if (typeTimer) clearTimeout(typeTimer)
+  heroEl?.removeEventListener('mousemove', handleParallax)
 })
 </script>
 
@@ -18,6 +89,20 @@ onMounted(() => {
   <div class="mcu-hero">
     <div class="mcu-hero-bg">
       <div class="mcu-hero-grid"></div>
+      <div class="mcu-hero-hex-rain">
+        <div
+          v-for="col in hexColumns"
+          :key="col.id"
+          class="mcu-hex-col"
+          :style="{
+            left: `${col.x}%`,
+            animationDuration: `${col.speed}s`,
+            animationDelay: `${col.delay}s`,
+          }"
+        >
+          <span v-for="(v, j) in col.values" :key="j" class="mcu-hex-val">{{ v }}</span>
+        </div>
+      </div>
       <div class="mcu-hero-particles">
         <span
           v-for="p in particles"
@@ -32,6 +117,16 @@ onMounted(() => {
           }"
         ></span>
       </div>
+      <svg class="mcu-hero-traces" viewBox="0 0 1000 600" preserveAspectRatio="none"
+        :style="{ transform: `translate(${traceOffset.x}px, ${traceOffset.y}px)` }">
+        <path class="mcu-trace mcu-trace-1" d="M0,300 Q200,280 400,300 T800,280 L1000,300" />
+        <path class="mcu-trace mcu-trace-2" d="M0,200 Q250,220 500,200 T1000,220" />
+        <path class="mcu-trace mcu-trace-3" d="M0,400 Q300,380 600,400 T1000,380" />
+        <circle class="mcu-trace-node mcu-node-1" cx="200" cy="290" r="4" />
+        <circle class="mcu-trace-node mcu-node-2" cx="500" cy="200" r="4" />
+        <circle class="mcu-trace-node mcu-node-3" cx="700" cy="390" r="4" />
+        <circle class="mcu-trace-node mcu-node-4" cx="850" cy="285" r="3" />
+      </svg>
     </div>
 
     <div class="mcu-hero-content">
@@ -47,7 +142,7 @@ onMounted(() => {
       </h1>
 
       <p class="mcu-hero-subtitle">
-        从寄存器到实时系统，用动画和实验点亮嵌入式技能树
+        <span class="mcu-typed">{{ typedText }}</span><span class="mcu-cursor" :class="{ 'mcu-cursor-fading': cursorFading }">|</span>
       </p>
 
       <div class="mcu-hero-stats">
@@ -68,7 +163,7 @@ onMounted(() => {
       </div>
 
       <div class="mcu-hero-actions">
-        <a href="/guide/" class="mcu-btn mcu-btn-primary">
+        <a :href="withBase('/guide/')" class="mcu-btn mcu-btn-primary">
           <span>开始学习</span>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M6 12L10 8L6 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -157,6 +252,112 @@ onMounted(() => {
     linear-gradient(90deg, rgba(52, 81, 178, 0.08) 1px, transparent 1px);
 }
 
+/* ===== Hex rain: register values falling like matrix ===== */
+.mcu-hero-hex-rain {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0.06;
+  pointer-events: none;
+  contain: strict;
+  will-change: auto;
+}
+
+:root.dark .mcu-hero-hex-rain {
+  opacity: 0.1;
+}
+
+.mcu-hex-col {
+  position: absolute;
+  top: -100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: mcu-hex-fall linear infinite;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 11px;
+  color: var(--vp-c-brand-1);
+  white-space: nowrap;
+  will-change: transform;
+  contain: content;
+}
+
+@keyframes mcu-hex-fall {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(200vh); }
+}
+
+.mcu-hex-val {
+  opacity: 0.5;
+  text-shadow: 0 0 6px currentColor;
+}
+
+.mcu-hex-val:nth-child(odd) {
+  opacity: 0.25;
+}
+
+.mcu-hex-val:nth-child(3n) {
+  color: var(--vp-c-green-1);
+}
+
+/* ===== Circuit traces: PCB-like paths ===== */
+.mcu-hero-traces {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.15;
+  pointer-events: none;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
+:root.dark .mcu-hero-traces {
+  opacity: 0.2;
+}
+
+.mcu-trace {
+  fill: none;
+  stroke: var(--vp-c-brand-1);
+  stroke-width: 1.5;
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 1200;
+  animation: mcu-trace-draw 4s ease-in-out infinite;
+}
+
+.mcu-trace-2 {
+  stroke: var(--vp-c-green-1);
+  animation-delay: 1s;
+}
+
+.mcu-trace-3 {
+  stroke: var(--vp-c-brand-1);
+  animation-delay: 2s;
+  opacity: 0.6;
+}
+
+@keyframes mcu-trace-draw {
+  0% { stroke-dashoffset: 1200; opacity: 0; }
+  20% { opacity: 1; }
+  80% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: -1200; opacity: 0; }
+}
+
+.mcu-trace-node {
+  fill: var(--vp-c-brand-1);
+  opacity: 0;
+  animation: mcu-node-pulse 4s ease-in-out infinite;
+}
+
+.mcu-node-2 { fill: var(--vp-c-green-1); animation-delay: 1s; }
+.mcu-node-3 { fill: var(--vp-c-brand-1); animation-delay: 2s; }
+.mcu-node-4 { fill: var(--vp-c-green-1); animation-delay: 0.5s; }
+
+@keyframes mcu-node-pulse {
+  0%, 100% { opacity: 0; r: 3; }
+  40%, 60% { opacity: 0.8; r: 5; }
+}
+
 .mcu-hero-particles {
   position: absolute;
   inset: 0;
@@ -202,6 +403,7 @@ onMounted(() => {
   background: var(--vp-c-green-1);
   border-radius: 50%;
   animation: mcu-pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 8px var(--vp-c-green-1);
 }
 
 @keyframes mcu-pulse {
@@ -229,18 +431,45 @@ onMounted(() => {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: mcu-shimmer 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(52, 81, 178, 0.3));
 }
 
 @keyframes mcu-shimmer {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.2); }
+  0%, 100% { filter: brightness(1) drop-shadow(0 0 20px rgba(52, 81, 178, 0.3)); }
+  50% { filter: brightness(1.2) drop-shadow(0 0 30px rgba(62, 175, 124, 0.5)); }
 }
 
+/* ===== Typing effect ===== */
 .mcu-hero-subtitle {
-  font-size: 1.2em;
+  font-size: 1.15em;
   color: var(--vp-c-text-2);
   margin: 0 0 32px;
   line-height: 1.6;
+  min-height: 1.6em;
+}
+
+.mcu-typed {
+  background: linear-gradient(90deg, var(--vp-c-text-2), var(--vp-c-brand-1));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.mcu-cursor {
+  color: var(--vp-c-brand-1);
+  font-weight: 100;
+  animation: mcu-blink 1s step-end infinite;
+  margin-left: 2px;
+  transition: opacity 0.15s ease;
+}
+
+.mcu-cursor-fading {
+  opacity: 0;
+}
+
+@keyframes mcu-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
 .mcu-hero-stats {
@@ -262,6 +491,7 @@ onMounted(() => {
   font-weight: 800;
   color: var(--vp-c-brand-1);
   line-height: 1;
+  text-shadow: 0 0 20px rgba(52, 81, 178, 0.3);
 }
 
 .mcu-stat-label {
@@ -273,7 +503,7 @@ onMounted(() => {
 .mcu-stat-divider {
   width: 1px;
   height: 40px;
-  background: var(--vp-c-divider);
+  background: linear-gradient(180deg, transparent, var(--vp-c-divider), transparent);
 }
 
 .mcu-hero-actions {
@@ -293,30 +523,52 @@ onMounted(() => {
   font-weight: 600;
   font-size: 1em;
   text-decoration: none;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.mcu-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.mcu-btn:hover::before {
+  opacity: 1;
 }
 
 .mcu-btn-primary {
-  background: var(--vp-c-brand-1);
+  background: linear-gradient(135deg, var(--vp-c-brand-1), #4a6ad4);
   color: #fff;
-  box-shadow: 0 4px 14px rgba(52, 81, 178, 0.3);
+  box-shadow: 0 4px 14px rgba(52, 81, 178, 0.3), 0 0 0 1px rgba(52, 81, 178, 0.1);
 }
 
 .mcu-btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(52, 81, 178, 0.4);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(52, 81, 178, 0.4), 0 0 0 1px rgba(52, 81, 178, 0.2);
+}
+
+.mcu-btn-primary:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .mcu-btn-secondary {
   background: var(--vp-c-bg-soft);
   color: var(--vp-c-text-1);
   border: 1px solid var(--vp-c-divider);
+  backdrop-filter: blur(10px);
 }
 
 .mcu-btn-secondary:hover {
   background: var(--vp-c-bg-mute);
   border-color: var(--vp-c-brand-1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .mcu-hero-chip {
@@ -376,6 +628,14 @@ onMounted(() => {
     display: none;
   }
 
+  .mcu-hero-hex-rain {
+    opacity: 0.05;
+  }
+
+  .mcu-hero-traces {
+    opacity: 0.08;
+  }
+
   .mcu-hero-stats {
     gap: 16px;
   }
@@ -391,6 +651,26 @@ onMounted(() => {
   .mcu-btn {
     width: 100%;
     justify-content: center;
+  }
+
+  .mcu-hero-subtitle {
+    font-size: 1em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mcu-hex-col,
+  .mcu-trace,
+  .mcu-trace-node,
+  .mcu-particle,
+  .mcu-badge-dot,
+  .mcu-title-accent,
+  .mcu-cursor {
+    animation: none;
+  }
+  .mcu-trace {
+    stroke-dashoffset: 0;
+    opacity: 0.15;
   }
 }
 </style>

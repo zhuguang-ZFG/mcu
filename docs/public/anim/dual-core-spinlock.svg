@@ -41,10 +41,11 @@
 
   <!-- Core 0 activity text -->
   <text x="130" y="117" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#666">Idle</text>
-  <animate attributeName="fill" values="#666;#666;#666;#666;#666" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite" calcMode="discrete"/>
 
   <!-- Core 0 status label (changes per stage) -->
-  <text x="130" y="138" text-anchor="middle" font-family="monospace" font-size="12" fill="#666">idle</text>
+  <text x="130" y="138" text-anchor="middle" font-family="monospace" font-size="12" fill="#666">idle
+    <animate attributeName="opacity" values="1;0;0;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite" calcMode="discrete"/>
+  </text>
   <text x="130" y="138" text-anchor="middle" font-family="monospace" font-size="12" fill="#d97706" opacity="0">
     trying LOCK...
     <animate attributeName="opacity" values="0;1;0;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite" calcMode="discrete"/>
@@ -83,7 +84,9 @@
   <!-- Core 1 status label -->
   <text x="590" y="117" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#666">Idle</text>
 
-  <text x="590" y="138" text-anchor="middle" font-family="monospace" font-size="12" fill="#666">idle</text>
+  <text x="590" y="138" text-anchor="middle" font-family="monospace" font-size="12" fill="#666">idle
+    <animate attributeName="opacity" values="1;1;0;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite" calcMode="discrete"/>
+  </text>
   <text x="590" y="138" text-anchor="middle" font-family="monospace" font-size="12" fill="#dc2626" opacity="0">
     SPINNING...
     <animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite" calcMode="discrete"/>
@@ -91,10 +94,6 @@
   <text x="590" y="138" text-anchor="middle" font-family="monospace" font-size="12" fill="#d97706" opacity="0">
     trying LOCK...
     <animate attributeName="opacity" values="0;0;0;1;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite" calcMode="discrete"/>
-  </text>
-  <text x="590" y="138" text-anchor="middle" font-family="monospace" font-size="12" fill="#dc2626" opacity="0">
-    critical_sect()
-    <animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;0.25;0.5;0.75;1" dur="12s" repeatCount="indefinite" calcMode="discrete"/>
   </text>
 
   <!-- Core 1 small activity bars -->

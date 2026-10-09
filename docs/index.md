@@ -1,18 +1,6 @@
 ---
 layout: home
 
-hero:
-  name: 通往单片机之路
-  text: 把一颗芯片讲透
-  tagline: 寄存器级 STM32F407 × ESP32-S3 双路线 · C 语言精髓 · RTOS 双精讲 · 全程实物实验
-  actions:
-    - theme: brand
-      text: 开始学习
-      link: /guide/
-    - theme: alt
-      text: 路线图
-      link: /guide/#全景路线图
-
 features:
   - icon: 💡
     title: STM32F407 寄存器主线
@@ -55,15 +43,9 @@ features:
 
 ## 先挑一条适合自己的路
 
-同一个站点，四种上路方式——**先见现象，再挖原理**，别从最难的那章硬啃。
+同一个站点，五种上路方式——**先见现象，再挖原理**，别从最难的那章硬啃。
 
-| 你是谁 | 前三步 | 然后 |
-|---|---|---|
-| 零基础，板子刚到手 | [S0 环境搭建](/stm32/00-env.md) 点亮第一盏灯 → [实验 E01](/lab/e01-blink.md) → [C1 内存模型](/c/01-memory-model.md) | 按 C 篇 → B 篇 → S 篇顺序补地基 |
-| 会 C、玩过 Arduino | [B1 四步构建](/build/01-four-steps.md) → [B4 启动过程](/build/04-startup.md) → [S3 GPIO](/stm32/03-gpio.md) | 补上"构建/链接/启动"这块最常被跳过的地基 |
-| 硬件出身，代码薄 | [C2 指针](/c/02-pointer.md) → [C3 volatile](/c/03-volatile.md) → [S2 RCC 时钟树](/stm32/02-rcc-clock.md) | 每章配 [实验中心](/lab/index.md) 的观测点，眼见为实 |
-| 想做 AIoT / 语音产品 | [P0 ESP-IDF 环境](/esp32/00-env.md) → [P2 GPIO 矩阵](/esp32/02-gpio-matrix.md) → [P5 UART 驱动](/esp32/05-uart-driver.md) | 直上 [E07 姿态传感器](/lab/e07-qmi8658.md)、[E08 音频放音](/lab/e08-audio-play.md) |
-| 被 RTOS 面试/项目卡住 | [F1 任务与 TCB](/rtos/freertos/01-task-tcb.md) → [F2 上下文切换](/rtos/freertos/02-context-switch.md) → [实验 E04 优先级反转](/lab/e04-priority-inversion.md) | 回看 [双 OS 对照](/rtos/compare/00-side-by-side.md) 做选型 |
+<PathFinder />
 
 ## 学习地图
 
@@ -72,6 +54,8 @@ features:
 <LearningMap />
 
 > 每章同一个循环：**手册 → 寄存器 → 库源码 → 实物**。看不懂的那一环，就是该回去补的那一环。
+
+<McuUpdates />
 
 </div>
 
