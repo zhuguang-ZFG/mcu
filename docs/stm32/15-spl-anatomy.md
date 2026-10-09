@@ -35,6 +35,12 @@ minutes: 35
 
 打开任意 SPL 工程的 `stm32f4xx_gpio.c`，找到 `GPIO_Init`，对照 [S3](03-gpio.md) 你的手写版——逐段配对（MODER 段→你的 MODER 行），10 分钟完成"相认"。
 
+## 动画：GPIO_Init 解剖
+
+结构体打包 → 逐 pin 循环 → 位偏移计算 → 四段寄存器写入——库的封装术全在这四步里。
+
+![GPIO_Init 解剖动画](/anim/spl-gpio-init.svg)
+
 ## 本节对照源
 
 本章 SPL 引用以 **stm32f4xx_gpio.c / stm32f4xx_rcc.c V1.8.0** 为准（行号以你手头的库分发核对）；寄存器结构与位掩码以本站 CMSIS 设备头 `stm32f407.h` 为底（`.trellis/ref/cmsis/`，逐位核对）。

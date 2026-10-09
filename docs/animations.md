@@ -51,6 +51,8 @@ title: 动画演示中心
 
 ![B3 链接脚本：.data 的两个住址（VMA/LMA）](/anim/data-vma-lma.svg)
 
+![B2 ELF 双重视角：节表给链接器，程序头给装载器](/anim/elf-sections.svg)
+
 ## STM32F407 寄存器主线
 
 ![RCC 时钟树：168MHz 从哪来](/anim/rcc-clock-tree.svg)
@@ -92,6 +94,8 @@ title: 动画演示中心
 ![低功耗三档对比：Sleep/Stop/Standby](/anim/stm32-pwr-three-modes.svg)
 
 ![看门狗双雄：IWDG 只管活着，WWDG 还管节奏](/anim/watchdog-window.svg)
+
+![S15 GPIO_Init 解剖：结构体 → 位偏移 → 寄存器](/anim/spl-gpio-init.svg)
 
 ## FreeRTOS 精讲
 
@@ -144,6 +148,8 @@ title: 动画演示中心
 ![实战派音频全链路：控制走 I2C，声音走 I2S](/anim/esp32-audio-path.svg)
 
 ![ESP32 任务看门狗：TWDT 的订阅、喂狗与超时链条](/anim/esp32-twdt-chain.svg)
+
+![P3 Kconfig 三阶管线：定义 → sdkconfig → sdkconfig.h](/anim/kconfig-pipeline.svg)
 
 ## GD32 双系对照
 

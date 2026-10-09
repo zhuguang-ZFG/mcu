@@ -49,6 +49,12 @@ ls build/config/
 
 `build/config/sdkconfig.h` 就是"菜单 → 文本 → 宏"的终点站。打开它搜一个你认识的配置项（比如 `CONFIG_IDF_TARGET`），再回到工程根目录的 `sdkconfig` 里搜同名项——**同一个选项，两种形态**。这一章就是讲这两个文件之间的那段流水线。
 
+## 动画：Kconfig 三阶管线
+
+从 Kconfig 定义到 sdkconfig 文本再到 sdkconfig.h C 宏——配置沿管线单向流动。
+
+![Kconfig 三阶管线动画](/anim/kconfig-pipeline.svg)
+
 ## 小节结构
 
 | 小节 | 内容 | 四件套 |
