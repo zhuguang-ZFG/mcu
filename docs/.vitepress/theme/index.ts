@@ -6,6 +6,7 @@ import LearningMap from './LearningMap.vue'
 import AnimFigure from './AnimFigure.vue'
 import LabStatus from './LabStatus.vue'
 import LabOverview from './LabOverview.vue'
+import RegisterExplorer from './RegisterExplorer.vue'
 import './custom.css'
 
 export default {
@@ -17,5 +18,6 @@ export default {
     app.component('AnimFigure', AnimFigure)
     app.component('LabStatus', LabStatus)
     app.component('LabOverview', LabOverview)
+    app.component('RegisterExplorer', RegisterExplorer)
   },
 } satisfies Theme
