@@ -1157,3 +1157,269 @@ html.dark .vp-doc .lab-card {
     transform: none;
   }
 }
+
+/* ===== Glass morphism navigation ===== */
+.VPNav {
+  backdrop-filter: blur(12px) saturate(180%);
+  background: rgba(255, 255, 255, 0.72) !important;
+}
+
+:root.dark .VPNav {
+  background: rgba(27, 27, 31, 0.72) !important;
+}
+
+.VPLocalNav,
+.VPSidebar {
+  backdrop-filter: blur(8px);
+}
+
+/* ===== Custom scrollbar ===== */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(52, 81, 178, 0.2);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(52, 81, 178, 0.4);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+:root.dark ::-webkit-scrollbar-thumb {
+  background: rgba(52, 81, 178, 0.3);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+:root.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(52, 81, 178, 0.5);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* ===== Smooth page transitions ===== */
+.VPContent {
+  animation: mcu-fade-in 0.3s ease-out;
+}
+
+@keyframes mcu-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Enhanced callouts with icons ===== */
+.vp-doc .custom-block.tip {
+  position: relative;
+  border-left: 4px solid var(--vp-c-green-1);
+}
+
+.vp-doc .custom-block.tip::before {
+  content: '💡';
+  position: absolute;
+  top: 12px;
+  left: -14px;
+  width: 24px;
+  height: 24px;
+  background: var(--vp-c-green-1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(62, 175, 124, 0.3);
+}
+
+.vp-doc .custom-block.warning {
+  position: relative;
+  border-left: 4px solid var(--vp-c-yellow-1);
+}
+
+.vp-doc .custom-block.warning::before {
+  content: '⚠️';
+  position: absolute;
+  top: 12px;
+  left: -14px;
+  width: 24px;
+  height: 24px;
+  background: var(--vp-c-yellow-1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
+}
+
+.vp-doc .custom-block.danger {
+  position: relative;
+  border-left: 4px solid var(--vp-c-red-1);
+}
+
+.vp-doc .custom-block.danger::before {
+  content: '🔥';
+  position: absolute;
+  top: 12px;
+  left: -14px;
+  width: 24px;
+  height: 24px;
+  background: var(--vp-c-red-1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+/* ===== Enhanced code blocks with line glow ===== */
+.vp-doc div[class*='language-']::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--mcu-brand), var(--mcu-accent), var(--mcu-brand));
+  background-size: 200% 100%;
+  animation: mcu-code-glow 3s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.vp-doc div[class*='language-']:hover::before {
+  opacity: 1;
+}
+
+@keyframes mcu-code-glow {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+/* ===== Floating TOC indicator ===== */
+.VPDocAsideOutline .outline-marker {
+  background: var(--mcu-brand);
+  box-shadow: 0 0 8px rgba(52, 81, 178, 0.4);
+}
+
+/* ===== Achievement badges animation ===== */
+.achievement {
+  position: relative;
+  overflow: hidden;
+}
+
+.achievement::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(52, 81, 178, 0.1) 50%,
+    transparent 70%
+  );
+  animation: mcu-shine 3s ease-in-out infinite;
+}
+
+@keyframes mcu-shine {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+/* ===== Enhanced search with glow ===== */
+.VPLocalNavSearch button,
+.VPNavBarSearch button {
+  transition: all 0.2s;
+}
+
+.VPLocalNavSearch button:hover,
+.VPNavBarSearch button:hover {
+  box-shadow: 0 0 0 2px rgba(52, 81, 178, 0.2);
+}
+
+/* ===== Card hover lift for VPFeature ===== */
+.VPFeature {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.VPFeature:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+}
+
+:root.dark .VPFeature:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== Smooth anchor scrolling ===== */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ===== Enhanced selection color ===== */
+::selection {
+  background: rgba(52, 81, 178, 0.2);
+  color: var(--vp-c-text-1);
+}
+
+:root.dark ::selection {
+  background: rgba(52, 81, 178, 0.3);
+}
+
+/* ===== Loading skeleton animation ===== */
+@keyframes mcu-skeleton {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.mcu-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--vp-c-bg-soft) 25%,
+    var(--vp-c-bg-mute) 50%,
+    var(--vp-c-bg-soft) 75%
+  );
+  background-size: 400% 100%;
+  animation: mcu-skeleton 1.5s ease-in-out infinite;
+}
+
+/* ===== Enhanced focus states ===== */
+*:focus-visible {
+  outline: 2px solid var(--mcu-brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ===== Print styles ===== */
+@media print {
+  .VPNav,
+  .VPLocalNav,
+  .VPDocAside,
+  .mcu-hero,
+  .mcu-features {
+    display: none !important;
+  }
+  
+  .vp-doc {
+    font-size: 12pt;
+  }
+}
