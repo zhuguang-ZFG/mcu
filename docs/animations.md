@@ -99,6 +99,8 @@ title: 动画演示中心
 
 ![DMA 双缓冲乒乓切换](/anim/dma-pingpong.svg)
 
+![EXTI 信号路由：GPIO → SYSCFG → NVIC](/anim/exti-signal-routing.svg)
+
 ![SAR 逐次逼近：12 轮二分](/anim/sar-successive.svg)
 
 ![DAC 三重奏：TIM 打拍、DMA 递谱、DAC 开嗓](/anim/dac-trio.svg)
@@ -150,6 +152,8 @@ title: 动画演示中心
 ![软件定时器服务](/anim/software-timer-service.svg)
 
 ![heap_4 内存合并](/anim/heap4-coalesce.svg)
+
+![vTaskDelay 生命周期：阻塞、调度与唤醒](/anim/vtaskdelay-lifecycle.svg)
 
 ![移植 FreeRTOS：三异常改名接管](/anim/freertos-port.svg)
 
@@ -228,6 +232,8 @@ title: 动画演示中心
 ![X1 RTOS 选型决策树：资源→功能→生态→选择](/anim/rtos-decision-tree.svg)
 
 ![双 OS 同概念对照：通知 vs 无 / 设备框架 / 配置哲学](/anim/dual-os-compare.svg)
+
+![双核自旋锁：互斥、自旋与释放](/anim/dual-core-spinlock.svg)
 
 ## 动画规范
 
