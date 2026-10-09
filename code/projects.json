@@ -100,6 +100,12 @@
     "entry": "probe.sh"
   },
   {
+    "id": "stm32-01-arch-board",
+    "path": "code/stm32/01-arch-board",
+    "kind": "arm-make",
+    "entry": "Makefile"
+  },
+  {
     "id": "stm32-01-rcc-clock",
     "path": "code/stm32/01-rcc-clock",
     "kind": "arm-make",
@@ -174,10 +180,22 @@
     "entry": "probe.sh"
   },
   {
+    "id": "stm32-04-nvic-exti-board",
+    "path": "code/stm32/04-nvic-exti-board",
+    "kind": "arm-make",
+    "entry": "Makefile"
+  },
+  {
     "id": "stm32-05-systick",
     "path": "code/stm32/05-systick",
     "kind": "host-probe",
     "entry": "probe.sh"
+  },
+  {
+    "id": "stm32-05-systick-board",
+    "path": "code/stm32/05-systick-board",
+    "kind": "arm-make",
+    "entry": "Makefile"
   },
   {
     "id": "stm32-16-debug-hardfault",
