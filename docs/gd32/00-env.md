@@ -9,6 +9,8 @@ minutes: 25
 
 > 🎯 STM32F407 你装过 xPack arm-none-eabi-gcc——好消息：GD32F4xx 也是 Cortex-M4F，同一套交叉编译器一个字都不用改就能编。要换的只有"事实字典"：把 ST 的 CMSIS 头文件换成兆易创新的官方固件库 V3.3.3。本章就把这本字典的目录拆给你看。
 
+![通用环境搭建五步闭环：安装→配置→编译→烧录→点灯](/anim/env-setup-flow.svg)
+
 ## 本章精髓
 
 1. **工具链零增量**：GD32F4xx 是 ARM Cortex-M4F，交叉编译旗 `-mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard` 与 STM32F407 **逐字相同**（B0 已装好的 xPack arm-none-eabi-gcc 15.2.1 直接复用）；只需多一个 `-DGD32F450` 选芯片型号。

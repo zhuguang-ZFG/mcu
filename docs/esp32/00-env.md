@@ -9,6 +9,8 @@ minutes: 20
 
 > 🎯 给一块板子装"开发环境"，听起来像给手机装 App——其实更像办签证：编译器、烧录器、串口驱动、构建系统，四个章一个都不能少。这章一次盖齐，从此 `idf.py` 走天下。
 
+![通用环境搭建五步闭环：安装→配置→编译→烧录→点灯](/anim/env-setup-flow.svg)
+
 ## 本章精髓
 
 1. ESP-IDF 为什么是"全家桶"？——编译器（xtensa-esp32s3）、构建系统（CMake+Ninja）、烧录调试（esptool/OpenOCD）、操作系统（FreeRTOS）、协议栈（Wi-Fi/BT）一站配齐，而且全部开源。

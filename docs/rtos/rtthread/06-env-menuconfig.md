@@ -9,6 +9,8 @@ minutes: 25
 
 > 🎯 RT-Thread 生态的恐怖之处：menuconfig 里勾一个"MQTT 客户端"，`pkgs --update` 一敲，源码自动下载、自动进构建——像点外卖。这背后是 Env（工具环境）+ scons（构建）+ Kconfig（配置）的三人转。
 
+![R6 menuconfig 点单流水线：Kconfig → .config → rtconfig.h → 构建](/anim/menuconfig-flow.svg)
+
 ## 本章精髓
 
 1. Kconfig 管"编什么"：每个组件/软件包自带 Kconfig 描述依赖与选项，`menuconfig` 生成 `.config`→`rtconfig.h`——**菜单项=宏**，代码里 `#ifdef` 应声而开（与 ESP-IDF 同源，对照 [P3](../../esp32/03-idf-anatomy.md)）。

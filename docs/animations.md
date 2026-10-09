@@ -27,6 +27,8 @@ title: 动画演示中心
 
 ## C 语言精髓
 
+![C 篇路线总览：从嵌入式 C 到帧协议的 8 站精要](/anim/c-roadmap.svg)
+
 ![volatile 的访存合同：读一次 vs 每次读](/anim/volatile-as-if.svg)
 
 ![全局变量在 .bss/.data 的两地生活](/anim/memory-two-homes.svg)
@@ -46,6 +48,8 @@ title: 动画演示中心
 ![UB 编译器优化陷阱：源代码 → 推理 → 汇编 → 运行时偏离](/anim/ub-compiler-trap.svg)
 
 ## 构建与运行全过程
+
+![B 篇路线总览：从四步构建到 SWD 调试的 8 站流水线](/anim/build-roadmap.svg)
 
 ![ELF 的两副目录：文件视图与段视图](/anim/elf-two-views.svg)
 
@@ -68,6 +72,8 @@ title: 动画演示中心
 ![B6 SWD 调试链路：GDB → OpenOCD → ST-Link → DP/AP → 内存](/anim/swd-debug-chain.svg)
 
 ## STM32F407 寄存器主线
+
+![S 篇路线总览：从 RCC 到 IAP 的 17 站闭环](/anim/stm32-roadmap.svg)
 
 ![RCC 时钟树：168MHz 从哪来](/anim/rcc-clock-tree.svg)
 
@@ -141,6 +147,8 @@ title: 动画演示中心
 
 ## ESP32-S3 + ESP-IDF
 
+![P 篇路线总览：从环境搭建到音频全链路的 13 站纵深](/anim/esp32-roadmap.svg)
+
 ![上电三棒接力：ROM → bootloader → app](/anim/esp32-boot-relay.svg)
 
 ![IRAM 纪律：Cache 一关，Flash 里就没有代码了](/anim/iram-discipline.svg)
@@ -168,6 +176,8 @@ title: 动画演示中心
 ![P3 Kconfig 三阶管线：定义 → sdkconfig → sdkconfig.h](/anim/kconfig-pipeline.svg)
 
 ## GD32 双系对照
+
+![GD32 路线总览：G 篇对照 + V 篇 RISC-V 双线并行](/anim/gd32-roadmap.svg)
 
 ![GD32 RCU 时钟树：与 STM32 逐字段对照](/anim/gd32-rcu-clock.svg)
 
@@ -198,6 +208,8 @@ title: 动画演示中心
 ![R4 设备框架调用链：应用 → 框架 → 驱动 → 寄存器](/anim/rtt-device-chain.svg)
 
 ![R5 finsh 命令分发：宏钉进段，shell 按名翻牌](/anim/rtt-finsh-dispatch.svg)
+
+![R6 menuconfig 点单流水线：Kconfig → .config → rtconfig.h → 构建](/anim/menuconfig-flow.svg)
 
 ![R7 Nano 移植四件套装配](/anim/rtt-port-nano.svg)
 
