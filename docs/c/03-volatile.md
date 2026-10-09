@@ -2,7 +2,7 @@
 title: C3 volatile：跟编译器约法三章
 status: done
 difficulty: 3
-minutes: 40
+minutes: 70
 ---
 
 # C3 volatile：跟编译器约法三章
@@ -14,6 +14,13 @@ minutes: 40
 1. **为什么优化会"吃掉"访存**：编译器按 as-if 规则工作——只要可观察行为不变，缓存、删除、合并你的读写都合法。它眼里的 `status` 是一块内存；而 `USART1->SR` 后面是硬件，你不读它也在变。`volatile` 就是收回这项授权的合同条款。
 2. **为什么 volatile 只解决一半问题**：它保证"每次使用都真实访存"，不保证"这一串访存之间没人插队"。把 `volatile int flag` 当锁用，是把类型限定符当成了同步原语。
 3. **为什么值得单独一章**：本站所有"库源码逐行解析"读的都是带 volatile 的封装（CMSIS 的 `__IO`、SPL 的 `__IO` 局部变量、IDF 的寄存器访问）。懂它的合同与边界，才知道那些封装在替谁兜底。
+
+<details>
+<summary>🌐 English Abstract</summary>
+
+**Why volatile matters**: The compiler's as-if rule allows it to cache, delete, or merge memory accesses as long as observable behavior stays the same. But hardware registers change state independently—`volatile` revokes the compiler's authorization to optimize those accesses. **What volatile guarantees**: Every use triggers an actual memory access. **What it doesn't guarantee**: Atomicity or ordering—`volatile int flag` is not a synchronization primitive. **Three must-have scenarios**: (1) Hardware registers (MMIO), (2) Interrupt-shared variables, (3) Signal handlers. **Two anti-patterns**: (1) Using volatile as a lock, (2) Adding volatile to "fix" race conditions (use atomics/critical sections instead).
+
+</details>
 
 ## 怎么读这一章
 

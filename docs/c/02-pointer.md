@@ -16,6 +16,13 @@ minutes: 40
 3. 数组名与指针的"纠缠"在嵌入式里有一个实用出口：`((uint32_t*)0x40021400)[6]` 就是 BSRR。
 4. `const` 在 `*` 左边锁目标、右边锁指针，全部在**编译期**拦截，不要一分钱运行时开销——驱动里满街都是 `volatile uint32_t * const`。
 
+<details>
+<summary>🌐 English Abstract</summary>
+
+**Pointer = address + width + discipline**. The pointer value is the address; the pointer type determines **bytes per access** (uint8/16/32 → LDRB/LDRH/LDR). Hardware registers require 32-bit access—wrong type, hardware ignores you. **Pointer arithmetic**: `p+1` steps by the pointed-to type's size (uint32_t* → +4 bytes). **Array-pointer equivalence**: `((uint32_t*)0x40021400)[6]` is BSRR. **const placement**: left of `*` locks the target, right locks the pointer—all compile-time checks, zero runtime cost.
+
+</details>
+
 ## 怎么读这一章
 
 | 层次 | 目标 |

@@ -15,6 +15,13 @@ minutes: 50
 2. **tick 中断干三件事**：节拍++、查延时列表队首谁该醒了、（必要时）请求切换——`xTaskIncrementTick` 就读这三段。
 3. **`vTaskDelay` 不是"等"，是"搬"**：把自己挂进按唤醒时间排序的延时链表，然后让出 CPU——任务真的"不在"了，这是 RTOS 延时与裸机死等的本质区别。
 
+<details>
+<summary>🌐 English Abstract</summary>
+
+**Ready list = array of linked lists + a "highest non-empty" lookup**. `pxReadyTasksLists[configMAX_PRIORITIES]` is the shelf; `uxTopReadyPriority` is the lookup—scalar in generic path (linear scan), **32-bit bitmap** in M4F optimized path (CLZ instruction finds highest set bit in O(1)). **Tick interrupt does three things**: increment tick count, check delay list head for tasks to wake, request context switch if needed. **`vTaskDelay` is not "wait", it's "move"**: task moves to delay list (sorted by wake time), then yields CPU—task is truly "gone", the fundamental difference between RTOS delay and bare-metal busy-wait.
+
+</details>
+
 ## 怎么读这一章
 
 - **能记住**：口诀"位图置位 CLZ 秒选，tick 三事：醒人、轮转、换片场"；`vListInsert` 按值排队、`vListInsertEnd` 队尾轮转。

@@ -122,6 +122,7 @@ export default defineConfig({
       { text: '实验', link: '/lab/' },
       { text: '综合项目', link: '/projects/' },
       { text: '动画', link: '/animations' },
+      { text: '学习路径', link: '/learning-path' },
       {
         text: '资料',
         items: [
