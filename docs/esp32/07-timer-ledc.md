@@ -125,6 +125,8 @@ STM32 的 TIM 一个外设包干时基+PWM+捕获；S3 拆成 GPTimer（计时�
 **GPTimer 定闹钟（ISR 里快办事），LEDC 开乐团（timer 定调 channel 发声）；渐变交给硬件 fade，位数频率跷跷板；S3 只有低速 8 通道，别套经典 ESP32。**
 :::
 
+**延伸**：LEDC 定时器与通道动画见 [P7 动画](/anim/ledc-timer-channel.svg)；STM32 TIM PWM 对照见 [S6](../stm32/06-tim.md)；定时器输入捕获在 [S6 TIM](../stm32/06-tim.md) 展开。
+
 ## 实物实验
 
 - 呼吸灯 + [E03 分析仪看占空比](../lab/e03-scope-pwm.md) 的 S3 版：fade 曲线抓取，验证硬件渐变的线性；

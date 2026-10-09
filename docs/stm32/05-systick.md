@@ -202,6 +202,8 @@ if ((uint32_t)(g_tick - then) >= timeout)  /* 先减再比，跨回绕也正确 
 **LOAD 定周期、VAL 看进度、CTRL 开关机；频率除千再减一，标志一读就没，超时先减再比。**
 :::
 
+**延伸**：SysTick 倒数与 COUNTFLAG 动画见 [S5 动画](/anim/systick-tick.svg)；SysTick 作为 RTOS 时基在 [F0 为什么需要 RTOS](../rtos/freertos/00-why-rtos.md) 展开；GD32 MTIME 对照见 [V3](../gd32/08-mtime-delay.md)。
+
 ## 实物实验
 
 - 逻辑分析仪测 PF6 翻转周期：SysTick 版 `delay_ms(500)` 实测 500ms±0.1%，软件延时版误差肉眼可见——同一块板，两种「时间观」的实测对比。

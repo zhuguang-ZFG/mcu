@@ -236,6 +236,8 @@ SPL 的 DAC API 把 CR 的位组合打包成结构体字段（stm32f4xx_dac.c V1
 **TIM 打拍、DMA 递谱、DAC 开嗓；波形频率=更新率÷点数，对齐写错全盘皆输。**
 :::
 
+**延伸**：DAC 三重奏动画见 [S10 动画](/anim/dac-trio.svg)；DMA 搬运机制在 [S8 DMA](08-dma.md) 详解；TIM 触发 DAC 的配合在 [S6 TIM](06-tim.md) 展开。
+
 ## 实物实验
 
 - 万用表验证静态电压（2048≈VREF/2）；

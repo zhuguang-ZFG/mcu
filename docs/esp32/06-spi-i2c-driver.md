@@ -227,6 +227,8 @@ for (;;) {
 **先配线再认人（总线/设备两级），SPI 靠事务排队飞，I2C 一句 transmit_receive 走完礼仪；屏要 DC 分令数，传感器先问 WHO_AM_I。**
 :::
 
+**延伸**：IDF 总线驱动两级模型动画见 [P6 动画](/anim/esp32-driver-layers.svg)；STM32 SPI/I2C 对照见 [S11](../stm32/11-i2c.md) 和 [S12](../stm32/12-spi.md)；GD32 外设编号差异见 [G4](../gd32/04-periph-diff.md)。
+
 ## 实物实验
 
 - [E07 读 QMI8658](../lab/e07-qmi8658.md)：摇板子看三轴数据跳变；

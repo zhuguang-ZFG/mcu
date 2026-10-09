@@ -130,6 +130,8 @@ RT-Thread 的生态更偏国内（中文文档、国产 MCU 适配多），FreeR
 **RTT 三层楼：内核打地基、组件当水电、软件包是家具；万物继承 rt_object，初始化按段自动排队。**
 :::
 
+**延伸**：RTT 对象模型动画见 [R0 动画](/anim/rtt-object-model.svg)；FreeRTOS 对象管理对照见 [F1](../freertos/01-task-tcb.md)；双 OS 架构对比见 [X0](../compare/00-side-by-side.md)。
+
 ## 实物实验
 
 - 在 R7 移植工程上执行 finsh 命令 `list_thread`、`list_device`——对象模型的"户口本"直接打印在终端上。

@@ -320,6 +320,8 @@ idf_component_register(SRCS "main.c"
 **组件自报家门（SRCS/INCLUDE_DIRS/REQUIRES），Kconfig 三段变身（菜单→sdkconfig→sdkconfig.h），idf.py 只当司令不搬砖。**
 :::
 
+**延伸**：Kconfig 三阶管线动画见 [P3 动画](/anim/kconfig-pipeline.svg)；RT-Thread 同源 Kconfig 机制见 [R6](../rtos/rtthread/06-env-menuconfig.md)；CMake 构建系统在 [B7](../build/07-build-system.md) 详解。
+
 ## 实物实验
 
 - `idf.py build` 后翻 `build/config/`，打开 `sdkconfig.h` 找到 `CONFIG_IDF_TARGET_ESP32S3`，再回工程根 `sdkconfig` 找 `CONFIG_IDF_TARGET=`——**同一个选项的两种形态**，把两处都截图/记录。

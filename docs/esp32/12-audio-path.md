@@ -218,6 +218,8 @@ E08 的 `BLOCK_FRAMES=160`（main.c:19），160/16000=10ms，往返约 20ms+—�
 **控制走 I2C，数据走 I2S，codec 是翻译官，功放推喇叭；先滴一声，再听见自己——全双工一回环，小智就在眼前。**
 :::
 
+**延伸**：音频全链路动画见 [P12 动画](/anim/esp32-audio-path.svg)；I2S 与 SPI/I2C 的总线对比见 [P6](06-spi-i2c-driver.md)；DMA 搬运在 STM32 的对照见 [S8](../stm32/08-dma.md)。
+
 ## 实物实验
 
 - [E08 音频放音](../lab/e08-audio-play.md)：正弦"滴"→PCM 小音乐片段；

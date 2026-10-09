@@ -268,6 +268,8 @@ GPIO_PUD(gpiox) |=  GPIO_PUPD_SET(pin, pupd);       /* 写上下拉            *
 **七大寄存器只换名：CTL/OMODE/OSPD/PUD/ISTAT/OCTL/BOP；基址使能全同款；GD32 多 BC 清零、TG 翻转两件兵器；编码一字不差，先清后置照旧；复用找 AFSEL0/1，nibble 算法同款。**
 :::
 
+**延伸**：GD32 AF 复用动画见 [G2 动画](/anim/gd32-af-mux.svg)；STM32 GPIO 对照见 [S3](../stm32/03-gpio.md)；指针操作寄存器在 [C2](../c/02-pointer.md) 详解。
+
 ## 实物实验
 
 - **桌面点名（5 分钟）**：合上本文，对照 `.trellis/ref/gd32/gd32f4xx_gpio.h:52-63` 把 12 个寄存器的偏移从 0x00 默写到 0x2C，标出哪两个是 STM32 没有的。

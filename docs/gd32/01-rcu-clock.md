@@ -135,6 +135,8 @@ GD32 把"能不能上 200MHz"拆成三次握手，每一步都有硬件回执（
 **先电压三件套（LDOVS→HDEN→HDS 带回执）、再 FMC 等待、后切钟；写完 SCS 看 SCSS；CK_OUT0 一量，自欺现形。**
 :::
 
+**延伸**：GD32 RCU 时钟树动画见 [G1 动画](/anim/gd32-rcu-clock.svg)；STM32 RCC 对照见 [S2](../stm32/02-rcc-clock.md)；Flash 等待周期在 [B5](../build/05-map-size.md) 有体积影响。
+
 ## 实物实验
 
 - CK_OUT0 量频：构建烧录后量 PA8，应为 ≈50MHz（200/4）；切 IRC16M 档应为 4MHz。

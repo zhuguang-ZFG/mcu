@@ -169,6 +169,8 @@ RT-Thread 用 scons（Python 写的构建系统）+ Kconfig，与 IDF 的 CMake+
 **Make 画图（依赖），CMake 生图（跨平台），Kconfig 管编什么，构建系统管怎么编**——IDF 用 CMake 圈组件，RTT 用 scons 走江湖，底层还是 B1 那四步。
 :::
 
+**延伸**：IDF 的 CMake 组件化在 [P3 IDF 解剖](../esp32/03-idf-anatomy.md) 展开；RT-Thread 的 scons+menuconfig 在 [R6](../rtos/rtthread/06-env-menuconfig.md) 完整走一遍；依赖图与局部重建的动画见 [B1 四步构建](01-four-steps.md)。
+
 ## 实物实验
 
 - 在 00-blink 的 Makefile 里故意删掉 `startup_stm32f407xx.o` 的依赖，touch 启动文件后 make——观察到"没重建"，亲手证明依赖图的价值，然后改回来。

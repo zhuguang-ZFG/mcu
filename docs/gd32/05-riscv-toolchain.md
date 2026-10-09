@@ -218,6 +218,8 @@ reset_handler
 **工具链换 riscv-none-elf，march rv32imac 配 ilp32；启动删 FPU、栈自己设；FLASH 0x0800 / RAM 0x2000 与 STM32 同址，main 进来就在 108M。**
 :::
 
+**延伸**：RISC-V 工具链流程动画见 [V0 动画](/anim/riscv-toolchain-flow.svg)；ARM 工具链对照见 [B0](../build/00-toolchain.md)；链接脚本在 [B3](../build/03-linker-script.md) 详解。
+
 ## 实物实验
 
 - `riscv-none-elf-objdump -d your.elf | findstr reset_handler`：看 `reset_handler` 第一条是 `la sp`（设栈），与 Cortex-M reset 第一条"读向量表"对比。

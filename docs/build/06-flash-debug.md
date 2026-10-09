@@ -132,6 +132,8 @@ OpenOCD 开 Semihosting：`monitor arm semihosting enable`；newlib 链接加 `-
 **SWD 两线通天，CPU 停不停都能读写；烧录是请 RAM 里的算法代劳，断点分软硬——Flash 用硬，RAM 随意。**
 :::
 
+**延伸**：SWD 链路完整解剖（DP/AP/内存访问）在本章正文展开；FreeRTOS 任务级 GDB 调试见 [F2](../rtos/freertos/02-context-switch.md)；硬件断点 FPB 与中断调试配合见 [S4 NVIC](../stm32/04-nvic-exti.md)。
+
 ## 实物实验
 
 - `monitor flash erase_sector 0 0 0` 擦掉首扇区再复位：板子不闪了（固件没了）；重新 `make flash` 救回——体验"烧录的本质是改内存"。

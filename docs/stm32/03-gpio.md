@@ -181,6 +181,8 @@ for (pinpos = 0; pinpos < 16; pinpos++) {
 **先时钟、再模式（M-O-S-P 四张表）、后数据；改位用 BSRR，读电平问 IDR，复用查 AF 表。共阳灯：BR 亮、BS 灭。**
 :::
 
+**延伸**：GPIO 配置流程动画见 [S3 动画](/anim/gpio-config.svg)；指针操作 GPIO 寄存器是 [C2 指针](../c/02-pointer.md) 的实战应用；GD32 GPIO 对照见 [G2](../gd32/02-gpio-af.md)。
+
 ## 实物实验
 
 - 基础：[E01](../lab/e01-blink.md) 完成三色切换；

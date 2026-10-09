@@ -275,6 +275,8 @@ xQueueSend(...) / xTaskNotifyGive(...)  /* 用内核对象，别自己造轮子 
 **Cache 一关 Flash 里没代码：ISR 要么进 IRAM（还要带上它调的函数和常量），要么老实被推迟；双核共享别信 volatile，上 portMUX。**
 :::
 
+**延伸**：IRAM 纪律动画见 [P4 动画](/anim/iram-discipline.svg)；volatile 的局限性在 [C3](../c/03-volatile.md) 详解；STM32 NVIC 对照见 [S4](../stm32/04-nvic-exti.md)。
+
 ## 实物实验
 
 - 写一个带 `IRAM_ATTR` 的 ISR 和一个不带的，`idf.py build` 后用 `arm-none-eabi-nm` 对比符号地址落在 IRAM（`0x400xxxxx`）还是 Flash 映射段——把两个地址记进实验记录（**待上机回填**）。

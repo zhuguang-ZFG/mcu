@@ -284,6 +284,8 @@ rt_uint32_t f = 4000;  rt_device_control(buz, BUZZER_CMD_SET_FREQ, &f);
 **驱动填表（ops），应用喊名（find），换板只换表，应用纹丝不动——解耦的代价是一张表，回报是整个生态。**
 :::
 
+**延伸**：RTT 设备框架调用链动画见 [R4 动画](/anim/rtt-device-chain.svg)；ESP-IDF 驱动模型对照见 [P6](../../esp32/06-spi-i2c-driver.md)；FreeRTOS 无设备框架的设计差异见 [F0](../freertos/00-why-rtos.md)。
+
 ## 实物实验
 
 - PIN 设备点灯 vs [E01](../../lab/e01-blink.md) 寄存器版：同一块板两种世界观，GDB 里追一次 `rt_pin_write` 到 BSRR 的完整下钻——封装在你眼前逐层剥落。

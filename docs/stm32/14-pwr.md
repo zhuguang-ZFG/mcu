@@ -239,6 +239,8 @@ void PWR_EnterSTOPMode(uint32_t PWR_Regulator, uint8_t PWR_STOPEntry)
 **Sleep 停脑，Stop 停钟（记忆在），Standby 断电（只留遗言）；唤醒源睡前配，醒来先查钟。**
 :::
 
+**延伸**：低功耗三档对比动画见 [S14 动画](/anim/stm32-pwr-three-modes.svg)；Stop 模式唤醒后时钟恢复在 [S2 RCC](02-rcc-clock.md) 有完整流程；ESP32 睡眠矩阵对照见 [P11](../esp32/11-lowpower.md)。
+
 ## 实物实验
 
 - [E06 功耗实测](../lab/e06-lowpower-current.md)：三种模式电流逐一记录，算出"1 节 CR2032 能活多久"的估算表。

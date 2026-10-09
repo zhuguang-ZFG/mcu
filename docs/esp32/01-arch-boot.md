@@ -234,6 +234,8 @@ factory,  app,  factory, ,        1M,
 **上电三棒：ROM 认路、bootloader 验货、app 开工；`app_main` 是 main task 里的一次调用，返回就被回收。**
 :::
 
+**延伸**：启动接力动画见 [P1 动画](/anim/esp32-boot-relay.svg)；STM32 启动流程对照见 [B4](../build/04-startup.md)；FreeRTOS 任务创建在 [F1](../rtos/freertos/01-task-tcb.md) 展开。
+
 ## 实物实验
 
 - `idf.py build` 后 `idf.py flash monitor`，把串口 banner 逐行对照第五节那张"卡在哪一棒"的表（**待上板回填**）。

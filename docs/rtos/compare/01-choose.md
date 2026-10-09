@@ -115,6 +115,8 @@ RTOS 的坑都长在"不熟悉"上：FreeRTOS 的优先级数值大=高、RT-Thr
 **平台先定，生态其次，团队兜底；要拼产品选生态，要抠资源选极简。**
 :::
 
+**延伸**：RTOS 选型决策树动画见 [X1 动画](/anim/rtos-decision-tree.svg)；双 OS 同概念对照见 [X0](00-side-by-side.md)；FreeRTOS 入门见 [F0](../freertos/00-why-rtos.md)，RT-Thread 入门见 [R0](../rtthread/00-arch.md)。
+
 ## 常见坑
 
 - **为"学习目的"在 product 项目里换 RTOS**：学习用开发板随便换，产品线换 OS=全量回归测试。

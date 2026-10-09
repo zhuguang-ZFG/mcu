@@ -143,6 +143,8 @@ case UART_DATA: {
 **ISR 记账发事件，三层缓冲防溢出；事件只带元数据，字节要自己读；判帧靠超时标志，发送完要等 done。**
 :::
 
+**延伸**：IDF UART 驱动事件动画见 [P5 动画](/anim/idf-uart-events.svg)；STM32 USART 对照见 [S7](../stm32/07-usart.md)；环形缓冲在 [C8](../c/08-framed-protocol.md) 有完整实现。
+
 ## 实物实验
 
 - quick win + 压力测试：115200 连发 10KB，记录有无 OVF/FULL 事件；把 ring buffer 调小一半复现溢出——"溢出可观测"就是专业驱动的样子；

@@ -147,6 +147,8 @@ GD32F4xx_Firmware_Library_V3.3.3/
 **工具链零增量（同 Cortex-M4F）、官方库两层（CMSIS 设备层 + 标准外设库层）、三件套（启动/system/链接脚本）；本站工程读 `.h` 当字典、手写访问，魔法数字挂行号。**
 :::
 
+**延伸**：环境搭建五步闭环动画见 [G0 动画](/anim/env-setup-flow.svg)；STM32 工具链对照见 [B0](../build/00-toolchain.md)；SPL 库结构解剖见 [S15](../stm32/15-spl-anatomy.md)。
+
 ## 实物实验
 
 - **quick win 复现**：`cd code/gd32/01-rcu-clock && make`，看到 `size` 打印三列体积——证明 xPack 工具链对 GD32 通。

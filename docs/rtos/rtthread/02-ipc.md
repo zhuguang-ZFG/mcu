@@ -123,6 +123,8 @@ RT-Thread 5.x 把所有 IPC 的公共部分抽到 `struct rt_ipc_object`（位�
 **一副骨架五张皮：令牌、带主令牌、旗语、定长池、变长队；排队要么 FIFO 要么 PRIO，创建时一锤定音。**
 :::
 
+**延伸**：RTT IPC 五种武器动画见 [R2 动画](/anim/rtt-ipc-skeleton.svg)；FreeRTOS 队列/信号量对照见 [F4](../freertos/04-queue.md) 和 [F5](../freertos/05-sem-mutex.md)；双 OS IPC 对比见 [X0](../compare/00-side-by-side.md)。
+
 ## 实物实验
 
 - E04 RT-Thread 版：与 FreeRTOS 版同剧本，两组日志并排贴——继承机制的行为一致性/差异亲眼核对。

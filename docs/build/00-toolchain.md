@@ -122,6 +122,8 @@ ARM 官方维护 **Arm GNU Toolchain**（gcc/binutils/newlib/gdb 一体打包）
 **gcc 是总指挥，binutils 是七件兵器，newlib 是裸机口粮，gdb 是随队医生**——前缀 `arm-none-eabi-` 就是他们的工牌。
 :::
 
+**延伸**：工具链产出的 ELF 结构在 [B2 ELF 双重视角](02-elf.md) 展开；GDB 调试链路在 [B6 SWD 调试](06-flash-debug.md) 完整走一遍；RISC-V 工具链对照见 [V0](../gd32/05-riscv-toolchain.md)。
+
 ## 实物实验
 
 - 对 00-blink 的 `build/blink.elf` 连发四枪：`nm`（看符号）、`objdump -h`（看段）、`readelf -l`（看加载段）、`objcopy -O binary`（出 bin）——每枪都在 B2/B5 展开。

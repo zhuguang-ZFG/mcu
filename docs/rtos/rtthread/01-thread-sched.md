@@ -171,6 +171,8 @@ finsh 的 `list_thread` 输出列大致是：`name / pri / status / sp / stack s
 **对象打头 sp 记账，256 级两查表；动态堆上请，静态自家造；线程肚里还揣着定时器。**
 :::
 
+**延伸**：RTT 二级位图动画见 [R1 动画](/anim/rtt-bitmap-256.svg)；FreeRTOS 调度对照见 [F3](../freertos/03-scheduler.md)；任务创建与 TCB 在 [F1](../freertos/01-task-tcb.md) 详解。
+
 ## 实物实验
 
 - 双线程异频闪灯 + `list_thread` 观测栈水位；

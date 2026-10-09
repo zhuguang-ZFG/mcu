@@ -130,6 +130,8 @@ SRAM 剩余：3xxxxx 字节；PSRAM 剩余：83xxxxx 字节
 **IDF 四步曲：`set-target`（定芯片）→ `menuconfig`（改配置）→ `build`（编固件）→ `flash monitor`（烧+看）。** 首次可以不 menuconfig，但顺序不能乱。
 :::
 
+**延伸**：环境搭建五步闭环动画见 [P0 动画](/anim/env-setup-flow.svg)；IDF 与 STM32 工具链对照见 [B0](../build/00-toolchain.md)；menuconfig 与 RT-Thread 同源机制见 [R6](../rtos/rtthread/06-env-menuconfig.md)。
+
 ## 实物实验
 
 本章即实验。观测点：

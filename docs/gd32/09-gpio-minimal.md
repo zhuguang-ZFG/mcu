@@ -236,6 +236,8 @@ V 篇五章，替你把 Cortex-M 的"标配"换成了 RISC-V 的对应物：
 **有 AFIO 就是 F1 家：两张表每脚四位，掩 0xF 移 pin×4；时钟在 APB2 bit2~6 不在 AHB1；数据四剑客 ISTAT/OCTL/BOP/BC——BC 清脚不用 +16；五步闭环：时钟、CTL、OCTL、BOP/BC、mtime delay。**
 :::
 
+**延伸**：RISC-V 点灯闭环动画见 [V4 动画](/anim/riscv-blink-closed.svg)；STM32 GPIO 对照见 [S3](../stm32/03-gpio.md)；MTIME 延时在 [V3](08-mtime-delay.md) 展开。
+
 ## 实物实验
 
 - **基础**：跑通五步闭环，LED 1 秒周期翻转；逻辑分析仪量高电平段，应为 500ms 整（整 tick 误差内）。

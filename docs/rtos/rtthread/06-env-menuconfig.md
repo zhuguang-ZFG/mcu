@@ -193,6 +193,8 @@ bsp/stm32f407-zeo/
 **menuconfig 点单，pkgs 取货，scons 下厨；Kconfig 管编什么，scons 管怎么编——点外卖式做固件。**
 :::
 
+**延伸**：menuconfig 点单流水线动画见 [R6 动画](/anim/menuconfig-flow.svg)；ESP-IDF Kconfig 对照见 [P3](../../esp32/03-idf-anatomy.md)；构建系统在 [B7](../../build/07-build-system.md) 详解。
+
 ## 实物实验
 
 - 勾一个软件包（如 cJSON）→ 应用里 `#include "cJSON.h"` 解析一段 JSON 串口打印——从零到用上社区库，十分钟。

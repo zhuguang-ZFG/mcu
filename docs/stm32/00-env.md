@@ -162,6 +162,8 @@ x/wx 0x40023830   # RCC_AHB1ENR：bit5 应该是 1（GPIOF 时钟开了）
 **工具链四件套：gcc 翻译、make 指挥、OpenOCD 送信、ST-Link 跑腿。** 固件四文件：启动文件开门、链接脚本排座、main 干活、Makefile 记账。
 :::
 
+**延伸**：环境搭建五步闭环动画见 [S0 动画](/anim/env-setup-flow.svg)；工具链四件套详解在 [B0](../build/00-toolchain.md)；四步构建流程在 [B1](../build/01-four-steps.md) 展开。
+
 ## 实物实验
 
 本章就是实验本身。观测点与预期：

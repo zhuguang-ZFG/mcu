@@ -172,6 +172,8 @@ finsh 不是免费的，上板前要算账：
 **宏把函数钉进段里，shell 按名翻牌；help 即是文档，list 即是自检——finsh 是板子上的最小人机界面。**
 :::
 
+**延伸**：RTT finsh 命令分发动画见 [R5 动画](/anim/rtt-finsh-dispatch.svg)；链接脚本段属性在 [B3](../../build/03-linker-script.md) 详解；GDB 调试对照见 [B6](../../build/06-flash-debug.md)。
+
 ## 实物实验
 
 - 自定义 `led` 命令 + 在 [E04](../../lab/e04-priority-inversion.md) 实验里用 finsh 动态改任务优先级（`rt_thread_control` 包一个命令）——现场调参不重烧。

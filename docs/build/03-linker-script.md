@@ -382,6 +382,8 @@ ENTRY(_start)
 **链接脚本不产代码，产三份地址契约：`MEMORY` 圈地、`SECTIONS` 分房、符号留门牌；一个段有两个住址——VMA 管运行、LMA 管初值，少写一个 `AT>`，bin 从 660 字节胀成 134MB。**
 :::
 
+**延伸**：.data 的 VMA/LMA 双住址在 [B2 ELF 段视图](02-elf.md) 有动画演示；栈堆的 `_Min_*` 预算段与启动文件配合见 [B4 启动文件](04-startup.md)；Flash 调试时断点与地址关系见 [B6](06-flash-debug.md)。
+
 ## 实物实验
 
 ::: warning 这一节还没上板

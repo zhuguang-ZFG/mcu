@@ -146,6 +146,8 @@ GD32 库的风格：**函数名小写下划线**（`usart_init` vs `USART_Init`�
 **8 个串口 0 起编号，CTL0/1/2 替代 CR1/2/3；BAUD 替代 BRR，STAT/DATA 替代 SR/DR——偏移不变名字变，迁移按偏移不按名。**
 :::
 
+**延伸**：STM32 USART 对照见 [S7](../stm32/07-usart.md)；USART 帧波形动画见 [S7 动画](/anim/uart-frame.svg)；GD32 外设编号差异总览见 [G4](04-periph-diff.md)。
+
 ## 实物实验
 
 - 在 `code/gd32/01-rcu-clock` 工程上加 USART0 初始化（APB2 时钟使能），串口打印"GD32 USART0"——验证基址与命名翻译。

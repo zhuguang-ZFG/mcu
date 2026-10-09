@@ -244,6 +244,8 @@ SPL 每个函数开头一串 `assert_param(IS_GPIO_PIN(init->GPIO_Pin))`。`asse
 **库=结构体打包+位操作翻译+断言看门；读库先问动了谁，API 反推寄存器，RM 永远是法官。**
 :::
 
+**延伸**：GPIO_Init 解剖动画见 [S15 动画](/anim/spl-gpio-init.svg)；SPL 与 HAL 的设计哲学对比在 [S1 架构](01-arch.md) 展开；GD32 固件库对照见 [G0](../gd32/00-env.md)。
+
 ## 实物实验
 
 - 把 E01 改成 SPL 版（GPIO_Init 三行），`size` 对比手写版体积差异；GDB 单步进 `GPIO_Init` 内部，看你熟悉的位操作逐条执行。

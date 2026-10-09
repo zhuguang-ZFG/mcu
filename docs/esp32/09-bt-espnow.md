@@ -167,6 +167,8 @@ ESP-NOW 不另起射频，它复用 Wi-Fi 的 PHY/MAC——所以**和 Wi-Fi 同
 **BLE 靠 GATT 立服务，订阅通知主动推；ESP-NOW 认 MAC 不认网，加电即通 250 字节。**
 :::
 
+**延伸**：ESP-NOW 三步动画见 [P9 动画](/anim/esp32-espnow-direct.svg)；Wi-Fi 联网在 [P8](08-wifi.md) 展开；BLE 与 Wi-Fi 功耗对比见 [P11 低功耗](11-lowpower.md)。
+
 ## 实物实验
 
 - quick win 双板互传 + 测距粗实验：边走边看丢包率（回执失败计数）——无线链路质量的第一手感。

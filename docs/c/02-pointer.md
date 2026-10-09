@@ -186,6 +186,8 @@ probe.c:54:59: error: assignment of read-only location '*(const int *)p'  @ 全�
 **地址定位置，类型定宽度，volatile 定纪律**（width/where/don't-optimize）。指针三板斧，念念有回响。
 :::
 
+**延伸**：指针与内存布局的关系在 [C1](01-memory-model.md) 铺垫；volatile 防止编译器优化指针读取在 [C3](03-volatile.md) 展开；指针访问外设寄存器是 [S3 GPIO](../stm32/03-gpio.md) 的核心操作。
+
 ## 实物实验
 
 - **无板上（本机已全部实测通过）**：`cd code/c/02-pointer && sh probe.sh`，把 `read8/16/32` 三条指令、`p+1` 的 +1/+2/+4 输出、两条 `led_on_*` 的相同汇编抄进实测记录，注明工具链版本与完整命令行（本机：arm-none-eabi-gcc 15.2.1 `-mcpu=cortex-m4 -mthumb -O2 -S`；宿主 gcc 16.1.0 `-O2`）。

@@ -175,6 +175,8 @@ SPL（StdPeriph）未随 ST 官方 GitHub 分发，本轮仍缺一手源码；�
 **先电压、再等待、后切钟；先降总线、再提主频；写完 SW 要看 SWS；APB 分频不是一，定时器时钟自己乘二。**
 :::
 
+**延伸**：RCC 时钟树动画见 [S2 动画](/anim/rcc-clock-tree.svg)；Flash 等待周期与频率的关系在 [B5 map 审计](../build/05-map-size.md) 有体积影响；GD32 RCU 对照见 [G1](../gd32/01-rcu-clock.md)。
+
 ## 实物实验
 
 - MCO1 量频：`USE_HSE_PLL=1` 构建后量 PA8，应为 ≈42MHz；换回默认构建应为 ≈4MHz（16/4）。

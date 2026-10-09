@@ -269,6 +269,8 @@ ULP-RISC-V（S2/S3）更现代——直接用 C 写，有 GCC 工具链，算力
 **Light 眯一会（记忆在），Deep 睡死（靠 RTC 留遗言），ULP 守夜看门——唤醒即复位，状态藏 RTC。**
 :::
 
+**延伸**：ESP32 睡眠矩阵动画见 [P11 动画](/anim/esp32-sleep-matrix.svg)；STM32 低功耗对照见 [S14](../stm32/14-pwr.md)；RTC 与 NVS 数据保持见 [P10](10-flash-nvs-ota.md)。
+
 ## 实物实验
 
 - 周期上报器 + 电流三档实测；进阶：GPIO 唤醒（用户键）与定时唤醒并存，分辨唤醒原因（esp_sleep_get_wakeup_cause）。

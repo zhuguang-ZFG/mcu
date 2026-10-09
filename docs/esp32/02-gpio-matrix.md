@@ -106,6 +106,8 @@ GPIO0（BOOT）、GPIO45、GPIO46 等在上电/复位时被采样，决定启动
 **IO_MUX 是专线，Matrix 是总机；高速走专线，布局走总机；"任意"= 有效焊盘 + 没被占用 + 板卡接出来；strapping 脚上电别惹。**
 :::
 
+**延伸**：GPIO 矩阵路由动画见 [P2 动画](/anim/gpio-matrix-routing.svg)；STM32 GPIO 对照见 [S3](../stm32/03-gpio.md)；strapping 引脚与启动模式在 [P1 启动](01-arch-boot.md) 有完整列表。
+
 ## 实物实验
 
 - quick win 的 PWM 换岗：示波器/逻辑分析仪先夹 GPIO10，三秒后波形消失、出现在 GPIO11；

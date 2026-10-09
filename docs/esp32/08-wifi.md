@@ -179,6 +179,8 @@ wifi:state: got ip:192.168.x.x                ← GOT_IP（网络可用）
 **Wi-Fi 是状态机，事件循环是播报员；GOT_IP 才算联网，DISCONNECTED 必须安排后路。**
 :::
 
+**延伸**：TCP 握手动画见 [P8 动画](/anim/tcp-handshake.svg)；Wi-Fi 与低功耗配合见 [P11 低功耗](11-lowpower.md)；ESP-NOW 无网直连见 [P9](09-bt-espnow.md)。
+
 ## 实物实验
 
 - 重连实测：连上后重启路由器，日志记录断连检测耗时与重连成功耗时——"可用性"第一次被量化。

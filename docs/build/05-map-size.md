@@ -143,6 +143,8 @@ MEMORY { RAM (xrw) : ORIGIN=0x20000000, LENGTH=128K
 **Flash=text+data，RAM=data+bss；优化先审账，nm 按大小排队，map 查户口本。**
 :::
 
+**延伸**：size 审计的 .data/.bss 来源在 [B3 链接脚本](03-linker-script.md) 讲透；CCM 腾挪与 DMA 的冲突在 [S8 DMA](../stm32/08-dma.md) 展开；构建系统自动生成 map 的机制见 [B7](07-build-system.md)。
+
 ## 实物实验
 
 - 实验三连：① 加一个 4KB 未初始化数组→看 bss 涨、Flash 不涨；② 改成带 `={...}` 初始化→data 涨、Flash/RAM 双涨；③ 加 `const`→data 回落、text 涨。三次 `size` 截图对比，规律亲手验证。
