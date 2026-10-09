@@ -313,6 +313,8 @@ void EXTI9_5_IRQHandler(void)          /* 强符号顶替 weak 默认（第四�
 **先 SYSCFG 选门，再 EXTI 设沿，后 NVIC 放行，ISR 进门先清挂起**——四层口诀，中断永不丢。
 :::
 
+**延伸**：中断现场压栈与调用约定（[C6](../c/06-abi-stack.md)）直接相关；RTOS 下中断管理见 [F2 上下文切换](../rtos/freertos/02-context-switch.md) 与 [S16 HardFault](16-debug-hardfault.md)。
+
 ## 实物实验
 
 - 基础：按键中断点灯——按第六节清单配 PF6 → EXTI6，ISR 里翻转 LED（quick win 完整版）。

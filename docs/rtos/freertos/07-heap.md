@@ -230,6 +230,8 @@ $5 = "sensor_task\000..."    ← 肇事者
 **heap_1 只进不出，heap_4 会合并，heap_5 跨区管；碎片看曲线，爆栈靠哨兵，剩多少问 FreeHeapSize，最坏多紧张问 MinimumEver。**
 :::
 
+**延伸**：堆管理与链接脚本的堆区预留（[B3](../../build/03-linker-script.md)）相关；嵌入式慎用 malloc 的原因见 [C0](../../c/00-c-in-mcu.md)；内存池的确定性替代方案见 RT-Thread（[R3](../rtthread/03-mem.md)）。
+
 ## 实物实验
 
 - 场景 5 完整跑一遍，把日志抄进实验记录；

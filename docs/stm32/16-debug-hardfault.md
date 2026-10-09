@@ -324,6 +324,8 @@ D:\Users\mcu\code\stm32\16-debug-hardfault/fault_ctx.c:70
 **先看 CFSR 定罪名，再查 BFAR 指现场，栈里挖 PC 对行号；死因五虎：空针、错位、除零、爆栈、优先级。**
 :::
 
+**延伸**：栈帧挖 PC 依赖调用约定（[C6](../c/06-abi-stack.md)）；HardFault 与 RTOS 下看门狗超时（[S17](17-watchdog-reset.md)、[P13](../esp32/13-watchdog-health.md)）常伴生。
+
 ## 实物实验
 
 - 三大命案各复现一次：空指针写（`*(volatile uint32_t*)0 = 0;`）、未对齐访问（奇地址强转 `uint32_t*`，记得先开 `CCR.UNALIGN_TRP`）、`x/0`。每次记录 CFSR 值与 `addr2line` 出来的行号，贴进实验记录。

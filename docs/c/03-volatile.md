@@ -407,6 +407,8 @@ while (count--) {
 登门（访存）它保；排队（原子）、先后（顺序）它不管。
 :::
 
+**延伸**：volatile 与寄存器操作（[S3](../stm32/03-gpio.md)）直接相关；原子操作需中断保护（[S4](../stm32/04-nvic-exti.md)）或 RTOS 临界区（[F5](../rtos/freertos/05-sem-mutex.md)）；UB 与 MISRA 规范见 [C7](07-ub-misra.md)。
+
 ## 实物实验
 
 本章没有独立实验编号，用两个现成工程做对照，结果记进你的实测笔记：

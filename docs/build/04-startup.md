@@ -184,6 +184,8 @@ void SysTick_Handler(void) {  /* 你写的强符号，覆盖 weak 默认 */
 **上电两读定生死，开门搬家再清零，bl 一声进 main；向量表头不是代码是栈顶，第二条才是入口。**
 :::
 
+**延伸**：启动过程与 IAP 跳转（[S13](../stm32/13-flash-iap.md)）同构；`.data` 搬运与内存模型（[C1](../c/01-memory-model.md)）直接对应；调用约定（[C6](../c/06-abi-stack.md)）决定 main 入口的栈帧布局。
+
 ## 实物实验
 
 - 在 main 里定义 `volatile int g = 0x12345678;`，GDB 从复位单步：搬运循环结束后 `x/wx &g` 应为 `0x12345678`——亲眼看到"搬家完成"的瞬间。

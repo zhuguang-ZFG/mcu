@@ -239,6 +239,8 @@ $ arm-none-eabi-nm -n blink.elf | grep -E ' (Reset_Handler|main)$'
 **E、S、c、T 四步走：-E 出 .i，-S 出 .s，-c 出 .o，-T 定格局（链接脚本）。** 报错先问：死在哪一步？
 :::
 
+**延伸**：四步构建的工具链全景见 [B0](00-toolchain.md)；链接脚本详解见 [B3](03-linker-script.md)；ELF 产物解剖见 [B2](02-elf.md)。
+
 ## 实物实验
 
 - **无板（本机已实测）**：`cd code/toolchain/01-four-steps && sh probe.sh`，四步输出与本文数字逐条对上（`main.i` 1575 行、`.text` 起始 `0x08000188`、`size` text=660）。

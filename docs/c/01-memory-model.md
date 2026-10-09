@@ -301,6 +301,8 @@ const 对照实验：
 **判断占哪种介质，看地址前缀，不看 `nm` 字母。**
 :::
 
+**延伸**：内存模型与链接脚本（[B3](../build/03-linker-script.md)）直接对应；`.data` 搬运由启动代码（[B4](../build/04-startup.md)）完成；指针操作这些地址（[C2](02-pointer.md)）是寄存器访问的基础。
+
 ## 实物实验
 
 - **本机已全部实测（不需要板子）**：`cd code/c/01-memory-model && sh probe.sh`，把 `nm` 里 `g_zero` 那行、`readelf -l` 第二行的 `FileSiz/MemSiz`、`.data` 那 12 个字节抄进实测笔记，注明工具链版本（本机 xPack `arm-none-eabi-gcc 15.2.1`，2026-10-06）。

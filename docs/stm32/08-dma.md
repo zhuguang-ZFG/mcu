@@ -147,6 +147,8 @@ SPL 的 `DMA_Init()`、HAL 的 `HAL_DMA_Init()` / `HAL_UART_Receive_DMA()` 做�
 **选定流和通道，外设固定内存自增，NDTR 倒数到零敲个铃；循环搬流水，双缓冲不停机——但都不替你还债；清标志写 HIFCR/LIFCR，别碰 HISR/LISR。**
 :::
 
+**延伸**：DMA 环形缓冲与 FreeRTOS 队列（[F4](../rtos/freertos/04-queue.md)）是同构的生产-消费模式；DMA 总线仲裁与地址空间布局（[S1](01-arch.md)）相关。
+
 ## 实物实验
 
 - UART DMA 环形接收 + GDB 观察 `g_rx_bytes`/`g_frames`/`g_half_events`/`g_full_events` 的增长节奏；

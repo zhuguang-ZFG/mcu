@@ -194,6 +194,8 @@ $1 = (StackType_t *) 0x20001a80
 **TCB 是户口本，栈顶指针写第一行；新栈化个"中断妆"，一弹栈任务就出生；栈深按字不按字节，INCLUDE 宏默认全关。**
 :::
 
+**延伸**：任务栈与内存模型（[C1](../../c/01-memory-model.md)）直接相关；TCB 结构体与 ABI 对齐（[C4](../../c/04-struct-abi.md)）影响布局；GDB 查看 TCB 实战见 [B6](../../build/06-flash-debug.md)。
+
 ## 实物实验
 
 - 场景 1 日志对照：`high`/`low` 的 tick 间隔与 `vTaskList` 表；
