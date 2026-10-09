@@ -28,7 +28,9 @@
     "must": [
       "C1"
     ],
-    "parallel": []
+    "parallel": [
+      "S3"
+    ]
   },
   {
     "id": "C3",

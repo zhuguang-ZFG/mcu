@@ -234,6 +234,8 @@ SPL 的 `SPI_InitTypeDef` 八字段到寄存器的落位（对照 stm32f4xx_spi.
 **片选拉低成环，发即是收收即是发；CPOL 定闲电平，CPHA 定哪沿采样；读 ID 先行，忙等看 BUSY。**
 :::
 
+**延伸**：多任务共享 SPI 总线需互斥锁（[F5](../rtos/freertos/05-sem-mutex.md)）；长帧传输用 DMA（[S8](08-dma.md)）释放 CPU。
+
 ## 实物实验
 
 - 读 W25Q JEDEC ID + 页写 256 字节再读回比对；

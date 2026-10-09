@@ -41,6 +41,8 @@ title: 动画演示中心
 
 ![函数调用栈帧：压栈与弹栈](/anim/stack-frame.svg)
 
+![C0 嵌入式 C vs 应用 C：四个维度的差异](/anim/embedded-c-diff.svg)
+
 ![UB 编译器优化陷阱：源代码 → 推理 → 汇编 → 运行时偏离](/anim/ub-compiler-trap.svg)
 
 ## 构建与运行全过程
@@ -57,7 +59,11 @@ title: 动画演示中心
 
 ![B7 构建系统：依赖图与局部重建](/anim/build-dep-graph.svg)
 
+![B0 工具链接力赛：预处理→编译→汇编→链接](/anim/toolchain-relay.svg)
+
 ![B5 map 与体积审计：size → map → nm 三板斧](/anim/map-size-audit.svg)
+
+![B6 SWD 调试链路：GDB → OpenOCD → ST-Link → DP/AP → 内存](/anim/swd-debug-chain.svg)
 
 ## STM32F407 寄存器主线
 

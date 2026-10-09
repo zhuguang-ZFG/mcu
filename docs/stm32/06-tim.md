@@ -137,6 +137,8 @@ SPL 的 `TIM_TimeBaseInit()` / `TIM_OC1Init()`、HAL 的 `HAL_TIM_PWM_Init()` / 
 **PSC 除一除，ARR 数一数，频率=(时钟÷俩加一)；PWM 靠 CCR 比一比，捕获靠边沿拍一拍；回绕先看模数与丢边沿。**
 :::
 
+**延伸**：TIM TRGO 可触发 ADC 采样（[S9](09-adc.md)）；硬件 TIM 与 RTOS 软件定时器的分工见 [F6](../rtos/freertos/06-notify-event-timer.md)。
+
 ## 实物实验
 
 - [E03 示波器看 PWM](../lab/e03-scope-pwm.md)：改 CCR 看占空比、改 ARR 看频率、逻辑分析仪读数与手算对表；

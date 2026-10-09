@@ -157,6 +157,8 @@ if( pxMutexHolderTCB->uxPriority < pxCurrentTCB->uxPriority )  /* 持锁者比�
 **同步二值、资源计数、保护互斥、嵌套递归；互斥锁出生带钥匙、被等就继承、还锁即回落；二值信号量没有继承——拿它护数据等于裸奔。**
 :::
 
+**延伸**：I2C/SPI 总线共享需互斥锁保护（[S11](../../stm32/11-i2c.md)、[S12](../../stm32/12-spi.md)）；简单同步场景可用任务通知（[F6](06-notify-event-timer.md)）替代信号量。
+
 ## 实物实验
 
 - [E04 优先级反转实验](../../lab/e04-priority-inversion.md)：二值版死亡螺旋 + 互斥锁版起死回生，两份日志贴进实验报告；

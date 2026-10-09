@@ -189,6 +189,8 @@ void EXTI0_IRQHandler( void )
 **队列=环形仓库+两张候客名单；发送按值 memcpy，满则睡空则睡；ISR 走专用通道延迟让出；信号量就是 uxItemSize=0 的队列。**
 :::
 
+**延伸**：队列的生产-消费模式与 DMA 环形缓冲（[S8](../../stm32/08-dma.md)）同构；1:1 通知场景可用任务通知（[F6](06-notify-event-timer.md)）替代队列，更轻量。
+
 ## 实物实验
 
 - quick win 按键管道 + 串口打印队列水位：连按 20 次看 `uxQueueMessagesWaiting` 涨到满；

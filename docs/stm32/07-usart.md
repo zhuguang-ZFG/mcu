@@ -159,6 +159,8 @@ SPL 的 `USART_Init()` / `USART_SendData()`、HAL 的 `HAL_UART_Init()` / `HAL_U
 **起始拉低、数据八位、低位先发、停止拉高；波特率跟着 PCLK 走；TXE 只管塞、TC 才管完；IDLE 读 SR 再读 DR。**
 :::
 
+**延伸**：UART+DMA 环形缓冲是经典生产-消费模式，与 FreeRTOS 队列（[F4](../rtos/freertos/04-queue.md)）同构；DMA 原理见 [S8](08-dma.md)。
+
 ## 实物实验
 
 - [E02 逻辑分析仪看串口](../lab/e02-logic-uart.md)：抓 0x41 与 0x55 各一帧，逐位对表；

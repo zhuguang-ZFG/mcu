@@ -59,6 +59,8 @@ arm-none-eabi-gcc -dumpspecs | more      # gcc 内部的"调度剧本"
 
 ## 一、交叉编译是什么：build/host/target 三胞胎
 
+<AnimFigure src="/anim/toolchain-relay.svg" />
+
 一次编译涉及三个"角色"：
 
 - **build**：编译器自己跑在什么机器上（你的 x86-64 PC）；

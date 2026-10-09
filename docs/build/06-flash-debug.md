@@ -52,6 +52,8 @@ GDB 里再玩三招：`x/4xw 0x20000000`（读 RAM）、`set {int}0x20000000 = 0
 
 ## 一、链路全图：从 GDB 命令到芯片内存
 
+<AnimFigure src="/anim/swd-debug-chain.svg" />
+
 一条命令（如 `x/4xw 0x20000000` 读 RAM）走过的链路：
 
 ```

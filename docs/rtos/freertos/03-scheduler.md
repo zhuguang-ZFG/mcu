@@ -195,6 +195,8 @@ void vTaskDelay( const TickType_t xTicksToDelay )
 **位图置位 CLZ 秒选（优化路径），标量递减慢扫（通用路径）；tick 三事：醒人、轮转、换片场；vTaskDelay 是挂表睡觉，不是原地死等。**
 :::
 
+**延伸**：SysTick 与硬件 TIM 分工——SysTick 管调度节拍，TIM 管外设时基（[S6](../../stm32/06-tim.md)）；软件定时器依赖 tick，见 [F6](06-notify-event-timer.md)。
+
 ## 实物实验
 
 - quick win 轮转证据 + RunTimeStats 占比实验（本章目标三）；
