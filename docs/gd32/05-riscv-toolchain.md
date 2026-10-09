@@ -175,7 +175,7 @@ SECTIONS
 #define SRAM_BASE   ((uint32_t)0x20000000U)   /* SRAM base        */
 ```
 
-**与 STM32F407 完全相同的地址**——这是 GD32 刻意保持的移植兼容点：把 STM32 固件搬到 GD32VF103，Flash 和 RAM 起始地址不用改。
+**与 STM32F407 完全相同的地址**（见 [S1 架构总览](../stm32/01-arch.md)）——这是 GD32 刻意保持的移植兼容点：把 STM32 固件搬到 GD32VF103，Flash 和 RAM 起始地址不用改。
 
 [B3](../build/03-linker-script.md) 讲的五个符号在这里同名同义：`_sidata = LOADADDR(.data)`（初值仓库在 Flash 的位置）、`_sdata`/`_edata`（.data 在 RAM 的头尾）、`_sbss`/`_ebss`（.bss 在 RAM 的头尾）、`__stack_top`（栈顶）。这套符号是链接脚本约定，跨架构通用。
 

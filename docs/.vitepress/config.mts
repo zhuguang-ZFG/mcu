@@ -130,6 +130,8 @@ export default defineConfig({
           { text: '参考文献', link: '/reference/bibliography' },
           { text: '更新日志', link: '/reference/changelog' },
           { text: '关于我们与致谢', link: '/reference/about' },
+          { text: '视频资源', link: '/video/c3-volatile-storyboard' },
+          { text: '硬件实测计划', link: '/hardware-test-plan' },
         ],
       },
     ],
@@ -327,6 +329,36 @@ export default defineConfig({
             { text: '参考文献', link: '/reference/bibliography' },
             { text: '更新日志', link: '/reference/changelog' },
             { text: '关于我们与致谢', link: '/reference/about' },
+          ],
+        },
+      ],
+      '/video/': [
+        {
+          text: '视频资源',
+          items: [
+            { text: 'C3 volatile 分镜脚本', link: '/video/c3-volatile-storyboard' },
+          ],
+        },
+      ],
+      '/hardware-test-plan.md': [
+        {
+          text: '硬件实测计划',
+          items: [
+            { text: '10 项 pending 验证与实测流程', link: '/hardware-test-plan' },
+          ],
+        },
+      ],
+      '/lab/reports/': [
+        {
+          text: '硬件实测报告',
+          items: [
+            { text: '报告目录与使用指南', link: '/lab/reports/README' },
+            { text: '装备清单与采购指南', link: '/lab/reports/equipment-checklist' },
+            { text: 'GDB 调试速查表', link: '/lab/reports/gdb-cheat-sheet' },
+            { text: 'GDB 截图采集指南', link: '/lab/reports/gdb-screenshot-guide' },
+            { text: 'E01 实测报告模板', link: '/lab/reports/e01-test-report' },
+            { text: 'J1 实测报告模板', link: '/lab/reports/j1-test-report' },
+            { text: '首轮实测报告模板', link: '/lab/reports/first-round-test-report' },
           ],
         },
       ],

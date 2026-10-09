@@ -41,6 +41,8 @@ title: 动画演示中心
 
 ![函数调用栈帧：压栈与弹栈](/anim/stack-frame.svg)
 
+![UB 编译器优化陷阱：源代码 → 推理 → 汇编 → 运行时偏离](/anim/ub-compiler-trap.svg)
+
 ## 构建与运行全过程
 
 ![ELF 的两副目录：文件视图与段视图](/anim/elf-two-views.svg)
@@ -52,6 +54,10 @@ title: 动画演示中心
 ![B3 链接脚本：.data 的两个住址（VMA/LMA）](/anim/data-vma-lma.svg)
 
 ![B2 ELF 双重视角：节表给链接器，程序头给装载器](/anim/elf-sections.svg)
+
+![B7 构建系统：依赖图与局部重建](/anim/build-dep-graph.svg)
+
+![B5 map 与体积审计：size → map → nm 三板斧](/anim/map-size-audit.svg)
 
 ## STM32F407 寄存器主线
 
@@ -102,6 +108,8 @@ title: 动画演示中心
 ![为什么需要 RTOS：超级循环 vs 平行世界](/anim/why-rtos.svg)
 
 ![任务创建与栈初始化](/anim/task-create-stack.svg)
+
+![FreeRTOS GDB 调试实战：指认 TCB 与栈内容](/anim/freertos-gdb-debug.svg)
 
 ![上下文切换：PendSV 偷梁换柱](/anim/context-switch.svg)
 

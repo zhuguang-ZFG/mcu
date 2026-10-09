@@ -51,6 +51,14 @@ grep -A3 "Discarded input" build/blink.map | more  # 谁被辞退了
 | 瘦身工具箱 | -ffunction-sections+--gc-sections、-Os、去未用库、const 归位 | 配置 |
 | CCM 腾挪 | 大缓冲搬进 CCM 的链接脚本配合（B3 联动） | 配置 |
 
+**map 分析的下游应用**：审计完体积，下一步通常是"Flash 不够装"或"要做 IAP 双区"——回看 [S13 Flash 与 IAP](../stm32/13-flash-iap.md) 的分区布局，以及 [B3 链接脚本](03-linker-script.md) 的段排布。map 文件告诉你"现在住哪"，链接脚本决定"将来搬哪"。
+
+## 动画：size → map → nm 三板斧
+
+size 三列算总账，map 文件查明细，nm --size-sort 找大户——盯住"先审账再优化"五个字，这是体积审计的核心纪律。
+
+![Map 文件与体积审计](/anim/map-size-audit.svg)
+
 ## 一、size 三列：Flash 与 RAM 各吃哪几份
 
 `arm-none-eabi-size blink.elf` 输出三列（本站 00-blink 实测，具体数以你本地 build 为准）：

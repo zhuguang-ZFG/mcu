@@ -78,6 +78,8 @@ Sleep 只停 CPU、Stop 停 1.2V 域时钟保留 SRAM、Standby 几乎全断电�
 
 读这张表的方法是"看代价"：Sleep 最浅（什么都没忘，但也没省多少）；Standby 最深（SRAM 全丢，醒来像重生，但电流最低）。**选哪档取决于"醒来还需要记得什么"**：要无缝继续 → Stop；可以接受重置 → Standby。
 
+**对照阅读**：ESP32-S3 的低功耗策略在 [P11](../esp32/11-lowpower.md)，架构不同但取舍相似——STM32 靠硬件模式切换，ESP32 靠 light/deep sleep + ULP 协处理器守夜。两条线对照看，低功耗设计的"停什么/留什么/谁唤醒"三问是通用的。
+
 ## 二、Sleep 与 WFI/WFE：一条指令的事
 
 Sleep 是最轻的——只停 CPU 时钟，外设全活：

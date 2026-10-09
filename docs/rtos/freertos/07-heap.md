@@ -125,6 +125,101 @@ heap_5 允许把堆拆成多个区域（HeapRegion 表）：比如 SRAM 放常�
 
 产品级兜底：分配失败不许静默——要么进安全态，要么记日志告警，要么重启看门狗。静默往下跑，后面全是玄学。
 
+## 七、堆大小怎么算：从拍脑袋到工程预算
+
+`configTOTAL_HEAP_SIZE` 的预算公式：
+
+```
+总堆 = Σ(任务栈 × 字数 × 4) + Σ(TCB × ~400B) + Σ(队列深度 × 项大小) + 信号量/事件组 + 安全余量(30%)
+```
+
+**实操步骤**：
+
+1. **列任务清单**：每个任务的栈深（用 `uxTaskGetStackHighWaterMark` 实测，不是猜）；
+2. **列通信对象**：队列深度 × 项大小、信号量数量、事件组数量；
+3. **加安全余量**：总需求 × 1.3，留给付给碎片和未来扩展；
+4. **检查 .bss 冲突**：堆和 .bss 共享 SRAM，堆太大会挤占全局变量空间——看链接脚本的 MEMORY 定义。
+
+**反模式**：`configTOTAL_HEAP_SIZE = 64KB` "反正 Flash 够大"——SRAM 只有 128KB（F407），堆占一半，.bss 和栈就没地方了。
+
+## 八、长期运行产品的堆监控策略
+
+产品上线后，堆的健康度要持续监控，不是开发时看一眼就完事：
+
+**周期性巡检**（每 10 分钟或每小时）：
+
+```c
+void heap_health_check(void) {
+    size_t free_now = xPortGetFreeHeapSize();
+    size_t free_min = xPortGetMinimumEverFreeHeapSize();
+    
+    // 趋势告警：当前值逼近历史最低
+    if (free_now < free_min * 1.2) {
+        LOG_WARN("heap tension: %u free, %u min-ever", free_now, free_min);
+    }
+    
+    // 绝对告警：低于安全阈值
+    if (free_now < 1024) {  // 1KB 安全线，按产品调整
+        LOG_ERROR("heap critical: %u bytes left", free_now);
+    }
+}
+```
+
+**碎片率估算**（heap_4/heap_5 才有意义）：
+
+```c
+// 分配一块测试内存，看实际能拿到多大
+void* test = pvPortMalloc(4096);
+if (!test) {
+    LOG_WARN("fragmentation: can't alloc 4KB, but free=%u", xPortGetFreeHeapSize());
+}
+vPortFree(test);
+```
+
+**数据记录**：把 `free_now` 和 `free_min` 写进 NVS 或日志，跑一周看曲线——如果 `free_now` 持续下降不回升，说明有内存泄漏。
+
+## 九、GDB 调试堆与栈溢出
+
+堆和栈的问题在 GDB 里能直接看到证据：
+
+```bash
+# 查看堆的当前状态
+(gdb) p xPortGetFreeHeapSize()
+$1 = 12480    # 还剩 12KB
+
+(gdb) p xPortGetMinimumEverFreeHeapSize()
+$2 = 8192     # 历史最低 8KB
+
+# 查看堆池起始地址（heap_4）
+(gdb) p ucHeap
+$3 = (uint8_t[16384]) @ 0x20004000
+
+# 查看任务的栈底（溢出检查用）
+(gdb) p pxCurrentTCB->pxStack
+$4 = (StackType_t *) 0x20001800    # 栈底
+
+# 看栈里有没有被踩（正常应该填 0xA5）
+(gdb) x/32xb 0x20001800
+0x20001800: 0xa5 0xa5 0xa5 0xa5 0xa5 0xa5 0xa5 0xa5
+0x20001808: 0xa5 0xa5 0xa5 0xa5 0x48 0x65 0x6c 0x6f  ← 被踩了！
+```
+
+**栈溢出取证**：如果 `vApplicationStackOverflowHook` 被触发，GDB 里看调用栈：
+
+```bash
+(gdb) break vApplicationStackOverflowHook
+(gdb) continue
+# 触发后
+(gdb) bt
+#0  vApplicationStackOverflowHook
+#1  vTaskSwitchContext
+#2  PendSV_Handler    ← 上下文切换时发现的
+(gdb) p pxCurrentTCB->pcTaskName
+$5 = "sensor_task\000..."    ← 肇事者
+```
+
+**调试纪律**：栈溢出第一现场往往不是 HardFault，而是"数据莫名其妙错了"——看到灵异现象，先用 GDB 查栈底有没有被踩。
+
 ## 附录：工程完整源码
 
 <<< ../../../code/rtos/01-freertos-lab/main.c

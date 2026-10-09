@@ -140,6 +140,50 @@ pxTopOfStack -= 8;                        /* r11~r4 留白 */
 - `vTaskList` 表里的 `R`（运行）/`B`（阻塞）状态列与剩余栈高水位；
 - 把 `high` 的 delay 改成忙等，`low` 就再也跑不到——**抢占式 + 无时间片让出**的直接证据。
 
+## 七、任务状态机：五个状态与两条路
+
+任务在五个状态间流转：**就绪（Ready）→ 运行（Running）→ 阻塞（Blocked）→ 挂起（Suspended）→ 删除（Deleted）**。
+
+```
+         xTaskCreate
+             ↓
+[Ready] ←→ [Running] → vTaskDelay/xQueueReceive → [Blocked]
+   ↑           ↓                                      ↓
+   └───────────┘ ← 调度器切换                     xEventGroupSetBits/
+                                                    xQueueSend 到期
+                                                         ↓
+                                                    [Ready]
+```
+
+两条创建路径：
+
+| 路径 | API | 栈/TCB 来源 | 适合 |
+|---|---|---|---|
+| 动态 | `xTaskCreate` | `pvPortMalloc`（[F7](07-heap.md)） | 运行时决定任务数、栈深 |
+| 静态 | `xTaskCreateStatic` | 调用者提供 `StaticTask_t` + 栈数组 | 安全关键、禁止动态分配 |
+
+静态创建的 TCB 和栈在编译期确定位置，**不会分配失败**——医疗/汽车产品常用。代价是每个任务的 `StaticTask_t` 和栈数组要显式声明，代码量更大。
+
+## 八、GDB 实战：指认新任务的第一口栈
+
+![FreeRTOS GDB 调试实战](/anim/freertos-gdb-debug.svg)
+
+```bash
+arm-none-eabi-gdb build/firmware.elf
+(gdb) break vTaskStartScheduler
+(gdb) continue
+(gdb) p pxCurrentTCB->pxTopOfStack
+$1 = (StackType_t *) 0x20001a80
+(gdb) x/16xw $1
+  0x20001a80: 0x01000000  ← xPSR (Thumb 位)
+  0x20001a84: 0x08000189  ← PC (任务入口)
+  0x20001a88: 0x080002a1  ← LR (prvTaskExitError)
+  0x20001a8c: 0x00000000
+  0x20001a90: 0x00000000  ← r0 (任务参数)
+```
+
+对照 `port.c:202` 的 `pxPortInitialiseStack`——**每行代码都能在栈里找到对应的字**。这就是"化妆术"的物理证据。
+
 ## 附录：工程完整源码
 
 <<< ../../../code/rtos/01-freertos-lab/main.c

@@ -51,6 +51,12 @@ touch main.c && make -n      # 只动了 main.c，看依赖图如何"局部重�
 | Kconfig 一维 | menuconfig→sdkconfig→宏：配置如何流进代码（联动 [P3](../esp32/03-idf-anatomy.md)） | 配置 |
 | scons 对照 | RT-Thread 的 SConscript 思路（联动 [R6](../rtos/rtthread/06-env-menuconfig.md)） | 库解析 |
 
+## 动画：依赖图与局部重建
+
+依赖图画出"谁影响谁"，mtime 比对决定"要不要重建"，touch 改一个文件看只有哪些路径被重建——盯住"局部重建"三个字，这是构建系统的核心价值。
+
+![构建系统依赖图与局部重建](/anim/build-dep-graph.svg)
+
 ## 一、Make 依赖图：目标/依赖/规则三要素
 
 Make 的世界只有三样东西：**目标**（要产出的文件，如 `blink.elf`）、**依赖**（产出它需要的文件，如 `main.o startup.o`）、**规则**（怎么从依赖造目标，如 `$(CC) ... -o $@ $^`）。三者用 `:` 连起来就是一条 Make 规则：
