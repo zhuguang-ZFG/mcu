@@ -8,6 +8,11 @@ title: 更新日志
 
 站点统计（成稿章节 / 实验 / 动画 / 工程数）由 `npm run docs:gen` 扫描全站章节 frontmatter 得出，[首页学习地图](/)与本页同源。
 
+## 2026-10-10 · 可靠性三章补厚
+
+- **C8 / S17 / P13 从 15 分补到 45～55 分**：上一轮阅读时长校准暴露这三章正文偏薄，只有结论没有推导。现按章节规范补全。[C8 串口协议](../c/08-framed-protocol.md)：一组 INFO 帧手算 COBS 和 CRC，可以用 Python 独立验算；补齐接收状态机转移表、超时边界 99/100/101、两板字节来源（F407 DMA 的 HISR 位、S3 的事件加轮询）、TX 背压和服务层应答顺序。[S17 看门狗](../stm32/17-watchdog-reset.md)：IWDG 超时按 LSI 17/32/47kHz 三档给出 1.36～3.76s 的区间（DS8626 表 35、RM0090 表 107），WWDG 窗口算到毫秒，四种 MODE 各给一条复位时间线，再加 RCC_CSR 先读后清和 DBGMCU 冻结位只能断电清零。[P13 健康监督](../esp32/13-watchdog-health.md)：四种看门狗的分工、为什么只注册一个 health user、跨核时锁内读时间的竞争实例、`init` 返回 `INVALID_STATE` 时改用 `reconfigure`，还有 OpenOCD 断点关狗后不会再打开。三章都只给按代码周期推出的时间模型，实测值留在"实验记录"表里，标为待上板。
+- **参考文献加 D13**：Cheshire & Baker 1999 COBS 原始论文，DOI 已经过 Crossref 核对，C8 的延伸阅读指向它。
+
 ## 2026-10-09 · 可查证：参考文献总表 · 动画在慢机器上也能跑
 
 - **参考文献总表（此前没有）**：全站"手册说""标准规定""论文证明过"散落在各章，没有一处写明**哪一版、哪个 DOI、代码固定在哪个 tag**。新增 [参考文献](bibliography.md)，六个分区：A 芯片与内核文档（RM0090 Rev 22、DS8626 Rev 12、GD32F4xx UM Rev 3.0、Bumblebee Rev 1.0……核过 PDF 的才写修订号，没核的明标"未核版本"）、B 总线协议（UM10204 Rev 7、SPI Block Guide V03.06、ULPI 1.1、CAN 2.0/ISO 11898-1……）、C 语言与工具链（N1570、MISRA、TIS ELF 1.2、AAPCS32、AN298、RISC-V 20191213/20211203……）、D 经典论文 12 篇（Liu & Layland 1973、Sha 1990、TLSF 2004、Wilson 1995、Lamport 1977、McCreary & Gray 1975、Eide & Regehr 2008、Wang 2013、Koopman 2004、Dijkstra 1965……**DOI 全部经 Crossref 核对**题名/刊物/年份/页码）、E 书、F 代码基准。22 个成稿章节在"你做到了"之前新增**延伸阅读**，用 `[D2]` 标签指回总表——每条都写清"这篇和本章哪一句有关"，不是书单。**诚实标出的缺口**：RT-Thread 在 CI 里稀疏检出 `master` 而非固定 tag，R 篇行号可能漂移（F8）。
