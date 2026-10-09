@@ -17,6 +17,8 @@ minutes: 20
 
 ## 决策树
 
+![X1 RTOS 选型决策树](/anim/rtos-decision-tree.svg)
+
 ```mermaid
 flowchart TD
     A[项目立项] --> B{芯片平台已定？}

@@ -61,6 +61,8 @@ title: 动画演示中心
 
 ![B0 工具链接力赛：预处理→编译→汇编→链接](/anim/toolchain-relay.svg)
 
+![通用环境搭建五步闭环：安装→配置→编译→烧录→点灯](/anim/env-setup-flow.svg)
+
 ![B5 map 与体积审计：size → map → nm 三板斧](/anim/map-size-audit.svg)
 
 ![B6 SWD 调试链路：GDB → OpenOCD → ST-Link → DP/AP → 内存](/anim/swd-debug-chain.svg)
@@ -179,6 +181,10 @@ title: 动画演示中心
 
 ![RISC-V 点灯闭环：五步装配](/anim/riscv-blink-closed.svg)
 
+![GD32 外设差异对照：编号差 1，数量同](/anim/gd32-periph-diff.svg)
+
+![V0 RISC-V 工具链流程：GCC→链接脚本→启动→入口](/anim/riscv-toolchain-flow.svg)
+
 ## RT-Thread 精讲
 
 ![R0 对象模型：万物继承 rt_object](/anim/rtt-object-model.svg)
@@ -196,6 +202,8 @@ title: 动画演示中心
 ![R7 Nano 移植四件套装配](/anim/rtt-port-nano.svg)
 
 ## 双 OS 对照与选型
+
+![X1 RTOS 选型决策树：资源→功能→生态→选择](/anim/rtos-decision-tree.svg)
 
 ![双 OS 同概念对照：通知 vs 无 / 设备框架 / 配置哲学](/anim/dual-os-compare.svg)
 

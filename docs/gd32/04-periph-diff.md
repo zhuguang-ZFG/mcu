@@ -49,6 +49,8 @@ minutes: 30
 
 ## 一、有没有对照表：GD32F4xx vs STM32F407
 
+![GD32 vs STM32 外设差异对照](/anim/gd32-periph-diff.svg)
+
 | 外设 | STM32F407 | GD32F4xx | 差异类型 |
 |---|---|---|---|
 | GPIO | A~I（9 组） | A~I（9 组） | 命名不同（G2），数量同 |

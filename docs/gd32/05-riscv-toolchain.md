@@ -57,6 +57,8 @@ riscv-none-elf-gcc -march=rv32imac -mabi=ilp32 -print-libgcc-file-name
 
 ## 一、工具链换岗：arm-none-eabi → riscv-none-elf
 
+![RISC-V 工具链流程](/anim/riscv-toolchain-flow.svg)
+
 [B0](../build/00-toolchain.md) 讲过"四个软件一台戏"：编译器、汇编器、链接器、调试器。换到 RISC-V，这四件套全有，只是前缀变了：
 
 | ARM 裸机 | RISC-V 裸机 | 备注 |
