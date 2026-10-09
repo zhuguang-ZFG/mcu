@@ -35,6 +35,8 @@ projects: ["stm32-07-sensor-logger"]
 
 PA0 为 ADC1_IN0：外接电位器中间脚，另外两端接3.3V和GND；先移除旧 PA6→PA0 测频跳线。PB6/PB7 接 AT24C02 SCL/SDA、各4.7k上拉至3.3V，A0–A2和WP接地。模块256字节全部作为配置双槽使用，会覆盖旧EEPROM实验数据。USART1 PA9 TX/PA10 RX接3.3V USB-TTL。
 
+![J1 接线与配置双槽：电位器滑片接 PA0，PB6/PB7 接 AT24C02 并上拉，PA9/PA10 接 USB-TTL；EEPROM 两个 128 字节槽的四步保存顺序](/images/projects/j1-f407-wiring.svg)
+
 F407基准为复位HSI16+FreeRTOS V11.1.0；S3为IDF5.5.2。共地、TX/RX交叉，COMx换实际端口，绝不把5V信号直接接入3.3V GPIO。
 
 ## 先跑起来
@@ -63,6 +65,8 @@ python3 scripts/device-console.py start --port COMx
 record写入新的CSV文件；请使用新的输出路径，避免覆盖之前的数据。默认周期100ms；period允许100–1000ms且为10ms倍数，filter-shift允许0–6，0为直通。configure只改变运行配置，save成功才持久化；旧generation的在途采样会丢弃计数，防止误标新配置。
 
 ## 四层实现
+
+![记录器架构：采样输入经 sample 任务、滤波与 16 槽队列、comm 任务和串口到主机；supervisor 按期限检查进度并喂硬件看门狗；save 在锁外写配置存储](/images/projects/logger-architecture.svg)
 
 | 层 | 实际职责 | 验证 |
 |---|---|---|
@@ -104,11 +108,16 @@ AT24C02 两个128字节槽。写目标槽前使提交标记无效；按8字节�
 
 命令示例：`python3 scripts/device-console.py fault --fault 3 --port COMx`。应答入队后200ms执行，不自动重试故障。F407以FAULTS=1构建；S3用独立sdkconfig合并sdkconfig.defaults.faults。断电配置试验先使用专用存储，不对有重要数据的模块做实验。
 
-## 自测与排查
+## 短自测
 
-1. 为什么CRC正确也不能信任无效位通道？CRC只说明报文字节没被检测出损坏，不保证传感器成功。
-2. 为什么保存时不持有采样状态锁？外设可能等待擦写，锁会把本可继续工作的采样任务拖住。
-3. 什么情况下重启后仍是旧参数？只configure未save，或者保存失败/掉电，旧有效配置应保留。
+1. CRC 校验正确的报文，为什么仍不能信任"无效位"为 0 的通道数据？
+<details><summary>参考答案</summary>CRC 只保证报文字节在传输中没有被检测出损坏——它不验证传感器是否真正完成了采样。如果传感器失联或处于错误状态，驱动可能返回全零或上一次缓存值，CRC 仍然正确（因为 CRC 算的是报文本身，不是传感器状态）。有效位（valid bit）是驱动层对传感器健康状态的判断，独立于 CRC。只看 CRC 不看有效位，等于把"信封没破"当成"信的内容正确"。</details>
+
+2. 配置保存到 EEPROM 时，为什么不持有采样状态锁？
+<details><summary>参考答案</summary>EEPROM 的页写入需要 5-10ms 等待（AT24C02 的页写周期），如果在此期间持有采样锁，采样任务会被阻塞至少一个周期。设计原则是"保存用影子拷贝"：先把当前配置 memcpy 到临时缓冲区，释放锁，再慢慢写 EEPROM。采样任务继续用原始配置运行，不受影响。锁的粒度应该覆盖"读取-修改"的原子性，而不覆盖"写入慢速外设"的等待。</details>
+
+3. 什么情况下重启后仍加载旧参数？
+<details><summary>参考答案</summary>两种情况：①只调了 `configure` 修改运行时参数但没调 `save`——新参数只活在 RAM 里，断电即失；②调了 `save` 但 EEPROM 写入失败（总线忙、页写未完成就断电、WP 引脚意外拉高）。健壮的做法是 save 后立即 readback 校验，不匹配则重试或报警。旧有效配置应保留在 EEPROM 的另一槽（双槽轮转），直到新配置校验通过才切换。</details>
 
 无数据先查START状态和端口/交叉接线，再查STATUS有效性与错误计数；无响应查看RX错误和TX丢弃；意外复位检查reset_reason、过期mask、调试器冻结设置。不要先加长看门狗掩盖卡死。
 

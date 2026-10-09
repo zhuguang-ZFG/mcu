@@ -147,11 +147,16 @@ GD32 把"能不能上 200MHz"拆成三次握手，每一步都有硬件回执（
 2. **照抄官方 demo 的 `while(1)`**——晶振不来就死机；教学工程的超时回退才配叫"代码"。
 3. **以为官方帮你设了 Flash 等待**——`system_gd32f4xx.c` 不设 FMC_WS，欠配等待周期上 200M 必跑飞。
 
-## 快测
+## 短自测
 
-1. GD32F450 官方默认档是哪组 PLL 参数？从 25MHz 算到 200MHz 写全公式。
-2. HDEN 和 HDS 有什么区别？各自等哪个标志位？
-3. CK_OUT0 的 /4 编码是几？写成"分频比 − 1"会发生什么？
+1. GD32F450 官方默认档从 25MHz HXTAL 算到 200MHz，写全 PLL 公式。和 STM32F407 的 N=336 有什么差别？
+<details><summary>参考答案</summary>公式：25MHz ÷ 25（PSC=24，分频系数=PSC+1=25）× 400（N=399，倍频系数=N+1=400）÷ 2（P=1，分频系数=P+1=2）= **200MHz**。VCO 频率 = 25 ÷ 25 × 400 = 400MHz。STM32F407 的 VCO 封顶 336MHz（N=335），SYSCLK = VCO ÷ 2 = 168MHz。GD32 把 VCO 拉到 400MHz，同样 ÷2 就是 200MHz——PLL 寄存器布局完全相同，只是参数更激进。</details>
+
+2. HDEN 和 HDS 各控制什么？为什么两个都要等标志位？
+<details><summary>参考答案</summary>**HDEN**（High Density Mode Enable）使能高密度模式——拉高 LDO 输出，让芯片能在 200MHz 下稳定运行。**HDS**（High Density Step）进一步微调 LDO 档位到最高性能档。两者各有就绪标志：**HDRF**（HD Enable Ready Flag）和 **HDSRF**（HD Step Ready Flag）。必须轮询等待是因为 LDO 电压爬升需要时间（微秒级），如果不等就绪就提频，内核可能因供电不足跑飞。官方 `system_gd32f4xx.c` 里两步都有 `while(!HDRF)` / `while(!HDSRF)` 的等待循环。</details>
+
+3. CK_OUT0 输出在哪个引脚？/4 分频的编码值是多少？写成"分频比 − 1 = 3"会输出什么？
+<details><summary>参考答案</summary>CK_OUT0 输出在 **PA8**（AF0 复用功能）。/4 分频的编码值是 **3**（编码规则：分频系数 = 编码值 + 1，所以 /4 → 编码 3）。如果误写成"分频比 − 1 = 3"——这恰好就是正确值，不会出错。但如果误把编码直接当分频比（填 4），实际分频会变成 /5，输出频率偏低 20%。这条"编码 = 分频系数 − 1"的约定和 STM32 MCO 完全一致。</details>
 
 ## 事实来源
 

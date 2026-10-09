@@ -35,6 +35,8 @@ projects: ["esp32-08-sensor-logger"]
 
 板载 QMI8658：GPIO1 SDA、GPIO2 SCL，7位地址0x6A。GPIO10 UART1 TX、GPIO11 RX接3.3V USB-TTL；默认控制台单独输出调试日志。NVS只访问 mcu_logger 命名空间的 config 键，不自动擦整个分区。
 
+![J2 接线与 NVS 保存：QMI8658 板载 GPIO1/2；协议走 UART1 GPIO10/11 接 USB-TTL，USB 口只做烧录和日志；save 依次 set_blob、commit、回读比对](/images/projects/j2-s3-wiring.svg)
+
 F407基准为复位HSI16+FreeRTOS V11.1.0；S3为IDF5.5.2。共地、TX/RX交叉，COMx换实际端口，绝不把5V信号直接接入3.3V GPIO。
 
 ## 先跑起来
@@ -64,6 +66,8 @@ python3 scripts/device-console.py start --port COMx
 record写入新的CSV文件；请使用新的输出路径，避免覆盖之前的数据。默认周期100ms；period允许100–1000ms且为10ms倍数，filter-shift允许0–6，0为直通。configure只改变运行配置，save成功才持久化；旧generation的在途采样会丢弃计数，防止误标新配置。
 
 ## 四层实现
+
+![记录器架构：采样输入经 sample 任务、滤波与 16 槽队列、comm 任务和串口到主机；supervisor 按期限检查进度并喂硬件看门狗；save 在锁外写配置存储](/images/projects/logger-architecture.svg)
 
 | 层 | 实际职责 | 验证 |
 |---|---|---|
@@ -105,11 +109,16 @@ SAMPLE固定64字节：sequence/u32、timestamp_ms/u32、generation/u32、sensor
 
 命令示例：`python3 scripts/device-console.py fault --fault 3 --port COMx`。应答入队后200ms执行，不自动重试故障。F407以FAULTS=1构建；S3用独立sdkconfig合并sdkconfig.defaults.faults。断电配置试验先使用专用存储，不对有重要数据的模块做实验。
 
-## 自测与排查
+## 短自测
 
-1. 为什么CRC正确也不能信任无效位通道？CRC只说明报文字节没被检测出损坏，不保证传感器成功。
-2. 为什么保存时不持有采样状态锁？外设可能等待擦写，锁会把本可继续工作的采样任务拖住。
-3. 什么情况下重启后仍是旧参数？只configure未save，或者保存失败/掉电，旧有效配置应保留。
+1. CRC 校验正确的报文，为什么仍不能信任"无效位"为 0 的通道数据？
+<details><summary>参考答案</summary>CRC 只保证报文字节在传输中没有被检测出损坏——它不验证传感器是否真正完成了采样。如果传感器失联或处于错误状态，驱动可能返回全零或上一次缓存值，CRC 仍然正确（因为 CRC 算的是报文本身，不是传感器状态）。有效位（valid bit）是驱动层对传感器健康状态的判断，独立于 CRC。只看 CRC 不看有效位，等于把"信封没破"当成"信的内容正确"。</details>
+
+2. 配置保存到 NVS 时，为什么不持有采样状态锁？
+<details><summary>参考答案</summary>NVS（Non-Volatile Storage）写入需要擦除 Flash 页，耗时可达数十毫秒。如果在此期间持有采样锁，采样任务会被阻塞至少一个周期。设计原则是"保存用影子拷贝"：先把当前配置 memcpy 到临时缓冲区，释放锁，再写 NVS。采样任务继续用原始配置运行，不受影响。锁的粒度应该覆盖"读取-修改"的原子性，而不覆盖"写入慢速外设"的等待。</details>
+
+3. 什么情况下 OTA 回滚后仍运行旧固件？
+<details><summary>参考答案</summary>两种情况：①新固件启动后没有及时调用 `esp_ota_mark_app_valid_cancel_rollback()` 标记自身有效——看门狗会在超时后触发回滚到旧分区，但如果新固件在标记之前就崩溃重启，回滚机制已经生效，下一次启动仍是旧固件；②NVS 中的 `otaseq` 分区序号在写入过程中断电，导致分区表指向不一致。健壮的做法是新固件入口第一件事就标记有效，并在 NVS 写入完成后做 readback 校验。</details>
 
 无数据先查START状态和端口/交叉接线，再查STATUS有效性与错误计数；无响应查看RX错误和TX丢弃；意外复位检查reset_reason、过期mask、调试器冻结设置。不要先加长看门狗掩盖卡死。
 

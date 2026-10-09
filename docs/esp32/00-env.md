@@ -137,6 +137,17 @@ SRAM 剩余：3xxxxx 字节；PSRAM 剩余：83xxxxx 字节
 - monitor 打印芯片信息且 10 秒周期重启；
 - 板载喇叭/屏幕本章不用——它们在 [P12 音频链路](12-audio-path.md) 和 [P6 驱动章](06-spi-i2c-driver.md) 等你。
 
+## 短自测
+
+1. `idf.py build` 背后实际调用了哪两个工具？`idf.py flash` 又调用了谁？
+<details><summary>参考答案</summary>`idf.py build` 依次调用 **CMake**（生成构建文件）和 **Ninja**（执行并行编译）。`idf.py flash` 调用 **esptool.py**，它通过串口 bootloader 协议把固件写入 Flash。`idf.py` 本身只是 Python 封装——它解析子命令、拼参数、调外部工具，不直接编译也不直接烧录。</details>
+
+2. ESP-IDF 的 `app_main` 和标准 C 的 `main` 有什么本质区别？为什么说"FreeRTOS 不是选修"？
+<details><summary>参考答案</summary>标准 C 的 `main` 是进程的 sole 执行线程；ESP-IDF 的 `app_main` 一进入就已经跑在 FreeRTOS 的一个任务里（叫 `main task`，默认栈 8KB，优先级 1）。你可以从 `app_main` 里 `xTaskCreate` 创建更多任务，也可以 `return` 结束这个主任务——但其他任务继续运行。这意味着从第一行代码起，你就在多任务环境里：串口中断、Wi-Fi 事件、看门狗都在各自的任务或 ISR 里并行工作。</details>
+
+3. `idf.py set-target esp32` 误设成经典 ESP32（不是 S3），会怎样？怎么恢复？
+<details><summary>参考答案</summary>经典 ESP32（Xtensa LX6 双核）与 ESP32-S3（Xtensa LX7 双核）架构不同，指令集和内存布局不兼容——刷错 target 的固件无法启动。恢复方法：`idf.py set-target esp32s3` 重新设定（会清空 `build/` 目录和 `sdkconfig`），然后重新 `idf.py build`。如果之前 `menuconfig` 改过配置，需要重设，因为 `sdkconfig` 已被覆盖。</details>
+
 ## 常见坑
 
 - **`idf.py` 不是内部或外部命令**：你在普通终端里。必须用"ESP-IDF 5.5 CMD/PowerShell"快捷方式，或先执行安装目录下的 `export.bat`。

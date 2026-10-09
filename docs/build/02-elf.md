@@ -52,6 +52,12 @@ Entry point address:               0x8000189
 
 `0x8000189` 与 `08000188` 差的那个 **1**，本章第三节会亲手从向量表里再挖出来一次——CPU 复位后读的第一口数据里，写的就是 `0x08000189`。跑不出来别慌，下面五刀每刀都给命令。
 
+## 动画：ELF 的双重视角
+
+同一份固件，节表给链接器看，程序头给装载器看——两套目录伺候两个人。
+
+![ELF 节表与程序头双重视角动画](/anim/elf-sections.svg)
+
 ## 解剖台上的两具标本
 
 | 标本 | 怎么来的 | 为什么请它上桌 |
@@ -393,6 +399,17 @@ sh probe.sh tag
 - **只盯 `.text` 就下结论**：`.rodata` 在本工程被并进 `.text`（`stm32f407xx.ld:48-49`），常量、字符串、跳表都藏在里面。`objdump -d` 看到 `.word` 成串才是真相（[C1](../c/01-memory-model.md) 的 `.rodata` 单列实验会告诉你字母为什么会变）。
 - **"反汇编出现 undefined instruction"**：多半是数据被当代码（本章的 `MCU.....` 就是现场）。要读原始字节，用 `objdump -s -j .text` 或 `readelf -x`，别用 `-d`。
 - **符号找不到就先怀疑编译档**：函数里的 `int auto_var` 在符号表里查无此人——它活在栈上，链接期根本不存在（[C1](../c/01-memory-model.md) 已实测）。同理，`static` 局部变量有符号、`auto` 局部变量没有。
+
+## 短自测
+
+1. `blink.elf` 有 34,604 字节，烧进芯片只有 660 字节。差额是什么？为什么 `size` 命令的 `text`+`data` 才是 Flash 占用？
+<details><summary>参考答案</summary>差额是调试信息（`.debug_*` 段）和符号表——它们写给活人看，不进芯片。`size` 的 `text` 含 `.text`+`.rodata`（代码与常量），`data` 含 `.data`（有初值全局变量），两者之和才是真正占 Flash 的字节；`bss` 只占 RAM 不占 Flash。</details>
+
+2. `.data` 的 `VirtAddr=0x20000000`、`PhysAddr=0x08000244`。启动代码在进 `main` 之前必须做什么？搬多少字节？
+<details><summary>参考答案</summary>启动代码必须把 `.data` 的初值从 Flash（LMA=0x08000244）拷贝到 RAM（VMA=0x20000000），搬运字节数 = `FileSiz`（不是 `MemSiz`——`MemSiz` − `FileSiz` 的部分是 `.bss`，用 memset 清零而非拷贝）。这段逻辑在启动文件的 `LoopCopyDataInitDone` 标签处。</details>
+
+3. `readelf -h` 显示入口 `0x8000189`，`nm` 显示 `Reset_Handler` 在 `0x08000188`。差 1 是谁错了？在 GDB 里设断点该用哪个地址？
+<details><summary>参考答案</summary>都没错。Cortex-M 只跑 Thumb 态，函数地址的最低位（bit 0）是 Thumb 状态标志位，不是地址位。ELF 入口地址保留了这一位（`0x...9` = `0x...8 | 1`），告诉 CPU "跳过去之后用 Thumb 指令集"。`nm` 显示的是纯地址 `0x...8`。在 GDB 里设断点用 `break *0x08000188`（纯地址），但往向量表或函数指针里填值时必须带 1。</details>
 
 ## 延伸阅读
 

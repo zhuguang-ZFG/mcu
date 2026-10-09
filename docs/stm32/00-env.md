@@ -168,6 +168,17 @@ x/wx 0x40023830   # RCC_AHB1ENR：bit5 应该是 1（GPIOF 时钟开了）
 - `make flash` 日志出现 `Verified OK`；
 - 复位后 PF6 红灯约 1Hz 闪烁（HSI 16MHz 软件延时，频率不准属正常，[S5 SysTick](05-systick.md) 再较真）。
 
+## 短自测
+
+1. "交叉编译"的"交叉"具体指什么？为什么不能直接用电脑上的 gcc？
+<details><summary>参考答案</summary>交叉指"编译环境"与"运行环境"的 CPU 架构不同：你在 x86-64 的 Windows 上编译，产出的是 ARM Cortex-M4 的机器码。电脑上的 gcc 默认产出 x86 指令，Cortex-M 无法执行；`arm-none-eabi-gcc` 才是 ARM 目标的后端。`none` 表示没有操作系统（裸机），`eabi` 是 ARM 嵌入式 ABI。</details>
+
+2. `make` 之后 `build/` 下出现 elf、bin、hex、map 四个文件。分别是什么用途？烧录用哪个？
+<details><summary>参考答案</summary>**elf**：完整的 ELF 固件，含代码、数据、调试信息和符号表——调试用它的符号，烧录用它的二进制内容。**bin**：纯二进制镜像，从地址 0x08000000 起的逐字节拷贝，烧录最快。**hex**：Intel HEX 格式，每行带地址和校验，可描述不连续的内存区域。**map**：链接器输出的符号地址清单，不含机器码，用于查"函数住在第几字节"。烧录用 bin 或 hex 均可（OpenOCD 两种都接受），调试必须用 elf。</details>
+
+3. Makefile 里命令行首为什么必须是 Tab 而不是空格？报 `missing separator` 怎么修？
+<details><summary>参考答案</summary>Make 的语法规则：规则体（recipe）的每一行必须以 **Tab 字符**开头，空格不被识别为命令行。这是 1970 年代 Make 的原始设计，至今未改。某些编辑器（VS Code 默认不犯，但 Notepad++ 和某些 IDE 的"智能缩进"模式会）会把 Tab 自动替换成空格。修复方法：在编辑器里关闭"用空格替换 Tab"，或直接用 `sed -i 's/^    /\t/' Makefile` 把行首四空格换成 Tab。</details>
+
 ## 常见坑
 
 - **`'arm-none-eabi-gcc' 不是内部或外部命令`**：PATH 没生效。装了新工具必须**重开终端**；还不行就是安装时没勾 Add path，手动加。
