@@ -162,6 +162,8 @@ ST 官方仓库 [`STMicroelectronics/stm32f4xx_hal_driver`](https://github.com/S
 
 SPL 的 `USART_Init()` 计算 BRR 用 `DIV_Mantissa/DIV_Fraction` 一对字段，公式同构；但 StdPeriph 未随 ST 官方 GitHub 分发，一手源码仍缺，位定义以 RM0090/CMSIS 为准。
 
+![HAL UART 初始化与手写落位的对账图](/anim/uart-hal-init-path.svg)
+
 ## 附录：工程完整源码
 
 <<< ../../code/stm32/03-uart-dma/main.c
@@ -210,7 +212,7 @@ SPL 的 `USART_Init()` 计算 BRR 用 `DIV_Mantissa/DIV_Fraction` 一对字段�
 | `baud = PCLK/BRR` 实算 | [code/stm32/03-uart-dma/main.c](https://github.com/zhuguang-ZFG/mcu/blob/main/code/stm32/03-uart-dma/main.c) `usart1_init()` |
 | IDLE 判帧 + DMA 环形 | 同上 `USART1_IRQHandler()` 与 `dma2_stream5_rx_init()` |
 | PA9/PA10 AF7 | DS8626 Rev 9 Table 9 |
-| 动画 | [uart-frame.svg](/anim/uart-frame.svg)、[usart-txe-tc.svg](/anim/usart-txe-tc.svg) |
+| 动画 | [uart-frame.svg](/anim/uart-frame.svg)、[usart-txe-tc.svg](/anim/usart-txe-tc.svg)、[uart-hal-init-path.svg](/anim/uart-hal-init-path.svg)（§七对账） |
 | HAL 同名初始化逐行对照 | ST 官方仓库 [stm32f4xx_hal_driver](https://github.com/STMicroelectronics/stm32f4xx_hal_driver) @ `1f6451c` `Src/stm32f4xx_hal_uart.c`（见 §七）；SPL 未随官方 GitHub 分发，一手源码仍缺 |
 
 ## 你做到了

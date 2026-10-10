@@ -95,9 +95,13 @@ title: 动画演示中心
 
 ![USART TXE/TC 发送节拍](/anim/usart-txe-tc.svg)
 
+![HAL UART 初始化对账：MspInit → SetConfig → 使能](/anim/uart-hal-init-path.svg)
+
 ![DMA 环形缓冲搬运](/anim/dma-circular-buffer.svg)
 
 ![DMA 双缓冲乒乓切换](/anim/dma-pingpong.svg)
+
+![DMA EN 可改窗口与 HAL 两段式](/anim/dma-hal-en-window.svg)
 
 ![EXTI 信号路由：GPIO → SYSCFG → NVIC](/anim/exti-signal-routing.svg)
 
@@ -114,6 +118,8 @@ title: 动画演示中心
 ![TIM PWM：计数器到占空比](/anim/tim-pwm-counter.svg)
 
 ![TIM 输入捕获：边沿定格](/anim/tim-input-capture.svg)
+
+![HAL TIM 三段初始化对账](/anim/tim-hal-init-path.svg)
 
 ![HardFault 取证：故障升级与栈帧挖 PC](/anim/hardfault-forensics.svg)
 

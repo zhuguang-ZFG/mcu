@@ -8,6 +8,11 @@ title: 更新日志
 
 站点统计（成稿章节 / 实验 / 动画 / 工程数）由 `npm run docs:gen` 扫描全站章节 frontmatter 得出，[首页学习地图](/)与本页同源。
 
+## 2026-10-10 · 对照表配动画：HAL 对账三张 · 一张旧图修版式
+
+- **S6/S7/S8 的 HAL 对照表各配一张对账动画**（全站动画 97 → 100）：[tim-hal-init-path.svg](/anim/tim-hal-init-path.svg) 把"手写四步"与"HAL 三函数"并成三列逐寄存器点亮，`EGR=UG`、"先清 CC1E 再改 CCMR"这些对照结论直接画在时间轴上；[uart-hal-init-path.svg](/anim/uart-hal-init-path.svg) 沿 MspInit → SetConfig → 使能 的顺序点亮 CR1/BRR 各段，OVER8 与模式位同批写入单独标警；[dma-hal-en-window.svg](/anim/dma-hal-en-window.svg) 四张卡片走"正在传输 → EN=0 可改窗口 → 一笔落 CR → Start 写参数"，手写的 `while(EN)` 死等与 HAL 的 5ms 兜底在同一个窗口里对比。三张图锚点沿用 §八/§七 表格的 `1f6451c` 行号，正文在对照表后就地插图。
+- **一张旧图进 CI 字体口径被抓**：`vtaskdelay-lifecycle.svg` 本地全绿，`--font-scale 1.10`（模拟 CI 的 Linux 字体）下 Task C 的名称与状态标签同行基线相撞 4px——把状态标签移到名字下方右角，与 A/B 两卡的错位排版一致。100 张在 1.10 口径下全部通过。
+
 ## 2026-10-10 · 上游对照补全：HAL 逐行落位 · 一处选流事实错误
 
 - **S2/S6/S7/S8 的"待补"清账**：四章末尾的"上游 SPL/HAL 同名初始化：未取到源文件"沿用自初稿，实际 `stm32f4xx_hal_driver @ 1f6451c` 的 rcc/uart 源码早已存档，本轮补齐 tim/dma 两份后逐行核对，四章新增 HAL 对照表（带源文件行号锚点）——TIM 的 `EGR=UG` 影子值装载、UART 的 TXE 逐字节/TC 收尾、DMA 的"先等 EN 落下再改 CR"，手写代码与库函数在位级别对上了。**SPL 仍诚实标缺**：StdPeriph 未随 ST 官方 GitHub 分发，位定义落点保持 RM0090。

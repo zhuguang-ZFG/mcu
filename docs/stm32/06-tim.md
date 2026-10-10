@@ -219,6 +219,8 @@ ST 官方仓库 [`STMicroelectronics/stm32f4xx_hal_driver`](https://github.com/S
 
 SPL 的 `TIM_TimeBaseInit()`/`TIM_OC1Init()` 做的是同一组落位，但 StdPeriph 未随 ST 官方 GitHub 分发，一手源码仍缺；位定义以 RM0090 为准。
 
+![HAL 三段初始化与手写落位的对账图](/anim/tim-hal-init-path.svg)
+
 ## 附录：工程完整源码
 
 <<< ../../code/stm32/02-tim-pwm/main.c
@@ -270,7 +272,7 @@ SPL 的 `TIM_TimeBaseInit()`/`TIM_OC1Init()` 做的是同一组落位，但 StdP
 | APB ×2 规则实测 | [code/stm32/02-tim-pwm/main.c](https://github.com/zhuguang-ZFG/mcu/blob/main/code/stm32/02-tim-pwm/main.c) `timer_clock()` 与对照实验 |
 | 无符号差值处理回绕 | 同上捕获循环 |
 | 引脚复用 | DS8626 Rev 9 Table 9（PA6/PA7 AF2） |
-| 动画 | [tim-pwm-counter.svg](/anim/tim-pwm-counter.svg)、[tim-input-capture.svg](/anim/tim-input-capture.svg) |
+| 动画 | [tim-pwm-counter.svg](/anim/tim-pwm-counter.svg)、[tim-input-capture.svg](/anim/tim-input-capture.svg)、[tim-hal-init-path.svg](/anim/tim-hal-init-path.svg)（§八对账） |
 | HAL 同名初始化逐行对照 | ST 官方仓库 [stm32f4xx_hal_driver](https://github.com/STMicroelectronics/stm32f4xx_hal_driver) @ `1f6451c` `Src/stm32f4xx_hal_tim.c`（见 §八）；SPL 未随官方 GitHub 分发，一手源码仍缺 |
 
 ## 你做到了

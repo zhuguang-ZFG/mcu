@@ -50,7 +50,7 @@
     <rect x="530" y="66" width="130" height="46" rx="6" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
     <circle cx="550" cy="89" r="8" fill="#d97706"/>
     <text x="566" y="93" font-size="13" fill="#333" font-family="sans-serif">Task C</text>
-    <text x="640" y="93" text-anchor="end" font-size="11" fill="#666" font-family="sans-serif">Ready</text>
+    <text x="652" y="106" text-anchor="end" font-size="11" fill="#666" font-family="sans-serif">Ready</text>
   </g>
 
   <!-- ==================== RUNNING INDICATOR ==================== -->
