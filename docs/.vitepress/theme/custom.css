@@ -1416,7 +1416,8 @@ html {
   .VPDocAside,
   .mcu-hero,
   .mcu-features,
-  .mcu-scroll-progress {
+  .mcu-scroll-progress,
+  .mcu-back-top {
     display: none !important;
   }
 
@@ -1443,6 +1444,59 @@ html {
 @keyframes mcu-progress-shimmer {
   0% { background-position: 0% 0%; }
   100% { background-position: 200% 0%; }
+}
+
+/* ===== Back to top ===== */
+.mcu-back-top {
+  position: fixed;
+  right: 24px;
+  bottom: 88px;
+  z-index: 9998;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg-soft);
+  color: var(--mcu-brand);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(6px);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.mcu-back-top:hover {
+  transform: translateY(-3px);
+  background: var(--mcu-brand);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(52, 81, 178, 0.35);
+}
+
+.mcu-fade-enter-active,
+.mcu-fade-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.mcu-fade-enter-from,
+.mcu-fade-leave-to {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mcu-back-top,
+  .mcu-back-top:hover {
+    transition: none;
+    transform: none;
+  }
+  .mcu-fade-enter-active,
+  .mcu-fade-leave-active {
+    transition: none;
+  }
 }
 
 /* ===== Section reveal animations ===== */

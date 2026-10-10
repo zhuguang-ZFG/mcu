@@ -13,11 +13,18 @@ const { page, isDark } = useData()
 const isHome = page.value.frontmatter.layout === 'home'
 
 const scrollProgress = ref(0)
+const showTop = ref(false)
 
 function updateScroll() {
   const h = document.documentElement
   const scrolled = h.scrollTop / (h.scrollHeight - h.clientHeight)
   scrollProgress.value = Math.min(100, Math.max(0, scrolled * 100))
+  showTop.value = h.scrollTop > 480
+}
+
+function backToTop() {
+  const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  window.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' })
 }
 
 let sections: Element[] = []
@@ -93,6 +100,16 @@ onUnmounted(() => {
     <template #layout-top>
       <a class="mcu-skip-link" href="#VPContent">跳到正文</a>
       <div class="mcu-scroll-progress" :style="{ width: `${scrollProgress}%` }"></div>
+      <Transition name="mcu-fade">
+        <button
+          v-if="showTop"
+          class="mcu-back-top"
+          type="button"
+          aria-label="返回顶部"
+          title="返回顶部"
+          @click="backToTop"
+        >↑</button>
+      </Transition>
     </template>
     <template #home-hero-before v-if="isHome">
       <McuHero />
