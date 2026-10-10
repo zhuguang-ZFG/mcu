@@ -331,6 +331,7 @@ export default defineConfig({
             { text: '参考文献', link: '/reference/bibliography' },
             { text: '更新日志', link: '/reference/changelog' },
             { text: '发布摘要 · 2026-10-10', link: '/reference/releases/2026-10-10' },
+            { text: '发布摘要 · 2026-10-10（第二次）', link: '/reference/releases/2026-10-10-2' },
             { text: '关于我们与致谢', link: '/reference/about' },
           ],
         },
