@@ -12,8 +12,10 @@ __pycache__/
 # 暂缓入库的进行中工程（完工后移回 code/ 并登记 projects.json）
 .trellis/wip/
 
-# 固件构建产物（源码与 sdkconfig 入库，build 产物不入库）
+# 固件构建产物（源码与 sdkconfig.defaults 入库；sdkconfig 是生成物，
+# 入库会带着本机上一次的 target，与 defaults 冲突）
 code/**/build/
+code/esp32/**/sdkconfig
 code/esp32/**/sdkconfig.old
 code/esp32/**/managed_components/
 code/esp32/**/dependencies.lock
@@ -33,7 +35,7 @@ code/c/03-volatile/opt_probe
 test-results/
 playwright-report/
 
-# Codex �Ự���䣨����⣩
+# Codex �Ự���䣨����⣩
 .workbuddy-ai/
 
 # 视频素材与产物（体积大，不进仓库）
