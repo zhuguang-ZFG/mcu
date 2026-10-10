@@ -330,6 +330,7 @@ export default defineConfig({
             { text: '常见问题 FAQ', link: '/reference/faq' },
             { text: '参考文献', link: '/reference/bibliography' },
             { text: '更新日志', link: '/reference/changelog' },
+            { text: '发布摘要 · 2026-10-10', link: '/reference/releases/2026-10-10' },
             { text: '关于我们与致谢', link: '/reference/about' },
           ],
         },
