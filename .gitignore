@@ -21,8 +21,11 @@ code/esp32/**/managed_components/
 code/esp32/**/dependencies.lock
 !code/esp32/05-audio-play/dependencies.lock
 
-# 由 npm run docs:gen 生成的全站进度数据（构建前置自动生成，不入库）
-docs/.vitepress/data/
+# 由 npm run docs:gen 生成的全站进度数据（构建前置自动生成，不入库）；
+# quizzes/ 与 registers/ 是手写的源数据，必须入库，否则 CI 构建缺文件
+docs/.vitepress/data/*
+!docs/.vitepress/data/quizzes
+!docs/.vitepress/data/registers
 
 # volatile 取证脚本的产物（汇编与中间目标文件，随时可重跑）
 code/c/03-volatile/opt_probe.O*.s

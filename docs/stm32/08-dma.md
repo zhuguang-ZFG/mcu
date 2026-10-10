@@ -191,6 +191,8 @@ SPL 的 `DMA_Init()` 做的是同一组落位，但 StdPeriph 未随 ST 官方 G
 4. 清 DMA 中断标志要写哪个寄存器？写 HISR 会发生什么？
 <details><summary>参考答案</summary>写 HIFCR（或 LIFCR，取决于流在 0~3 还是 4~7）。HISR/LISR 是只读状态寄存器，往它写 1 什么都不会清——中断会无限进。</details>
 
+<QuizBank chapter="s08-dma" />
+
 ## 对照表：本章概念 → 仓库与上游落点
 
 | 概念 | 落点 |

@@ -8,8 +8,12 @@ const props = defineProps({
 const quizMap = {
   's02-rcc-clock': () => import('../data/quizzes/s02-rcc-clock.json'),
   's06-tim': () => import('../data/quizzes/s06-tim.json'),
+  's07-usart': () => import('../data/quizzes/s07-usart.json'),
+  's08-dma': () => import('../data/quizzes/s08-dma.json'),
   's11-i2c': () => import('../data/quizzes/s11-i2c.json'),
+  'f4-queue': () => import('../data/quizzes/f4-queue.json'),
   'f7-heap': () => import('../data/quizzes/f7-heap.json'),
+  'c03-volatile': () => import('../data/quizzes/c03-volatile.json'),
 }
 
 const loaded = ref(null)

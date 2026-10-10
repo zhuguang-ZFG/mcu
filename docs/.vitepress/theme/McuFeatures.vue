@@ -1,31 +1,33 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import progress from '../data/progress.json'
 
+const t = progress.totals
 const features = [
   {
     icon: '📖',
-    title: '80 章体系化教程',
+    title: `${t.chapters} 章体系化教程`,
     desc: '从 C 语言精髓到 RT-Thread 移植，完整覆盖嵌入式开发技能树',
     gradient: 'linear-gradient(135deg, #3451b2 0%, #5b6abf 100%)',
     accent: '#3451b2',
   },
   {
     icon: '🎬',
-    title: '97 张 SVG 动画',
+    title: `${t.animations} 张 SVG 动画`,
     desc: '寄存器位操作、时钟树、调度算法……抽象概念可视化',
     gradient: 'linear-gradient(135deg, #3eaf7c 0%, #4fc08d 100%)',
     accent: '#3eaf7c',
   },
   {
     icon: '🔧',
-    title: '41 个可编译工程',
+    title: `${t.projects} 个可编译工程`,
     desc: 'STM32 / GD32 / ESP32 三平台，每章配套固件代码',
     gradient: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)',
     accent: '#d97706',
   },
   {
     icon: '🧪',
-    title: '8 个硬件实验',
+    title: `${t.experiments} 个硬件实验`,
     desc: '从 Blink 到示波器实测，理论动手闭环',
     gradient: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
     accent: '#dc2626',

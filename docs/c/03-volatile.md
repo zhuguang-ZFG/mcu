@@ -486,6 +486,8 @@ while (count--) {
 
 </details>
 
+<QuizBank chapter="c03-volatile" />
+
 ## 对照表：本章概念 → 仓库落点
 
 | 概念 | 仓库落点 |

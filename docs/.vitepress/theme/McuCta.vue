@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { withBase } from 'vitepress'
+import progress from '../data/progress.json'
 
+const t = progress.totals
 const visible = ref(false)
 let observer: IntersectionObserver | null = null
 
@@ -28,7 +30,7 @@ onUnmounted(() => observer?.disconnect())
     <div class="mcu-cta-content">
       <h2 class="mcu-cta-title">准备好点亮第一盏灯了吗？</h2>
       <p class="mcu-cta-desc">
-        80 章体系化教程 · 97 张寄存器动画 · 41 个可编译工程 · 8 个硬件实验<br>
+        {{ t.chapters }} 章体系化教程 · {{ t.animations }} 张寄存器动画 · {{ t.projects }} 个可编译工程 · {{ t.experiments }} 个硬件实验<br>
         从零到 RTOS，一条路线走到底。
       </p>
       <div class="mcu-cta-actions">

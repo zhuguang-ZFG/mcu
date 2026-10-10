@@ -204,6 +204,8 @@ SPL 的 `USART_Init()` 计算 BRR 用 `DIV_Mantissa/DIV_Fraction` 一对字段�
 4. IDLE 标志怎么清？为什么？
 <details><summary>参考答案</summary>读 SR 再读 DR。硬件规定了这个清除序列：光写 SR 没用，不把 DR 里的字节取走，IDLE 就一直挂着，中断会一直触发。</details>
 
+<QuizBank chapter="s07-usart" />
+
 ## 对照表：本章概念 → 仓库与上游落点
 
 | 概念 | 落点 |

@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { withBase } from 'vitepress'
+import progress from '../data/progress.json'
+
+const t = progress.totals
 
 const particles = ref<Array<{ id: number; x: number; y: number; size: number; delay: number }>>([])
 const hexColumns = ref<Array<{ id: number; x: number; values: string[]; speed: number; delay: number }>>([])
@@ -14,7 +17,7 @@ const cursorFading = ref(false)
 const phrases = [
   '从寄存器到实时系统，用动画和实验点亮嵌入式技能树',
   'RCC → GPIO → TIM → UART → DMA，逐个击破',
-  '80 章体系 · 97 张动画 · 41 个工程 · 8 个硬件实验',
+  `${t.chapters} 章体系 · ${t.animations} 张动画 · ${t.projects} 个工程 · ${t.experiments} 个硬件实验`,
   'STM32F407 × ESP32-S3 双路线，寄存器级深度',
   '野火霸天虎 + 立创实战派，全程实物实验验证',
 ]
@@ -132,7 +135,7 @@ onUnmounted(() => {
     <div class="mcu-hero-content">
       <div class="mcu-hero-badge">
         <span class="mcu-badge-dot"></span>
-        <span>开源 MCU 教程 · 80 章 · 97 动画</span>
+        <span>开源 MCU 教程 · {{ t.chapters }} 章 · {{ t.animations }} 动画</span>
       </div>
 
       <h1 class="mcu-hero-title">
@@ -147,17 +150,17 @@ onUnmounted(() => {
 
       <div class="mcu-hero-stats">
         <div class="mcu-stat">
-          <span class="mcu-stat-num">80</span>
+          <span class="mcu-stat-num">{{ t.chapters }}</span>
           <span class="mcu-stat-label">章节</span>
         </div>
         <div class="mcu-stat-divider"></div>
         <div class="mcu-stat">
-          <span class="mcu-stat-num">97</span>
+          <span class="mcu-stat-num">{{ t.animations }}</span>
           <span class="mcu-stat-label">动画</span>
         </div>
         <div class="mcu-stat-divider"></div>
         <div class="mcu-stat">
-          <span class="mcu-stat-num">41</span>
+          <span class="mcu-stat-num">{{ t.projects }}</span>
           <span class="mcu-stat-label">工程</span>
         </div>
       </div>

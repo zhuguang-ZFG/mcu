@@ -27,11 +27,11 @@ title: 关于我们与致谢
 | 资料 | 版本 / 提交 | 用在 |
 |---|---|---|
 | ST CMSIS 器件头文件 `stm32f407xx.h` | [STMicroelectronics/cmsis_device_f4](https://github.com/STMicroelectronics/cmsis_device_f4) | 寄存器基址与位域核对（GPIO/RCC/DMA 等），S 篇与 C 篇引证 |
-| STM32F4 HAL 驱动 | `stm32f4xx_hal_driver @ 1f6451c` | S2 RCC、S7 USART 的上游对照 |
+| STM32F4 HAL 驱动 | `stm32f4xx_hal_driver @ 1f6451c` | S2 RCC、S6 TIM、S7 USART、S8 DMA 的上游对照（rcc/tim/uart/dma 四个源文件均存档留证） |
 | STM32F4 SPL（StdPeriph） | 官方未随 GitHub 分发，取自板卡资料盘 | S11 I2C、S15 库解剖 |
 | FreeRTOS-Kernel | V11.1.0 + GCC/ARM_CM4F 移植层 | F 篇全部行号引证（ESP-IDF v5.5.2 内置的是 V10.5.1 SMP 改版，行号与结论不混读） |
 | GD32F4xx 固件库 | V3.3.3 `@ 10d02f4` | G 篇 RCU/FMC 逐字段对照 |
-| GD32VF103 固件库 + Bumblebee Core 手册 | `@ 7ab0521` | V 篇（RISC-V 线，建设中） |
+| GD32VF103 固件库 + Bumblebee Core 手册 | `@ 7ab0521` | V 篇（RISC-V 线）CLIC/MTIME/工具链引证 |
 | ESP-IDF | v5.5.2 | P 篇驱动框架与 soc_caps 结论 |
 | RM0090 / STM32F407 datasheet | ST 官方 | 时钟树、复用表、电气参数 |
 | 野火霸天虎开发指南与原理图 | 野火电子 | 板级事实：RGB 灯 PF6/7/8 共阳 |

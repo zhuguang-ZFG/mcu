@@ -218,6 +218,8 @@ void EXTI0_IRQHandler( void )
 4. 发送方拷贝完数据后，为什么可能立刻 YIELD？依据什么判断？
 <details><summary>参考答案</summary>若 xTasksWaitingToReceive 非空,xTaskRemoveFromEventList 叫醒等待者;该函数在被叫醒者优先级高于当前任务时返回 pdTRUE,于是 queueYIELD_IF_USING_PREEMPTION 当场让出——数据一到,最高优先级的消费者立刻接手。</details>
 
+<QuizBank chapter="f4-queue" />
+
 ## 对照表：本章概念 → 源码落点
 
 | 概念 | 落点（FreeRTOS-Kernel V11.1.0） |
