@@ -212,6 +212,8 @@ for (pinpos = 0; pinpos < 16; pinpos++) {
 
 </details>
 
+<QuizBank chapter="s03-gpio" />
+
 ## 对照表：本章概念 → 仓库落点
 
 | 本章说的 | 仓库里哪一行 |

@@ -89,6 +89,8 @@ title: 动画演示中心
 
 ![NVIC PRIGROUP：4 位优先级的切法](/anim/nvic-prigroup.svg)
 
+![NVIC 抢占判定：谁能打断谁](/anim/nvic-preempt-arbitration.svg)
+
 ![SysTick 倒数与 COUNTFLAG 读清](/anim/systick-tick.svg)
 
 ![USART 帧：逐位抓出来的波形](/anim/uart-frame.svg)

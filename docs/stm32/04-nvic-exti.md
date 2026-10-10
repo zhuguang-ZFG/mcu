@@ -163,6 +163,10 @@ PRIGROUP  抢占位数 子优先级位 写法（VECTKEY|组值<<8）
 
 组 0~3 在 4 位实现下效果相同（4 抢占 + 0 子），表里清清楚楚。FreeRTOS 要求全抢占位（组 4 的反面——它要 4 位全给抢占，即组 0~3 这种 4+0 切法），RT-Thread 同理；而 SPL 老代码常见组 2。**移植 RTOS 时"优先级数值没变、行为全变"的灵异事件，九成是分组尺子换了**。
 
+把"谁能打断谁"演成五幕的，是下面这张动画：EXTI0（抢占2）在跑 ISR 时，同抢占级的 EXTI9 只能挂起排队——子优先级没有打断能力；而抢占号更小的 EXTI1 一到，硬件立刻压栈换人，ISR1 退出后回到 ISR0 断点，ISR0 再退出才轮到 EXTI9 补位。"实物实验"那一节的按键嵌套实验，验的就是这条时间轴。
+
+![NVIC 抢占判定：谁能打断谁](/anim/nvic-preempt-arbitration.svg)
+
 ### 3.3 写 AIRCR 必须带钥匙 0x5FA
 
 AIRCR 是个"带锁"的寄存器：写入时高 16 位必须是 VECTKEY = **0x5FA**，否则写操作被无视。出处在 `core_cm4.h:1661` 的魔数 `0x5FAUL << SCB_AIRCR_VECTKEY_Pos`——所以上表第三列每个写法都是 `0x05FA0g00` 的形状。`NVIC_SetPriorityGrouping()` 内部就是"读 AIRCR、改 [10:8]、带钥匙写回"。
@@ -371,6 +375,8 @@ void EXTI9_5_IRQHandler(void)          /* 强符号顶替 weak 默认（第四�
 HardFault 的优先级是硬件固定值 -1（仅次于 Reset -3、NMI -2），**不可编程**：`stm32f407xx.h:68-69` 的 IRQn_Type 枚举里 NonMaskableInt=-14 之后直接跳到 MemoryManagement=-12，HardFault_IRQn（-13）被故意省略；SHP 寄存器里也没有它的字节。能调的只有 MemManage/BusFault/UsageFault/SVCall/PendSV/SysTick（走 SHP）和全部外设中断（走 IPR）。
 
 </details>
+
+<QuizBank chapter="s04-nvic" />
 
 ## 对照表：本章概念 → 仓库落点
 
