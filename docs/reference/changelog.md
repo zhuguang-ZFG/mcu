@@ -8,6 +8,12 @@ title: 更新日志
 
 站点统计（成稿章节 / 实验 / 动画 / 工程数）由 `npm run docs:gen` 扫描全站章节 frontmatter 得出，[首页学习地图](/)与本页同源。
 
+## 2026-10-10 · 上游对照补全：HAL 逐行落位 · 一处选流事实错误
+
+- **S2/S6/S7/S8 的"待补"清账**：四章末尾的"上游 SPL/HAL 同名初始化：未取到源文件"沿用自初稿，实际 `stm32f4xx_hal_driver @ 1f6451c` 的 rcc/uart 源码早已存档，本轮补齐 tim/dma 两份后逐行核对，四章新增 HAL 对照表（带源文件行号锚点）——TIM 的 `EGR=UG` 影子值装载、UART 的 TXE 逐字节/TC 收尾、DMA 的"先等 EN 落下再改 CR"，手写代码与库函数在位级别对上了。**SPL 仍诚实标缺**：StdPeriph 未随 ST 官方 GitHub 分发，位定义落点保持 RM0090。
+- **S7 事实修复**：正文把 `03-uart-dma` 工程的接收流写成 `dma1_stream5_rx_init / DMA1 Stream5`，与工程源码和 S8 的总线分工（USART1 在 APB2 → DMA2）矛盾——已按源码改为 `dma2_stream5_rx_init / DMA2 Stream5 Channel4`，并回链 S8 说明"为什么不是 DMA1"。
+- **工程卫生**：三个 ESP32 教学工程入库的 `sdkconfig` 是本机陈旧生成物（`CONFIG_IDF_TARGET="esp32"`，与 `sdkconfig.defaults` 的 esp32s3 冲突，克隆后直接 `idf.py build` 会报 target 不一致），解除跟踪并更新忽略规则；sdkconfig 从此一律由构建再生。
+
 ## 2026-10-10 · 可靠性三章补厚
 
 - **C8 / S17 / P13 从 15 分补到 45～55 分**：上一轮阅读时长校准暴露这三章正文偏薄，只有结论没有推导。现按章节规范补全。[C8 串口协议](../c/08-framed-protocol.md)：一组 INFO 帧手算 COBS 和 CRC，可以用 Python 独立验算；补齐接收状态机转移表、超时边界 99/100/101、两板字节来源（F407 DMA 的 HISR 位、S3 的事件加轮询）、TX 背压和服务层应答顺序。[S17 看门狗](../stm32/17-watchdog-reset.md)：IWDG 超时按 LSI 17/32/47kHz 三档给出 1.36～3.76s 的区间（DS8626 表 35、RM0090 表 107），WWDG 窗口算到毫秒，四种 MODE 各给一条复位时间线，再加 RCC_CSR 先读后清和 DBGMCU 冻结位只能断电清零。[P13 健康监督](../esp32/13-watchdog-health.md)：四种看门狗的分工、为什么只注册一个 health user、跨核时锁内读时间的竞争实例、`init` 返回 `INVALID_STATE` 时改用 `reconfigure`，还有 OpenOCD 断点关狗后不会再打开。三章都只给按代码周期推出的时间模型，实测值留在"实验记录"表里，标为待上板。

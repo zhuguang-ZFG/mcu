@@ -60,7 +60,7 @@ CNT 往上涨、ARR 给它设了终点、CCR 在中间设了一个"开关点"—
 | 五、输入捕获 | 边沿拍照测频率；独立 32 位时基与失效检测 | 代码分析 |
 | 六、编码器接口 | TI1/TI2 正交解码的硬件实现（概念+场景） | 配置 |
 | 七、代码分析 | `02-tim-pwm/main.c` 逐段对表 | 代码分析 |
-| 八、库解析对照 | SPL/HAL 同名初始化；上游源码本轮未取到 | 库解析 |
+| 八、库解析对照 | HAL 三函数逐行对照（hal_tim.c @ 1f6451c）；SPL 一手源码仍缺 | 库解析 |
 
 ## 一、时基三件套：PSC、CNT、ARR
 
@@ -208,7 +208,16 @@ int32_t position = (int32_t)TIM2->CNT;   // 有符号，正反转自动区分
 
 ## 八、库解析对照：SPL/HAL 同名初始化
 
-SPL 的 `TIM_TimeBaseInit()` / `TIM_OC1Init()`、HAL 的 `HAL_TIM_PWM_Init()` / `HAL_TIM_IC_Init()` 做的是同一组寄存器落位。**本轮上游 SPL/HAL 源文件未能取得**（见研究记录），落点在本仓库工程与 RM0090 的位定义；拿到源码后补逐字段对照。
+ST 官方仓库 [`STMicroelectronics/stm32f4xx_hal_driver`](https://github.com/STMicroelectronics/stm32f4xx_hal_driver)（master @ `1f6451c`）把本章寄存器动作拆成三个函数：`HAL_TIM_PWM_Init()` 定时基、`HAL_TIM_PWM_ConfigChannel()` 输出通道、`HAL_TIM_PWM_Start()` 放行——逐条对标本工程 `tim3_pwm_init()`：
+
+| 本工程 `tim3_pwm_init()` | HAL 对应（hal_tim.c 行号 @ 1f6451c） | 对照结论 |
+|---|---|---|
+| PSC/ARR 直接写、`EGR.UG` 立刻生效 | `TIM_Base_SetConfig()`（L6776）：先 ARR（L6800）后 PSC（L6803），收尾 `EGR = UG`（L6817） | 同一招：UG 把影子值立刻装进来，不等第一个更新事件 |
+| CCMR1 放 OC 模式、使能预装载 | `HAL_TIM_PWM_ConfigChannel()`（L4219）→ `TIM_OC1_SetConfig()`（L6828）：**先清 CCER.CC1E** 再改模式，OC1PE 单独置位（L4245），CCR1 初值写入（L6893） | HAL 改参数前先关通道——防止中途输出毛刺波形 |
+| 最后 CCER 使能 + CR1.CEN | `HAL_TIM_PWM_Start()`（L1454）：`TIM_CCxChannelCmd()` 移位置 CCxE（L7626）；带 BKIN 的定时器（TIM1/8）才额外开 BDTR.MOE，从机触发模式不抢 CEN | 你的两步 = HAL 一步；TIM1/8 还多一个主输出开关 |
+| 自己开 APB 时钟、配 GPIO | 放进 `HAL_TIM_PWM_MspInit()` 回调，仅句柄状态 RESET 时被调 | HAL 把"芯片初始化"与"板级初始化"分成两层 |
+
+SPL 的 `TIM_TimeBaseInit()`/`TIM_OC1Init()` 做的是同一组落位，但 StdPeriph 未随 ST 官方 GitHub 分发，一手源码仍缺；位定义以 RM0090 为准。
 
 ## 附录：工程完整源码
 
@@ -262,7 +271,7 @@ SPL 的 `TIM_TimeBaseInit()` / `TIM_OC1Init()`、HAL 的 `HAL_TIM_PWM_Init()` / 
 | 无符号差值处理回绕 | 同上捕获循环 |
 | 引脚复用 | DS8626 Rev 9 Table 9（PA6/PA7 AF2） |
 | 动画 | [tim-pwm-counter.svg](/anim/tim-pwm-counter.svg)、[tim-input-capture.svg](/anim/tim-input-capture.svg) |
-| 上游 SPL/HAL 同名初始化 | 本轮未取到源文件，待补（见研究记录） |
+| HAL 同名初始化逐行对照 | ST 官方仓库 [stm32f4xx_hal_driver](https://github.com/STMicroelectronics/stm32f4xx_hal_driver) @ `1f6451c` `Src/stm32f4xx_hal_tim.c`（见 §八）；SPL 未随官方 GitHub 分发，一手源码仍缺 |
 
 ## 你做到了
 

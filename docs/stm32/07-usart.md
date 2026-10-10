@@ -56,7 +56,7 @@ minutes: 30
 | 四、接收 | RXNE、IDLE、错误位；DMA 环形 + IDLE 帧边界 | 代码分析 |
 | 五、printf 与日志 | retarget 与代价 | 库解析 |
 | 六、代码分析 | `03-uart-dma/main.c` 逐段对表 | 代码分析 |
-| 七、库解析对照 | SPL/HAL 同名初始化；上游源码本轮未取到 | 库解析 |
+| 七、库解析对照 | HAL Init/Transmit 逐行对照（hal_uart.c @ 1f6451c）；SPL 一手源码仍缺 | 库解析 |
 
 ## 一、一帧的结构：起始、数据、停止
 
@@ -131,7 +131,7 @@ IDLE 标志有个坑：**它不是靠写 0 清的，必须"先读 SR、再读 DR
                 ↑ IDLE 置位时，DMA 指针位置就是帧边界
 ```
 
-DMA 不理解"帧"，它只理解"搬够 N 个字节"；帧边界由 IDLE 标志告诉你。`03-uart-dma` 用 DMA1 Stream5 环形接收，每收到一帧就 IDLE 中断一次、把这一帧回显。
+DMA 不理解"帧"，它只理解"搬够 N 个字节"；帧边界由 IDLE 标志告诉你。`03-uart-dma` 用 DMA2 Stream5 环形接收，每收到一帧就 IDLE 中断一次、把这一帧回显。
 
 **接收错误**：`ORE`（溢出：CPU/DMA 没来得及取，新字节盖掉旧字节）、`FE`（帧错误：没等到停止位）、`NE`（噪声）。这三个位也必须"读 SR 再读 DR"清。
 
@@ -146,12 +146,21 @@ DMA 不理解"帧"，它只理解"搬够 N 个字节"；帧边界由 IDLE 标志
 - `clocks_read()`：从 CFGR 反推 HCLK/PCLK2，BRR 由真实 PCLK2 算出来；
 - `usart1_init()`：UE/TE/RE/IDLEIE 四个位，BRR = PCLK2/115200；
 - `uart_write_blocking()`：塞数据看 TXE，收尾等 TC；
-- `dma1_stream5_rx_init()`：环形、8 位、内存递增、DMA1 Stream5 Channel4（取值依据见工程 README 的说明）；
+- `dma2_stream5_rx_init()`：环形、8 位、内存递增、DMA2 Stream5 Channel4（取值依据见工程 README 的说明，为什么不是 DMA1 见 [S8](08-dma.md) 的总线分工）；
 - `USART1_IRQHandler()`：错误位计数、IDLE 判帧边界、回显。
 
 ## 七、库解析对照：SPL/HAL 同名初始化
 
-SPL 的 `USART_Init()` / `USART_SendData()`、HAL 的 `HAL_UART_Init()` / `HAL_UART_Transmit()` 做的是同一组寄存器落位。**本轮上游 SPL/HAL 源文件未能取得**（见研究记录），落点在本仓库工程与 RM0090/CMSIS 的位定义；拿到源码后补逐字段对照。
+ST 官方仓库 [`STMicroelectronics/stm32f4xx_hal_driver`](https://github.com/STMicroelectronics/stm32f4xx_hal_driver)（master @ `1f6451c`）的 `HAL_UART_Init()` / `HAL_UART_Transmit()` 做的是同一组寄存器落位，逐条对标本工程：
+
+| 本工程 | HAL 对应（hal_uart.c 行号 @ 1f6451c） | 对照结论 |
+|---|---|---|
+| `usart1_init()`：开时钟、配引脚、写 CR1/BRR | `HAL_UART_Init()`（L357）先调 `HAL_UART_MspInit()`（时钟与引脚归板级回调），关掉外设再 `UART_SetConfig()`（L3731）一次落 CR1/CR2/CR3——**OVER8 位同批写入**（L3752-3756） | 你的初始化顺序 = MspInit + SetConfig 两段，HAL 只是把它们拆进两层回调 |
+| `baud = PCLK/BRR` 手算 | `UART_SetConfig()` 尾部按过采样选 `UART_BRR_SAMPLING8/16` 宏算 BRR（L3787/L3791），最后 `__HAL_UART_ENABLE()`（L417） | 同一个公式：OVER8 只是换分频宏，HAL 不多写一个寄存器 |
+| `uart_write_blocking()`：TXE 塞字节、收尾等 TC | `HAL_UART_Transmit()`：每字节前 `UART_WaitOnFlagUntilTimeout(TXE)`（L1172），结束再等一次 TC（L1191），全程 `HAL_GetTick` 计时超时 | 你总结的"TXE 只管塞、TC 才管完"就是 HAL 的实现；死等被超时兜底 |
+| `USART1_IRQHandler()`：IDLE 判帧、错误位计数 | `HAL_UART_IRQHandler()`（L2355）按"**SR 标志 & 对应 CR 使能位**"的组合分发处理（如 L2599 TXE 要 TXEIE 开着才走发送分支） | 结构同构：先取标志与使能的交集再分支，不是见标志就处理 |
+
+SPL 的 `USART_Init()` 计算 BRR 用 `DIV_Mantissa/DIV_Fraction` 一对字段，公式同构；但 StdPeriph 未随 ST 官方 GitHub 分发，一手源码仍缺，位定义以 RM0090/CMSIS 为准。
 
 ## 附录：工程完整源码
 
@@ -202,7 +211,7 @@ SPL 的 `USART_Init()` / `USART_SendData()`、HAL 的 `HAL_UART_Init()` / `HAL_U
 | IDLE 判帧 + DMA 环形 | 同上 `USART1_IRQHandler()` 与 `dma2_stream5_rx_init()` |
 | PA9/PA10 AF7 | DS8626 Rev 9 Table 9 |
 | 动画 | [uart-frame.svg](/anim/uart-frame.svg)、[usart-txe-tc.svg](/anim/usart-txe-tc.svg) |
-| 上游 SPL/HAL 同名初始化 | 本轮未取到源文件，待补（见研究记录） |
+| HAL 同名初始化逐行对照 | ST 官方仓库 [stm32f4xx_hal_driver](https://github.com/STMicroelectronics/stm32f4xx_hal_driver) @ `1f6451c` `Src/stm32f4xx_hal_uart.c`（见 §七）；SPL 未随官方 GitHub 分发，一手源码仍缺 |
 
 ## 你做到了
 

@@ -62,7 +62,7 @@ minutes: 30
 | 五、双缓冲（乒乓） | DBM/CT 位；处理期限是硬约束 | 代码分析 |
 | 六、总线仲裁 | DMA 与 CPU 抢总线；为什么"变慢"是正常 | 库解析 |
 | 七、代码分析 | `03-uart-dma/main.c` 的 `dma2_stream5_rx_init()` 逐位落位 | 代码分析 |
-| 八、库解析对照 | SPL/HAL 同名初始化；上游源码本轮未取到 | 库解析 |
+| 八、库解析对照 | HAL Init/Start 逐行对照（hal_dma.c @ 1f6451c）；SPL 一手源码仍缺 | 库解析 |
 
 ## 一、流与通道：二级选择是什么
 
@@ -135,7 +135,16 @@ DMA 和 CPU 共享 AHB 总线矩阵（回 [S1](01-arch.md)）。传输密集时 
 
 ## 八、库解析对照：SPL/HAL 同名初始化
 
-SPL 的 `DMA_Init()`、HAL 的 `HAL_DMA_Init()` / `HAL_UART_Receive_DMA()` 做的是同一组寄存器落位。**本轮上游 SPL/HAL 源文件未能取得**（见研究记录），落点在本仓库工程与 CMSIS/RM0090 的位定义；拿到源码后补逐字段对照。
+ST 官方仓库 [`STMicroelectronics/stm32f4xx_hal_driver`](https://github.com/STMicroelectronics/stm32f4xx_hal_driver)（master @ `1f6451c`）的 `HAL_DMA_Init()` 把流属性一次落位、`HAL_DMA_Start()` 把本次传输参数落位——逐条对标本工程：
+
+| 本工程 `dma2_stream5_rx_init()` | HAL 对应（hal_dma.c 行号 @ 1f6451c） | 对照结论 |
+|---|---|---|
+| 配置前先 `CR=0`、等 EN 落下 | `HAL_DMA_Init()`（L170）先 `__HAL_DMA_DISABLE()` 再轮询 `CR.EN`，等不到就按 `HAL_GetTick` 超时返回 `HAL_TIMEOUT`（L208-227） | 同一硬约束：**EN=1 时改 CHSEL/CIRC 无效**；HAL 多给超时兜底，不会死锁在 while |
+| CHSEL/CIRC/MINC/PSIZE 逐位拼 CR | 同函数：把 CHSEL 到 DBM 一整段位一次清掉（L231-237），`Init` 各字段或成一笔写回 CR（L250）；FIFO 的 DMDIS/FTH 另写 FCR（L285） | 你手工拼的那串掩码 = HAL 的 tmp 读-改-写；直接模式就是 FCR 不置 DMDIS |
+| 自己写 NDTR/PAR/M0AR | 留到 `HAL_DMA_Start()` 里的 `DMA_SetConfig()`：NDTR（L1157）、PAR/M0AR 按 DIR 定向（L1163-1175） | HAL 把"流属性"与"本次传输参数"分两步；环形重满时 NDTR 由硬件自动重装 |
+| `DMA2_Stream5_IRQHandler()` 管 HT/TC、写 IFCR 清标志 | `HAL_DMA_IRQHandler()` 按 HISR 调半传输/完成/错误回调，清标志同样回写 IFCR（如 L708 `IFCR = (HTIF\|TCIF) << StreamIndex`） | 同构：清标志写 HIFCR/LIFCR、绝不碰只读的 HISR/LISR——这条你已经在坑里验证过 |
+
+SPL 的 `DMA_Init()` 做的是同一组落位，但 StdPeriph 未随 ST 官方 GitHub 分发，一手源码仍缺；位定义以 RM0090 为准。
 
 ## 附录：工程完整源码
 
@@ -189,7 +198,7 @@ SPL 的 `DMA_Init()`、HAL 的 `HAL_DMA_Init()` / `HAL_UART_Receive_DMA()` 做�
 | HIFCR/LIFCR 清标志 | 同上 `DMA2_Stream5_IRQHandler()` |
 | 环形缓冲水位实验 | 同上 `g_rx_buf` + `g_half_events`/`g_full_events` |
 | 动画 | [dma-circular-buffer.svg](/anim/dma-circular-buffer.svg)、[dma-pingpong.svg](/anim/dma-pingpong.svg)（已修订） |
-| 上游 SPL/HAL 同名初始化 | 本轮未取到源文件，待补（见研究记录） |
+| HAL 同名初始化逐行对照 | ST 官方仓库 [stm32f4xx_hal_driver](https://github.com/STMicroelectronics/stm32f4xx_hal_driver) @ `1f6451c` `Src/stm32f4xx_hal_dma.c`（见 §八）；SPL 未随官方 GitHub 分发，一手源码仍缺 |
 
 ## 你做到了
 

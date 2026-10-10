@@ -64,7 +64,7 @@ HSE/HSI 两个水源、PLL 这个泵站、SW 这个总闸、AHB/APB 两条输电
 | 五、Flash 与电压档 | RM0090 Table 10 全表 + VOS 天花板 | 配置 |
 | 六、MCO1 实测 | PA8 复用输出 SYSCLK/4，仪器验证 | 引脚 |
 | 七、代码分析 | `01-rcc-clock/main.c` 逐段对表 | 代码分析 |
-| 八、上游对照 | SPL/HAL 同名流程；本轮上游源码未取到，落点在本仓库 | 库解析 |
+| 八、上游对照 | HAL `OscConfig/ClockConfig` 逐行对照（hal_rcc.c @ 1f6451c）；SPL 一手源码仍缺 | 库解析 |
 
 ## 一、四个时钟源：发电厂四种
 
@@ -221,7 +221,7 @@ SPL（StdPeriph）未随 ST 官方 GitHub 分发，本轮仍缺一手源码；�
 | MCO1 = PA8 AF0 | DS8626 Rev 9 Table 9 |
 | 提频六步 + 回读确认 | [code/stm32/01-rcc-clock/main.c](https://github.com/zhuguang-ZFG/mcu/blob/main/code/stm32/01-rcc-clock/main.c) `clock_init()` |
 | 动画 | [rcc-clock-tree.svg](/anim/rcc-clock-tree.svg) |
-| 上游 SPL/HAL 同名流程 | 本轮未取到源文件，待补（见研究记录） |
+| HAL 同名流程逐行对照 | ST 官方仓库 [stm32f4xx_hal_driver](https://github.com/STMicroelectronics/stm32f4xx_hal_driver) @ `1f6451c` `Src/stm32f4xx_hal_rcc.c`（见 §八）；SPL 未随官方 GitHub 分发，一手源码仍缺 |
 
 ## 你做到了
 
