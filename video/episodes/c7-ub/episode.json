@@ -1,0 +1,432 @@
+{
+  "id": "c7-ub",
+  "title": "未定义行为：编译器不欠你一个答案",
+  "badge": "C7",
+  "voice": "zh-CN-YunxiNeural",
+  "rate": "+4%",
+  "fps": 30,
+  "sampleRate": 44100,
+  "channels": 2,
+  "cover": {
+    "kicker": "通往单片机之路 · C7",
+    "line1": "同一行代码",
+    "line2": "两档两个答案",
+    "sizes": {
+      "bilibili": [
+        1920,
+        1200
+      ],
+      "douyin": [
+        1080,
+        1440
+      ]
+    }
+  },
+  "publish": {
+    "bilibili": {
+      "titles": [
+        "同一行代码，-O0 给你 2，-O2 给你 0：UB 现场直播",
+        "编译器不是老实人：它拿你的代码当定理证明",
+        "老教程说 -O0 会返回 0，gcc 16 实测两档都返回 1"
+      ],
+      "intro": "未定义行为最阴险的地方：看起来对、编译通过、今天能跑。这一集全部用本机实跑取证——x+1>x 在 -O0/-O2/-O2 -fwrapv 三档下的读数是 1/1/0；1u<<33 在 -O0 是 2、-O2 是 0；宿主 gcc 16.1.0 的 -O0 函数体里已经只剩一句 movl $1, %eax，-O2 的 main 连 call 都不剩，printf 直接吃立即数；arm-none-eabi-gcc 15.2.1 把整个函数折成 movs r0, #1 两行。还有严格别名的抓捕现场（-Wstrict-aliasing / -Warray-bounds / -Wuninitialized 三条警告原文）、union 与 memcpy 两种合法位读法为什么必须给出同一个 0x3F800000、嵌入式 MISRA 自用十条、三道防线的成本排序。诚实记录：本机 MinGW 没有 UBSan 运行库，probe.sh 第 4 步自动跳过。全部数字来自 cd code/c/07-ub-misra && sh probe.sh，不需要开发板。站内有全篇：通往单片机之路 C7。",
+      "tags": [
+        "单片机",
+        "C语言",
+        "未定义行为",
+        "UB",
+        "MISRA",
+        "编译器优化",
+        "嵌入式",
+        "STM32"
+      ],
+      "topics": [
+        "单片机",
+        "嵌入式开发",
+        "C语言"
+      ]
+    },
+    "douyin": {
+      "titles": [
+        "同一行代码，-O0 给你 2，-O2 给你 0",
+        "编译器把你的代码当定理证明，不按算术",
+        "UB 的题目没有标准答案，这正是要避开它的原因"
+      ],
+      "intro": "x+1>x 恒真吗？编译器说恒真，因为让它不恒真的那一刻是未定义行为。三档读数 1/1/0、移位两档变脸 2/0、别名违规的警告原文，全部本机实跑。站内通往单片机之路 C7 有全篇。",
+      "tags": [
+        "单片机",
+        "C语言",
+        "未定义行为",
+        "嵌入式"
+      ],
+      "topics": [
+        "单片机",
+        "嵌入式开发"
+      ]
+    }
+  },
+  "platforms": {
+    "bilibili": {
+      "size": [
+        1920,
+        1080
+      ],
+      "targetSec": [
+        480,
+        720
+      ],
+      "scenes": [
+        {
+          "id": "hook-01",
+          "kind": "hook",
+          "title": "同一行代码，-O0 给你 2，-O2 给你 0",
+          "sub": "本机 gcc 16.1.0 实测：shift_oob(1u, 33u)",
+          "narration": "先给一个反差。同一个源文件，同一行 1u 左移 33 位：-O0 编译打印 2，-O2 编译打印 0。更难受的是，这两个答案都不算错——因为这道题是未定义行为，它没有标准答案。这一集就拍这件事。"
+        },
+        {
+          "id": "hook-02",
+          "kind": "hook",
+          "title": "老教程那句话，在 gcc 16 上翻案了",
+          "sub": "is_bigger_after_inc(INT_MAX)：-O0 读数 1（不是十年前说的 0）",
+          "narration": "第二个反差是给老教程的。十年前的书上写：-O0 会返回 0，-O2 才会返回 1。本机 gcc 16.1.0 实测，-O0 也返回 1。也就是说，连你以为最老实的那一档都在偷懒。"
+        },
+        {
+          "id": "hook-03",
+          "kind": "card",
+          "title": "本集只讲一件事：编译器有权当你不会",
+          "bullets": [
+            "标准把 UB 划成「不许发生」，优化就拿这条禁令当燃料",
+            "UB ≠ 报错：它今天能跑，明天换档就变脸",
+            "高危三兄弟：有符号溢出、移位越界、严格别名"
+          ],
+          "narration": "把两件事钉在墙上。第一，未定义行为不等于报错，标准是直接撒手——行为可以是任何东西，包括看起来正常工作。第二，正因为它撒手，编译器就可以拿着「你不许发生」这条禁令去做优化。这不是疏忽，是刻意的交易。"
+        },
+        {
+          "id": "bigger-src",
+          "kind": "code",
+          "title": "一行教科书级的陷阱",
+          "codeLabel": "probe.c 第 24 行",
+          "code": "int is_bigger_after_inc(int x) { return x + 1 > x; }",
+          "note": "数学上永远真？只有 x = INT_MAX 时为假——而那一刻 x+1 已经溢出，是 UB",
+          "narration": "第一号案例，一行。x 加一大于 x，听着像废话，数学上确实恒真——只有一个例外：x 是 INT_MAX 的时候。可偏偏那一刻加法已经溢出，是有符号未定义行为。唯一的例外是非法输入，这就给了编译器一个完美的借口。"
+        },
+        {
+          "id": "bigger-readout",
+          "kind": "code",
+          "title": "三档实测读数：同一个符号，两种答案",
+          "codeLabel": "probe.sh 第 1、2 步，gcc 16.1.0 实跑",
+          "code": "!-O0          is_bigger_after_inc(INT_MAX) = 1\n-O2           is_bigger_after_inc(INT_MAX) = 1\n!-O2 -fwrapv   is_bigger_after_inc(INT_MAX) = 0",
+          "narration": "读数先摆出来。-O0 是一，-O2 是一，加一个编译旗 -fwrapv 就变成零。前两档为什么一样？因为折叠这个动作，gcc 16 在 -O0 也照做。后面这个零更值钱：加一个旗，编译器就失去了假设权。"
+        },
+        {
+          "id": "bigger-arm",
+          "kind": "code",
+          "title": "ARM 侧铁证：整个函数只剩装载常量",
+          "codeLabel": "arm-none-eabi-gcc 15.2.1，-mcpu=cortex-m4 -O2",
+          "code": "is_bigger_after_inc:\n!  movs   r0, #1        @ 没有加法，没有比较\n   bx     lr",
+          "narration": "交叉编译到 Cortex-M4，看汇编。两行：装载一，返回。加法和比较都不见了——它们被「你不会溢出」这条假设吃掉。推理链很短：你保证不喂我 INT_MAX，那这个比较永远为真，函数整段折成一。"
+        },
+        {
+          "id": "bigger-host-o0",
+          "kind": "code",
+          "title": "-O0 也没那么老实：函数体已是常量",
+          "codeLabel": "宿主 gcc 16.1.0 -O0（probe.sh 第 6 步）",
+          "code": "is_bigger_after_inc:\n   pushq  %rbp\n   movq   %rsp, %rbp\n   movl   %ecx, 16(%rbp)\n!  movl   $1, %eax          @ 加法和比较都不在\n   popq   %rbp\n   ret",
+          "narration": "把老梗彻底翻案：这是宿主 x86 的 -O0 函数体。外面 main 还规规矩矩发一条 call，可函数里面只剩一句装载常量一。-O0 的意思是不在调用点折叠、不做跨函数传播，从来不是逐行照实执行。"
+        },
+        {
+          "id": "bigger-host-o2",
+          "kind": "code",
+          "title": "-O2 更狠：四个 call 全部消失",
+          "codeLabel": "宿主 gcc 16.1.0 -O2 的 main（probe.sh 第 6 步）",
+          "code": "!  movl   $1, %edx           @ is_bigger_after_inc(INT_MAX)\n   leaq   .LC1(%rip), %rcx\n!  xorl   %edx, %edx         @ shift_oob(1u, 33u) → 0\n!  movl   $1065353216, %edx  @ bits_union   = 0x3F800000\n!  movl   $1065353216, %edx  @ bits_memcpy  = 同一个立即数",
+          "narration": "-O2 的 main 里，四个函数调用一个都不剩，喂给 printf 的直接是立即数：一，零，还有两份一样的 3F800000。那个零特别值得记住——它不是算出来的，是编译器认出未定义行为之后，随手挑的一个。"
+        },
+        {
+          "id": "bigger-wrapv",
+          "kind": "code",
+          "title": "加一个编译旗，编译器必须真算",
+          "codeLabel": "-O2 -fwrapv 两把编译器对照（probe.sh 第 5 步）",
+          "code": "15.2.1:\n!  mvn    r3, #-2147483648\n   subs   r0, r0, r3\n   it     ne\n   movne  r0, #1\n10.3.1:\n!  adds   r3, r0, #1\n!  cmp    r3, r0\n   ite    le\n   movle  r0, #0\n   movgt  r0, #1",
+          "narration": "现在把有符号溢出重新定义成补码回绕，一个编译旗 -fwrapv。两把编译器给的形状不一样：15.2.1 把比较化成「你到底是不是 INT_MAX」，10.3.1 老老实实加一次比一次。但两把都不肯再折成常量——这就是那条旗的全部作用。"
+        },
+        {
+          "id": "trap-1",
+          "kind": "anim",
+          "anim": "ub-compiler-trap",
+          "t0": 0,
+          "t1": 3,
+          "smil": "stretch",
+          "note": "第一幕：源代码",
+          "narration": "整条链条动画放一遍。第一幕，源代码：x 加一大于 x，旁边一行小字，数学上恒真，除非 x 等于 INT_MAX，而那里溢出，标着未定义行为。"
+        },
+        {
+          "id": "trap-2",
+          "kind": "anim",
+          "anim": "ub-compiler-trap",
+          "t0": 3,
+          "t1": 6,
+          "smil": "stretch",
+          "note": "第二幕：编译器推理",
+          "narration": "第二幕，编译器推理，全片最该盯的一步。它读到的不是算术，是你的承诺：你保证不喂我非法输入。既然承诺了，那个例外分支就可以当不存在。"
+        },
+        {
+          "id": "trap-3",
+          "kind": "anim",
+          "anim": "ub-compiler-trap",
+          "t0": 6,
+          "t1": 9,
+          "smil": "stretch",
+          "note": "第三幕：汇编输出",
+          "narration": "第三幕，汇编输出：整段折成 return 一，没有加法没有比较。左边是你写的表达式，右边是它留下的常量，中间那步推理看不见，但结果全由它决定。"
+        },
+        {
+          "id": "trap-4",
+          "kind": "anim",
+          "anim": "ub-compiler-trap",
+          "t0": 9,
+          "t1": 12,
+          "smil": "stretch",
+          "note": "第四幕：运行时",
+          "narration": "第四幕，运行时对账：你数学期望是零，实际结果是一。动画最底下给了防御方案——MISRA-C 禁止有符号整数溢出，汽车和医疗固件靠这条活命。"
+        },
+        {
+          "id": "sneak-card",
+          "kind": "card",
+          "tone": "danger",
+          "kicker": "最容易搞反的一条",
+          "title": "UB 最可怕的形态不是崩溃，\n是悄悄改逻辑",
+          "bullets": [
+            "崩了你会查；它对 INT_MAX 撒谎，你可能在它上面盖三层缓存",
+            "编译器不是敌人，是严格的形式化证明者",
+            "规则内它改得你亲妈不认识，规则外它不跟你商量"
+          ],
+          "narration": "一个容易搞反的推论。装载一这个函数会继续正常跑，程序不崩不响，只是从此它对 INT_MAX 撒谎。最坏的形态不是崩溃，是悄悄改逻辑——崩溃逼你查，撒谎让你放心盖三层。"
+        },
+        {
+          "id": "shift-src",
+          "kind": "code",
+          "title": "移位：嵌入式频率最高、UB 密度也最高",
+          "codeLabel": "probe.c 第 27 行",
+          "code": "uint32_t shift_oob(uint32_t v, uint32_t count) { return v << count; }",
+          "note": "计数走运行期参数，编译期拦不住；实测 shift_oob(1u, 33u)",
+          "narration": "第二号案例，移位。每一个寄存器掩码都是它，所以它是 UB 密度最高的运算。这里故意把移位计数做成运行期参数，编译期那条警告就抓不到了，只能等运行期变脸。"
+        },
+        {
+          "id": "shift-asm",
+          "kind": "code",
+          "title": "-O0 读数 2 的来历：硬件替你把计数截了",
+          "codeLabel": "宿主 -O0 的 shift_oob 函数体（probe.sh 第 6 步）",
+          "code": "shift_oob:\n   movl   %eax, %ecx\n!  sall   %cl, %edx     @ 计数 33 → 移位器只认低 5 位\n   movl   %edx, %eax\n   ret\n\n33 & 31 = 1     →     1u << 1 = 2",
+          "narration": "为什么 -O0 是二？因为它真的发了一条移位指令。x86 的 shl、Cortex-M 的 lsl，都把计数截到操作数位宽的低五位：33 和三十一相与等于一，于是变成 1 左移一位，结果二。这个二不是 C 给你的，是硬件顺手兜的。"
+        },
+        {
+          "id": "shift-fold",
+          "kind": "code",
+          "title": "-O2 读数 0 的来历：编译器随手挑了一个",
+          "codeLabel": "宿主 -O2 的 main：call 没了，只剩 xorl",
+          "code": "!  xorl   %edx, %edx     @ 把 0 塞给 printf：最省指令的答案\n   call   printf\n\n计数 ≥ 位宽：UB（与有无符号无关）\n计数为负：UB\n左移穿有符号数符号位：UB（如 (int)1 << 31）",
+          "narration": "为什么 -O2 是零？因为它压根没移位——main 里连 call 都没有了，一条 xor 自己把自己清零，这就是它挑的答案，恰好最省指令。屏幕上这三条就是移位的红线：计数大于等于位宽、计数为负、左移穿符号位。踩任何一条，答案谁说了算都不一定。"
+        },
+        {
+          "id": "safe-mask",
+          "kind": "code",
+          "title": "安全写法：字面量类型先行，计数必须可证",
+          "codeLabel": "站内 00-blink 的掩码纪律 + 运行期检查",
+          "code": "mask = 1UL << (LED_R_PIN + 16);   // 计数编译期可证 < 32\n\nif (n < 32u) {\n!   mask = 1u << n;        // 计数已证 < 位宽\n} else {\n!   return false;          // 拒绝，别让硬件替你决定\n}",
+          "narration": "怎么写才安全？两条。第一，字面量类型先行，用 1UL 别用一——但注意它只防符号位那条红线，防不住计数越界。第二，计数必须可证小于位宽：常量能编译期算出来，运行期的数就先检查再移，不满足就直接拒绝，别让硬件替你决定。"
+        },
+        {
+          "id": "wrapv-norescue",
+          "kind": "card",
+          "title": "-fwrapv 不救移位：\n三条红线一条都不救",
+          "bullets": [
+            "-fwrapv 只把有符号加、减、乘的溢出定义为回绕",
+            "实测：-O2 -fwrapv 下 1u<<33 读数依旧是 0",
+            "别指望一个编译旗包打天下"
+          ],
+          "narration": "顺手破一个幻想：-fwrapv 能救移位吗？不能。它只把有符号加减乘的溢出定义成回绕，移位三条红线一条都不在保护范围，实测加了这个旗，1u 左移 33 位照样是零。移位的唯一活路是计数先验证。"
+        },
+        {
+          "id": "alias-src",
+          "kind": "code",
+          "title": "第三号案例：一行谁都会写的强转",
+          "codeLabel": "alias-violate.c 第 13 行",
+          "code": "uint32_t bits_reinterpret(float f)\n{\n!   return *(uint32_t *)&f;   // 用不兼容类型的左值访问 float 对象\n}",
+          "narration": "第三号案例，三兄弟里最隐蔽的一个：严格别名。想看一个 float 的位模式，很多人会写这一行，把它的地址强转成 32 位无符号整数再解引用。C 的规定是：访问对象必须用兼容类型的左值。这一行不是风格问题，是违规。"
+        },
+        {
+          "id": "alias-warn",
+          "kind": "code",
+          "title": "抓捕现场：警告原文，一个波浪线都来自实跑",
+          "codeLabel": "gcc 16.1.0 -O2 -Wstrict-aliasing（probe.sh 第 3 步）",
+          "code": "alias-violate.c: In function 'bits_reinterpret':\nalias-violate.c:13:13: warning: dereferencing type-punned pointer\n  will break strict-aliasing rules [-Wstrict-aliasing]\n!  13 |     return *(uint32_t *)&f;\n     |             ^~~~~~~~~~~~~~",
+          "narration": "编译器怎么抓它？一条警告。这是本机 -Wstrict-aliasing 的原话：解引用类型双关的指针会破坏严格别名规则，文件、行号、列号，波浪线正好指在那次解引用上。为什么编译器这么在意？"
+        },
+        {
+          "id": "alias-why",
+          "kind": "card",
+          "title": "别名分析是优化的地基",
+          "bullets": [
+            "它敢假设「这次 uint32_t 写入不会碰到那个 float」",
+            "于是能合并两次读、能把 store 重排到 load 前面",
+            "你的违规写法就是在这条假设上打洞"
+          ],
+          "narration": "因为别名分析是优化的地基。编译器敢假设这一次整数写入不会碰到那个浮点对象，才敢把两次读合并成一次、把写重排到读前面。你违规访问，就是在它已经盖好的楼上打洞——它不会报错，它只会继续按没洞来算。"
+        },
+        {
+          "id": "alias-legal",
+          "kind": "code",
+          "title": "两种合法写法，必须给出同一个位串",
+          "codeLabel": "probe.c 第 32–44 行 + 实测输出",
+          "code": "union { float f; uint32_t u; } pun;   // 写法一：union 双关\npun.f = f;  return pun.u;\n\nuint32_t u; memcpy(&u, &f, sizeof u);  // 写法二：永远合法\nreturn u;\n\n!bits_union(1.0f)   = 0x3F800000\n!bits_memcpy(1.0f)  = 0x3F800000",
+          "narration": "两条合法路。第一条 union 双关，C11 给写一个成员读另一个成员补了正式说法。第二条 memcpy 到整数，标准层面永远合法，编译器会把它优化成一条访存指令。实测两个读数一模一样，都是 3F800000。跨类型取位，建议以 memcpy 为锚。"
+        },
+        {
+          "id": "warns3",
+          "kind": "code",
+          "title": "三兄弟各就一条警告",
+          "codeLabel": "probe.sh 第 3 步真实输出",
+          "code": "oob-static.c:19:14: warning: 'x' is used uninitialized [-Wuninitialized]\noob-static.c:12:10: warning: array subscript 7 is above array\n              bounds of 'int[4]' [-Warray-bounds=]\nalias-violate.c:13:13: warning: dereferencing type-punned pointer\n              will break strict-aliasing rules [-Wstrict-aliasing]",
+          "narration": "把警告现场凑齐：未初始化读取、常量下标越界、类型双关，三条警告各管一个。这三条零成本，写进 Makefile 就生效。军备按档加：起步 -Wall -Wextra 配 -Werror，再上一档 -Wconversion 把隐式收窄全点名。"
+        },
+        {
+          "id": "ubsan-honest",
+          "kind": "card",
+          "title": "诚实记录：本机跑不了 UBSan",
+          "bullets": [
+            "MinGW-Builds gcc 16.1.0 没带 UBSan 运行库，probe.sh 第 4 步自动跳过",
+            "有 Linux 环境时同一段 ub.c 会打出 runtime error: signed integer overflow",
+            "交叉链上 UBSan 支持也有限——嵌入式主战场不在这里"
+          ],
+          "narration": "第二道防线是运行期仪表 -fsanitize=undefined。这里必须诚实一句：本站这台 MinGW 没带 UBSan 运行库，probe.sh 第 4 步自己跳过。有 Linux 环境的话，同一段代码会直接报出有符号溢出。所以嵌入式的真正主战场，是编译警告加静态分析。"
+        },
+        {
+          "id": "misra-a",
+          "kind": "card",
+          "kicker": "MISRA 自用十条 ①",
+          "title": "前五条：把炸过的地方画成红线",
+          "bullets": [
+            "一、声明即初始化——int x; 后面读就是 UB",
+            "二、隐式转换显式化——有无符号混算一律点名",
+            "三、移位计数先验证——编译期可证或运行期先查",
+            "四、位运算与比较不裸混——& 的优先级低于 ==",
+            "五、禁递归——裸机栈每层一帧，爆栈没有哨兵"
+          ],
+          "narration": "MISRA-C 全本三百多条，这里取自用十条。前五条：声明即初始化；隐式转换显式化；移位计数先验证；位运算和比较不许裸混，因为等于号的优先级高于与号，加括号不丢人；还有禁递归——裸机的栈一层就是一帧，爆栈没有哨兵。"
+        },
+        {
+          "id": "misra-b",
+          "kind": "card",
+          "kicker": "MISRA 自用十条 ②",
+          "title": "后五条：自由度是给编译器的人的",
+          "bullets": [
+            "六、指针运算只在数组圈内：尾后可以指，不可以解引用",
+            "七、禁 goto 直穿初始化——跳过初始化就是读未初始化",
+            "八、switch 必有 default——新增枚举值要炸得响",
+            "九、volatile 纪律：寄存器和 ISR 共享变量一律 volatile",
+            "十、无副作用依赖：短路和重排会改变你的副作用顺序"
+          ],
+          "narration": "后五条：指针运算只在数组圈内，指到尾后一格可以，解引用它就是 UB；不许 goto 直穿初始化；switch 必有 default，新增枚举值要炸得响而不是悄悄漏；volatile 纪律留给 C3；最后一条，别把程序依赖的副作用藏在 && 右边。"
+        },
+        {
+          "id": "misra-philosophy",
+          "kind": "card",
+          "tone": "gold",
+          "title": "十条的共同句式：收窄成只有一种读法",
+          "bullets": [
+            "把「编译器可以任意解释」的地带，用写法约束掉",
+            "语言的自由度是给写编译器的人的，不是给写固件的人的",
+            "今天跑通 ≠ 明天安全"
+          ],
+          "narration": "十条背完，把它们的共同句式说一句：把编译器可以任意解释的地带，用写法约束收窄成只有一种读法。语言的自由度是给写编译器的人的，不是给写固件的人的。"
+        },
+        {
+          "id": "hardfault-link",
+          "kind": "card",
+          "title": "UB 的另一面是 HardFault",
+          "bullets": [
+            "数组越界、空指针解引用、未对齐访问——在 ARM 上直接触发硬件报案",
+            "提前抓人比等 HardFault 再查，效率高十倍",
+            "延伸：S16 用三条寄存器做崩溃法医"
+          ],
+          "narration": "还有一条串台的话：未定义行为的另一面是 HardFault。越界、空指针、未对齐访问，在 ARM 上会直接把 CPU 打进异常。提前抓人比等崩了再查快十倍——崩溃现场怎么读，S16 那集专门拍法医。"
+        },
+        {
+          "id": "punch",
+          "kind": "card",
+          "tone": "gold",
+          "kicker": "一句话记住",
+          "title": "UB 的题目没有标准答案",
+          "sub": "这正是要避开它的原因 —— 证明正确的从来不是「跑起来过」，是「没有 UB + 警告清零」",
+          "narration": "口诀收尾。同一行代码，两档两个答案，哪个都不算错，因为这道题没有标准答案——而这正是要避开它的原因。能证明你正确的，从来不是昨天跑起来过，是这段代码里没有未定义行为，警告是零。"
+        },
+        {
+          "id": "cta",
+          "kind": "outro",
+          "title": "一条命令复现全部数字",
+          "sub": "code/c/07-ub-misra · sh probe.sh · 不需要开发板",
+          "narration": "取证工程在 code/c/07-ub-misra，clone 下来 sh probe.sh，六个取证步骤一次跑完：三档读数、两把编译器的折叠现场、三条警告原文。站内通往单片机之路 C7 有全篇。"
+        },
+        {
+          "id": "teaser",
+          "kind": "outro",
+          "title": "下一集 · F2：PendSV 换魂术",
+          "sub": "为什么切换不能在 SysTick 里直接做",
+          "narration": "C 系列收官，下一集进 FreeRTOS。为什么上下文切换要放在 PendSV 里做，而不是 SysTick 里直接切？以及为什么 PendSV 和 SysTick 的优先级必须设成最低——那是偶发灵异 bug 的头号来源。"
+        }
+      ]
+    },
+    "douyin": {
+      "size": [
+        1080,
+        1920
+      ],
+      "targetSec": [
+        45,
+        75
+      ],
+      "reuseFrom": "bilibili",
+      "pick": [
+        "hook-01",
+        "bigger-src",
+        "bigger-arm",
+        "bigger-host-o0",
+        "shift-asm",
+        "shift-fold",
+        "trap-2",
+        "alias-warn",
+        "misra-philosophy",
+        "punch",
+        "cta"
+      ],
+      "narration": {
+        "hook-01": "同一行代码，-O0 编译给你 2，-O2 编译给你 0。",
+        "bigger-src": "x 加一大于 x，听着像恒真，可唯一的例外刚好是 UB。",
+        "bigger-arm": "编到 Cortex-M4，整个函数折成两行：装载 1，返回。",
+        "bigger-host-o0": "更翻案的是 -O0：函数体里也只剩一句装载常量。",
+        "shift-asm": "2 不是 C 给的，是硬件把计数 33 截成了 1。",
+        "shift-fold": "0 也不是算的，是编译器认出 UB 之后随手挑的。",
+        "trap-2": "编译器读到的不是算术，是你许下的承诺。",
+        "alias-warn": "一行谁都会写的强转，警告原文指着那次解引用。",
+        "misra-philosophy": "把可以任意解释的地带，收窄成只有一种读法。",
+        "punch": "UB 的题目没有标准答案，这正是要避开它的原因。",
+        "cta": "一条命令复现全部数字，站内通往单片机之路 C7 有全篇。"
+      },
+      "set": {
+        "hook-01": {
+          "title": "同一行代码\n-O0 给 2\n-O2 给 0"
+        },
+        "alias-warn": {
+          "title": "警告原文：\n一个波浪线都来自实跑"
+        },
+        "shift-asm": {
+          "title": "-O0 读数 2 的来历：\n硬件替你把计数截了"
+        },
+        "shift-fold": {
+          "title": "-O2 读数 0 的来历：\n编译器随手挑了一个"
+        }
+      }
+    }
+  }
+}

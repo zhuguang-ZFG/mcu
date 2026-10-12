@@ -1,0 +1,447 @@
+{
+  "id": "c5-func-pointer",
+  "title": "中断只负责跳一次：函数指针、状态机、环形缓冲",
+  "badge": "C5",
+  "voice": "zh-CN-YunxiNeural",
+  "rate": "+4%",
+  "fps": 30,
+  "sampleRate": 44100,
+  "channels": 2,
+  "cover": {
+    "kicker": "通往单片机之路 · C5",
+    "line1": "你的回调",
+    "line2": "只是一条 blx",
+    "sizes": {
+      "bilibili": [
+        1920,
+        1200
+      ],
+      "douyin": [
+        1080,
+        1440
+      ]
+    }
+  },
+  "publish": {
+    "bilibili": {
+      "titles": [
+        "你写的回调，编译后只剩一条指令：blx r3",
+        "中断驱动的基本功三件套：函数指针、状态机、环形缓冲",
+        "同一个 8 格环形缓冲，为什么只能塞进 7 格？"
+      ],
+      "intro": "中断来了，硬件只负责跳到一个固定地址——接下来干什么，全靠表里存的那个地址。这一集把中断驱动代码的三件套一次拆到底：右左法则读函数指针声明（sizeof=8×4，nm 实测 0x20）、向量表就是 Flash 里的 const 函数指针数组、查表法状态机在机器码里只有 ldr+blx+strb、环形缓冲满空判定的两派（A 派可用 7 格 / B 派可用 8 格，本机实测差一格）、发布与获取的顺序为什么反了就读空槽、分派前判空在机器码里就是一条 cbz。所有数字与汇编来自本机实跑：cd code/c/05-func-pointer && sh probe.sh（宿主 gcc 16.1.0，交叉 arm-none-eabi-gcc 10.3.1，560/560 断言全绿）。站内有全篇：通往单片机之路 C5。",
+      "tags": [
+        "单片机",
+        "STM32",
+        "C语言",
+        "函数指针",
+        "状态机",
+        "环形缓冲",
+        "中断",
+        "嵌入式"
+      ],
+      "topics": [
+        "单片机",
+        "嵌入式开发",
+        "C语言"
+      ]
+    },
+    "douyin": {
+      "titles": [
+        "你写的回调，编译后只剩一条 blx r3",
+        "同一个 8 格环形缓冲，为什么只能塞 7 格",
+        "中断里为什么不能恋战？机器码给你答案"
+      ],
+      "intro": "中断只做一件事：跳到表里那个地址。三件套拆开讲，560 条断言本机全绿。站内通往单片机之路 C5 有全篇。",
+      "tags": [
+        "单片机",
+        "C语言",
+        "嵌入式"
+      ],
+      "topics": [
+        "单片机",
+        "嵌入式开发"
+      ]
+    }
+  },
+  "platforms": {
+    "bilibili": {
+      "size": [
+        1920,
+        1080
+      ],
+      "targetSec": [
+        480,
+        720
+      ],
+      "scenes": [
+        {
+          "id": "hook-01",
+          "kind": "hook",
+          "title": "中断来了，硬件只干一件事",
+          "sub": "跳到表里那个地址——剩下全归你",
+          "narration": "中断信号一到，Cortex-M 只做一个动作：去向量表里那一格，取出一个地址，跳过去。接下来干什么，硬件不管。这一集讲的就是这个接下来，讲三件套：函数指针、状态机、环形缓冲。所有数字和汇编都是本机跑出来的，不用开发板。"
+        },
+        {
+          "id": "hook-02",
+          "kind": "hook",
+          "title": "你写的回调，源码就两行",
+          "codeLabel": "probe.c 里状态机的全部核心",
+          "code": "trans_t t = FSM[f->state][classify(ch)];\nf->state = t(f, ch);   /* 查表 + 间接调用 */",
+          "narration": "先看源码。整个状态机就这两行：从表里取出一个函数，然后调用它，把返回值写回状态。看起来平平无奇。"
+        },
+        {
+          "id": "hook-03",
+          "kind": "code",
+          "title": "交叉编译以后，它就剩这几条",
+          "codeLabel": "arm-none-eabi-gcc 10.3.1 -O2 实测反汇编",
+          "code": "92:  eb03 0382   add.w   r3, r3, r2, lsl #2     ; state*4 + 事件号\n96:  4a05        ldr     r2, [pc, #20]          ; FSM 表基址\n9a:  f852 3023   ldr.w   r3, [r2, r3, lsl #2]   ; 查表：取出函数地址\n9e:  4798        blx     r3                     ; 跳过去\na0:  7020        strb    r0, [r4, #0]           ; 返回值写回 f->state",
+          "narration": "换到 Cortex-M4，-O2 编出来就是这几条：算下标、取表基址、从表里拿出一个地址、blx r3 跳过去、最后一条 strb 把返回值写回状态。blx 的意思就是跳到寄存器里那个地址。你在源码里看到的每一次回调，落到机器码都是这一条。"
+        },
+        {
+          "id": "hook-04",
+          "kind": "card",
+          "tone": "gold",
+          "kicker": "本集三件套",
+          "title": "指针记账、状态归档、缓冲转运",
+          "narration": "这一集就拆三件事：指针怎么记账，状态怎么归档，数据怎么转运。最后你会看到，中断里真正该干的活，只有十几个时钟周期。"
+        },
+        {
+          "id": "decl-intro",
+          "kind": "card",
+          "kicker": "第一件 · 声明阅读法",
+          "title": "typedef void (*cb_t)(void)\n到底在说什么",
+          "narration": "从最劝退的那行声明开始。很多人第一次看到函数指针的 typedef，是从左往右硬读的，越读越晕。"
+        },
+        {
+          "id": "decl-three",
+          "kind": "code",
+          "codeLabel": "probe.c 里的三种声明",
+          "code": "typedef void (*cb_t)(void);             /* “指向 void(void) 函数的指针”这个类型 */\n\nstatic cb_t key_table[8];               /* 八个槽的回调注册表 */\n\nstatic void (*pick_raw(int id))(void);  /* 函数返回函数指针：裸写法 */",
+          "narration": "probe.c 里三种写法，指向的是同一个东西：一个回调类型、一个八个槽位的注册表、还有一个返回函数指针的函数。名字后面那对括号不能少——它是函数，不是数据。"
+        },
+        {
+          "id": "decl-rightleft",
+          "kind": "code",
+          "title": "右左法则：从名字出发，左右左右",
+          "codeLabel": "void (*table[8])(void);",
+          "code": "起点      table\n往右 [8]   → table 是数组\n往左   *   → 数组元素是指针\n往右 (void) → 指针指向函数\n往左  void  → 函数返回 void\n\n合起来：8 个“无参、返回 void 的函数”的指针",
+          "narration": "正确读法叫右左法则：从名字出发，先往右、再往左、再往右、再往左。四步走完，合起来就是：八个元素的数组，每个元素是指向无参返回 void 函数的指针。"
+        },
+        {
+          "id": "decl-assert",
+          "kind": "code",
+          "codeLabel": "probe.c 实测：两种写法指向同一个对象",
+          "code": "cb_t via_typedef = on_press;\nvoid (*via_raw)(void) = on_press;   /* 两种写法 */\nCHECK(via_typedef == via_raw);      /* 断言通过 */",
+          "narration": "typedef 只是给这个类型起个名字，语义一个字都没变。probe.c 用一条断言把这件事钉死：typedef 写的和裸写的，比较起来完全相等。"
+        },
+        {
+          "id": "decl-size",
+          "kind": "code",
+          "title": "表占多少字节，编译器算给你看",
+          "codeLabel": "arm-none-eabi-nm -S 实测输出",
+          "code": "0000000c 00000020 b key_table\n\n地址 0x0c   大小 0x20 = 32 字节   类型 b = .bss\n\n32 = 8 个槽 × 4 字节指针",
+          "narration": "再看大小。交叉编译后 nm 一跑，key_table 的长度是 0x20，十进制 32 字节。八个槽，每个地址四个字节，八乘四正好三十二。这个数是编译期算出来的，也是 nm 实测出来的，两头对上。"
+        },
+        {
+          "id": "vec-intro",
+          "kind": "card",
+          "kicker": "第二件 · 向量表",
+          "title": "它就是 Flash 里的一个指针数组",
+          "narration": "接着回头看你早写过但从没细看的东西：启动文件里的中断向量表。"
+        },
+        {
+          "id": "vec-word",
+          "kind": "code",
+          "codeLabel": "启动文件里的一格",
+          "code": ".word EXTI0_IRQHandler   /* 表里这一格填的，是一个地址 */\n\n.isr_vector 一共 392 字节\n= 一个 const 函数指针数组，躺在 Flash 起始处",
+          "narration": "启动文件里每一行点 word，都是往表里填一个地址。整个 .isr_vector 那 392 字节，本质就是一个常量函数指针数组，躺在 Flash 的最前面。所谓注册中断服务函数，在 C 层面根本不需要 API。"
+        },
+        {
+          "id": "vec-weak",
+          "kind": "code",
+          "title": "弱符号 = 可以被覆盖的槽位",
+          "codeLabel": "为什么你写个同名函数就生效",
+          "code": "表里那个槽默认指向启动文件的弱符号实现\n  ↓ 你在 C 文件里写出同名函数\n链接器把这一格重定位到你的函数地址\n\nReset_Handler 是 W —— 弱符号",
+          "narration": "表里的名字都是弱符号。弱符号的意思就是：这个槽默认指向这里，允许你覆盖。你不用调用任何注册函数，只要写出一个同名函数，链接器就把那一格换到你的地址上。"
+        },
+        {
+          "id": "fd-1",
+          "kind": "anim",
+          "anim": "fsm-dispatch",
+          "t0": 0,
+          "t1": 3,
+          "smil": "stretch",
+          "note": "第一幕：字符进来，先分类成事件号",
+          "narration": "现在看这台状态机怎么跑一轮。第一幕：串口来了一个大写 R，classify 把它归成事件号零。分类里那串比较，-O2 之后被完全摊平进 fsm_feed，机器码里连一条 bl 调用都没有。"
+        },
+        {
+          "id": "fd-2",
+          "kind": "anim",
+          "anim": "fsm-dispatch",
+          "t0": 3,
+          "t1": 6,
+          "smil": "stretch",
+          "note": "第二幕：状态 × 事件 = 表下标",
+          "narration": "第二幕：拿当前状态和事件号当二维下标，从 FSM 这张三行四列的表里，取出一个函数地址。加法就是那条 add.w 和 ldr.w，没有分支，没有查 if。"
+        },
+        {
+          "id": "fd-3",
+          "kind": "anim",
+          "anim": "fsm-dispatch",
+          "t0": 6,
+          "t1": 9,
+          "smil": "stretch",
+          "note": "第三幕：blx r3 —— 跳进动作函数",
+          "narration": "第三幕：blx r3。r3 里装着刚从表里取出来的地址，跳过去，同时把返回地址放进 lr。这就是回调在机器码层面的全部含义：一个存起来的地址，加一条跳过去的指令。"
+        },
+        {
+          "id": "fd-4",
+          "kind": "anim",
+          "anim": "fsm-dispatch",
+          "t0": 9,
+          "t1": 12,
+          "smil": "stretch",
+          "note": "第四幕：返回值就是下一个状态",
+          "narration": "第四幕：动作函数返回下一个状态，一条 strb 写回结构体。整张表不需要任何转移逻辑的代码，转移本身就在表里——这就叫表驱动。"
+        },
+        {
+          "id": "fsm-table",
+          "kind": "code",
+          "codeLabel": "probe.c 里的动作表，原文照抄",
+          "code": "typedef state_t (*trans_t)(fsm_t *f, char ch);  /* 动作 = 返回下一状态的函数 */\n\nstatic trans_t const FSM[3][4] = {\n  /*              EV_LETTER   EV_DIGIT   EV_LF    EV_OTHER */\n  /* S_IDLE */ { act_save_cmd, act_ignore, act_ignore, act_ignore },\n  /* S_ARG  */ { act_save_cmd, act_save_arg, act_error,  act_error  },\n  /* S_END  */ { act_error,    act_error,    act_exec,   act_error  },\n};",
+          "narration": "这张表就是全部业务。三行状态、四列事件，每一格填的是该干的事。想加一种行为，就多写一列函数，不用改任何判断逻辑。"
+        },
+        {
+          "id": "fsm-asm-a",
+          "kind": "code",
+          "title": "机器码上半段：classify 被摊平了",
+          "codeLabel": "objdump -d build/probe.m4.o 实测",
+          "code": "00000070 <fsm_feed>:\n  70:  b510       push   {r4, lr}\n  72:  2947       cmp    r1, #71    ; 'G'\n  74:  7802       ldrb   r2, [r0, #0]\n  76:  4604       mov    r4, r0\n  78:  d014       beq.n  a4\n  7a:  f001 03ef  and.w  r3, r1, #239\n  7e:  2b42       cmp    r3, #66    ; 'B'\n  80:  d010       beq.n  a4\n  82:  f1a1 0330  sub.w  r3, r1, #48\n  86:  2b09       cmp    r3, #9\n  88:  d90e       bls.n  a8\n  8a:  290a       cmp    r1, #10",
+          "narration": "fsm_feed 的完整机器码，本机跑出来一个字没改。上半段全是比较：先比 71 也就是大写字母 G，再和 239 做与运算去比 B，再减 48 判数字，最后和 10 比一次换行。这就是 classify——被 -O2 摊平进来了，整段里没有一条 bl 调用。"
+        },
+        {
+          "id": "fsm-asm-b",
+          "kind": "code",
+          "title": "机器码下半段：状态机真正的动作",
+          "codeLabel": "接上一段，同一次反汇编",
+          "code": "  8c:  bf14       ite    ne\n  8e:  2303       movne  r3, #3\n  90:  2302       moveq  r3, #2\n  92:  eb03 0382  add.w  r3, r3, r2, lsl #2   ; state*4 + 事件号\n  96:  4a05       ldr    r2, [pc, #20]        ; FSM 表基址\n  98:  4620       mov    r0, r4\n  9a:  f852 3023  ldr.w  r3, [r2, r3, lsl #2] ; 取出动作函数地址\n  9e:  4798       blx    r3                   ; 间接调用\n  a0:  7020       strb   r0, [r4, #0]         ; 返回值写回 state\n  a2:  bd10       pop    {r4, pc}",
+          "narration": "下半段才是状态机本体：算出下标，取表基址，从表里拿出函数地址，blx 跳过去，返回值一条 strb 写回状态，收尾。前面十几行是分类，真正干活的是这五条。"
+        },
+        {
+          "id": "fsm-const",
+          "kind": "code",
+          "title": "两张表，住两个地方",
+          "codeLabel": "nm -S 实测：const 决定住址",
+          "code": "00000000 00000030 r FSM        ; r = 只读 → .rodata → Flash\n0000000c 00000020 b key_table  ; b = 未初始化 → .bss → RAM\n\nFSM  = 3 × 4 × 4 = 48 字节，一个 RAM 都不占\nkey_table = 8 × 4 = 32 字节，实打实吃 RAM",
+          "narration": "同一份代码里，两张表住两个地方。FSM 加了 const，nm 的类型是 r，进只读段，四十八字节一个 RAM 都不占。key_table 运行时才注册，加不了 const，类型是 b，老老实实占三十二字节 RAM。能不能改，直接决定它住 Flash 还是住 RAM。"
+        },
+        {
+          "id": "state-normal",
+          "kind": "code",
+          "codeLabel": "probe.c 实测断言：正常一帧",
+          "code": "fsm_feed_str(&f, \"R5\\n\");              /* 正常帧 */\nCHECK(f.n_exec == 1 && f.log_cmd[0] == 'R' && f.log_arg[0] == 5);\nCHECK(f.state == S_IDLE && f.n_err == 0);",
+          "narration": "行为对不对，不能靠嘴说。喂一帧 R5 加换行，断言当场验三件事：执行了一次、命令是 R、参数是 5，而且状态回到空闲，一次错误都没记。"
+        },
+        {
+          "id": "state-slice",
+          "kind": "code",
+          "title": "状态活在结构体里，不在调用栈上",
+          "codeLabel": "probe.c 实测：中断来一字，喂一字",
+          "code": "fsm_feed(&f, 'R');        /* 第一个中断 */\nfsm_feed(&f, '4');        /* 第二个中断 */\nCHECK(f.state == S_END && f.n_exec == 3);   /* 状态跨调用续命 */\nfsm_feed(&f, '\\n');       /* 第三个中断 */\nCHECK(f.n_exec == 4 && f.log_arg[3] == 4);",
+          "narration": "最关键的一组在这里：把三个字节分三次调用喂进去，模拟三个中断各带一个字符。喂完第二个字节，状态已经是 S_END；再喂换行，执行次数才加一。状态不在调用栈上，在结构体里——这是中断分片处理的必要条件。"
+        },
+        {
+          "id": "state-garbage",
+          "kind": "code",
+          "title": "畸形帧：报错复位，不崩不死等",
+          "codeLabel": "probe.c 实测断言",
+          "code": "fsm_feed_str(&f, \"R\\n\");     /* 缺参数 */\nCHECK(f.n_err == 1 && f.state == S_IDLE);\n\nfsm_feed_str(&f, \"R5X\\n\");   /* 参数后混垃圾 */\nCHECK(f.n_err == 2 && f.state == S_IDLE);\n\nfsm_feed_str(&f, \"R3\");      /* 半帧挂起，等下一字节 */\nCHECK(f.state == S_END);",
+          "narration": "畸形输入呢？少一个参数，错误加一、状态复位。参数后面混进垃圾，同样报错复位。半帧停在外面，状态就挂在 S_END 等下一字节。没有崩溃，也没有死等——这就是表驱动的脾气。"
+        },
+        {
+          "id": "rb-intro",
+          "kind": "card",
+          "kicker": "第三件 · 环形缓冲",
+          "title": "读写指针相等时，是空还是满？",
+          "narration": "第三件套，中断和主循环之间搬数据用的环形缓冲。它有一个绕不过去的问题：读写指针相等的时候，到底是空还是满？"
+        },
+        {
+          "id": "rb-1",
+          "kind": "anim",
+          "anim": "ring-buffer",
+          "t0": 0,
+          "t1": 3,
+          "smil": "stretch",
+          "note": "第一幕：单生产单消费的规矩",
+          "narration": "第一幕：物理八格，首尾相接。写指针由中断推进，读指针由主循环推进。规矩就一条：各自的指针只有各自能动，交叉修改当场翻车。"
+        },
+        {
+          "id": "rb-2",
+          "kind": "anim",
+          "anim": "ring-buffer",
+          "t0": 3,
+          "t1": 6,
+          "smil": "stretch",
+          "note": "第二幕：A 派——牺牲一格当哨兵",
+          "narration": "第二幕，A 派：永远留一格空着当哨兵。写指针再往前一格就撞上读指针，那算满。判定直白，代价是八格只能用七格。"
+        },
+        {
+          "id": "rb-3",
+          "kind": "anim",
+          "anim": "ring-buffer",
+          "t0": 6,
+          "t1": 9,
+          "smil": "stretch",
+          "note": "第三幕：B 派——指针永不取模",
+          "narration": "第三幕，B 派：指针根本不取模，交给无符号八位自己溢出，用在飞数量判满。八格全部可用。"
+        },
+        {
+          "id": "rb-4",
+          "kind": "anim",
+          "anim": "ring-buffer",
+          "t0": 9,
+          "t1": 12,
+          "smil": "stretch",
+          "note": "第四幕：顺序即正确性",
+          "narration": "第四幕，也是最容易漏的：先写货、后发布指针；消费者反过来，先看到指针、再取货。顺序反了，读到的就是还没写进去的空槽。"
+        },
+        {
+          "id": "rb-a",
+          "kind": "code",
+          "codeLabel": "A 派写入，probe.c 原文",
+          "code": "uint8_t w = q->w;\nif ((uint8_t)((w + 1) % RB_CAP) == q->r)\n    return false;                          /* 满 */\nq->data[w] = v;\natomic_signal_fence(memory_order_release); /* 数据先于写指针发布 */\nq->w = (uint8_t)((w + 1) % RB_CAP);\n\n实测：A 派（牺牲一格）可用 7 格",
+          "narration": "A 派的代码就这么短：写指针加一取模，等于读指针就是满。注意中间那条屏障——先把数据写进去，再把新写指针发布出去，顺序不能反。实测可用七格。"
+        },
+        {
+          "id": "rb-b",
+          "kind": "code",
+          "codeLabel": "B 派写入，probe.c 原文",
+          "code": "uint8_t w = q->w;\nif ((uint8_t)(w - q->r) >= RB_CAP)        /* 满：无符号减法天然抗回绕 */\n    return false;\nq->data[w % RB_CAP] = v;                   /* 只在寻址时取模 */\natomic_signal_fence(memory_order_release);\nq->w = (uint8_t)(w + 1);                   /* 索引本身永不取模 */\n\n实测：B 派（单调索引）可用 8 格",
+          "narration": "B 派换了一个角度：判满用无符号减法，在飞数量大于等于容量就是满。妙处在于，就算写指针从 255 绕回 0，无符号减法的模二百五十六语义照样给出正确数量，一行回绕判断都不用写。实测八格全可用——同一份缓冲，比 A 派多一格。"
+        },
+        {
+          "id": "rb-longrun",
+          "kind": "code",
+          "title": "长跑 600 步，两个都不丢一个",
+          "codeLabel": "probe.c 实测断言",
+          "code": "CHECK(n_put == n_get);                     /* 一个不多一个不少 */\nCHECK(n_refused > 0);                      /* “满写被拒”真的触发过 */\nCHECK(n_put > 256);                        /* 确实跨过 255→0 回绕 */\nCHECK(q.w == (uint8_t)n_put && q.r == (uint8_t)n_get);\n\n== 断言通过 560/560 ==",
+          "narration": "这不是推演，是跑出来的。两派各做六百步塞取交错，序号取模逐一比对：放入数和取出数严格相等，满写被拒的路径真的触发过，B 派还额外断言放入数大于二百五十六——真的跨过了那个回绕点。全绿，五百六十条断言。"
+        },
+        {
+          "id": "duty-table",
+          "kind": "code",
+          "title": "三件套的分工，就这张表",
+          "codeLabel": "中断里做什么 / 主循环做什么",
+          "code": "函数指针（向量表、分发表）\n  中断：一跳到位，不做判断    主循环：注册、替换处理函数\n状态机\n  中断：只改 state、搬一字节  主循环：读状态决定业务\n环形缓冲\n  中断：只 put 一个字节      主循环：循环 get 出来慢慢处理",
+          "narration": "把三件套拼起来，分工就清楚了。函数指针在中断里一跳到位，不做判断；状态机只改一个字节的状态、搬一个字节的数据；环形缓冲只放一个字节进、主循环慢慢取。业务，全留给你。"
+        },
+        {
+          "id": "duty-null",
+          "kind": "code",
+          "title": "分派前判空，不是装饰",
+          "codeLabel": "probe.c 源码 → main 里的实测机器码",
+          "code": "if (key_table[i] != NULL)\n    key_table[i]();\n\n  20:  b103      cbz  r3, 24 <main+0x24>   /* 空槽 → 跳过 */\n  22:  4798      blx  r3                   /* 非空才跳过去 */\n  24:  42a6      cmp  r6, r4",
+          "narration": "最容易忘的一条：注册表里的槽可能是 NULL，没注册就直接调用，等于跳到地址零。编译器把这句判空实打实编成了一条 cbz——空就跳过。这条指令，挡在你和地址零之间。"
+        },
+        {
+          "id": "duty-budget",
+          "kind": "card",
+          "tone": "danger",
+          "kicker": "中断预算",
+          "title": "一次查表 + 一次间接调用 + 一次写回",
+          "sub": "加一句 printf，预算立刻爆掉",
+          "narration": "为什么不能恋战？ fsm_feed 的全部工作量，就是一次查表、一次间接调用、一次写回，几十个时钟周期。这就是中断预算的基准线。你在里面加一句打印、一次延时、一段浮点，预算立刻爆掉。"
+        },
+        {
+          "id": "howto-steps",
+          "kind": "code",
+          "title": "拿到需求，怎么落成三件套",
+          "codeLabel": "以“串口收到一帧命令”为例",
+          "code": "1  把输入分成事件：字母 / 数字 / 换行 / 其他\n2  把状态列出来：IDLE / ARG / END\n3  填一张 状态 × 事件 → 动作 的 const 表\n4  中断里只做：classify → 查表 → blx → 写回\n5  数据进环形缓冲，业务留到主循环\n\n一坨 if/else 就此消失",
+          "narration": "落到实操就五步：先给输入分事件，再把状态列全，然后填一张状态乘事件到动作的常量表，中断里只留查表加调用加写回，最后把数据丢进环形缓冲，业务留给主循环。写完你会发现自己一个 else if 都没写。"
+        },
+        {
+          "id": "howto-run",
+          "kind": "code",
+          "codeLabel": "本机实跑：sh probe.sh",
+          "code": "############ 1. 宿主编译并运行（断言取证） ############\n宿主工具链：gcc 16.1.0\n环形缓冲容量对照：A 派（牺牲一格）可用 7 格，B 派（单调索引）可用 8 格\n== 断言通过 560/560 ==\n\n############ 2. 交叉反汇编 ############\n交叉工具链：10.3.1\n94:  9e:  4798   blx  r3\n133:  22:  4798   blx  r3",
+          "narration": "这一集所有东西都在一个脚本里。宿主 gcc 跑断言，交叉工具链附送反汇编，两条 blx 一条在状态机、一条在回调循环。你 clone 下来重跑，看到的就是这两行。"
+        },
+        {
+          "id": "punch",
+          "kind": "card",
+          "tone": "gold",
+          "kicker": "一句话记住",
+          "title": "中断里只做快递分拣，不下厨房",
+          "narration": "这一集一句话：指针记账、状态归档、缓冲转运；中断里只做快递分拣，不下厨房。厨房的事，交给主循环。"
+        },
+        {
+          "id": "cta",
+          "kind": "outro",
+          "title": "560 条断言，你能一遍跑绿",
+          "sub": "站内通往单片机之路 · C5",
+          "narration": "站内通往单片机之路 C5 有全篇，加上那个取证工程。clone 下来一条命令跑完，五百六十条断言全绿，再自己把反汇编里那两条 blx 找出来。"
+        },
+        {
+          "id": "teaser",
+          "kind": "card",
+          "kicker": "下一站 · C6",
+          "title": "调用约定与栈帧：一次调用的全程直播",
+          "narration": "下一集讲一次函数调用到底发生了什么：参数走哪几个寄存器，栈帧怎么开怎么收，lr 里的返回地址从哪来。blx 跳过去之后，那半段我们下次补上。"
+        }
+      ]
+    },
+    "douyin": {
+      "size": [
+        1080,
+        1920
+      ],
+      "targetSec": [
+        45,
+        75
+      ],
+      "reuseFrom": "bilibili",
+      "pick": [
+        "hook-01",
+        "hook-03",
+        "fd-3",
+        "fsm-table",
+        "fsm-const",
+        "vec-word",
+        "state-slice",
+        "rb-intro",
+        "rb-2",
+        "rb-3",
+        "rb-a",
+        "duty-null",
+        "punch",
+        "cta"
+      ],
+      "narration": {
+        "hook-01": "中断一来，硬件只干一件事：跳到表里那个地址。",
+        "hook-03": "你写的回调，编译完就剩一条：blx r3。",
+        "fd-3": "跳到寄存器里装的地址，这就是函数指针的全部。",
+        "fsm-table": "整台状态机，就是这张表加一次查表。",
+        "fsm-const": "加了 const，48 字节住 Flash，RAM 一点不占。",
+        "vec-word": "向量表就是 Flash 里的函数指针数组。",
+        "state-slice": "状态存在结构体里，所以能跨调用续命。",
+        "rb-intro": "读写指针相等，到底是空还是满？",
+        "rb-2": "A 派牺牲一格：八格只能用七格。",
+        "rb-3": "B 派单调索引：八格全可用，实测。",
+        "rb-a": "先写货、再发布指针，顺序反了就读空槽。",
+        "duty-null": "空槽不判就调，等于跳进地址零。",
+        "punch": "中断里只做快递分拣，不下厨房。",
+        "cta": "560 条断言，站内 C5 自己跑。"
+      },
+      "set": {
+        "rb-intro": {
+          "title": "读写指针相等时，\n是空还是满？"
+        },
+        "punch": {
+          "title": "中断里只做快递分拣，\n不下厨房"
+        }
+      }
+    }
+  }
+}

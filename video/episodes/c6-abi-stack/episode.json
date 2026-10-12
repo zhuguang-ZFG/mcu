@@ -1,0 +1,401 @@
+{
+  "id": "c6-abi-stack",
+  "title": "一次函数调用的全程直播：参数、回家路、栈帧的生灭",
+  "badge": "C6",
+  "voice": "zh-CN-YunxiNeural",
+  "rate": "+4%",
+  "fps": 30,
+  "sampleRate": 44100,
+  "channels": 2,
+  "cover": {
+    "kicker": "通往单片机之路 · C6",
+    "line1": "参数装 r0-r3",
+    "line2": "多余的上栈",
+    "sizes": {
+      "bilibili": [
+        1920,
+        1200
+      ],
+      "douyin": [
+        1080,
+        1440
+      ]
+    }
+  },
+  "publish": {
+    "bilibili": {
+      "titles": [
+        "一次函数调用，编译器只干四件事：参数、回家路、栈帧、返回值",
+        "同一个函数，宿主开 64 字节栈帧，Cortex-M4 只花 24 字节",
+        "第 5 个参数去哪了？把 AAPCS 逐条对到真实汇编上"
+      ],
+      "intro": "函数凭什么调完就回来？参数凭什么送得到？局部变量凭什么用完自动回收？这一集把 AAPCS 调用约定逐条对到真实汇编上：前 4 个参数在 r0-r3、第 5 个起走栈（strd 上栈 / ldr 读回，@ args = 8）、64 位必须占偶奇寄存器对（mix 里 r1 被整个跳过）、硬浮点 double 走 d0/d1 不占 r0:r1、非叶子函数 push {r4, lr} + sub sp 进、pop {r4, pc} 出。字节账也是实跑的：同一个 non_leaf，宿主 gcc 16.1.0 一帧吃掉 64 字节，arm-none-eabi-gcc 10.3.1 编到 Cortex-M4 只要 24 字节。所有数字与汇编来自本机：cd code/c/06-abi-stack && sh probe.sh（9/9 断言全绿，不需要开发板）。站内有全篇：通往单片机之路 C6。",
+      "tags": [
+        "单片机",
+        "C语言",
+        "汇编",
+        "ARM",
+        "AAPCS",
+        "栈帧",
+        "STM32",
+        "嵌入式"
+      ],
+      "topics": [
+        "单片机",
+        "嵌入式开发",
+        "C语言"
+      ]
+    },
+    "douyin": {
+      "titles": [
+        "第 5 个参数去哪了？汇编里看得见",
+        "同一个函数，两种编译器开出的栈帧差 40 字节",
+        "pop {r4, pc}：弹栈和跳转是同一条指令"
+      ],
+      "intro": "一次函数调用，机器层面只有四件事：参数进 r0-r3、回家路记在 lr、局部变量挪 sp、结果从 r0 带出去。所有汇编和字节数都是本机跑出来的，9 条断言全绿。站内通往单片机之路 C6 有全篇。",
+      "tags": [
+        "单片机",
+        "C语言",
+        "汇编",
+        "嵌入式"
+      ],
+      "topics": [
+        "单片机",
+        "嵌入式开发"
+      ]
+    }
+  },
+  "platforms": {
+    "bilibili": {
+      "size": [
+        1920,
+        1080
+      ],
+      "targetSec": [
+        480,
+        720
+      ],
+      "scenes": [
+        {
+          "id": "hook-01",
+          "kind": "hook",
+          "title": "同一段 C，两个编译器开出不一样的栈帧",
+          "sub": "宿主 gcc 实测：一帧 64 字节 · Cortex-M4 实测：24 字节",
+          "narration": "先给一个反差。同一个函数，开十六字节局部数组，里面还调用了两次别人。宿主编译器一帧吃掉六十四字节，编到 Cortex-M4 只花二十四个字节。数字不一样，规矩是同一套——这套规矩叫 AAPCS。这一集逐条对到本机跑出来的汇编上。"
+        },
+        {
+          "id": "hook-02",
+          "kind": "hook",
+          "title": "一次调用，机器层面只有四件事",
+          "sub": "参数怎么进 · 回家路记在哪 · 局部变量在哪安家 · 结果怎么带出去",
+          "narration": "把函数调用拆到底只剩四件事：参数怎么进来，回家的路记在哪，局部变量在哪儿安家，结果怎么带出去。每件都只有一个答案，编译器不敢即兴发挥——启动代码是手写汇编，跟 gcc 从没见过面，也得接上头。"
+        },
+        {
+          "id": "hook-03",
+          "kind": "card",
+          "kicker": "本集路线",
+          "title": "四件事，四段真实汇编",
+          "bullets": [
+            "参数落位：r0–r3 装前 4 个，第 5 个起走栈",
+            "64 位：必须占偶奇寄存器对，r1 可以被跳过",
+            "硬浮点：double 走 d0/d1，不占 r0:r1",
+            "栈帧：push 保护现场，pop 进 pc 一步回家"
+          ],
+          "narration": "这一集按这四条走，每条配一段本机反汇编。工程在 code/c/06-abi-stack，一条 sh probe.sh 跑完，不需要开发板。"
+        },
+        {
+          "id": "reg-table",
+          "kind": "code",
+          "title": "寄存器分工表：每一行本集都有证据",
+          "codeLabel": "AAPCS 分工（对照本机 probe.s）",
+          "code": "r0–r3    a1–a4   前 4 个参数 + 临时；r0（64 位 r0:r1）带回返回值   被调方随便改\nr4–r8    v1–v5   长期变量                                       想用就得先存后还\nr12      ip      链接器贴片用的 scratch                            被调方随便改\n!r13     sp      栈指针，公共接口处 8 字节对齐\nr14      lr      返回地址，bl 时硬件写入                           每次调用都被覆盖\nr15      pc      程序计数器                                       pop 进它即完成返回",
+          "narration": "这张表是地基。r0 到 r3 是公共电话亭，谁都能用，调完不保证还在；r4 到 r8 谁用谁先存后还；lr 记回家路，可每一次 bl 都把它覆盖；pc 被改写的那一刻函数就返回了。约定就是：谁能用、谁必须存、参数放哪、结果放哪。约定之外没有魔法。"
+        },
+        {
+          "id": "sum-src",
+          "kind": "code",
+          "title": "六个 int 参数，r0–r3 只装得下四个",
+          "codeLabel": "probe.c 第 41–44 行",
+          "code": "int sum6(int a, int b, int c, int d, int e, int f)\n{\n    return a + b + c + d + e + f;\n}",
+          "narration": "第一个实验，六个 int。前四个装进 r0 到 r3 没问题，第五、第六个去哪了？两边汇编各看一眼就明白。"
+        },
+        {
+          "id": "sum-callee",
+          "kind": "code",
+          "title": "被调方：第 5、6 个参数从栈上读回来",
+          "codeLabel": "arm-none-eabi-gcc 10.3.1 -O2 实测反汇编",
+          "code": "sum6:\n    @ args = 8, pretend = 0, frame = 0\n    @ link register save eliminated.\n    add     r1, r1, r0\n    add     r2, r2, r1\n    add     r3, r3, r2\n!   ldr     r2, [sp]        @ 第 5 个参数 e\n!   ldr     r0, [sp, #4]    @ 第 6 个参数 f\n    add     r3, r3, r2\n    add     r0, r0, r3\n    bx      lr",
+          "narration": "开头两行注释是编译器自己填的表。args 等于八：调用方在栈上放了八个字节入参。frame 等于零：这函数没有局部变量，一字节帧都不开。前三条 add 用 r0 到 r3 里的四个参数，第五第六用两条 ldr 从栈顶读回来。"
+        },
+        {
+          "id": "sum-caller",
+          "kind": "code",
+          "title": "调用方：一条 strd 把两个数写上栈顶",
+          "codeLabel": "build/probe.s 第 217–224 行（main 内，bl sum6 之前）",
+          "code": "    movs    r3, #5\n    movs    r2, #6\n!   strd    r3, r2, [sp]      @ 5 → [sp]，6 → [sp,#4]\n    movs    r2, #3\n    subs    r4, r0, r2        @ 顺手核对上一次调用的返回值\n    movs    r3, #4\n    movs    r0, #1\n    bl      sum6",
+          "narration": "调用方这边，r3 装五、r2 装六，一条 strd 同时写到 sp 和 sp 加四，跟被调方那两条 ldr 严丝合缝。中间那条 subs 是探针在核对上一个返回值，跟传参无关。注意 r1 从头到尾没被重写，它里面还是二，正是第二个参数。"
+        },
+        {
+          "id": "sum-host",
+          "kind": "code",
+          "title": "值不会因为走栈就变，变的只是成本",
+          "codeLabel": "probe.exe 实测（宿主 gcc 16.1.0）",
+          "code": "!sum6(1,2,3,4,5,6)     = 21（第 5、6 个参数 5、6 是走栈送进去的）\n== 断言通过 9/9 ==",
+          "narration": "宿主跑出来就是二十一个，九条断言全绿。语义不因传参方式改变，变的只有成本：寄存器传参零额外访存，栈传参多一次写、一次读。性能敏感的接口，参数控制在四个以内。"
+        },
+        {
+          "id": "sf-1",
+          "kind": "anim",
+          "anim": "stack-frame",
+          "t0": 0,
+          "t1": 3,
+          "smil": "stretch",
+          "note": "示意动画里 add_two 开 8 字节局部区；实测工程 non_leaf 开 16 字节",
+          "narration": "把一次调用完整放一遍。main 只要两个参数：r0 装一，r1 装二，sp 停在 0x2000FFF0。bl 按下去，硬件只做一件事——把下一条指令的地址 0x08000234 写进 lr。回家路记好了，出发。"
+        },
+        {
+          "id": "sf-2",
+          "kind": "anim",
+          "anim": "stack-frame",
+          "t0": 3,
+          "t1": 6,
+          "smil": "stretch",
+          "note": "prologue 第一条：push {r4, lr}",
+          "narration": "进了 add_two，头一条就是 push {r4, lr}。为什么一次压两样？因为它要用 r4，还要再调用别人。栈往下长，sp 从 0x2000FFF0 降到 0x2000FFE8，两个格子被占：r4 的旧值，和那条回家地址。"
+        },
+        {
+          "id": "sf-3",
+          "kind": "anim",
+          "anim": "stack-frame",
+          "t0": 6,
+          "t1": 9,
+          "smil": "stretch",
+          "note": "sub sp 占坑，adds 把结果送进 r0",
+          "narration": "第二条 sub sp, #8，给两个局部变量腾位置，sp 再降到 0x2000FFE0，帧到这就搭完了。然后 adds 把 r0 跟 r1 加成三——结果必须放进 r0，这是规定的出口，没得商量。"
+        },
+        {
+          "id": "sf-4",
+          "kind": "anim",
+          "anim": "stack-frame",
+          "t0": 9,
+          "t1": 12,
+          "smil": "stretch",
+          "note": "epilogue：弹栈与跳转合一",
+          "narration": "收尾一条 pop {r4, pc}，同时干两件事：r4 归位，sp 弹回 0x2000FFF0；那条回家地址直接进 pc，程序落回 main 里 bl 的下一条。弹栈和跳转是同一条指令，连 bx lr 都省了。"
+        },
+        {
+          "id": "a64-asm",
+          "kind": "code",
+          "title": "64 位参数：必须落在偶奇寄存器对",
+          "codeLabel": "add64 实测反汇编（10.3.1）",
+          "code": "add64:\n    @ args = 0, pretend = 0, frame = 0\n!   adds    r0, r0, r2    @ 低 32 位相加，s 更新进位\n!   adc     r1, r1, r3    @ 高 32 位再加上进位\n    bx      lr",
+          "narration": "第二个实验，两个 long long。x 占 r0 和 r1，y 占 r2 和 r3，返回值也走 r0:r1。adds 加低三十二位并更新进位，adc 把高三十二位连进位一起加——这条进位链就是两个 32 位寄存器扮一个 64 位数的铁证。宿主实测得 0x300000001。"
+        },
+        {
+          "id": "mix-asm",
+          "kind": "code",
+          "title": "反直觉在 mix：r1 被整个跳过",
+          "codeLabel": "mix(int tag, long long v) 被调方实测",
+          "code": "mix:\n    mov     r1, r0              @ 只是返回值高半的暂存\n!   adds    r0, r0, r2          @ tag 在 r0，v 在 r2:r3\n    adc     r1, r3, r1, asr #31\n    bx      lr",
+          "narration": "更别扭在这儿：第一个参数 int 的 tag，第二个 long long 的 v。tag 占了 r0，v 能不能放 r1 和 r2？不能——六十四位参数必须对齐到偶数号寄存器，于是 v 落 r2 和 r3，r1 整个空着。被调方只读 r0、r2、r3，从没碰 r1。"
+        },
+        {
+          "id": "mix-caller",
+          "kind": "code",
+          "title": "调用方的铁证：r1 压根没被赋值",
+          "codeLabel": "bl mix 之前（probe.sh 第 55–60 行取证）",
+          "code": "    movs    r2, #0        @ v 低 32 位\n    movs    r3, #1        @ v 高 32 位 → v = 0x1_0000_0000\n!   movs    r0, #7        @ tag（r1 一次都没被写）\n    bl      mix           @ r1 里躺的是上一个调用留下的垃圾",
+          "narration": "调用方直接给铁证：只写 r2、r3、r0，r1 一条赋值都没有。此刻 r1 里躺的是上一个返回值的高半，mix 正确地视而不见。宿主断言：传七和 0x100000000 得 0x100000007。推论：六十四位参数放前面，少留空洞，ABI 不替你重排。"
+        },
+        {
+          "id": "fpu-asm",
+          "kind": "code",
+          "title": "硬浮点：double 从 d0、d1 进来，不占 r0:r1",
+          "codeLabel": "add_d 实测（-mfpu=fpv4-sp-d16 -mfloat-abi=hard）",
+          "code": "add_d:\n    @ args = 0\n    push    {r3, lr}\n!   vmov    r0, r1, d0     @ 把 d0 搬进内核寄存器对……\n!   vmov    r2, r3, d1     @ ……只因为 fpv4-sp 没有双精度硬件\n    bl      __aeabi_dadd\n    vmov    d0, r0, r1\n    pop     {r3, pc}",
+          "narration": "第三个实验，两个 double。编译旗 hard，浮点参数就走 VFP 寄存器：单精度 s0 到 s15，双精度 d0 到 d7。两条 vmov 恰好证明参数从 d0、d1 进来；r0:r1 只是软件库内部的收参约定。fpv4-sp 只有单精度硬件，double 加法得喊库。"
+        },
+        {
+          "id": "fpu-link",
+          "kind": "card",
+          "kicker": "ABI 三个字的分量",
+          "title": "hard 和 soft 的目标文件，不能混着链",
+          "bullets": [
+            "-mfloat-abi=hard：double 走 d0/d1",
+            "-mfloat-abi=soft：double 按 64 位整数规则走 r0:r1",
+            "混链：链接器直接报 VFP 参数 mismatch"
+          ],
+          "narration": "换成 soft，double 就按六十四位整数的规则直接走 r0:r1。两种旗编出来的目标文件不能混着链，链接器会报 VFP 参数不匹配。所以 ABI 不是风格问题，是能不能链到一起的问题。宿主断言：0.5 加 0.25 等于 0.75。"
+        },
+        {
+          "id": "nl-src",
+          "kind": "code",
+          "title": "non_leaf：函数体里还要调用两次别人",
+          "codeLabel": "probe.c 第 78–88 行",
+          "code": "int non_leaf(int x)\n{\n    char buf[16];\n    buf[0] = (char)(x & 0xFF);\n    g_sp_callee = read_sp();\n    g_buf_addr  = (uintptr_t)buf;\n    sink(buf);                  /* 地址交出去 → 不敢塞进寄存器 */\n    return add2(x, buf[0]) + 1; /* bl add2 会覆盖 lr → 必须保存 */\n}",
+          "narration": "最后一个实验，非叶子函数。开十六字节数组，里面调 sink 又调 add2。sink 标了 noipa，禁用一切过程间分析，调用方只能按最坏情况假定：r0 到 r3、r12 全被改写。想让值活过这次调用，只能放进被调方保存寄存器，r4 就是这么登场的。"
+        },
+        {
+          "id": "nl-asm",
+          "kind": "code",
+          "title": "完整帧：push 八个字节，sub 十六个字节",
+          "codeLabel": "non_leaf 实测反汇编（Cortex-M4，-O2）",
+          "code": "non_leaf:\n    @ args = 0, pretend = 0, frame = 16\n!   push    {r4, lr}        @ 8 字节：r4 与回家地址\n!   sub     sp, sp, #16     @ 16 字节：buf[16] 的家\n    bl      sink\n    bl      add2\n    add     sp, sp, #16\n!   pop     {r4, pc}        @ 返回地址直接弹进 PC",
+          "narration": "实测的帧就是这样：push 存 r4 和 lr，八个字节；sub sp 十六给 buf 安家，合起来二十四个字节。结尾 pop {r4, pc}，把回家地址直接弹进 pc。同一份代码在宿主上是六十四字节，两场之后算给你看。"
+        },
+        {
+          "id": "leaf-vs",
+          "kind": "code",
+          "title": "对照组：叶子函数连 lr 都不存",
+          "codeLabel": "add2 实测（同一份 probe.s）",
+          "code": "add2:\n!   @ link register save eliminated.\n    add     r0, r0, r1\n    bx      lr",
+          "narration": "对照是 add2。它不调用任何人，编译器注释直接写：link register save eliminated。全身两条指令，一个 add，一个 bx lr。叶子函数不压栈，这是 -O2 的基本功。"
+        },
+        {
+          "id": "counts",
+          "kind": "code",
+          "title": "计数核对：整份汇编里这些模式各一次",
+          "codeLabel": "probe.sh 第 66–70 行实测输出",
+          "code": "!push {r4, lr} 出现次数 = 1\n!pop  {r4, pc}  出现次数 = 1\n调用方把第 5、6 个入参写上栈：strd , [sp] 次数 = 1\nstr 落盘到 [sp…] 总次数 = 1（含编译器溢出暂存，不都等于栈传参）",
+          "narration": "把整份汇编数一遍：push r4 加 lr 只出现一次，pop r4 进 pc 也只有一次，正是 non_leaf 那一对；把入参写上栈的 strd 也只有一处，就是 sum6。计数本身就是取证——谁该有栈帧，汇编里赖不掉。"
+        },
+        {
+          "id": "bytes-host",
+          "kind": "code",
+          "title": "宿主实测的活栈账",
+          "codeLabel": "probe.exe 输出（gcc 16.1.0，x86-64）",
+          "code": "sp(main, 调用前)      = 0xa8753ff700\nsp(non_leaf 体内)     = 0xa8753ff6c0\n!一帧吃掉的栈          = 64 字节\nbuf 地址              = 0xa8753ff6e0\n!buf 距 sp(non_leaf)   = 32 字节",
+          "narration": "现在算那六十四字节。在 main 里读一次 sp，进 non_leaf 再读一次，相减就是六十四。buf 离当前 sp 正好三十二字节，剩下的全是对齐填充。断言同步通过：sp 向下走、buf 落在本帧之内、帧差是八的倍数——公共接口处 sp 要八字节对齐。"
+        },
+        {
+          "id": "bytes-both",
+          "kind": "card",
+          "title": "六十四是宿主的账，二十四是 M4 的账",
+          "bullets": [
+            "同一个 non_leaf：宿主 64 B / Cortex-M4 24 B",
+            "字节数随目标、随编译器变，别把 64 当常数",
+            "机制不变：sp 一根指针的移动 = 分配与释放的全部成本"
+          ],
+          "narration": "所以别把六十四当常数。字节账随目标变、随编译器变，不变的是机制：分配栈帧就是把 sp 减一下，释放就是加回来。没有协商，没有系统调用，全部成本就是一根指针的移动。"
+        },
+        {
+          "id": "pit-lr",
+          "kind": "card",
+          "kicker": "常见坑 ①",
+          "title": "手写汇编忘了 push lr，返回就乱飞",
+          "narration": "第一个坑。函数里再调函数，第一次 bl 就把 lr 覆盖了，返回时程序直接乱飞。看汇编就能确诊：非叶子函数的 prologue 一定有 push lr，只有叶子函数才配得上那句 save eliminated。"
+        },
+        {
+          "id": "pit-64",
+          "kind": "card",
+          "kicker": "常见坑 ②",
+          "title": "按 r1 去找那个 long long，\n找到的是垃圾",
+          "narration": "第二个坑跟落位有关。调试 mix 时按 r1 去找参数 v，找到的是上一个函数留下的返回高半。六十四位必须从偶数号寄存器开始，这个空洞编译器不会提醒你。"
+        },
+        {
+          "id": "pit-isr",
+          "kind": "card",
+          "kicker": "常见坑 ③",
+          "title": "栈预算要按最坏的中断嵌套来算",
+          "bullets": [
+            "ISR 的硬件压栈，压的是被中断者那张栈",
+            "递归没有边界 → 溢出踩到全局区，裸机没有 MMU 兜底",
+            "症状常常是变量莫名其妙变了，HardFault 都不一定报"
+          ],
+          "narration": "第三个坑最贵。中断来时硬件自动把一整套寄存器压进当前栈，压的是被中断那个任务的栈。所以栈预算要按最坏嵌套算，递归没有边界就一路溢出踩到全局区，症状常常是变量莫名其妙变了。"
+        },
+        {
+          "id": "lab-gdb",
+          "kind": "code",
+          "title": "板上单步：每过一条 prologue 看一次 sp",
+          "codeLabel": "OpenOCD + GDB（本章实物实验步骤，未上板）",
+          "code": "(gdb) break non_leaf\n(gdb) si                 # 过 push {r4, lr}\n(gdb) info registers sp lr pc\n!(gdb) x/4xw $sp          # 栈顶第二个字就是返回地址\n(gdb) si                 # 过 sub sp, #16 → sp 再减 16",
+          "narration": "章里的实物实验是这样：断点打在非叶子函数入口，si 单步过 prologue，每步看一次 sp、lr、pc。push 之后 sp 减八，栈顶第二个字就是返回地址；sub 之后再减十六；pop {r4, pc} 之后 pc 精确落回 bl 的下一条。"
+        },
+        {
+          "id": "link-next",
+          "kind": "card",
+          "kicker": "往前后接",
+          "title": "这门本事，S16 和 F2 都要用",
+          "bullets": [
+            "C5：blx r3 决定跳到哪 → 本集讲跳过去之后怎么收拾",
+            "S16 HardFault：硬件自动压 r0–r3、r12、lr、pc、xPSR",
+            "F2 上下文切换：整套寄存器换栈保存与恢复"
+          ],
+          "narration": "往前接 C5：blx r3 决定跳到哪，今天讲跳过去之后参数怎么进、帧怎么长。往后两章要用它——S16 的 HardFault，反查崩溃行号就是按今天这张布局图把 pc 从栈里挖出来；F2 的任务切换也是同一件事，只是换的是整个栈。"
+        },
+        {
+          "id": "punch",
+          "kind": "card",
+          "tone": "gold",
+          "kicker": "一句话记住",
+          "title": "参数 r0 到 r3，多余的上栈找",
+          "sub": "64 位占偶奇对，r1 可以被跳掉；返回值 r0 里抱；r4–r11 谁用谁保管；lr 记着回家道，pop 进 pc 一把销",
+          "narration": "口诀收尾。参数 r0 到 r3，多余的上栈找；六十四位占偶奇对，r1 可以被跳掉；返回值 r0 里抱；r4 到 r11 谁用谁保管；lr 记着回家道，pop 进 pc 一把销。"
+        },
+        {
+          "id": "cta",
+          "kind": "outro",
+          "title": "9 条断言，一条命令跑绿",
+          "sub": "站内通往单片机之路 · C6",
+          "narration": "取证工程在 code/c/06-abi-stack，clone 下来 sh probe.sh，九条断言全绿，再把汇编里那两条 ldr 和那一条 pop 亲手找出来。站内通往单片机之路 C6 有全篇。"
+        },
+        {
+          "id": "teaser",
+          "kind": "outro",
+          "title": "下一集 · C7：未定义行为",
+          "sub": "编译器没报错，不代表你的代码没错",
+          "narration": "下一集拍 C7，未定义行为。有符号溢出、空指针、数组越界，编译器不报错，却把它们当成不可能发生来做优化——优化越合理，程序越离谱。"
+        }
+      ]
+    },
+    "douyin": {
+      "size": [
+        1080,
+        1920
+      ],
+      "targetSec": [
+        45,
+        75
+      ],
+      "reuseFrom": "bilibili",
+      "pick": [
+        "hook-01",
+        "hook-02",
+        "sum-callee",
+        "sum-caller",
+        "sf-2",
+        "sf-4",
+        "mix-caller",
+        "nl-asm",
+        "leaf-vs",
+        "punch",
+        "cta"
+      ],
+      "narration": {
+        "hook-01": "同一函数，宿主一帧 64 字节，M4 只花 24。",
+        "hook-02": "函数调用拆到底，只有四件事。",
+        "sum-callee": "前四个进 r0 到 r3，第五第六从栈上读回来。",
+        "sum-caller": "一条 strd 写上栈顶，跟那两条 ldr 严丝合缝。",
+        "sf-2": "push {r4, lr}：要用 r4，还要再调别人。",
+        "sf-4": "pop {r4, pc}：弹栈和跳转是同一条指令。",
+        "mix-caller": "64 位要落在偶奇寄存器对，r1 被整个跳过。",
+        "nl-asm": "push 8 加 sub 16，这一帧 24 字节。",
+        "leaf-vs": "叶子函数不调用任何人，连 lr 都不用存。",
+        "punch": "参数 r0 到 r3，多余的上栈找；pop 进 pc 一把销。",
+        "cta": "一条命令，9 条断言全绿。站内 C6 有全篇。"
+      },
+      "set": {
+        "hook-01": {
+          "title": "同一段 C，\n两个编译器\n两种栈帧"
+        },
+        "nl-asm": {
+          "title": "push 八个字节\nsub 十六个字节"
+        },
+        "punch": {
+          "title": "参数 r0 到 r3，\n多余的上栈找"
+        }
+      }
+    }
+  }
+}

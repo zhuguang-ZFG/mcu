@@ -1,0 +1,215 @@
+{
+  "series": "通往单片机之路",
+  "site": "docs/（VitePress，80 章图文 + 101 张 SVG/SMIL 动画）",
+  "format": {
+    "bilibili": "1920×1080 30fps，8–12 分钟完整版",
+    "douyin": "1080×1920 30fps，45–75 秒短版（同素材重排：钩子前置、每幕一句、金句收尾）",
+    "rule": "每集一集一脚本：video/episodes/<id>/episode.json 是唯一事实源；屏上所有汇编/日志必须是本机实跑的产物，不抄二手结论。"
+  },
+  "episodes": [
+    {
+      "no": 1,
+      "id": "c3-volatile",
+      "title": "你的 volatile 白加了",
+      "source": "docs/c/03-volatile.md",
+      "storyboard": "video/episodes/c3-volatile/storyboard.md",
+      "status": "done",
+      "anims": [
+        "volatile-as-if"
+      ],
+      "hook": "同一份 blink，只把 -O0 换成 -O2，灯就不闪了。",
+      "hookRef": "docs/c/03-volatile.md:379-398（六变体对照表）",
+      "punchline": "volatile 管登门，不管排队",
+      "masters": "video/out/c3-volatile/bilibili.mp4（09:46）· douyin.mp4（01:02）"
+    },
+    {
+      "no": 2,
+      "id": "c4-struct-abi",
+      "title": "GPIOF->BSRR 凭什么罩住 0x40021418",
+      "source": "docs/c/04-struct-abi.md",
+      "script": "video/episodes/c4-struct-abi/episode.json",
+      "status": "done",
+      "anims": [
+        "struct-alignment"
+      ],
+      "masters": "video/out/c4-struct-abi/bilibili.mp4（10:22）· douyin.mp4（01:08）",
+      "hook": "同一句 GPIOF->BSRR，一边是像人话的一行，一边是 0x40021400 + 0x18——偏移是数出来的，不是背的。",
+      "hookRef": "docs/c/04-struct-abi.md:188-191（常见坑）+ code/c/04-struct-abi/broken.sh 实测",
+      "punchline": "顺序定先后，ABI 定间隔，volatile 定纪律",
+      "note": "为这一集补了 broken.c/broken.sh：四种写错的偏移（AFR 掉中括号→sizeof 0x24、空洞不补 RESERVED→DR 前移到 0x04 且编译通过、pack(1)→6 字节）和被编译期断言拦下的那条 error，全部本机实跑，已内链进章节。"
+    },
+    {
+      "no": 3,
+      "id": "c5-func-pointer",
+      "title": "中断只负责跳一次：函数指针、状态机、环形缓冲",
+      "source": "docs/c/05-func-pointer.md",
+      "script": "video/episodes/c5-func-pointer/episode.json",
+      "status": "done",
+      "masters": "video/out/c5-func-pointer/bilibili.mp4（10:11）· douyin.mp4（01:07）",
+      "anims": [
+        "fsm-dispatch",
+        "ring-buffer"
+      ],
+      "hook": "你写的回调，-O2 之后只剩一条 blx r3；同一个物理 8 格的环形缓冲，A 派实测只能用 7 格，B 派 8 格全可用。",
+      "hookRef": "docs/c/05-func-pointer.md:41（blx 清单）与 151-190（A/B 两派实测）",
+      "punchline": "中断里只做快递分拣，不下厨房",
+      "note": "章节与 README 里归档的反汇编是旧工具链产物（blx 在 .text+0x92），已按本机 arm-none-eabi-gcc 10.3.1 实测改写：查表 0x9a、blx 0x9e、写回 0xa0，判空是 main+0x20 的 cbz。"
+    },
+    {
+      "no": 4,
+      "id": "c6-abi-stack",
+      "title": "一次函数调用的全程直播：r0-r3、栈帧、lr",
+      "source": "docs/c/06-abi-stack.md",
+      "script": "video/episodes/c6-abi-stack/episode.json",
+      "status": "done",
+      "masters": "video/out/c6-abi-stack/bilibili.mp4（10:05）· douyin.mp4（01:02）",
+      "anims": [
+        "stack-frame"
+      ],
+      "hook": "同一个函数，宿主编译器开出 64 字节栈帧，arm-none-eabi-gcc 只花 24 字节；第五个参数开始走栈，前四个在机器码里根本找不到 push。",
+      "hookRef": "docs/c/06-abi-stack.md:199-211（字节账实测表）与 99-134（r0-r3 装前四个）",
+      "punchline": "参数装 r0-r3、多余的走栈、返回地址进 lr、返回值回 r0",
+      "note": "C5 片尾按这个预告，必须接上。soft/hard 两种浮点 ABI 的目标文件不能混链——链接器报 VFP mismatch，是 ABI 三个字最直观的证据。汇编口径：本章与本片一律引本机 PATH 默认那把 arm-none-eabi-gcc 10.3.1 的实跑产物；站内另一把 15.2.1（code/c/07 钉住的那把）对 sum6 给的是 ldr r1, [sp]，寄存器不同形、AAPCS 同一套，章内已写明。"
+    },
+    {
+      "no": 5,
+      "id": "c7-ub",
+      "title": "未定义行为：编译器不欠你一个答案",
+      "source": "docs/c/07-ub-misra.md",
+      "script": "video/episodes/c7-ub/episode.json",
+      "status": "done",
+      "masters": "video/out/c7-ub/bilibili.mp4（09:59）· douyin.mp4（01:02）",
+      "anims": [
+        "ub-compiler-trap"
+      ],
+      "hook": "同一个 1u << 33：-O0 给你 2，-O2 给你 0。老教程说 -O0 会返回 0，本站 gcc 16.1.0 实测两档都返回 1。",
+      "hookRef": "docs/c/07-ub-misra.md:97-101（三档读数表）与 probe.sh 第 6 步宿主汇编",
+      "punchline": "UB 的题目没有标准答案，这正是要避开它的原因",
+      "note": "为这一集把 probe.sh 补到 6 步：新增第 6 步宿主 x86 汇编取证（-O0 函数体已是 movl $1, %eax；-O2 的 main 四个 call 全消失、printf 吃立即数），并把 15.2.1 钉进 PATH（沿用 code/c/02-pointer/probe.sh 的 XPACK 约定，XPACK=/none 可退回 10.3.1 复现另一形状）。章内三处同步：翻案段、短自测 1/2 答案、证据索引表。"
+    },
+    {
+      "no": 6,
+      "id": "f2-context-switch",
+      "title": "PendSV 换魂术：一次切换只花几百个周期",
+      "source": "docs/rtos/freertos/02-context-switch.md",
+      "script": "video/episodes/f2-context-switch/episode.json",
+      "status": "done",
+      "masters": "video/out/f2-context-switch/bilibili.mp4（11:06）· douyin.mp4（01:01）",
+      "anims": [
+        "context-switch",
+        "stack-frame"
+      ],
+      "hook": "b xPortPendSVHandler 什么都断不到——FreeRTOSConfig.h:76 一行 #define 把它改名成 PendSV_Handler，向量表认的是后者。第二钩：切换为什么不能在 SysTick 里直接做。",
+      "hookRef": "docs/rtos/freertos/02-context-switch.md:185-218（第五节 GDB + 名字三层对应）与 :127-165（27 条指令实测账）、:219-259（伪造第一帧）",
+      "punchline": "换个指针换个魂，异常返回新人生",
+      "note": "新建 code/rtos/01-freertos-lab/probe.sh 五步取证：① 符号改名链（port.c:505 → FreeRTOSConfig.h:75-76 → startup:111 → nm 大小写 T/t）② PendSV_Handler 反汇编 + 27 条正文/104 字节段 ③ 三行铁账（stmdb 9 字 / str [r2,#0] / mov #80）④ 优先级账（255 与 5<<4）⑤ pxPortInitialiseStack 伪造帧 17 次回退 + 落点 = 18 字 72 字节。章内三处实质校正：第五节 GDB 断点名与「入口读不到软件帧」（PSP 到第 ⑩ 条才改，④ 只改 r0）、第四节偏移 0 的凭据改为 tasks.c:360（原先引的 task.h:171 属于 TaskStatus_t，认错了结构体）、新增第六节。minutes 30 → 40。"
+    },
+    {
+      "no": 7,
+      "id": "f0-why-rtos",
+      "title": "先失败一次：状态机救不了你的实时性",
+      "source": "docs/rtos/freertos/00-why-rtos.md",
+      "script": "video/episodes/f0-why-rtos/episode.json",
+      "status": "done",
+      "masters": "video/out/f0-why-rtos/bilibili.mp4（10:32）· douyin.mp4（01:09）",
+      "anims": [
+        "why-rtos",
+        "fsm-dispatch"
+      ],
+      "hook": "把 delay 全改成非阻塞状态机，再测一次抖动——抖动变小但没消失。",
+      "hookRef": "docs/rtos/freertos/00-why-rtos.md:282-287（实物实验 + 常见坑）",
+      "punchline": "状态机解决等待，不解决优先级",
+      "note": "新建 code/rtos/00-why-rtos/probe.sh 四步取证（一份 superloop.c、一张写死的事件脚本表，四档共用，所以几份报告能逐行并排比）：① 阻塞 vs 非阻塞各跑 6 秒，圈数 / 单圈 min·中位·max / LED 翻转次数 / 逐键迟到 / 串口收发货 ② burn-head vs burn-tail：同一件 2 ms 的活只换一行位置，给『行序当优先级』标价 ③ 同一份 superloop.c 交叉到 Cortex-M4 数任务本体指令条数（led_tick 20 / key_scan 14 / uart_echo 7）④ 死等 RXNE 那三行在 -O0 / -O2 下的两种形状。宿主机那两步默认每档 REPS=5 且只引用跨局中位数——Windows 随时抢走十几毫秒，单局的『最坏迟到』是抽奖；交叉链的指令条数与反汇编逐位稳定，跑一次就够。章内五处实质改动：学习目标第二条补上『连调换代码行顺序都救不回来』；第二节新增 probe.sh 一行命令、-O2 的 7 条指令死等反汇编、阻塞/改良逐项对照表，以及『收 54 / 发 52 两栏完全相同』那句公道话；常见坑把流行的『把急的活摆第一行就是优先级』翻案为『行序只改平均启动时刻，不改上界』（五局中位 1.49 vs 1.60 ms，区间 0.71–1.85 与 0.41–5.24 互相包住，胜负判不出来）；新增一条坑『拿宿主机单局的数当结论』；短自测 2 的答案换成实测中位与区间。"
+    },
+    {
+      "no": 8,
+      "id": "s16-hardfault",
+      "title": "HardFault 法医：崩溃现场读三条寄存器就够",
+      "source": "docs/stm32/16-debug-hardfault.md",
+      "script": "video/episodes/s16-hardfault/episode.json",
+      "status": "done",
+      "masters": "video/out/s16-hardfault/bilibili.mp4（11:01）· douyin.mp4（01:13）",
+      "anims": [
+        "hardfault-forensics"
+      ],
+      "hook": "有两具『尸体』光把代码放那儿是死不了的：未对齐访问硬件偷偷兜住、除零只是安静地返回 0——先开 CCR 的 UNALIGN_TRP / DIV_0_TRP 才报案。",
+      "hookRef": "docs/stm32/16-debug-hardfault.md:351-392（五虎 + 两个 CCR 开关 + 机身断言）",
+      "punchline": "最可怕的不是崩，是不崩",
+      "note": "新建 code/stm32/16-debug-hardfault/probe.sh，四段一条命令跑完、不需要开发板：① 宿主 gcc 跑 probe.c 的 274 条断言，现场解剖 CFSR=0x00008200（PRECISERR+BFARVALID）/ BFAR=0x1FFFFFFF / HFSR=0x40000000（FORCED）/ EXC_RETURN=0xFFFFFFFD ② SCB 位号与 CMSIS 官方头文件逐位对账，39 条 diff 为空 ③ 交叉链反汇编：HardFault_Handler @08000070 的 tst.w lr,#4 → ite eq → mrs MSP|PSP 形状、nm 入口 08000084 与栈里躺的 0800008e 差 6 字节、addr2line 回到 fault_ctx.c:69/:70 ④ 条件指令的字节学：enc_psp.s 与 enc_msp.s 逐字节只差 1 个（偏移 13 的 0x11→0x10），另附 bad_cond / bad_noite 两种写错被 GAS 拒绝的原文。本机没有 qemu-system-arm，所以异常现场靠自建 harness 断言 + 机身断言 + 汇编器证据三条腿撑；章内两个 CCR 开关的复位默认值明写『待回填核对』，不转述二手结论。"
+    },
+    {
+      "no": 9,
+      "id": "s2-rcc",
+      "title": "168MHz 是怎么算出来的：先 LATENCY 再切 SYSCLK",
+      "source": "docs/stm32/02-rcc-clock.md",
+      "script": "video/episodes/s2-rcc/episode.json",
+      "status": "done",
+      "anims": [
+        "rcc-clock-tree"
+      ],
+      "hook": "开场是一场对账事故：程序咬定自己在 168MHz 上跑，引脚上量到 53760000 Hz，差 114240000 Hz——而算 PLL 参数那个函数返回值是 0，也就是它认为一切正常。第二钩：固件算出的那个字 0x07405408，能在 -O2 反汇编的字面量池里逐字节找到，源码算的和落到寄存器里的是同一个东西。",
+      "hookRef": "code/stm32/01-rcc-clock/probe.sh 第 2 步实跑 + docs/stm32/02-rcc-clock.md:24-34、186-196",
+      "punchline": "回读算出来的数也还是算出来的：它只证明你写的位和你的宏自洽，不证明板上那颗晶振是真的",
+      "note": "新建 code/stm32/01-rcc-clock/probe.sh 三步无板取证：① 宿主 gcc 编译 probe.c（用 main.c 里 `#ifndef RCC_PLLCFGR` 那对钩子把寄存器换成 static uint32_t，`#define main firmware_main` 后直接 include 固件本体），跑 8 种晶振的 M/N/P/Q 表 + 位段账 + 等待周期十个边界，两遍各 22 条断言全绿 ② 错宏那一遍（HSE 25MHz / 板上 8MHz）单独只跑第 6 节，输出差值与 pll_params_from_hse() 的真返回值 0 ③ -O2 交叉编 main.c：text/data/bss = 944/0/48，objdump 里 `288: .word 0x07405408` 与固件算出的字逐字节相同、`str.w r3,[r2,#2052]` 是唯一那条写 PLLCFGR 的指令。另证 USE_HSE_PLL=0 时 0x07405408 与 PLLON 根本不在二进制里（#2052 只剩一次 ldr）。章内同步：`先跑起来` 改成无板路径优先、新增 `### probe.sh` 实测表、PPRE 16 格表与 HSE_VALUE_HZ 填错两条坑（前一条是本章改之前的真 bug）、短自测补 5/6 两题、附录挂 probe.c/probe.sh、minutes 35 → 40。",
+      "masters": "video/out/s2-rcc/bilibili.mp4（11:54）· douyin.mp4（01:06）"
+    },
+    {
+      "no": 10,
+      "id": "s14-pwr",
+      "title": "三种睡眠三种醒法：Stop 记得，Standby 只留遗言",
+      "source": "docs/stm32/14-pwr.md",
+      "script": "video/episodes/s14-pwr/episode.json",
+      "status": "done",
+      "anims": [
+        "stm32-pwr-three-modes"
+      ],
+      "hook": "开场那笔账不崩也不报错：带着 168MHz 的装载值 167999 回 16MHz，1ms 实测量出 10500 µs；BRR=729 在 PCLK2=8MHz 下真波特率 10973。第二钩更强：三档在 `wfi` 之后各剩 1 / 6 / 7 条指令——Standby 那 18 个字节编译器照样生成了，躺在 Flash 里一句都不会跑，这是『醒来是复位』最硬的机器层证据。",
+      "hookRef": "code/stm32/14-pwr/probe.sh 第 1/3 步实跑 + docs/stm32/14-pwr.md §三、§八",
+      "punchline": "Stop 停钟（记忆在，醒来先重算每一个「除以时钟」的数），Standby 断电（只留遗言，状态睡前写进备份域，醒来先查我是被谁复位的）；唤醒源漏配一格 = 睡死，只能等 IWDG 来复位",
+      "note": "新建 code/stm32/14-pwr/probe.sh 三步无板取证：① 宿主 gcc 编 probe.c（`#ifndef` 钩子把 PWR_CR/PWR_CSR/RCC_APB1ENR/AHB1ENR/BDCR/CSR/SCB_SCR/DBGMCU_CR/SysTick_LOAD 九个宏换成 static uint32_t，BKPSRAM_BASE 换指 1024 字数组，`MCU_PROBE_NO_MAIN` + include 固件本体），三档定档字 + 醒来时钟账 + IWDG 八码 + 备份域四笔回执 + 唤醒矩阵 + 复位原因解码 + 整跑 firmware_main，断言全绿 ② 与 CMSIS 对账：29 条位号逐位 diff 为空；10 个地址现场从 `PERIPH_BASE→AHB1PERIPH_BASE→RCC_BASE`、`SCS_BASE→SCB/SysTick_BASE` 的 `+0x…UL` 与结构体 `Address offset` 注释重拼，脚本里一个地址都没写死 ③ 板上那套参数（`-mfpu=fpv4-sp-d16 -mfloat-abi=hard -O2`）交叉编 main.c，text/data/bss = 796/4/4，逐条断言机身：三档的 bic/orr 立即数就是那两个位、`dsb sy` 与 `wfi` 相邻、`bf30 wfi`、`[r2,#3344]=0xD10`、`[r3,#2164]` 合成偏移、`movw #15999`、五笔 orr + `ubfx #3` 取 BRR。纪律：假寄存器不会自己变——只断言固件发出了 CWUF/CSBF/RMVF 那个写，不冒充硬件回执。章内同步：`先跑起来` 改无板路径优先、§三 补 10.5ms/10973 两笔实测、§五 补 BRE/BRR 与五种复位解码表、§六 补八码 IWDG 全表、新增 §八 probe.sh 三步、常见坑 5→11（BRE 漏开、/512 想当然、EWUP 当 RTC 唤醒、只改 SysTick 不改 BRR）、短自测挂 QuizBank s14-pwr（6 题全用实测数）、附录换成 main.c/probe.c/probe.sh、minutes 30 → 50。",
+      "masters": "video/out/s14-pwr/bilibili.mp4（11:14）· douyin.mp4（00:57）"
+    },
+    {
+      "no": 11,
+      "id": "p4-iram",
+      "title": "Cache 一关，你的中断服务函数就不存在了：IRAM 纪律",
+      "source": "docs/esp32/04-irq-dualcore.md",
+      "script": "video/episodes/p4-iram/episode.json",
+      "status": "done",
+      "anims": [
+        "iram-discipline",
+        "dual-core-spinlock"
+      ],
+      "hook": "同一次链接给两段 ISR 两个地址：isr_tight 在 0x403766ac（iram0_0_seg，内部 SRAM），isr_plain 在 0x42008f08（iram0_2_seg，Flash 映射窗口）——两个都编译通过、都烧得进去。最阴的是 isr_leaky：本体 0x4037668c 确实在 IRAM，每条指令都在，可 objdump 看得见它 `l32r a8 → 42008f1c <helper_far>` 再 `callx8 a8`，跳过去的地址在 Flash。Cache 一关就是当场崩，而断链不写在段名里。",
+      "hookRef": "code/esp32/09-iram-discipline/probe.sh 八段实跑（ESP-IDF v5.5.2 / esp32s3，本机 .map + nm + objdump + idf.py size + 编译器打印 ETS_MAX_INTR_SOURCE=99）+ docs/esp32/04-irq-dualcore.md §一、§二、§三",
+      "punchline": "Cache 一关 Flash 里没代码：ISR 要么整条链（本体 + 被调函数 + 读的常量）搬进 IRAM，要么老实被推迟；标 IRAM_ATTR 只是入场券，断链藏在调用指令的目标地址里，只能反汇编查。ESP_INTR_FLAG_IRAM 是承诺——不声明只是慢一点，声明了没做到是当场崩",
+      "note": "取证链：code/esp32/09-iram-discipline/probe.sh 八段全绿（exit 0，本机 ESP-IDF v5.5.2 / esp32s3，全程无板）。三处不抄二手：① 中断源个数交给宿主机编译器打印 ETS_MAX_INTR_SOURCE，枚举体行号由 grep 现挖不写死——98 个名字只覆盖 95 个编号，23/33/34/46 是保留位、57 出现两次（边沿触发的别名与本体同值），所以 99 是槽位数不是 99 个名字 ② 顺手核对 ESP_INTR_FLAG_LEVELn 的位移量确实等于 n ③ demo 头一版链接器什么都不报：-Wl,--gc-sections 把没被引用的 ISR 全收了，加一张 g_isr_table 把它们钉住才拿到地址。断链两处都是反汇编现读的：isr_leaky 本体 0x4037668c 每条指令都在 IRAM，可 l32r a8 → 42008f1c <helper_far> 再 callx8 a8 跳去 Flash；isr_rodata 代码进去了，k_table 却在 3c028810（drom0_0_seg）。章内同步：docs/esp32/04-irq-dualcore.md 那句『七条断言全绿』改成本机口径（末段断言逐条打勾、错一条直接非零退出）。动画两张：iram-discipline 一集切四幕（正常取指 / 窗口失效 / 两种命运 / 正确做法，各对位一段旁白）+ dual-core-spinlock。bilibili 定稿 25 场 702.7s——初版 26 场 738.4s 撞了 720s 硬门槛，删掉 alloc-five、把 irq-sources 与 pinned-core 两句旁白收短才压回来。",
+      "masters": "video/out/p4-iram/bilibili.mp4（11:42）· douyin.mp4（01:09）"
+    },
+    {
+      "no": 12,
+      "id": "s4-nvic",
+      "title": "谁能打断谁：中断这五幕戏，硬件早排好了",
+      "source": "docs/stm32/04-nvic-exti.md",
+      "script": "video/episodes/s4-nvic/episode.json",
+      "status": "done",
+      "anims": [
+        "exti-signal-routing",
+        "nvic-prigroup",
+        "nvic-preempt-arbitration",
+        "irq-entry"
+      ],
+      "hook": "开场那个数是这一集现测的：官方头文件 `core_cm4.h:1818` 的原话是 `IP[IRQn] = (priority << 4) & 0xFF`，把 16 送进去存回来的是 0x00——你要最低，拿到最高；17→0x10、20→0x40、255→0xF0，一条错误返回都没有。第二钩来自真链接：nm 给 EXTI0_IRQHandler = 0x08000188，而向量槽 22 里躺着 08000189，多的那个 1 是 Thumb 状态位；同一次链接还证明你的函数名是强符号，把启动文件里 weak 的死循环顶掉了——名字拼错 = 进得去出不来，零报错。",
+      "hookRef": "code/stm32/04-nvic-exti/probe.sh 第 0/1/2/3 段实跑（52/52 断言 + 98 项向量表 + objdump/nm）+ docs/stm32/04-nvic-exti.md §三 3.1/3.2、§四、§五 5.3",
+      "punchline": "先 SYSCFG 选门，再 EXTI 设沿，后 NVIC 放行，ISR 进门先清挂起；同抢占级永不嵌套（子优先级只定次序、没有打断能力），谁能打断谁由 PRIGROUP 这把尺子决定——数值一个不改，只改分组，秩序全变",
+      "note": "取证链沿用 S2/S14 的无板三步：① 宿主 gcc 编 probe.c，编译期 _Static_assert 把正文数字与头文件现挖值逐格对撞，运行期打四张映射表（IRQn→槽/ISER/IP、PRIGROUP 八种切法、优先级<<4 编码、EXTICR 位移）② 数 startup 文件 .word 行数得 98 项，7 个 IRQn 回验槽位与 handler 名 ③ 交叉链 10.3.1 真链接，objdump -h/-t + 反汇编 + nm 实证 weak 被强符号顶替、槽 22 = 地址|1、清挂起那句 `str.w r1,[r3,#3092] ; 0xc14` 与 .word 0x40013000 合出 0x40013C14 = EXTI->PR。本集改代码一处：为『越界优先级』补了 4 条断言（16/17/20/256），48 → 52 条——因为原章节里那句『写 16 会溢出到下一个中断的字节里』是我写错了：按了下标取的就是本字节，& 0xFF 只在字节内截断。章内同步：§3.1 换成实测越界表 + 正确结论、48 → 52（精髓/quick win/附录三处）、§五 5.3 反汇编注释口径改回 objdump 真实输出（`; 0xc14` 而非 `@ 0xc14`）、§四 `.isr_vector` 的 File off 改成本机打印的 00010000、QuizBank s04-nvic 增第 6 题（16 → 0x00）。动画四张：路由图（12s，整集背景）、PRIGROUP 四幕（12s）、抢占判定五幕（15s，3s 一幕，对应 EXTI0/EXTI9/EXTI1 那条时间轴）、ISR 入栈（12s）。",
+      "masters": "video/out/s4-nvic/bilibili.mp4（11:56）· douyin.mp4（01:07）"
+    }
+  ],
+  "backlog": [
+    "S7 USART：115200 误差算例（docs/stm32/07-usart.md）",
+    "F6 软件定时器：configTOTAL_HEAP_SIZE 那笔 RAM 账",
+    "C2 指针：docs/video/c2-pointer-storyboard.md 是旧产线留下的分镜，可按 episode.json 重排",
+    "F3 调度器：docs/video/f3-scheduler-storyboard.md 同上（片单里目前只有 F2）"
+  ]
+}

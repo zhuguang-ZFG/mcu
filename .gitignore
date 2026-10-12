@@ -41,8 +41,16 @@ playwright-report/
 # Codex �Ự���䣨����⣩
 .workbuddy-ai/
 
-# 视频素材与产物（体积大，不进仓库）
-docs/video/
+# 视频产物与原始素材（体积大，不进仓库；产线代码在 video/）
+# 这里按类型忽略、不整目录忽略：docs/video/ 下还放着两份要进版本管理的分镜，
+# 整目录吞掉会重演「题库 JSON 被 gitignore 吃掉」那次——只靠 force-add 兜住的分镜，
+# 以后往这个目录里新加任何文件都会静默不入库。
+docs/video/*.mp4
+docs/video/*.html
+docs/video/*.wav
+video/out/
+video/.cache/
+video/episodes/*/*.mp3
 
 # 本地工具配置
 .qoder/
