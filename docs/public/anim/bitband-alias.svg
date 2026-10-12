@@ -39,6 +39,13 @@
   <rect x="40" y="268" width="640" height="92" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
   <line x1="360" y1="276" x2="360" y2="352" stroke="#e2e8f0" stroke-width="2"/>
   <text x="56" y="288" font-size="11" font-weight="bold" fill="#92400e">GPIOF-&gt;ODR |= 1u&lt;&lt;6（实测 -O2）</text>
+  <!-- 插队窗口的琥珀条：画在指令字之前（文档序即 z 序）。它一条一条往下滑，
+       压在谁身上谁就该还能读——原来放在 ③ 组里、字之后，orr/str 两行被整块吃掉。
+       透明度跟着 ③ 组的开场走，滑动的节拍不变。 -->
+  <rect x="50" y="294" width="250" height="18" fill="#fdf0d5" opacity="0">
+    <animate attributeName="opacity" calcMode="discrete" values="0;0;1;0;0;0" keyTimes="0;0.2;0.4;0.6;0.8;1" dur="15s" repeatCount="indefinite"/>
+    <animate attributeName="y" values="294;312;330;330" keyTimes="0;0.34;0.67;1" dur="3s" repeatCount="indefinite"/>
+  </rect>
   <g font-size="11" font-family="Consolas,monospace" fill="#333">
     <text x="56" y="308">ldr   r3, [r2, #20]</text>
     <text x="56" y="326">orr.w r3, r3, #64</text>
@@ -78,9 +85,6 @@
   <!-- ===== ③ 读-改-写：三步之间有窗口 ===== -->
   <g opacity="0">
     <animate attributeName="opacity" calcMode="discrete" values="0;0;1;0;0;0" keyTimes="0;0.2;0.4;0.6;0.8;1" dur="15s" repeatCount="indefinite"/>
-    <rect x="50" y="294" width="250" height="18" fill="#fdf0d5">
-      <animate attributeName="y" values="294;312;330;330" keyTimes="0;0.34;0.67;1" dur="3s" repeatCount="indefinite"/>
-    </rect>
     <text x="302" y="330" font-size="11" font-weight="bold" fill="#dc2626">插队窗口</text>
   </g>
 

@@ -45,7 +45,6 @@
     <animate attributeName="opacity" calcMode="discrete" values="0;1;0;0;0;0" keyTimes="0;0.2;0.4;0.6;0.8;1" dur="15s" repeatCount="indefinite"/>
   </rect>
   <rect x="186" y="182" width="160" height="68" rx="6" fill="#ffffff" stroke="#94a3b8"/>
-  <text x="266" y="198" font-size="11" fill="#666" text-anchor="middle">事务队列（queue_size=7）</text>
   <g font-size="12" font-family="Consolas,monospace" fill="#333" text-anchor="middle">
     <rect x="196" y="204" width="42" height="32" fill="#f8fafc" stroke="#cbd5e1"/><text x="217" y="224">t1</text>
     <rect x="244" y="204" width="42" height="32" fill="#f8fafc" stroke="#cbd5e1"/><text x="265" y="224">t2</text>
@@ -56,7 +55,6 @@
     <animate attributeName="opacity" calcMode="discrete" values="0;1;0;0;0;0" keyTimes="0;0.2;0.4;0.6;0.8;1" dur="15s" repeatCount="indefinite"/>
   </rect>
   <rect x="392" y="182" width="110" height="56" rx="6" fill="#ffffff" stroke="#94a3b8"/>
-  <text x="447" y="204" font-size="12" font-weight="bold" fill="#333" text-anchor="middle">SPI + DMA</text>
   <text x="447" y="222" font-size="11" fill="#666" text-anchor="middle">自动取事务飞</text>
 
   <rect x="540" y="182" width="140" height="68" rx="6" fill="#dbe7ff" stroke="#3451b2"/>
@@ -73,6 +71,11 @@
   <rect x="135" y="187" width="26" height="18" rx="3" fill="#dbe7ff" stroke="#3451b2">
     <animateTransform attributeName="transform" type="translate" values="0 0;388 0" dur="3s" begin="-1.5s" repeatCount="indefinite"/>
   </rect>
+  <!-- 这两个标签必须画在事务块之后：块的飞行线 y=187..205 正压在这行标签的基线上，
+       文档序就是 z 序，先画就被不透明的块啃掉半截字。块又必须压在白色盒子上，
+       所以只能把字提上来，不能把块沉下去。 -->
+  <text x="266" y="198" font-size="11" fill="#666" text-anchor="middle">事务队列（queue_size=7）</text>
+  <text x="447" y="204" font-size="12" font-weight="bold" fill="#333" text-anchor="middle">SPI + DMA</text>
 
   <!-- I2C 一句事务行 -->
   <text x="48" y="262" font-size="11.5" font-weight="bold" fill="#666">I2C：一句 transmit_receive 走完全部时序礼仪</text>
