@@ -27,8 +27,15 @@
  */
 #define RCC_BASE            (0x40023800UL)
 #define RCC_CR              (*(volatile uint32_t *)(RCC_BASE + 0x00UL))
+/* 这两个寄存器宏给了 #ifndef 口子：probe.c 在宿主上 #include 本文件，
+ * 把它们改指一组假寄存器，于是 clock_tree_readback() 跑的是真代码而不是抄一份。
+ * 不定义时就是下面的真实地址，固件侧一字不变。 */
+#ifndef RCC_PLLCFGR
 #define RCC_PLLCFGR         (*(volatile uint32_t *)(RCC_BASE + 0x04UL))
+#endif
+#ifndef RCC_CFGR
 #define RCC_CFGR            (*(volatile uint32_t *)(RCC_BASE + 0x08UL))
+#endif
 
 #define PWR_BASE            (0x40007000UL)
 #define PWR_CR              (*(volatile uint32_t *)(PWR_BASE + 0x00UL))
@@ -160,7 +167,7 @@ static void led_set(uint32_t on)
  *  （ST 官方 HAL 头文件 RCC_MCODIV_1..5 = 0/4/5/6/7，stm32f4xx_hal_rcc.h:314-318 @1f6451c）。
  *  想当然写 div−1 的话，/4 会得到 0b011——落进"不分频"区，PA8 直接吐 168MHz，
  *  对账结论整个作废。这张显式映射表就是防呆。 */
-static void mco1_init(uint32_t sysclk_hz)
+static uint32_t mco1_pre_for(uint32_t sysclk_hz)
 {
     static const struct { uint32_t div; uint32_t pre; } mco_pre[] = {
         { 1U, 0U }, { 2U, 4U }, { 3U, 5U }, { 4U, 6U }, { 5U, 7U },
@@ -173,6 +180,12 @@ static void mco1_init(uint32_t sysclk_hz)
     for (uint32_t i = 0; i < sizeof mco_pre / sizeof mco_pre[0]; i++) {
         if (mco_pre[i].div == div) { pre = mco_pre[i].pre; break; }
     }
+    return pre;
+}
+
+static void mco1_init(uint32_t sysclk_hz)
+{
+    const uint32_t pre = mco1_pre_for(sysclk_hz);
 
     RCC_CFGR = (RCC_CFGR & ~RCC_CFGR_MCO1PRE) | (pre << 24);
 
@@ -261,8 +274,11 @@ static void clock_tree_readback(uint32_t hsi_hz)
      * 1011=/16、1100=/64、1101=/128、1110=/256、1111=/512。
      * 注意 F4 没有 /32：把索引 12 写成 32 会让 /64 的配置静默算错。 */
     static const uint16_t hpre_div[] = { 1,1,1,1,1,1,1,1,2,4,8,16,64,128,256,512 };
-    /* CFGR[12:10] PPRE1 / [15:13] PPRE2：0xx=/1、100=/2、101=/4、110=/8、111=/16 */
-    static const uint16_t ppre_div[] = { 1,1,1,1,1,1,1,1,2,4,8,16,16,16,16,16 };
+    /* CFGR[12:10] PPRE1 / [15:13] PPRE2：0xx=/1、100=/2、101=/4、110=/8、111=/16。
+     * 表长必须按 3 位来：HPRE 是 4 位、PPRE 是 3 位，照 HPRE 那样开 16 格，
+     * 索引最大只到 7，/2 /4 /8 /16 全落在前八格的 1 上——APB 分频被静默读成 /1，
+     * 定时器 ×2 那条也会跟着算出 336MHz 这种不存在的数。 */
+    static const uint16_t ppre_div[] = { 1,1,1,1,2,4,8,16 };
 
     uint32_t cfgr    = RCC_CFGR;
     uint32_t pllcfgr = RCC_PLLCFGR;

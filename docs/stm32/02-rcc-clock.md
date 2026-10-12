@@ -2,7 +2,7 @@
 title: S2 RCC 时钟树：168MHz 是怎么算出来的
 status: done
 difficulty: 3
-minutes: 35
+minutes: 40
 ---
 
 # S2 RCC 时钟树：168MHz 是怎么算出来的
@@ -33,13 +33,15 @@ minutes: 35
 
 ## 先跑起来（10 分钟 quick win）
 
-进 `code/stm32/01-rcc-clock` 构建默认版本（留在 HSI 16MHz，不碰晶振）：
+**没有板子也能把本章的账全跑完**。进 `code/stm32/01-rcc-clock`：
 
 ```bash
-make
+sh probe.sh          # 三步：宿主跑固件自己的函数 → 错宏对照 → 交叉链 -O2 反汇编对账
 ```
 
-然后用 GDB 连上目标，读 `g_clock_tree[]`：你会看到 `{16000000, 16000000, 16000000, 16000000, 16000000}`——芯片一出生就在跑 HSI 16MHz，PLL 还没上岗。这就是"先时钟"的直观证据。
+第 1 步把 `RCC_PLLCFGR`/`RCC_CFGR` 两个宏改指一对假寄存器后 `#include "main.c"`，所以断言跑的是固件本体而不是另抄一遍算术：八种晶振的 M/N/P/Q、`0x07405408` 的位段账、等待周期十个边界、时钟树回读解出的 `{168e6, 168e6, 42e6, 84e6, 84e6}`，共几十条断言全绿。第 3 步把 `main.c` 编成 Cortex-M4 的 `-O2` 目标文件，在字面量池里当场挖出同一个 `0x07405408`——**源码算出来的字 == 落到寄存器里的那个字**。
+
+有板子再加一步：构建默认版本（留在 HSI 16MHz，不碰晶振）`make`，GDB 读 `g_clock_tree[]`，你会看到 `{16000000, 16000000, 16000000, 16000000, 16000000}`——芯片一出生就在跑 HSI 16MHz，PLL 还没上岗。这就是"先时钟"的直观证据。这句不用上板也能验：默认版编 `-O2` 后，字面量池里 `0x07405408` 和 PLLON 那个 `#16777216` **都不存在**，对 `#2052`（PLLCFGR）唯一的一次引用是一条 `ldr`——回读函数要读它，但没人写它。
 
 ## 动画：时钟树的五个闸门
 
@@ -63,7 +65,7 @@ HSE/HSI 两个水源、PLL 这个泵站、SW 这个总闸、AHB/APB 两条输电
 | 四、总线分频与定时器×2 | HPRE/PPRE 编码；APB 分频≠1 时定时器时钟×2 | 代码分析 |
 | 五、Flash 与电压档 | RM0090 Table 10 全表 + VOS 天花板 | 配置 |
 | 六、MCO1 实测 | PA8 复用输出 SYSCLK/4，仪器验证 | 引脚 |
-| 七、代码分析 | `01-rcc-clock/main.c` 逐段对表 | 代码分析 |
+| 七、代码分析 | `01-rcc-clock/main.c` 逐段对表 + `probe.sh` 无板取证（固件本体跑断言、`-O2` 反汇编对账） | 代码分析 |
 | 八、上游对照 | HAL `OscConfig/ClockConfig` 逐行对照（hal_rcc.c @ 1f6451c）；SPL 一手源码仍缺 | 库解析 |
 
 ## 一、四个时钟源：发电厂四种
@@ -150,7 +152,25 @@ VOS 不在这张表里，它只决定天花板：F405/407 在 VOS='0' 时 fHCLK 
 - `pll_params_from_hse()`：由晶振频率推 M/N/P/Q，超出合法范围就拒绝，而不是硬凑。
 - `clock_init()`：六步顺序逐行对应第三节；HSE 起振带超时，超时回退 HSI 并把 `g_clock_status` 置 1。
 - `clock_tree_readback()`：从 CFGR 反推真实时钟树，含"APB 分频≠1 时定时器 ×2"这条隐藏规则。
-- `mco1_init()`：把 SYSCLK 引到 PA8。
+- `mco1_init()`：把 SYSCLK 引到 PA8；分频编码交给纯函数 `mco1_pre_for()`，好让宿主探针能直接调它。
+
+### `probe.sh`：把这一章的账全部搬到宿主机上跑
+
+手法只有一句：`probe.c` 先把 `RCC_PLLCFGR`/`RCC_CFGR` 两个宏改指到一对 `static uint32_t` 假寄存器，再 `#include "main.c"`（顺带 `#define main firmware_main` 让位给宿主的 `main`）。于是下面这些断言跑的是**固件里那几段函数本体**，不是另抄一遍算术——这也正是"回读算出来的数"这种逻辑唯一能被离线验证的方式。
+
+本机实跑（x86 gcc 16.1.0 + xPack 15.2.1，`sh probe.sh`）：
+
+| 探针小节 | 实跑结论 |
+|---|---|
+| 1 · `pll_params_from_hse()` | 8/25/16/12/6/4 MHz 六种晶振全部 M=晶振/1MHz、N=336、P=/2、Q=7 → SYSCLK 168000000、USB 48000000；11.0592 MHz 返回 **−2**（除不出整兆），64 MHz 返回 **−1**（M 溢出 6 位） |
+| 2 · 位段打包 | `M=8 N=336 P=/2 SRC=HSE Q=7 → 0x07405408`，与 `-O2` 字面量池里 `.word 0x07405408` **同字** |
+| 3 · `flash_latency_ws_3v3()` | 16→0、30→0、31→1、60→1、61→2、90→2、120→3、150→4、**151→5**、168→5 WS（每个边界各测两侧） |
+| 4 · `clock_tree_readback()` | 喂 `SWS=PLL, PPRE1=0b101, PPRE2=0b100` → `{168000000, 168000000, 42000000, 84000000, 84000000}`；对照组 `PPRE1=/1` → PCLK1=TIM2CLK=168000000，×2 规则不触发 |
+| 4b · 表长陷阱 | 旧 16 格表在 `0b100..0b111` 全读成 /1；新 8 格表读出 /2 /4 /8 /16（详见常见坑） |
+| 5 · `mco1_pre_for()` | 168MHz → div=4 → `pre=0b110(6)` → PA8=42000000；按 `div−1` 写 `pre=0b011(3)` → div=1 → PA8=168000000，再按 /4 把读数乘回去得 672000000，**凭空多出 504 MHz** |
+| 6 · 错宏对照 | `HSE_VALUE_HZ=25000000` 而 `BOARD_HSE_HZ=8000000`：写入 `0x07405419`（M=25）→ 程序以为 168000000、VCO 输入 320000、引脚 53760000、USB 15360000，**差 114240000 Hz，而返回值 = 0** |
+
+`-O2` 反汇编那一段（`build/main_o2.o`，text 944 字节）顺手给出两件事：**提频顺序在指令流里是单调的**——`orr #16384`(VOS) → `bic #7 / orr #5 / orr #256`(LATENCY+预取) → `orr #65536`(HSEON) → `lsls #14 / bpl`(等 HSERDY) → `str [r2,#2052]`(PLLCFGR) → `orr #16777216`(PLLON) → `bic #3 / orr #2`(SW) → `and #12 / cmp #8`(读 SWS)，没有一条跳回前面；**常量折叠把 M/N/P/Q 压成四个立即数**——`movs r2,#8 / mov.w r3,#336 / movs r2,#2 / movs r3,#7` 直接存进 `g_pll_*`，一条除法都没有。折叠本身是好事，但宏填错时错值同样会被折叠成一个"看起来正常"的立即数，运行时再没有第二双眼睛。
 
 ## 八、上游对照：HAL 做同一件事
 
@@ -167,9 +187,13 @@ SPL（StdPeriph）未随 ST 官方 GitHub 分发，本轮仍缺一手源码；�
 
 ## 附录：工程完整源码
 
-不用跳 GitHub——整个 `main.c` 就在下面，滚动即达：
+不用跳 GitHub——整个 `main.c`、离线探针和取证脚本都在下面，滚动即达：
 
 <<< ../../code/stm32/01-rcc-clock/main.c
+
+<<< ../../code/stm32/01-rcc-clock/probe.c
+
+<<< ../../code/stm32/01-rcc-clock/probe.sh
 
 ## 记忆锚点
 
@@ -194,6 +218,8 @@ SPL（StdPeriph）未随 ST 官方 GitHub 分发，本轮仍缺一手源码；�
 - **改了 PLL 忘更新 SystemCoreClock**：后面的延时/波特率全错——本章工程用 `g_clock_tree[]` 回读，不依赖手工维护的全局变量。
 - **HPRE 生效延迟**：写完 HPRE 立刻读分频后的时钟，读到的还是旧值；升频前先把总线分频降下来。
 - **把 PLL 的 VCO 输入 1MHz 当外设时钟**：1MHz 是设计目标，不是可以喂给 USART 的时钟（见 [S7](07-usart.md) 的 115200 误差算例）。
+- **PPRE 查表照 HPRE 开 16 格**（本章改之前的真 bug，`probe.sh` 第 4b 节实测）：HPRE 是 4 位字段、PPRE 只有 3 位，16 格表用 3 位索引最大只到 7，`/2 /4 /8 /16` 四档全部落在第一格——**APB 分频被静默读成 /1**。症状不是崩溃而是离谱：APB1 被算成 168MHz，再套上"分频≠1 定时器 ×2"，屏幕上会出现 336MHz 这种这颗芯片根本给不出的频率。表长要按字段位宽开，`{1,1,1,1,2,4,8,16}` 八格才对。
+- **`HSE_VALUE_HZ` 填错，程序一声不吭**（`probe.sh` 第 2 步实跑）：宏写 25MHz、板上焊 8MHz 时，固件写入 `PLLCFGR` 的是 `M=25 N=336` → `0x07405419`，`pll_params_from_hse()` 返回值 **0**（它只校验宏，不知道板上是什么），`clock_tree_readback()` 也算出 168000000——而引脚上实际是 53760000 Hz，USB 那一路 15360000 Hz（要 48MHz）。回读只证明"你写的位和你的宏自洽"，不证明晶振为真；要让程序开口，得自己加一步 MCO1 实测对账。
 
 ## 短自测
 
@@ -209,6 +235,12 @@ SPL（StdPeriph）未随 ST 官方 GitHub 分发，本轮仍缺一手源码；�
 4. 写完 `RCC_CFGR.SW` 立刻读 `SWS`，可能看到什么？该怎么办？
 <details><summary>参考答案</summary>可能看到旧值——硬件切换需要时间。正确做法是轮询 SWS 直到它等于你写的 SW，并加超时；读不到回执就当切换失败处理。</details>
 
+5. 宏里写 `HSE_VALUE_HZ = 25000000`、板上实际焊 8MHz。编译不报错、运行也不报错，`clock_tree_readback()` 还回了个 168000000。`probe.sh` 第二步实测这一串的差值和函数返回值是多少？为什么回读救不了你？
+<details><summary>参考答案</summary>实测：写入 `PLLCFGR` 的是 `M=25 N=336` → `0x07405419`，程序以为 SYSCLK = 168000000 Hz，引脚上实际 53760000 Hz，差 114240000 Hz，而 `pll_params_from_hse()` 返回值 **0**——它只校验宏本身（VCO 输入落在 1~2MHz 就放行），不知道板上焊的是什么。回读只证明"你写的位和你的宏自洽"，不证明晶振为真；要把这两个数分开，只能靠 MCO1 把内部时钟引到引脚上实测。</details>
+
+6. HPRE 是 4 位字段、PPRE 是 3 位字段。照 HPRE 给 PPRE 开一张 16 格的分频表，会出什么症状？
+<details><summary>参考答案</summary>3 位索引最大只到 7，表的后 8 格永远读不到，`/2 /4 /8 /16` 四档全部落在第一格 → APB 分频被静默读成 /1。症状不是崩溃而是离谱：APB1 被算成 168MHz，再套上"分频≠1 定时器 ×2"，屏幕上出现 336MHz 这种这颗芯片根本给不出的频率。表长要按字段位宽开，`{1,1,1,1,2,4,8,16}` 八格才对。</details>
+
 <QuizBank chapter="s02-rcc-clock" />
 
 ## 对照表：本章概念 → 仓库与上游落点
@@ -221,6 +253,11 @@ SPL（StdPeriph）未随 ST 官方 GitHub 分发，本轮仍缺一手源码；�
 | MCO1 = PA8 AF0 | DS8626 Rev 9 Table 9 |
 | 提频六步 + 回读确认 | [code/stm32/01-rcc-clock/main.c](https://github.com/zhuguang-ZFG/mcu/blob/main/code/stm32/01-rcc-clock/main.c) `clock_init()` |
 | 动画 | [rcc-clock-tree.svg](/anim/rcc-clock-tree.svg) |
+| PLLCFGR 那个字（源码 ↔ 反汇编同字对账） | `probe.sh` 第 1 步断言 + 第 3 步 `objdump` 字面量池 `0x07405408` |
+| 提频顺序在指令流里单调 | `probe.sh` 第 3 步 `-O2` 反汇编（`orr #16384 → bic #7/orr #5 → orr #65536 → str #2052 → cmp #8`） |
+| 常量折叠把 M/N/P/Q 压成立即数 | 同上，`movs r2,#8 / mov.w r3,#336 / movs r2,#2 / movs r3,#7` |
+| PPRE 表长按字段位宽（本章修的 bug） | `probe.sh` 第 1 步 第 4b 节新旧表并排 |
+| 错宏 `HSE_VALUE_HZ` 静默算错 | `probe.sh` 第 2 步（`BOARD_HSE_HZ` 与宏不一致那一遍，差 114240000 Hz、返回值 0） |
 | HAL 同名流程逐行对照 | ST 官方仓库 [stm32f4xx_hal_driver](https://github.com/STMicroelectronics/stm32f4xx_hal_driver) @ `1f6451c` `Src/stm32f4xx_hal_rcc.c`（见 §八）；SPL 未随官方 GitHub 分发，一手源码仍缺 |
 
 ## 你做到了

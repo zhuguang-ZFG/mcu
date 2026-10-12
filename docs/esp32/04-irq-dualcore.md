@@ -12,7 +12,7 @@ minutes: 40
 ## 本章精髓
 
 1. `IRAM_ATTR` 是生存问题不是性能问题：Cache 关闭窗口内，只有 IRAM/ROM 里的代码可取指——ISR 本体、它调用的函数、用到的 rodata 全要排查（`esp_intr_alloc` 的 `ESP_INTR_FLAG_IRAM` 标志强制约束）。
-2. 中断分配器是"总机"：S3 有 **99 个中断源**（实测），经中断矩阵分配到两个核的 **7 级**中断——`esp_intr_alloc` 把外设源、优先级、所属核绑在一起。
+2. 中断分配器是"总机"：S3 有 **99 个中断源编号**（实测 `ETS_MAX_INTR_SOURCE = 99`，编号 0–98），经中断矩阵分配到两个核的 **7 级**中断——`esp_intr_alloc` 把外设源、优先级、所属核绑在一起。
 3. 双核 SMP 的共享规矩：FreeRTOS 在 S3 上是 SMP 单实例（任务可跑任意核，也可 `xTaskCreatePinnedToCore` 钉核）——核间共享数据用自旋锁/`portMUX`，**中断与任务、核与核之间 `volatile` 完全不够**（回 [C3](../c/03-volatile.md) 的边界清单）。
 
 ## 怎么读这一章
@@ -36,7 +36,7 @@ minutes: 40
 
 ## 先跑起来（10 分钟 quick win）
 
-在 `code/esp32/01-gpio-matrix` 里给一个 GPIO 挂中断，对比两种写法：
+挂中断的写法本身（`code/esp32/01-gpio-matrix`）：
 
 ```c
 /* 写法 A：普通 ISR —— 代码在 Flash 里 */
@@ -52,14 +52,36 @@ esp_intr_alloc(ETS_GPIO_INTR_SOURCE, ESP_INTR_FLAG_LEVEL1 | ESP_INTR_FLAG_IRAM,
                my_isr, NULL, NULL);
 ```
 
-编译并查看 `my_isr` 落在哪个段（**待上机回填**）：
+**落址不用背，本机链接完直接查。** `code/esp32/09-iram-discipline` 把实践清单的四条链一次摆全：不标的、只标本体的、整条链都标的、代码进了 IRAM 但常量还在 Flash 的。`sh probe.sh` 一条命令跑完构建与取证，最后那段断言逐条打勾、错一条直接非零退出才算数。下面是本机实测（ESP-IDF v5.5.2，目标 esp32s3）：
 
-```bash
-idf.py build
-arm-none-eabi-nm build/*.elf | grep -i my_isr     # 看地址落在 0x400xxxxx(IRAM) 还是 0x42xxxxxx(Flash)
+```console
+$ sh probe.sh                # 第 3 段：链接器真正用的区间，出自 .map 的 Memory Configuration
+  iram0_0_seg 0x40374000 0x00057700    # 内部 SRAM，可执行，关 Cache 也取得到
+  iram0_2_seg 0x42000020 0x007fffe0    # Flash 映射的取指窗口
+  drom0_0_seg 0x3c000020 0x01ffffe0    # Flash 映射的常量窗口
+
+$ # 第 4 段：nm 的地址 + 当场按上面三行归类
+  0x42008f08  isr_plain    → iram0_2_seg     # 没标 IRAM_ATTR，留在 Flash
+  0x42008f1c  helper_far   → iram0_2_seg     # 被 IRAM 里的 ISR 调用，却没标
+  0x4037668c  isr_leaky    → iram0_0_seg     # 标了，本体确实在 IRAM
+  0x40376698  helper_near  → iram0_0_seg
+  0x403766ac  isr_tight    → iram0_0_seg     # 整条链都标
+  0x40376668  isr_rodata   → iram0_0_seg
+  0x3c028810  k_table      → drom0_0_seg     # 常量还在 Flash
+
+$ # 第 6 段：断链的现场在调用指令的目标地址里，不在段名里
+  4037668c <isr_leaky>:
+    4037668f:  l32r  a8, 403746a0 <_iram_text_start+0x29c> (42008f1c <helper_far>)
+    40376692:  callx8 a8
+    40376695:  retw.n
+  403766ac <isr_tight>:
+    403766af:  call8 40376698 <helper_near>
+    403766b2:  retw.n
 ```
 
-**判据**：带 `IRAM_ATTR` 时应落在 IRAM 地址段（`0x40000000` 起），不带则落在 Flash 映射段（`0x42xxxxxx` 或 `0x3Cxxxxxx` 区）。这是本章所有纪律的物理基础。
+**判据**：`isr_leaky` 的每一条指令都在 IRAM，可它 `callx8` 过去的那个地址在 Flash 映射段——Cache 一关，`entry` 之后第一条取指就无门。`isr_tight` 的 `call8` 目标还在 IRAM 区间内，这才是真的 IRAM-safe。地址区间一律以 `.map` 里的 `Memory Configuration` 为准：esp32s3 的 IRAM 取指窗口起点是 `0x40374000`，Flash 映射是 `0x42xxxxxx`，常量映射是 `0x3Cxxxxxx`（初代 ESP32 是 `0x400xxxxx` 一片，两代的数字不能互抄）。
+
+还有一个只有实跑才会撞见的坑：这个工程里没有真的外设去 `esp_intr_alloc` 这些 ISR，IDF 默认带 `-Wl,--gc-sections`，**没人引用的函数会被整段收掉**——第一版探针工程 `nm` 里只剩 `app_main` 和 `g_hits`，七个符号一个都不剩。现在 `main.c` 里那张 `g_isr_table` 就是为了钉住它们，顺便把这条记下来：你写在磁盘上的 ISR，链接器可能根本没让它进 ELF。
 
 ## 小节结构
 
@@ -137,10 +159,11 @@ CPU 取指 → Cache 命中？ → 命中：直接返回指令
 
 STM32 上中断和向量是**一一对应**的（[S4](../stm32/04-nvic-exti.md)：`EXTI0_IRQn = 6` → 固定向量槽）。ESP32-S3 是**中断矩阵**：外设的中断源可以**路由**到某个核的某个中断级。
 
-**规模**（实测 `components/soc/esp32s3/include/soc/interrupts.h`）：
+**规模**（实测 `components/soc/esp32s3/include/soc/interrupts.h`，`sh probe.sh` 第 1 段让编译器把整张枚举打出来）：
 
-- 中断源枚举从 `ETS_WIFI_MAC_INTR_SOURCE = 0`（第 18 行）一直排到 `ETS_PERI_BACKUP_INTR_SOURCE`（第 116 行），随后是 `ETS_MAX_INTR_SOURCE`（第 118 行，注释写着 "number of interrupt sources"）。
-- **实际数量 = 99 个中断源。**
+- 枚举体在第 18–117 行，从 `ETS_WIFI_MAC_INTR_SOURCE = 0` 排到 `ETS_DMA_EXTMEM_REJECT_SOURCE = 98`；随后第 118 行是 `ETS_MAX_INTR_SOURCE`，编译器打印它的值是 **99**，注释写着 "number of interrupt sources"。
+- **99 是编号槽位的数量（0–98），不是"有 99 个不同的名字"**：这一张表里 98 个名字只覆盖 95 个不同编号——编号 23、33、34、46 没有名字（保留位），而 57/58/59 各被两个名字占用（`ETS_SYSTIMER_TARGETn_EDGE_INTR_SOURCE = ETS_SYSTIMER_TARGETn_INTR_SOURCE`，三条 EDGE 是同值别名）。
+- 所以按源编号路由时，`ETS_MAX_INTR_SOURCE` 才是数组边界的正确写法（`esp_isr_names[ETS_MAX_INTR_SOURCE]` 就是这么声明的），别拿"行数"当数量。
 
 **中断级**（`components/esp_hw_support/include/esp_intr_alloc.h:33-43`）：
 
@@ -154,7 +177,7 @@ STM32 上中断和向量是**一一对应**的（[S4](../stm32/04-nvic-exti.md)�
 | `ESP_INTR_FLAG_IRAM` | `1<<10` | 关 Cache 时也能调用（第二节） |
 | `ESP_INTR_FLAG_INTRDISABLED` | `1<<11` | 分配后先禁用 |
 
-源文件第 31 行还有一条**给实现者的提醒**：`Keep the LEVELx values as they are here; they match up with (1<<level)`——即**位号就是级别号**，这不是巧合，是接口约定。
+源文件第 32 行还有一条**给实现者的提醒**：`Keep the LEVELx values as they are here; they match up with (1<<level)`——即**位号就是级别号**，这不是巧合，是接口约定（`probe.sh` 第 8 段逐条把 `LEVELn` 的位移量对回 n）。
 
 **分配函数**（同文件 `:149`）：
 
@@ -193,9 +216,9 @@ extern BaseType_t xTaskCreatePinnedToCore( TaskFunction_t pxTaskCode,
 比 `xTaskCreate` 多最后一个参数 `xCoreID`：
 
 - `0` / `1`：钉到 PRO_CPU / APP_CPU；
-- `tskNO_AFFINITY`：不钉核（调度器自由安排）。
+- `tskNO_AFFINITY`：不钉核（调度器自由安排）——实测 `task.h:206` 定义为 `( BaseType_t ) 0x7FFFFFFF`，紧跟着第 207 行一条 `Todo: Update tskNO_AFFINITY value to -1` 的注释，所以它**不是 -1**，别按 -1 去猜它的值。
 
-函数注释紧接着写明了这一点（`:394`）：**"Call the 'PinnedToCore' version with `tskNO_AFFINITY` to create an unpinned task."**——所以 `xTaskCreate` 本质上就是 `xTaskCreatePinnedToCore(..., tskNO_AFFINITY)` 的包装。
+函数注释紧接着写明了这一点（`:391-392`）：**"Call the 'PinnedToCore' version with `tskNO_AFFINITY` to create an unpinned task."**——而且 `xTaskCreate` 的函数体（`:394` 起）就一句 `return xTaskCreatePinnedToCore( pxTaskCode, ... )`，包装关系是写在源码里的，不是推测。
 
 **什么时候该钉核**：
 
@@ -250,7 +273,7 @@ xQueueSend(...) / xTaskNotifyGive(...)  /* 用内核对象，别自己造轮子 
 | | STM32 F407（[S4](../stm32/04-nvic-exti.md)） | ESP32-S3 |
 |---|---|---|
 | 中断控制 | NVIC（每核一个，F407 单核） | **中断矩阵**（源 → 核 → 级） |
-| 中断源数 | 按外设固定（IRQn 枚举） | **99 个源**（实测），可路由 |
+| 中断源数 | 按外设固定（IRQn 枚举） | **99 个源编号**（实测 0–98），可路由 |
 | 优先级 | 4 位，`IP 字节 = 逻辑优先级 << 4` | **7 级**（`ESP_INTR_FLAG_LEVEL1..6` + NMI） |
 | 向量表 | 固定地址数组，`IRQn + 16` | 由分配器动态绑定 |
 | ISR 落址 | Flash 原地执行，无所谓 | **Flash 经 Cache 映射**——关 Cache 时不可取指 → IRAM 纪律 |
@@ -279,7 +302,7 @@ xQueueSend(...) / xTaskNotifyGive(...)  /* 用内核对象，别自己造轮子 
 
 ## 实物实验
 
-- 写一个带 `IRAM_ATTR` 的 ISR 和一个不带的，`idf.py build` 后用 `arm-none-eabi-nm` 对比符号地址落在 IRAM（`0x400xxxxx`）还是 Flash 映射段——把两个地址记进实验记录（**待上机回填**）。
+- ~~写一个带 `IRAM_ATTR` 的 ISR 和一个不带的，`idf.py build` 后用 `arm-none-eabi-nm` 对比符号地址~~ —— 这条已经在「先跑起来」里用**本机实跑**填掉了，而且原写法有两处错：ESP-IDF 用的不是 `arm-none-eabi-*` 而是 `xtensa-esp-elf-nm`，判据地址也不是 `0x400xxxxx`（那是初代 ESP32）。上板只剩一件静态取证做不到的事：**真的把 Cache 关一次**——在 NVS 提交期间触发这个中断，看它崩不崩。
 - 给一个 GPIO 中断同时挂 `ESP_INTR_FLAG_LEVEL1` 与 `ESP_INTR_FLAG_IRAM`，在 ISR 里**故意**调 `printf`——观察它在 Flash 操作期间是否崩溃（**这是反例实验，小心使用**；**待上机回填**）。
 - 用 `xTaskCreatePinnedToCore(..., xCoreID)` 分别传 `0`、`1`、`tskNO_AFFINITY` 创建同一个任务，在任务里打印 `xPortGetCoreID()`——记录三种情况下任务实际落在哪个核（**待上机回填**）。
 - 把 `ESP_INTR_FLAG_LEVEL1` 改成 `LEVEL3`，观察中断响应行为（**待上机回填**）。
@@ -327,8 +350,8 @@ STM32 的 Flash 是**原地执行**的（地址空间直接映射，CPU 直接�
 <details>
 <summary>看答案</summary>
 
-**99 个中断源**——实测 `components/soc/esp32s3/include/soc/interrupts.h`：从 `ETS_WIFI_MAC_INTR_SOURCE = 0`（第 18 行）到 `ETS_PERI_BACKUP_INTR_SOURCE`（第 116 行）共 99 项，紧跟着 `ETS_MAX_INTR_SOURCE`（第 118 行，注释 "number of interrupt sources"）。
-**7 个级别**——`ESP_INTR_FLAG_LEVEL1..LEVEL6`（`1<<1`..`1<<6`）加 `ESP_INTR_FLAG_NMI`（`1<<7`），见 `components/esp_hw_support/include/esp_intr_alloc.h:33-39`。
+**99 个中断源编号（0–98）**——实测 `components/soc/esp32s3/include/soc/interrupts.h`：枚举体第 18–117 行，最后一项 `ETS_DMA_EXTMEM_REJECT_SOURCE` 编译器打印出来是 98，紧跟的第 118 行 `ETS_MAX_INTR_SOURCE` = **99**。注意 99 说的是编号槽位：那 98 个名字只覆盖 95 个不同编号（23/33/34/46 是保留位，三条 `..._EDGE_INTR_SOURCE` 与各自 TARGET 同值）。
+**7 个级别**——`ESP_INTR_FLAG_LEVEL1..LEVEL6`（`1<<1`..`1<<6`）加 `ESP_INTR_FLAG_NMI`（`1<<7`，源码注释直说 "Level 7 interrupt vector"），见 `components/esp_hw_support/include/esp_intr_alloc.h:33-39`。位号就是级别号，`probe.sh` 第 8 段逐条对过账。
 
 </details>
 
@@ -357,6 +380,7 @@ STM32 的 Flash 是**原地执行**的（地址空间直接映射，CPU 直接�
 | `spinlock_t` 定义 | `$IDF_PATH/components/esp_hw_support/include/spinlock.h:45` |
 | 双核数量（`SOC_CPU_CORES_NUM = 2`） | `$IDF_PATH/components/soc/esp32s3/include/soc/soc_caps.h:145` |
 | ISR 写法参考（真工程） | `code/esp32/01-gpio-matrix/main/` |
+| 四条链的落址取证探针（本机实跑，不需要板） | `code/esp32/09-iram-discipline/probe.sh` |
 | `volatile` 的边界清单 | [C3 volatile](../c/03-volatile.md) |
 | 单核 NVIC 的对照系 | [S4 中断与 NVIC](../stm32/04-nvic-exti.md) |
 

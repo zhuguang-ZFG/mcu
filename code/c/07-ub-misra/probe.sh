@@ -5,16 +5,23 @@
 #                 2) -fwrapv 对照：加一个编译旗，-O2 的"恒真"当场收回；
 #                 3) 编译器防线现场：-Wstrict-aliasing / -Warray-bounds / -Wuninitialized 抓人实录；
 #                 4) UBSan 运行期点名（工具链支持时）；
-#                 5) 交叉汇编：arm-none-eabi-gcc -O2 -S 看 is_bigger_after_inc 被折叠成几条指令。
+#                 5) 交叉汇编：arm-none-eabi-gcc -O2 -S 看 is_bigger_after_inc 被折叠成几条指令；
+#                 6) 宿主汇编：同一件事在 x86 上的两份铁证——-O0 函数体已是 movl $1，-O2 连 call 都没了。
 #   sh probe.sh clean   删 build/
 #
 # 产物一律落在 build/（code/**/build/ 已 gitignore）。
 #
-# 想让第 5 步跑起来：把交叉工具链的 bin 目录加进 PATH，例如
-#   PATH="/d/zhugu-home/tools/armgcc/xpack-arm-none-eabi-gcc-15.2.1-1.1/bin:$PATH"
+# 第 5 步需要交叉工具链。章内两段汇编出自 15.2.1，所以下面把它的 bin 目录钉进 PATH
+# （本机装了就用它，没装就退回 PATH 里默认那把，并把实际版本号打印出来）。
+#   也可以自己指定：ARM_PREFIX=/path/to/arm-none-eabi- sh probe.sh
+# 版本差异只改形状不改结论：10.3.1 的 -fwrapv 段给成 adds/cmp/ite/movle/movgt，
+# 而 -O2 折叠段两把一模一样，见章内引文。
 
 set -e
 cd "$(dirname "$0")"
+
+XPACK=${XPACK:-/d/zhugu-home/tools/armgcc/xpack-arm-none-eabi-gcc-15.2.1-1.1/bin}
+[ -d "$XPACK" ] && PATH="$XPACK:$PATH"
 
 if [ "$1" = "clean" ]; then
     rm -rf build
@@ -69,3 +76,15 @@ if command -v "${ARMPREFIX}gcc" >/dev/null 2>&1; then
 else
     echo "（跳过汇编取证：PATH 里没有 arm-none-eabi-gcc；宿主对照不受影响）"
 fi
+
+echo
+echo "############ 6. 宿主侧折叠铁证：-O0 的函数体已经是常量，-O2 连调用都没了 ############"
+"$HOSTCC" -std=c11 -O0 -S probe.c -o build/host-o0.s
+"$HOSTCC" -std=c11 -O2 -S probe.c -o build/host-o2.s
+echo "----- -O0 is_bigger_after_inc 函数体：加法和比较都被吃掉 -----"
+awk '/^is_bigger_after_inc:/{f=1} f{print} f&&/^\tret$/{exit}' build/host-o0.s | grep -Ev "^[[:space:]]*\.seh" || true
+echo "----- -O0 shift_oob 函数体：真发一条 sall %cl（33 被移位器截成 1 → 结果 2）-----"
+awk '/^shift_oob:/{f=1} f{print} f&&/^\tret$/{exit}' build/host-o0.s | grep -Ev "^[[:space:]]*\.seh" || true
+echo "----- -O2 main：is_bigger/shift/两种位读法的 call 全部消失，打印参数就是立即数 -----"
+echo "     \$1 = 恒真折叠；\$0（xorl %edx,%edx）= UB 之后编译器爱给什么给什么；\$1065353216 = 0x3F800000"
+awk '/^main:/{f=1} f{print} f&&/^\tret$/{exit}' build/host-o2.s | grep -Ev "^[[:space:]]*\.seh" || true

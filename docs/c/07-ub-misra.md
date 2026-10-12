@@ -18,7 +18,7 @@ minutes: 35
 ## 怎么读这一章
 
 - **能记住**：UB 三兄弟（溢出、移位、别名）+ 一句口诀"今天跑通不等于明天安全"。
-- **能理解**：拿 probe 工程的**真跑输出**逐条对账——`is_bigger_after_inc(INT_MAX)` 在 -O0/-O2/-fwrapv 三档下的读数、`1u<<33` 在两档下的变脸、ARM 汇编里 `movs r0, #1` 那两行铁证。
+- **能理解**：拿 probe 工程的**真跑输出**逐条对账——`is_bigger_after_inc(INT_MAX)` 在 -O0/-O2/-fwrapv 三档下的读数、`1u<<33` 在两档下的变脸、ARM 汇编里 `movs r0, #1` 那两行铁证，以及宿主 x86 上 `-O0` 函数体就已经是 `movl $1, %eax`、`-O2` 连 `call` 都不剩的那两段。
 - **能用**：给一段新代码，先扫三兄弟；给一次"昨天还好好的"灵异故障，第一反应查优化等级差异，而不是怀疑硬件。
 
 ## 学习目标
@@ -88,7 +88,11 @@ is_bigger_after_inc:
 	bx	lr
 ```
 
-gcc 的推理：既然回绕定义下 `x+1 > x` 等价于"x 不等于 INT_MAX"，那就用一次减法+条件置位实现。宿主实测三档读数（gcc 16.1.0）：
+gcc 的推理：既然回绕定义下 `x+1 > x` 等价于"x 不等于 INT_MAX"，那就用一次减法+条件置位实现。
+
+> 换一把编译器，这段的形状会变、结论不变。本机另一把 arm-none-eabi-gcc 10.3.1（PATH 里默认那把）给的是 `adds r3, r0, #1` / `cmp r3, r0` / `ite le` / `movle r0, #0` / `movgt r0, #1`——老老实实加一次、比一次。**两把编译器只是"真算"的方式不同，都不肯把函数折成常量**，这才是 `-fwrapv` 要证明的事。这也是本章反复强调的一条纪律：引用汇编必须注明工具链版本，`probe.sh` 第 5 步之所以先把版本号打出来。
+
+宿主实测三档读数（gcc 16.1.0）：
 
 | 编译档 | `is_bigger_after_inc(INT_MAX)` | 解释 |
 |---|---|---|
@@ -97,6 +101,29 @@ gcc 的推理：既然回绕定义下 `x+1 > x` 等价于"x 不等于 INT_MAX"�
 | `-O2 -fwrapv` | **0** | 溢出被定义为回绕 → INT_MAX+1 = INT_MIN，比较为假 |
 
 这张表比任何说教都狠：**同一个二进制符号，三种编译配置，两种答案**。"昨天还好好的"这种灵异故事，第一嫌疑人从来不是硬件，是优化等级。
+
+"-O0 也折叠"不是嘴上说说——把宿主汇编拉出来（probe.sh 第 6 步，gcc 16.1.0 x86-64）：
+
+```asm
+is_bigger_after_inc:              @ -O0
+	pushq	%rbp
+	movq	%rsp, %rbp
+	movl	%ecx, 16(%rbp)
+	movl	$1, %eax               ← 加法、比较都不在，只剩装载常量
+	popq	%rbp
+	ret
+```
+
+`-O0` 的 `main` 仍然规规矩矩 `call is_bigger_after_inc`，可函数体里已经没人算账了。`-O2` 更狠：`main` 里 `is_bigger_after_inc` / `shift_oob` / 两种位读法**四个 call 全消失**，喂给 printf 的直接是立即数——
+
+```asm
+	movl	$1, %edx               @ is_bigger_after_inc(INT_MAX) → 恒真折叠
+	xorl	%edx, %edx             @ shift_oob(1u, 33u) → 0（UB 之后编译器爱给什么给什么）
+	movl	$1065353216, %edx      @ bits_union(1.0f)   → 0x3F800000
+	movl	$1065353216, %edx      @ bits_memcpy(1.0f)  → 同一个立即数
+```
+
+而 `-O0` 的 `shift_oob` 函数体里，躺着一条真真切切的 `sall %cl, %edx`——计数 33 被移位器截成 1，所以读数是 2。**结论：`-O0` 不等于"逐行照实执行"，它只是不在调用点做折叠、不在函数间做传播；同一个函数体内的模式匹配，gcc 16 在 `-O0` 照做。** 这就是"我 -O0 跑过了"永远不能当正确性证据的原因。
 
 一个容易搞反的推论：UB 最可怕的形态不是崩溃，是**悄悄改变逻辑**。`movs r0, #1` 让程序"正常跑着"，只是从此这个函数对 INT_MAX 撒谎——你可能在它上面盖了三层缓存逻辑。回到 [C3 volatile](03-volatile.md) 的主题：编译器不是"老实人"，它是"规则怪兽"——规则内它可以把你的代码改得亲妈都不认识，规则外（UB）它连改都不用跟你商量。
 
@@ -267,7 +294,7 @@ alias-violate.c:13:13: warning: dereferencing type-punned pointer will break str
 
 <details><summary>看答案</summary>
 
-1、1、0（probe.sh 第 1、2 步实测）。前两档相同是因为折叠 `x+1>x → 1` 的模式匹配在 -O0 也执行（gcc 16 行为，老教程"-O0 返回 0"已翻案）；`-fwrapv` 把有符号溢出定义为回绕，编译器失去"假定不溢出"的权利，只能真算——INT_MAX+1 回绕成 INT_MIN，比较为假，读数 0。
+1、1、0（probe.sh 第 1、2 步实测）。前两档相同是因为折叠 `x+1>x → 1` 的模式匹配在 -O0 也执行（gcc 16 行为，老教程"-O0 返回 0"已翻案；probe.sh 第 6 步直接把 `-O0` 的函数体拉出来，里面只剩一句 `movl $1, %eax`）；`-fwrapv` 把有符号溢出定义为回绕，编译器失去"假定不溢出"的权利，只能真算——INT_MAX+1 回绕成 INT_MIN，比较为假，读数 0。
 
 </details>
 
@@ -275,7 +302,7 @@ alias-violate.c:13:13: warning: dereferencing type-punned pointer will break str
 
 <details><summary>看答案</summary>
 
--O0 走真机指令：x86 `shl`/Cortex-M `lsl` 都把移位计数截到低 5 位，`33 & 31 = 1`，`1u << 1 = 2`。-O2 等于 0 说明编译器认出了 UB（计数 ≥ 位宽，无符号也一样）并选择了"任意结果"里最省指令的那个。两个答案都不算错——UB 题目没有标准答案，这正是要避开它的原因。
+-O0 走真机指令：x86 `shl`/Cortex-M `lsl` 都把移位计数截到低 5 位，`33 & 31 = 1`，`1u << 1 = 2`（probe.sh 第 6 步：`-O0` 的 `shift_oob` 函数体里确实躺着一条 `sall %cl, %edx`）。-O2 等于 0 说明编译器认出了 UB（计数 ≥ 位宽，无符号也一样）并选择了"任意结果"里最省指令的那个——第 6 步里 `-O2` 的 `main` 连 `call shift_oob` 都没有了，直接 `xorl %edx, %edx` 把 0 塞给 printf。两个答案都不算错——UB 题目没有标准答案，这正是要避开它的原因。
 
 </details>
 
@@ -309,6 +336,9 @@ alias-violate.c:13:13: warning: dereferencing type-punned pointer will break str
 |---|---|
 | 溢出折叠 `movs r0,#1` | `code/c/07-ub-misra/probe.sh` 第 5 步（build/probe-arm.s） |
 | -fwrapv 真算汇编（x≠INT_MAX 变换） | probe.sh 第 5 步对照段（build/probe-arm-wrapv.s） |
+| 换一把编译器的另一形状（`adds`/`cmp`/`ite`） | `XPACK=/none sh probe.sh`（退回 PATH 默认那把 10.3.1） |
+| -O0 宿主函数体已折叠成 `movl $1, %eax` | probe.sh 第 6 步（build/host-o0.s） |
+| -O2 `main` 四个 call 全消失、printf 吃立即数 | probe.sh 第 6 步（build/host-o2.s） |
 | 三档读数表（1/1/0） | probe.sh 第 1、2 步实测输出 |
 | 移位越界两档变脸（2/0） | probe.sh 第 1 步；`shift_oob` 见 probe.c 29 行 |
 | 合法位读法 + 位级断言 | probe.c 32–44、59–66 行（bits_union/bits_memcpy） |

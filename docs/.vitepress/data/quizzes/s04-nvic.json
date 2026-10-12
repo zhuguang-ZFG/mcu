@@ -56,6 +56,17 @@
       ],
       "answer": 1,
       "a": "stm32f407xx.h 的 IRQn_Type 里 NonMaskableInt=-14 之后直接跳到 MemoryManagement=-12——HardFault_IRQn(-13) 被故意省略。Reset/NMI/HardFault 优先级硬件固定（-3/-2/-1），能设的只有 -12~-1（走 SHP）和 IRQn≥0（走 IPR）。"
+    },
+    {
+      "q": "`NVIC_SetPriority(EXTI0_IRQn, 16)` 写下去，IP 字节里实际存的是什么？",
+      "options": [
+        "A. 0x100 —— 溢出到下一个中断的字节里",
+        "B. 0x00 —— 变成最高优先级 0（在本字节里被截断）",
+        "C. 硬件拒绝这次写入，IP 保持原值",
+        "D. 0xF0 —— 硬件自动饱和到最低优先级"
+      ],
+      "answer": 1,
+      "a": "官方头文件那行原话是 `NVIC->IP[IRQn] = (uint8_t)((priority << (8U - __NVIC_PRIO_BITS)) & 0xFFUL)`（core_cm4.h:1818）——按了下标取的就是**这一个字节**，越界既不换行也不报错，只在本字节里截断。probe 实测：16 → 0x00（读回来当作优先级 0，最高）、17 → 0x10（当作 1）、20 → 0x40（当作 4）、255 → 0xF0（当作 15）。这四条都在 52 条断言里。"
     }
   ]
 }

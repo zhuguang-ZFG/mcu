@@ -44,8 +44,8 @@ sh probe.sh          # 宿主 gcc 跑 560 条断言；工具链在 PATH 时附�
 
 ```text
 ----- 全文件里的间接调用指令（blx = 跳到寄存器里的地址） -----
-90:  92:	4798      	blx	r3
-141:  22:	4798      	blx	r3
+94:  9e:	4798		blx	r3
+133:  22:	4798		blx	r3
 ```
 
 ## 小节结构
@@ -123,22 +123,22 @@ static void fsm_feed(fsm_t *f, char ch)
 
 ```asm
 00000070 <fsm_feed>:
-  70:	b510      	push	{r4, lr}
+  70:	b510		push	{r4, lr}
   ...
-  86:	4a0d      	ldr	r2, [pc, #52]	@ (bc <fsm_feed+0x4c>)   @ r2 ← FSM 基址
-  88:	eb03 0380 	add.w	r3, r3, r0, lsl #2                     @ r3 ← state*4 + ch
-  8c:	4620      	mov	r0, r4
-  8e:	f852 3023 	ldr.w	r3, [r2, r3, lsl #2]                   @ 查表：取出函数地址
-  92:	4798      	blx	r3                                     @ 间接调用
-  94:	7020      	strb	r0, [r4, #0]                           @ 返回值写回 f->state
-  96:	bd10      	pop	{r4, pc}
+  92:	eb03 0382	add.w	r3, r3, r2, lsl #2			@ r3 ← state*4 + ev
+  96:	4a05		ldr	r2, [pc, #20]	; (ac <fsm_feed+0x3c>)	@ r2 ← FSM 基址
+  98:	4620		mov	r0, r4
+  9a:	f852 3023	ldr.w	r3, [r2, r3, lsl #2]	@ 查表：取出函数地址
+  9e:	4798		blx	r3				@ 间接调用
+  a0:	7020		strb	r0, [r4, #0]		@ 返回值写回 f->state
+  a2:	bd10		pop	{r4, pc}
 ```
 
 三点值得注意：
 
 1. **`blx r3` 就是"函数指针"在机器码层面的全部含义**——跳到寄存器里的地址。你在源码里看到的每一次"回调"，交叉编译后都是这条指令。
 2. `f->state = t(f, ch)` 被翻译成 `strb r0, [r4, #0]`：**动作函数的返回值直接就是下一状态**。这个设计让整张表不需要任何"转移逻辑"代码——表驱动。
-3. **`classify(ch)` 被完全内联掉了**（没有 `bl` 调用），只剩下 `cmp/bhi` 一串比较。`-O2` 会把短小的分类函数摊平。
+3. **`classify(ch)` 被完全内联掉了**（没有 `bl` 调用），只剩下 `cmp`/`beq`/`bls`/`ite` 一串比较。`-O2` 会把短小的分类函数摊平。
 
 `const` 的价值在这里是硬的：`nm` 显示 `FSM` 是 `r` 类型（只读），落在 `.rodata`，**48 字节（3×4×4）一个字节都不占 RAM**。对比 `key_table`（运行时要注册，非 const）——`b` 类型，老老实实占 `.bss` 的 32 字节。**这就是 C1 讲的"const 经济学"**。
 
@@ -236,7 +236,7 @@ q->w = (uint8_t)(w + 1);                          /* 再发布写指针 */
 - **环形缓冲读写指针写反**：读指针只能消费者动、写指针只能生产者动，交叉修改即翻车。
 - **状态机里做长延时**：中断/主循环统统被拖死——延时本身就该是一个状态（等超时事件）。
 - **查表数组忘加 const**：白白吃掉 RAM（回 [C1](01-memory-model.md) 的 const 经济学）。`nm` 一眼可辨：`r` = Flash，`b`/`d` = RAM。
-- **分派前不判空**：`key_table[i]` 可能是 `NULL`（未注册的槽），直接调用就是跳进地址 0——`probe.c` 里 `if (key_table[i] != NULL)` 是纪律，不是装饰。
+- **分派前不判空**：`key_table[i]` 可能是 `NULL`（未注册的槽），直接调用就是跳进地址 0——`probe.c` 里 `if (key_table[i] != NULL)` 是纪律，不是装饰。这条纪律在反汇编里看得见：`main+0x20` 是一条 `cbz r3, 24 <main+0x24>`，紧接 `main+0x22` 才是 `blx r3`——空槽直接跳过。
 
 ## 短自测
 
@@ -252,7 +252,7 @@ q->w = (uint8_t)(w + 1);                          /* 再发布写指针 */
 
 <details><summary>答案</summary>
 
-`blx` = Branch with Link and Exchange：**跳到寄存器里的地址**，同时把返回地址放进 `lr`。函数指针变量存的就是一个地址，调用它 = 把地址装进寄存器 + `blx`。`probe.c` 交叉编译后在 `.text+0x92`（`fsm_feed` 的查表分派）和 `.text.startup+0x22`（`main` 里内联的回调循环）各出现一条。
+`blx` = Branch with Link and Exchange：**跳到寄存器里的地址**，同时把返回地址放进 `lr`。函数指针变量存的就是一个地址，调用它 = 把地址装进寄存器 + `blx`。`probe.c` 交叉编译后在 `.text+0x9e`（`fsm_feed` 的查表分派）和 `.text.startup+0x22`（`main` 里内联的回调循环）各出现一条。
 
 </details>
 

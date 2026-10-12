@@ -241,7 +241,7 @@ factory,  app,  factory, ,        1M,
 - `idf.py build` 后 `idf.py flash monitor`，把串口 banner 逐行对照第五节那张"卡在哪一棒"的表（**待上板回填**）。
 - `idf.py partition-table` 打印实际分区表，与 `partitions_singleapp.csv` 对照，找出工具自动填上的 `Offset` 值。
 - 故意把 `CONFIG_ESP_MAIN_TASK_STACK_SIZE` 改小（如 1024），在 `app_main` 里加一个大数组，观察栈溢出时的报错——这是 F7 那套 RAM 账在 ESP 侧的同一门课。
-- 查 `idf.py size` 的输出，看你的代码有多少落在 IRAM、多少在 Flash（**待上板/构建回填**）。
+- 查 `idf.py size` 的输出，看你的代码有多少落在 IRAM、多少在 Flash。本机实测（`code/esp32/09-iram-discipline`，ESP-IDF v5.5.2，目标 esp32s3，`sh probe.sh` 第 7 段可复现）：IRAM `.text` 15356 字节 + `.vectors` 1028 字节（这一行 size 工具按 16384 字节计，显示 100%）；DIRAM 用 55463 / 341760 字节（16.23%）；Flash Code 78770 字节、Flash Data 41324 字节，整镜像 189693 字节。注意这张表的分组是 size 工具自己的口径，链接器真正用的区间要看 `.map` 里的 `Memory Configuration`（同一脚本第 3 段打印：`iram0_0_seg` 起 `0x40374000` 长 `0x57700`）。
 
 ## 常见坑
 

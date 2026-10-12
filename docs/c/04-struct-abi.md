@@ -172,6 +172,14 @@ endian: 0x12345678 stored as 78 56 34 12 -> little-endian
 
 <<< ../../code/c/04-struct-abi/probe.sh
 
+### broken.c
+
+<<< ../../code/c/04-struct-abi/broken.c
+
+### broken.sh
+
+<<< ../../code/c/04-struct-abi/broken.sh
+
 ## 记忆锚点
 
 ::: tip 一句话记住
@@ -181,6 +189,7 @@ endian: 0x12345678 stored as 78 56 34 12 -> little-endian
 ## 实物实验
 
 - **无板上（本机已实测）**：`cd code/c/04-struct-abi && sh probe.sh` 跑通，对照输出验证 `BSRR=0x18`、`sizeof=0x28`。
+- **无板上（本机已实测）**：`sh broken.sh` 打印四种"写错一位"的真实布局——`AFR[2]` 写成 `AFR` 后 `sizeof=0x24`（`BSRR` 仍在 `0x18`）、寄存器地图的空洞不补保留字时 `DR` 从 `0x08` 前移到 `0x04`、`pack(1)` 下 `b` 落在偏移 `1`，并现场演示一次被 `_Static_assert` 拦下的编译。
 - **板上（编译期已核实、肉眼现象待回填）**：在 STM32F407 工程里用 GDB 执行 `print &((GPIO_TypeDef*)0)->BSRR`，再读 `0x40021400+0x18` 对照——编译器算的偏移 = 手册给的偏移。
 
 ## 常见坑

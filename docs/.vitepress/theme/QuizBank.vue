@@ -15,6 +15,7 @@ const quizMap = {
   's09-adc': () => import('../data/quizzes/s09-adc.json'),
   's11-i2c': () => import('../data/quizzes/s11-i2c.json'),
   's12-spi': () => import('../data/quizzes/s12-spi.json'),
+  's14-pwr': () => import('../data/quizzes/s14-pwr.json'),
   'f4-queue': () => import('../data/quizzes/f4-queue.json'),
   'f7-heap': () => import('../data/quizzes/f7-heap.json'),
   'c03-volatile': () => import('../data/quizzes/c03-volatile.json'),

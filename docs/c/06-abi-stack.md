@@ -18,7 +18,7 @@ minutes: 45
 ## 怎么读这一章
 
 - **能记住**：口诀「参数 r0 到 r3，多余的上栈找；64 位占偶奇对；返回值 r0 里抱；r4–r11 谁用谁保管；lr 记着回家道」。
-- **能理解**：拿 `sum6` 的 `ldr r1, [sp]`、`mix` 调用方不写的 r1、`non_leaf` 的 `push {r4, lr}` … `pop {r4, pc}` 三段真实汇编，逐条对到 ABI 规则上。
+- **能理解**：拿 `sum6` 的 `ldr r2, [sp]`、`mix` 调用方不写的 r1、`non_leaf` 的 `push {r4, lr}` … `pop {r4, pc}` 三段真实汇编，逐条对到 ABI 规则上。
 - **能用**：给你一段 Cortex-M 的 `-O2` 反汇编，能说出参数从哪进、栈帧多大、返回地址压在栈上哪个字——[S16 崩溃定位](../stm32/16-debug-hardfault.md)要用的就是这个本事。
 
 ## 学习目标
@@ -52,14 +52,16 @@ add64(0x100000000, 0x200000001) = 0x300000001（64 位结果走寄存器对回�
 == 断言通过 9/9 ==
 ```
 
-交叉侧（arm-none-eabi-gcc 15.2.1，`-mcpu=cortex-m4 -mfloat-abi=hard -O2 -S`）里找这三行——AAPCS 就长这样：
+交叉侧（本机 PATH 里的 arm-none-eabi-gcc 10.3.1，`-mcpu=cortex-m4 -mfloat-abi=hard -O2 -S`）里找这三行——AAPCS 就长这样：
 
 ```text
 add2:
 	@ link register save eliminated.   " 叶子函数：连 lr 都不用存
-	ldr	r1, [sp]                       " sum6：第 5 个参数从栈上取
+	ldr	r2, [sp]                       " sum6：第 5 个参数从栈上取
 	pop	{r4, pc}                       " non_leaf：返回地址直接弹进 PC
 ```
+
+> 用哪几个寄存器接收栈上的值，是编译器的自由：10.3.1 给成 `ldr r2, [sp]`，别的版本可能是 `ldr r1, [sp]`。AAPCS 只承诺"前 4 个参数在 r0–r3，第 5 个起在栈上 `[sp]`/`[sp,#4]`"，剩下的它不管。本章引用的每一条汇编都是本机 10.3.1 实跑产物，行号对得上 `probe.sh`。
 
 ## 动画：栈帧的一生
 
@@ -103,28 +105,30 @@ add2:
 ```asm
 sum6:
 	@ args = 8, pretend = 0, frame = 0
+	@ frame_needed = 0, uses_anonymous_args = 0
 	@ link register save eliminated.
-	add	r0, r0, r1
-	add	r0, r0, r2
-	ldr	r1, [sp]        @ 第 5 个参数 e，从栈上取
-	ldr	r2, [sp, #4]    @ 第 6 个参数 f
+	add	r1, r1, r0
+	add	r2, r2, r1
+	add	r3, r3, r2
+	ldr	r2, [sp]        @ 第 5 个参数 e，从栈上取
+	ldr	r0, [sp, #4]    @ 第 6 个参数 f
+	add	r3, r3, r2
 	add	r0, r0, r3
-	add	r0, r0, r1
-	add	r0, r0, r2
 	bx	lr
 ```
 
 - `@ args = 8`：编译器注释——调用方在栈上放了 **8 字节**入参（两个 int），函数自己的帧却是 0（`frame = 0`）。
-- 前 4 个参数就在 r0–r3 里，直接 `add`；第 5、6 个用 `ldr r1, [sp]` / `ldr r2, [sp, #4]` 从栈上读回来。
+- 前 4 个参数就在 r0–r3 里，三条 `add` 直接加完；第 5、6 个用 `ldr r2, [sp]` / `ldr r0, [sp, #4]` 从栈上读回来。
 
-调用方一侧（main 内，`bl sum6` 之前，build/probe.s 第 221 行）：
+调用方一侧（main 内，`bl sum6` 之前，build/probe.s 第 217–224 行；probe.sh 第 48–50 行取证）：
 
 ```asm
 	movs	r3, #5
 	movs	r2, #6
 	strd	r3, r2, [sp]   @ 一条指令：5 → [sp]，6 → [sp,#4]
-	movs	r3, #4
 	movs	r2, #3
+	subs	r4, r0, r2     @ 断言 add2 的返回值 ==3，与传参无关
+	movs	r3, #4
 	movs	r0, #1
 	bl	sum6
 ```
@@ -150,7 +154,7 @@ x 在 **r0:r1**、y 在 **r2:r3**，返回值也在 r0:r1。`adds`/`adc` 进位�
 真正的反直觉点在 `mix(int tag, long long v)`（probe.c 第 53–57 行）：tag 占了 r0，v **不能**放 r1:r2——AAPCS 要求 64 位参数对齐到**偶数号**寄存器，于是 v 落 r2:r3，**r1 被跳过**。
 
 - 被调方从没读过入参 r1：`mov r1, r0`（r1 只当返回值高半的暂存）、`adds r0, r0, r2`、`adc r1, r3, r1, asr #31`——读的入参只有 r0、r2、r3。
-- 调用方铁证（`bl mix` 之前，probe.sh 第 51–56 行取证段）：
+- 调用方铁证（`bl mix` 之前，probe.sh 第 55–60 行取证段）：
 
 ```asm
 	movs	r2, #0     @ v 低 32 位
@@ -163,7 +167,7 @@ x 在 **r0:r1**、y 在 **r2:r3**，返回值也在 r0:r1。`adds`/`adc` 进位�
 
 ## 四、硬浮点 ABI：double 走 d0/d1，不占 r0:r1
 
-编译旗 `-mfpu=fpv4-sp-d16 -mfloat-abi=hard`（probe.sh 第 37 行）。hard 表示**浮点参数走 VFP 寄存器**：单精度 s0–s15、双精度 d0–d7。`add_d(double, double)`（probe.c 第 60–64 行）的汇编（build/probe.s 第 89–95 行）：
+编译旗 `-mfpu=fpv4-sp-d16 -mfloat-abi=hard`（probe.sh 第 37 行）。hard 表示**浮点参数走 VFP 寄存器**：单精度 s0–s15、双精度 d0–d7。`add_d(double, double)`（probe.c 第 60–64 行）的汇编（build/probe.s 第 90–99 行）：
 
 ```asm
 add_d:
@@ -180,7 +184,7 @@ add_d:
 
 `non_leaf`（probe.c 第 78–88 行）内部还要 `bl sink`、`bl add2`——每次 `bl` 都会覆盖 lr，所以 prologue 必须先把 lr 存起来。为什么还带着 r4？因为 `sink` 标了 `__attribute__((noipa)`（probe.c 第 70–76 行注释）：禁用一切过程间分析，调用方只能按 ABI 做最坏假定——r0–r3、r12 全被改写。想活过这次调用的值，只能放进被调方保存寄存器，r4 由此登场。
 
-完整帧（probe.sh 第 58–59 行取证输出）：
+完整帧（probe.sh 第 62–63 行取证输出）：
 
 ```asm
 non_leaf:
@@ -194,7 +198,7 @@ non_leaf:
 
 **返回地址弹进 PC** 是 Thumb-2 的经典收尾：弹栈与跳转合一。口诀里"lr 记着回家道"的下半场——回家不一定要经过 lr，可以直接进门。这个 Cortex-M4 帧 = push 8 + sub 16 = **24 字节**。
 
-对照组 `add2`（probe.c 第 33–37 行）：叶子函数不调用任何人，编译器直接注释 `@ link register save eliminated.`，全身就 `add r0, r0, r1` + `bx lr` 两条指令。计数核对（probe.sh 第 61–64 行）：全文件 `push {r4, lr}` 恰出现 1 次、`pop {r4, pc}` 恰出现 1 次——正是 non_leaf 这一对。
+对照组 `add2`（probe.c 第 33–37 行）：叶子函数不调用任何人，编译器直接注释 `@ link register save eliminated.`，全身就 `add r0, r0, r1` + `bx lr` 两条指令。计数核对（probe.sh 第 66–70 行）：全文件 `push {r4, lr}` 恰出现 1 次、`pop {r4, pc}` 恰出现 1 次——正是 non_leaf 这一对；`strd , [sp]` 也恰 1 次，就是 sum6 那次的栈传参。
 
 ## 六、把抽象 ABI 落成字节账（宿主实测）
 
@@ -258,7 +262,7 @@ non_leaf:
 
 <details><summary>看答案</summary>
 
-调用方：main 在 `bl sum6` 前用一条 `strd r3, r2, [sp]` 把 5 → `[sp]`、6 → `[sp,#4]` 写上栈（build/probe.s 第 221 行）。被调方：`sum6` 内 `ldr r1, [sp]` / `ldr r2, [sp, #4]` 取回，且编译器注释 `@ args = 8` 标明栈上入参 8 字节。宿主断言 `sum6(1..6)=21` 通过。
+调用方：main 在 `bl sum6` 前用一条 `strd r3, r2, [sp]` 把 5 → `[sp]`、6 → `[sp,#4]` 写上栈（build/probe.s 第 224 行）。被调方：`sum6` 内 `ldr r2, [sp]` / `ldr r0, [sp, #4]` 取回，且编译器注释 `@ args = 8` 标明栈上入参 8 字节（自己的 `frame = 0`）。宿主断言 `sum6(1..6)=21` 通过。
 
 </details>
 
@@ -300,12 +304,12 @@ non_leaf 内部 `bl sink`、`bl add2`，任何一次 `bl` 都会覆盖 lr，不�
 |---|---|
 | 叶子函数不保存 lr | `code/c/06-abi-stack/probe.c` 33-37 行；汇编取证 probe.sh 42-43 行 |
 | 第 5、6 参数走栈（sum6） | probe.c 40-44 行；`@ args = 8` 与 `ldr [sp]` 见 probe.sh 45-46 行输出 |
-| 调用方 strd 写栈传参 | build/probe.s 第 221 行（`strd r3, r2, [sp]`，main 内） |
-| 64 位寄存器对 / adds+adc | probe.c 47-51 行；probe.sh 48-49 行输出 |
-| r1 跳过（mix） | probe.c 53-57 行；调用方取证 probe.sh 51-56 行 |
+| 调用方 strd 写栈传参 | probe.sh 第 48-50 行取证；build/probe.s 第 224 行（`strd r3, r2, [sp]`，main 内） |
+| 64 位寄存器对 / adds+adc | probe.c 47-51 行；probe.sh 52-53 行输出 |
+| r1 跳过（mix） | probe.c 53-57 行；调用方取证 probe.sh 55-60 行 |
 | 硬浮点 d0/d1（add_d） | probe.c 60-64 行；编译旗见 probe.sh 37 行；汇编 build/probe.s 89-95 行 |
 | noipa 迫使 r4 登场 | probe.c 70-76 行（sink 的 `__attribute__((noipa))` 注释） |
-| 非叶子栈帧三件套 | probe.c 78-88 行；`push/sub … pop` 取证 probe.sh 58-59 行 |
+| 非叶子栈帧三件套 | probe.c 78-88 行；`push/sub … pop` 取证 probe.sh 62-63 行 |
 | 帧字节账与对齐断言 | probe.c 94、110-121 行（一帧 64 字节、buf 距 sp 32 字节） |
 | 9/9 行为断言 | probe.c 103-109、127 行 |
 | push/pop 计数核对 | probe.sh 61-64 行（各恰 1 次） |

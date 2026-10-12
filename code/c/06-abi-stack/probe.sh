@@ -11,6 +11,9 @@
 #
 # 想让第 2 步跑起来：把交叉工具链的 bin 目录加进 PATH，例如
 #   PATH="/d/zhugu-home/tools/armgcc/xpack-arm-none-eabi-gcc-15.2.1-1.1/bin:$PATH"
+# 本机 PATH 里默认那把是 10.3.1，章内/片内引用的汇编就是它跑的（第 38 行会打印版本号）。
+# 两把都对，只是寄存器分配不同形：sum6 取第 5 个参数，15.2.1 给 ldr r1, [sp]，10.3.1 给 ldr r2, [sp]。
+# AAPCS 只承诺"第 5 个起在栈上 [sp]/[sp,#4]"，用哪个寄存器接是编译器的自由。
 
 set -e
 cd "$(dirname "$0")"
@@ -45,6 +48,10 @@ if command -v "${ARMPREFIX}gcc" >/dev/null 2>&1; then
     echo "----- sum6：前 4 个参数 r0-r3；第 5、6 个由调用方 str 上栈 -----"
     sed -n '/^sum6:/,/\.size[[:space:]]*sum6/p' build/probe.s | head -14
 
+    echo "----- sum6 调用方：bl sum6 之前的 8 条（第 5、6 个参数走 strd） -----"
+    sed -n '/^main:/,/\.size[[:space:]]*main/p' build/probe.s \
+        | awk '/bl[[:space:]]+sum6/{exit} {print}' | tail -8
+
     echo "----- add64：64 位参数占偶奇寄存器对（r0:r1 / r2:r3） -----"
     sed -n '/^add64:/,/\.size[[:space:]]*add64/p' build/probe.s | head -10
 
@@ -62,7 +69,8 @@ if command -v "${ARMPREFIX}gcc" >/dev/null 2>&1; then
     echo "----- 计数核对（与章内"铁律"逐条对照） -----"
     printf '  push {r4, lr} 出现次数 = %s\n' "$(grep -c 'push	{r4, lr}' build/probe.s || true)"
     printf '  pop {r4, pc}  出现次数 = %s\n' "$(grep -c 'pop	{r4, pc}' build/probe.s || true)"
-    printf '  含栈传参的 str [sp 次数 = %s\n' "$(grep -c 'str	.*\[sp' build/probe.s || true)"
+    printf '  调用方把第 5、6 个入参写上栈：strd , [sp] 次数 = %s\n' "$(grep -c 'strd	.*\[sp\]' build/probe.s || true)"
+    printf '  str 落盘到 [sp…] 总次数 = %s（含编译器溢出暂存，不都等于栈传参）\n' "$(grep -c 'str	.*\[sp' build/probe.s || true)"
 else
     echo "（跳过汇编核对：PATH 里没有 arm-none-eabi-gcc；宿主断言不受影响）"
 fi

@@ -198,6 +198,12 @@
     "entry": "Makefile"
   },
   {
+    "id": "stm32-14-pwr",
+    "path": "code/stm32/14-pwr",
+    "kind": "host-probe",
+    "entry": "probe.sh"
+  },
+  {
     "id": "stm32-16-debug-hardfault",
     "path": "code/stm32/16-debug-hardfault",
     "kind": "host-probe",
@@ -342,5 +348,18 @@
     "entry": "CMakeLists.txt",
     "target": "esp32s3",
     "faults": true
+  },
+  {
+    "id": "esp32-09-iram-discipline",
+    "path": "code/esp32/09-iram-discipline",
+    "kind": "esp-idf",
+    "entry": "CMakeLists.txt",
+    "target": "esp32s3"
+  },
+  {
+    "id": "rtos-00-why-rtos",
+    "path": "code/rtos/00-why-rtos",
+    "kind": "host-probe",
+    "entry": "probe.sh"
   }
 ]

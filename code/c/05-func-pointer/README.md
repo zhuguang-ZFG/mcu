@@ -27,19 +27,19 @@ sh probe.sh clean
 `fsm_feed`（probe.c:122 查表 + 间接调用）：
 
 ```
-  86: 4a0d      ldr    r2, [pc, #52]     @ FSM 表基址
-  88: eb03 0380 add.w  r3, r3, r0, lsl #2 @ 状态*4+事件
-  8e: f852 3023 ldr.w  r3, [r2, r3, lsl #2] @ 取出动作函数地址
-  92: 4798      blx    r3                   @ 间接跳转——函数指针的真身
-  94: 7020      strb   r0, [r4, #0]       @ 返回值写回 state
+  92: eb03 0382 add.w  r3, r3, r2, lsl #2  @ 状态*4+事件
+  96: 4a05      ldr    r2, [pc, #20]       @ FSM 表基址
+  9a: f852 3023 ldr.w  r3, [r2, r3, lsl #2] @ 取出动作函数地址
+  9e: 4798      blx    r3                  @ 间接跳转——函数指针的真身
+  a0: 7020      strb   r0, [r4, #0]        @ 返回值写回 state
 ```
 
 `main` 里的回调注册表分派（probe.c:59-61，判空 + blx）：
 
 ```
-  1c: f854 3f04 ldr.w  r3, [r4, #4]!      @ 取 key_table[i]
   20: b103      cbz    r3, 24 <main+0x24> @ 空槽跳过
-  22: 4798      blx    r3
+  22: 4798      blx    r3                 @ 非空才调用
+  28: f854 3b04 ldr.w  r3, [r4], #4       @ 取下一个 key_table[i]
 ```
 
 结论：向量表、回调表、状态机动作表，落到指令层都是同一条 `blx`——

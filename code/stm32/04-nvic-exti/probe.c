@@ -194,6 +194,18 @@ static void print_prio_encoding(void)
     CHECK(encode_prio(0)  == 0x00);
     CHECK(encode_prio(5)  == 0x50);
     CHECK(encode_prio(15) == 0xF0);
+    /* 越界写法：& 0xFF 把高位截掉，不报错，而是变成另一个合法优先级。
+       注意不是"溢到隔壁中断的字节"——IP[] 按下标取字节，越界只截本字节的值。 */
+    static const uint32_t over[] = { 16, 17, 20, 255, 256 };
+    printf("越界写法（同一个字节被截断，读回来是另一个合法优先级）\n");
+    printf("%-10s %-8s %s\n", "逻辑优先级", "存入字节", "读回来当作");
+    for (unsigned i = 0; i < sizeof(over) / sizeof(over[0]); i++)
+        printf("%-10d 0x%02X     %u\n",
+               (int)over[i], encode_prio(over[i]), encode_prio(over[i]) >> (8U - CH_PRIO_BITS));
+    CHECK(encode_prio(16) == 0x00);   /* 16<<4 = 256 → &0xFF → 最高优先级 0 */
+    CHECK(encode_prio(17) == 0x10);   /* 变成优先级 1 */
+    CHECK(encode_prio(20) == 0x40);   /* 变成优先级 4 */
+    CHECK(encode_prio(256) == 0x00);
     /* 回读解码：GetPriority 右移 4 位（core_cm4.h:1841），原样回来 */
     CHECK((encode_prio(5) >> (8U - CH_PRIO_BITS)) == 5U);
     /* 写低 4 位是无效的：0x5F 读回来还是 5 */
