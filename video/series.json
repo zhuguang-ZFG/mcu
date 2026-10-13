@@ -240,14 +240,14 @@
       "punchline": "位图置位，CLZ 秒选；tick 三事：醒人、轮转、换片场。比结论更重要的是方法论——读 FreeRTOS 的任何结论，先问一句 configUSE_PORT_OPTIMISED_TASK_SELECTION 是哪条路",
       "note": "取证链七步，对象是上游内核本体而不是抄本：① 走哪条路是谁说了算——端口层 portmacro.h 与通用层 FreeRTOS.h 各留一份默认值，看 include 顺序谁先生效，再实测『不写』与『写 1』两份机身逐字节相同 ② 机身对照：一条 clz vs 往下摸的循环，顺手验『clz 之后要过一遍 uint8_t』（ucPortCountLeadingZeros 的返回宽度），再换优化档证明那个形状不是 -O0 的产物 ③ 把两条路的规则各抄成模拟器跑同一张事件表，一致性门禁是每一次选出的优先级都必须相同，账是 58 条零回边 / 70 条一回边 ④ RAM 账：每多一级收 20 字节租，`i*20` 在机身里被拆成 `(i*4+i)*4` ⑤ 33 级优先级被谁拦下来（#error 原文 vs 660 字节）⑥ tick 干的三件事在机身里就那三段 ⑦ 链表两兄弟：一个管轮转、一个管守时。成片：bilibili 34 场 627.730s、douyin 12 场 68.300s，两平台 h264@30 + aac 44100 立体声、与旁白 wav 漂移 0.0000s。抖音三处 set 覆写（bilibili 一侧一字未改）：body-04、tick-04 标题按语义缝换行消孤字；cap-01 那条 46 格的 #error 原文在 9:16 里两栏几何上放不下（并排后字号 7.9px），改成单栏只留报错原文 + note 一句『通用路：同一个 33 照编，只是数组变大』。",
       "masters": "video/out/f3-scheduler/bilibili.mp4（10:28）· douyin.mp4（01:08）"
-    }
-  ],
-  "next": [
+    },
     {
+      "no": 15,
       "id": "s7-usart-baud",
-      "title": "波特率是算出来的：16MHz 差 -0.08%，1MHz 差 -3.549%，921600 差 +2.124%",
+      "title": "115200 你写不出来：波特率是算出来的",
       "source": "docs/stm32/07-usart.md",
-      "status": "planned",
+      "script": "video/episodes/s7-usart-baud/episode.json",
+      "status": "done",
       "anims": [
         "uart-frame",
         "usart-txe-tc",
@@ -257,10 +257,11 @@
       "hook": "同一个 115200：PCLK=16MHz 时 BRR=139 → 115107.91，误差 -0.080%，很干净；PCLK=1MHz 时把 1..65535 全扫一遍，最好的也就是 BRR=9 → 111111.11，误差 -3.549%。第二钩更难受：16MHz 想要常用的 921600，最近的 BRR=17 给 941176.47，误差 +2.124%——不是没配好，是这个时钟根本够不着。",
       "hookRef": "code/stm32/03-uart-dma/probe.sh 第 1/2/3 步本机实跑（断言全绿 + 33 条位号 + 25 个地址 + 8 行误差表三方对账 + -O2/-O0 反汇编）+ docs/stm32/07-usart.md §二 86-107",
       "punchline": "波特率不是填出来的，是拿实际 PCLK 除出来的；误差沿整帧累积，8N1 的总预算 0.5/8.5 = 5.88% 还要收发两端对半分——这才是「±2% 经验值」的来历",
-      "evidence": "取证链已按 S2/S14/S4 的无板三步建好，probe.sh 全绿（本机 xpack 15.2.1 + 宿主 gcc）：① probe.c 用 `#define REG f_x` + `MCU_PROBE_NO_MAIN` 把 main.c 的函数体整个跑一遍，`_Static_assert` 把正文数字与 CMSIS 现挖值逐格对撞，运行期打 BRR 表（§6 的 markdown 模式与 §1 同一份数据）、1..65535 最优 BRR 穷举、OVER8=1 那次翻倍（同 BRR=139 在 16MHz 给 230215.83）、帧预算倒推、clocks_read() 六组回读 ② probe.sh 拿第 ① 步的输出与 CMSIS 官方头文件逐位 diff（33 条 `_Pos` + 25 个 base+偏移地址），再与 docs/stm32/07-usart.md 那张表逐行 diff——正文改一个数就红，这一步不依赖 CMSIS 也在跑 ③ 交叉链 -O2/-O0 各编一遍 main.c 反汇编：`/115200` 编成 `add.w r3,r3,#57600` + `.word 0x91a2b3c5` + `umull` + `lsrs r3,r3,#16`（没有 udiv，`/1000` 另有一枚 magic 0x10624dd3），BRR 落 `[r5,#8]`、CR1 那笔是 `movw r2,#8220`（0x201C）；DMA2 Stream5 的 PAR 直接给 0x40011004、字面量池把基址锚到 0x40026000 再用 +1160 的立即数补回 DMA2，清标志写的是 HIFCR(+0x40c) 而不是只读 HISR；-O0 有 `<usart1_init>` 标签和 `[r7,#12]` 那个 BRR 栈临时，-O2 两者皆无（text 1964 → 1121，bss 两边都 1140）。还能与 S14 串一格：84MHz 的 729 被带回 8MHz 就是 10973。",
-      "storyboard": "B站 7 幕：对账事故开场 → 一帧长什么样（uart-frame 12s）→ baud=PCLK/BRR 与误差表 → 误差为什么沿帧累积（0.5/8.5）→ 1MHz 与 921600 两个反例 → TXE/TC 分工（usart-txe-tc）+ DMA 不理解帧（dma-circular-buffer 16s）→ 金句 + CTA"
+      "note": "取证链三步，全程无板（本机 xpack 15.2.1 + 宿主 gcc），probe.sh 全绿：① probe.c 用 `#define REG f_x` + `MCU_PROBE_NO_MAIN` 把 main.c 的函数体整个跑一遍，`_Static_assert` 把正文数字与 CMSIS 现挖值逐格对撞，运行期打 BRR 表（§6 的 markdown 模式与 §1 同一份数据）、1..65535 最优 BRR 穷举、OVER8=1 那次翻倍（同 BRR=139 在 16MHz 给 230215.83）、帧预算倒推、clocks_read() 六组回读 ② probe.sh 拿第 ① 步的输出与 CMSIS 官方头文件逐位 diff（33 条 `_Pos` + 25 个 base+偏移地址），再与 docs/stm32/07-usart.md 那张表逐行 diff——正文改一个数就红，这一步不依赖 CMSIS 也在跑 ③ 交叉链 -O2/-O0 各编一遍 main.c 反汇编：`/115200` 编成 `add.w r3,r3,#57600` + `.word 0x91a2b3c5` + `umull` + `lsrs r3,r3,#16`（没有 udiv，`/1000` 另有一枚 magic 0x10624dd3），BRR 落 `[r5,#8]`、CR1 那笔是 `movw r2,#8220`（0x201C）；DMA2 Stream5 的 PAR 直接给 0x40011004、字面量池把基址锚到 0x40026000 再用 +1160 的立即数补回 DMA2，清标志写的是 HIFCR(+0x40c) 而不是只读 HISR；-O0 有 `<usart1_init>` 标签和 `[r7,#12]` 那个 BRR 栈临时，-O2 两者皆无（text 1964 → 1121，bss 两边都 1140）。还能与 S14 串一格：84MHz 的 729 被带回 8MHz 就是 10973。 成片：bilibili 33 场 671.267s、douyin 11 场 69.667s，两平台 h264@30 + aac 44100 立体声、与旁白 wav 漂移 0.003s；两条成片逐帧解码核对 20138 / 2090 帧，与计划帧数一致（`-t` + `-shortest` 没截尾）。抖音侧两处返工：初版 12 场旁白实测 76.02s，撞 45–75s 的渲前时长闸，砍掉 clock-04（与 clock-02 同讲『时钟源配错波特率就崩』，留 PLL 那颗更普遍的）；budget-04/hal-02 原本没有 set 覆写，横版长标题在 9:16 里折出末行 1 字（「成」「倍」），被排版审计拦下，补 `一兆那档\n吃掉六成`、`OVER8 一改\n同一个数翻倍` 才过——横版标题直接搬到竖屏是会违规的。",
+      "masters": "video/out/s7-usart-baud/bilibili.mp4（11:11）· douyin.mp4（01:09）"
     }
   ],
+  "next": [],
   "backlog": [
     "F6 软件定时器：configTOTAL_HEAP_SIZE 那笔 RAM 账"
   ]
