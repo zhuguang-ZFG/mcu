@@ -57,6 +57,8 @@ if (p.scenes && p.scenes.length >= 2) {
       run(make,p.variants[0].args,cwd);assert.equal(digest(p.variants[0]),first);
       assert.notEqual(spawnSync(make,['MODE=99'],{cwd}).status,0);
     }
+    // 无板取证脚本：只有清单里显式声明 probe 的 arm-make 工程才跑（它要交叉链与 CMSIS 头文件两样东西）。
+    if (p.probe) run('sh', [p.probe], cwd)
   }
 }
 console.log('All ARM/host projects passed; hardware observations remain separate.')

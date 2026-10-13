@@ -11,14 +11,14 @@
 - `npm run seo:check`：检查构建产物含 sitemap.xml（每条 `<loc>` 必须带 `host+base` 前缀）、robots.txt、og-cover.png，每页都有 og/twitter 分享卡与 canonical，**且本地搜索索引含足量中文二元组**。需先构建。
 - `npm run perf:budget`：纯静态体积预算（zlib，无浏览器）——首屏外壳+CSS、渲染阻塞 CSS、最大单块、搜索索引原文。需先构建。行为侧（延迟索引、减少动效）仍由 `test:browser` 覆盖，两者分工不重叠。
 - `npm run a11y:check`：无障碍静态审计——每页 html[lang]、img alt、button/链接可访问名、h1、地标（main/VPContent）。需先构建。
-- `npm run firmware:check`：ARM/host 全工程、五场景切换、初始 SP 与 Thumb 复位向量验证。
+- `npm run firmware:check`：ARM/host 全工程、五场景切换、初始 SP 与 Thumb 复位向量验证。登记了 `probe` 的 arm-make 工程，建完 ELF 还会跑一遍 `probe.sh`（无板取证：宿主断言 → 与 CMSIS/正文对账 → 交叉反汇编）。
 - `npm run test:browser`：构建后运行；先 `npx playwright install chromium`。本机可 `PLAYWRIGHT_CHANNEL=msedge`。
 - `npm run site:measure -- current [output-directory]`：测量产物与搜索延迟加载，默认输出 test-results/performance。
 - `node scripts/project-catalog.mjs --matrix`：仅向 stdout 输出 JSON `{include:[{path,target}]}`，供 CI 消费。
 
 ## 3. Contracts
 
-- `code/projects.json` 数组：`id` 唯一；`path` 为 `code/<board>/<project>`；`kind` 为 arm-make/esp-idf/host-probe/host-make；`entry` 必须存在且与类型一致。ESP 的 `target` 必须是 esp32s3，RTOS `scenes=[1,2,3,4,5]`。
+- `code/projects.json` 数组：`id` 唯一；`path` 为 `code/<board>/<project>`；`kind` 为 arm-make/esp-idf/host-probe/host-make；`entry` 必须存在且与类型一致。ESP 的 `target` 必须是 esp32s3，RTOS `scenes=[1,2,3,4,5]`。可选 `probe`：只允许 arm-make，值必须是 `probe.sh` 且文件真实存在——它是"板级固件 + 无板取证"同目录共存的唯一登记方式（`host-probe` 那一类是纯取证工程，有自己的目录与 entry）。CI 侧 `arm-host` job 会把 `.trellis/ref/cmsis` 固定到 cmsis-device-f4 `v2.6.11` + CMSIS_5 `5.9.0` 并校验 sha256，取证脚本的头文件对账因此在 CI 上有第二来源；交叉反汇编那一步只在本机钉住的工具链版本上判定，别的版本打印跳过。
 - 章节：title 非空字符串，status=done/building，difficulty=1/2/3，minutes 正整数。非法值使生成进程非零退出，不能降级为告警再产出数据。
 - 实验额外字段：code_status=ready/planned、hardware_status=pending/verified、code_note 非空、projects 为工程 ID 数组。ready 必须引用工程；verified 必须有 docs/ 下的 evidence 文件。
 - status 只表示文稿；LabStatus/LabOverview 从元数据与 progress.json 显示时长、难度、代码状态和实测状态。禁止将成稿数说成实测数。

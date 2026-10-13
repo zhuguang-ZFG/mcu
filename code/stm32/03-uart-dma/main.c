@@ -6,8 +6,8 @@
  * 1) 波特率是算出来的，不是填出来的。
  *    默认 16 倍过采样（OVER8=0）时  baud = f_PCLK / BRR。时钟一变，波特率就跟着变，
  *    所以 BRR 必须由"回读出来的 PCLK"算，而不是写死一个魔数。
- *    （1MHz 那种 PLL 参考时钟不能直接喂 USART：BRR=9 时误差 -3.6%，
- *      收发就已经不可靠了。见 S2/S7。）
+ *    （1MHz 那种 PLL 参考时钟不能直接喂 USART：BRR=9 时实际 111111，误差 -3.549%，
+ *      单这一项就吃掉 8N1 帧 5.882% 总预算的六成，收发已经不可靠了。见 S2/S7。）
  *
  * 2) 接收有两级缓冲：串口自己的移位寄存器/FIFO，DMA 搬进我们的环形数组。
  *    DMA 不理解"帧"，它只理解"搬够 N 个字节"。
@@ -37,25 +37,54 @@
 
 /* ============================ 板级/通道配置 ============================ */
 
+#ifndef USART1_BASE
 #define USART1_BASE   (0x40011000UL)   /* APB2PERIPH_BASE + 0x1000 */
+#endif
+#ifndef DMA2_BASE
 #define DMA2_BASE     (0x40026400UL)   /* AHB1PERIPH_BASE + 0x6400 */
+#endif
+#ifndef DMA2_S5_BASE
 #define DMA2_S5_BASE  (DMA2_BASE + 0x088UL)
+#endif
+#ifndef DMA2_LISR
 #define DMA2_LISR     (*(volatile uint32_t *)(DMA2_BASE + 0x00UL))
+#endif
+#ifndef DMA2_HISR
 #define DMA2_HISR     (*(volatile uint32_t *)(DMA2_BASE + 0x04UL))
+#endif
+#ifndef DMA2_HIFCR
 #define DMA2_HIFCR    (*(volatile uint32_t *)(DMA2_BASE + 0x0CUL)) /* 标志清除只走这个寄存器 */
+#endif
 
 #define GPIOA_BASE    (0x40020000UL)
+#ifndef GPIOA_MODER
 #define GPIOA_MODER   (*(volatile uint32_t *)(GPIOA_BASE + 0x00UL))
+#endif
+#ifndef GPIOA_AFRH
 #define GPIOA_AFRH    (*(volatile uint32_t *)(GPIOA_BASE + 0x24UL)) /* 引脚 8..15 */
+#endif
 
 #define GPIOF_BASE    (0x40021400UL)
+#ifndef GPIOF_MODER
 #define GPIOF_MODER   (*(volatile uint32_t *)(GPIOF_BASE + 0x00UL))
+#endif
+#ifndef GPIOF_BSRR
 #define GPIOF_BSRR    (*(volatile uint32_t *)(GPIOF_BASE + 0x18UL))
+#endif
 
 #define RCC_BASE      (0x40023800UL)
+#ifndef RCC_PLLCFGR
+#define RCC_PLLCFGR   (*(volatile uint32_t *)(RCC_BASE + 0x04UL))
+#endif
+#ifndef RCC_CFGR
 #define RCC_CFGR      (*(volatile uint32_t *)(RCC_BASE + 0x08UL))
+#endif
+#ifndef RCC_AHB1ENR
 #define RCC_AHB1ENR   (*(volatile uint32_t *)(RCC_BASE + 0x30UL))
+#endif
+#ifndef RCC_APB2ENR
 #define RCC_APB2ENR   (*(volatile uint32_t *)(RCC_BASE + 0x44UL))
+#endif
 
 /* ---- DMA 通道选择：权威表是 RM0090 Rev 18 Table 43（DMA2 request mapping） ----
  * USART1_RX → DMA2 Stream5 Channel4（也可走 Stream2 Channel4）。
@@ -64,19 +93,41 @@
  * 取值按广泛使用的映射给出，上板自检步骤见工程 README。 */
 #define USART1_RX_STREAM        5U
 #define USART1_RX_CHANNEL       4U
+#ifndef DMA_S5_CR
 #define DMA_S5_CR   (*(volatile uint32_t *)(DMA2_S5_BASE + 0x00UL))
+#endif
+#ifndef DMA_S5_NDTR
 #define DMA_S5_NDTR (*(volatile uint32_t *)(DMA2_S5_BASE + 0x04UL))
+#endif
+#ifndef DMA_S5_PAR
 #define DMA_S5_PAR  (*(volatile uint32_t *)(DMA2_S5_BASE + 0x08UL))
+#endif
+#ifndef DMA_S5_M0AR
 #define DMA_S5_M0AR (*(volatile uint32_t *)(DMA2_S5_BASE + 0x0CUL))
+#endif
+#ifndef DMA_S5_FCR
 #define DMA_S5_FCR  (*(volatile uint32_t *)(DMA2_S5_BASE + 0x14UL))
+#endif
 
 /* ---- USART 寄存器（偏移对应该头文件 USART_TypeDef） ---- */
+#ifndef USART1_SR
 #define USART1_SR    (*(volatile uint32_t *)(USART1_BASE + 0x00UL))
+#endif
+#ifndef USART1_DR
 #define USART1_DR    (*(volatile uint32_t *)(USART1_BASE + 0x04UL))
+#endif
+#ifndef USART1_BRR
 #define USART1_BRR   (*(volatile uint32_t *)(USART1_BASE + 0x08UL))
+#endif
+#ifndef USART1_CR1
 #define USART1_CR1   (*(volatile uint32_t *)(USART1_BASE + 0x0CUL))
+#endif
+#ifndef USART1_CR3
 #define USART1_CR3   (*(volatile uint32_t *)(USART1_BASE + 0x14UL))
+#endif
+#ifndef USART1_CR2
 #define USART1_CR2   (*(volatile uint32_t *)(USART1_BASE + 0x10UL))
+#endif
 
 #define USART_SR_RXNE (1UL << 5)
 #define USART_SR_TC   (1UL << 6)
@@ -114,13 +165,25 @@
 #define DMA_HISR_HTIF5  DMA5_HT
 #define DMA_HISR_TCIF5  DMA5_TC
 
+#ifndef NVIC_ISER0
 #define NVIC_ISER0 (*(volatile uint32_t *)(0xE000E100UL)) /* IRQ 0..31   */
+#endif
+#ifndef NVIC_ISER1
 #define NVIC_ISER1 (*(volatile uint32_t *)(0xE000E104UL)) /* IRQ 32..63  */
+#endif
+#ifndef NVIC_ISER2
 #define NVIC_ISER2 (*(volatile uint32_t *)(0xE000E108UL)) /* IRQ 64..95  */
+#endif
 
+#ifndef SysTick_CTRL
 #define SysTick_CTRL (*(volatile uint32_t *)(0xE000E010UL))
+#endif
+#ifndef SysTick_LOAD
 #define SysTick_LOAD (*(volatile uint32_t *)(0xE000E014UL))
+#endif
+#ifndef SysTick_VAL
 #define SysTick_VAL  (*(volatile uint32_t *)(0xE000E018UL))
+#endif
 
 #define LED_R_PIN 6U
 #define LED_B_PIN 8U
@@ -193,7 +256,7 @@ static void clocks_read(uint32_t hsi_hz, volatile uint32_t *hclk, volatile uint3
     uint32_t src  = hsi_hz;
 
     if (((cfgr >> 2) & 0x3UL) == 0x2UL) {
-        uint32_t pll = *(volatile uint32_t *)(RCC_BASE + 0x04UL);
+        uint32_t pll = RCC_PLLCFGR;
         uint32_t m =  pll & 0x3FUL;
         uint32_t n = (pll >> 6) & 0x1FFUL;
         uint32_t p = 2UL * (((pll >> 16) & 0x3UL) + 1UL);
@@ -219,6 +282,25 @@ static void uart_write_blocking(const char *s)
     while ((USART1_SR & USART_SR_TC) == 0UL) { }
 }
 
+/* 波特率与 BRR 的互算：OVER8=0（16 倍过采样）时 baud = PCLK / BRR，
+ * 于是 BRR = round(PCLK/baud)——四舍五入靠 +baud/2 这一次加法，不是靠浮点。
+ * 写成宏而不是函数，是为了让 -O0 与 -O2 下的机身形状由调用点决定；
+ * probe.sh 打的那张误差表也走这两个宏，不与固件各算一套。 */
+#ifndef BAUD_FROM_PCLK
+#define BAUD_FROM_PCLK(pclk, baud) ((uint32_t)(((pclk) + ((baud) / 2U)) / (baud)))
+#endif
+#ifndef PCLK_OF_BRR
+#define PCLK_OF_BRR(pclk, brr)     ((uint32_t)((pclk) / (brr)))
+#endif
+
+/* dmb 是 ARM 指令，宿主机（probe.c 那一遍）编不过：那边只留编译器栅栏，
+ * 内存栅栏的真实形状由 probe.sh 第 3 步的交叉反汇编给出。 */
+#if defined(__arm__)
+#define MCU_DMB()         __asm__ volatile("dmb" ::: "memory")
+#else
+#define MCU_DMB()         __asm__ volatile("" ::: "memory")
+#endif
+
 static void usart1_init(uint32_t pclk2)
 {
     USART1_CR1 = 0;
@@ -226,7 +308,7 @@ static void usart1_init(uint32_t pclk2)
     USART1_CR3 = 0;
 
     /* OVER8 默认 0 = 16 倍过采样，于是 baud = PCLK2 / BRR */
-    uint32_t brr = (pclk2 + BAUD/2U) / BAUD;
+    uint32_t brr = BAUD_FROM_PCLK(pclk2, BAUD);
     USART1_BRR = brr;
     g_brr = brr;
 
@@ -276,7 +358,7 @@ static void consume_rx(void)
     for(uint32_t i=0;i<span.count;i++) {
         if(tx_head-tx_tail>=sizeof(tx_queue)) { ++g_overruns; break; }
         tx_queue[tx_head%sizeof(tx_queue)]=g_rx_buf[(span.start+i)%RX_BUF_LEN];
-        __asm__ volatile("dmb":::"memory");
+        MCU_DMB();
         ++tx_head; ++g_rx_bytes;
     }
 }
@@ -294,6 +376,8 @@ void DMA2_Stream5_IRQHandler(void) { consume_rx(); }
 
 /* ============================ main ============================ */
 
+#ifndef MCU_PROBE_NO_MAIN   /* 无板取证（probe.c）把 main.c 整个 #include 进去，
+                               这一遍只要固件本体，不要那个 while(1)。 */
 int main(void)
 {
     led_init();
@@ -329,12 +413,13 @@ int main(void)
             __asm__ volatile("msr primask, %0"::"r"(mask):"memory");
         }
         if(tx_tail!=tx_head && (USART1_SR&USART_SR_TXE)) {
-            __asm__ volatile("dmb":::"memory");
+            MCU_DMB();
             USART1_DR=tx_queue[tx_tail%sizeof(tx_queue)];
-            __asm__ volatile("dmb":::"memory");
+            MCU_DMB();
             ++tx_tail;
         }
         led_set(LED_R_PIN,(g_ms/500U)&1U);
         led_set(LED_B_PIN,g_overruns==0 && g_rx_bytes!=0);
     }
 }
+#endif

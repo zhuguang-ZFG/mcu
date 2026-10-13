@@ -204,12 +204,64 @@
       "punchline": "先 SYSCFG 选门，再 EXTI 设沿，后 NVIC 放行，ISR 进门先清挂起；同抢占级永不嵌套（子优先级只定次序、没有打断能力），谁能打断谁由 PRIGROUP 这把尺子决定——数值一个不改，只改分组，秩序全变",
       "note": "取证链沿用 S2/S14 的无板三步：① 宿主 gcc 编 probe.c，编译期 _Static_assert 把正文数字与头文件现挖值逐格对撞，运行期打四张映射表（IRQn→槽/ISER/IP、PRIGROUP 八种切法、优先级<<4 编码、EXTICR 位移）② 数 startup 文件 .word 行数得 98 项，7 个 IRQn 回验槽位与 handler 名 ③ 交叉链 10.3.1 真链接，objdump -h/-t + 反汇编 + nm 实证 weak 被强符号顶替、槽 22 = 地址|1、清挂起那句 `str.w r1,[r3,#3092] ; 0xc14` 与 .word 0x40013000 合出 0x40013C14 = EXTI->PR。本集改代码一处：为『越界优先级』补了 4 条断言（16/17/20/256），48 → 52 条——因为原章节里那句『写 16 会溢出到下一个中断的字节里』是我写错了：按了下标取的就是本字节，& 0xFF 只在字节内截断。章内同步：§3.1 换成实测越界表 + 正确结论、48 → 52（精髓/quick win/附录三处）、§五 5.3 反汇编注释口径改回 objdump 真实输出（`; 0xc14` 而非 `@ 0xc14`）、§四 `.isr_vector` 的 File off 改成本机打印的 00010000、QuizBank s04-nvic 增第 6 题（16 → 0x00）。动画四张：路由图（12s，整集背景）、PRIGROUP 四幕（12s）、抢占判定五幕（15s，3s 一幕，对应 EXTI0/EXTI9/EXTI1 那条时间轴）、ISR 入栈（12s）。",
       "masters": "video/out/s4-nvic/bilibili.mp4（11:56）· douyin.mp4（01:07）"
+    },
+    {
+      "no": 13,
+      "id": "c2-pointer",
+      "title": "指针不是玄学：地址、宽度、纪律",
+      "source": "docs/c/02-pointer.md",
+      "script": "video/episodes/c2-pointer/episode.json",
+      "status": "done",
+      "anims": [
+        "pointer-arrows",
+        "struct-alignment"
+      ],
+      "hook": "片头那句『把 1 左移 22 位，写进 0x40021418，灯就亮了』人人抄过，可这个地址是哪来的——本机反汇编给的是两条：`str.w r2, [r3, #1048] @ 0x418` 加字面量池里一个 `.word 0x40021000`，合起来才是 0x40021418。地址不是抄来的常数，是基址加偏移算出来再被编译器拆成两半塞进机身的。第二个钩是 `p[1]`：同一份源码三种类型，编出来分别是 `ldrb r0,[r0,#1]`、`ldrh r0,[r0,#2]`、`ldr r0,[r0,#4]`——加一到底加几，宽度写在指令的立即数里。",
+      "hookRef": "code/c/02-pointer/probe.sh 三组实跑（asm / run / const）+ docs/c/02-pointer.md",
+      "punchline": "指针只有三件事：地址、宽度、纪律。地址是基址+偏移算出来的，宽度决定 `p+1` 到底加几（它印在指令立即数里），纪律是 const 那三条——想清楚这三件，世界上就没有难懂的指针，只有还没拆开的驱动代码",
+      "note": "取证链三组，全程无板：① `arm-none-eabi-gcc -O2 -S` 打十段函数体（read8/16/32、write8/16/32、next8/16/32、led_on_indexed/led_on_macro），现场3 再补一刀 `-c` + objdump——汇编文本里那个 `.L12` 只是标号，字面量要连机器码编出来才看得见，两条 grep 断言（`[r3,#1048] @ 0x418` 与 `.word 0x40021000`）任一失配就非零退出，正文那句『地址被拆成两段』当场作废 ② 宿主 gcc 真跑宽度/对齐/环形游标那一遍 ③ const 三个『必须编译失败』的反例（`*p = 1` / `p = &b` / 两者都），报错原文直接上屏——const 不要钱，跑都不用跑。`_Static_assert(6*sizeof(uint32_t)==0x18)` 随第一遍编译一起过。成片：bilibili 27 场 535.800s、douyin 11 场 72.570s，两平台 h264@30 + aac 44100 立体声、与旁白 wav 漂移 0.0000s。抖音竖屏四处 set 覆写（bilibili 一侧一字未改）：hook-01/hook-02/punch 三处标题按语义缝换行消掉『标题孤字』；step-01 的 codeB 删掉 objdump 注释 `@ zero_extendqisi2`，最长行压回 42 格以内才换回两栏并排——原先堆成单栏时字号被压到 13.9px。",
+      "masters": "video/out/c2-pointer/bilibili.mp4（08:56）· douyin.mp4（01:12）"
+    },
+    {
+      "no": 14,
+      "id": "f3-scheduler",
+      "title": "调度器：一条 CLZ 选出下一个任务",
+      "source": "docs/rtos/freertos/03-scheduler.md",
+      "script": "video/episodes/f3-scheduler/episode.json",
+      "status": "done",
+      "anims": [
+        "rtt-bitmap-256",
+        "systick-tick",
+        "list-insert",
+        "vtaskdelay-lifecycle"
+      ],
+      "hook": "『32 个优先级里挑最高的』，源码给了两个答案：一条 `clz` 加一次减法，对上一个往下摸的循环。走哪条由 `configUSE_PORT_OPTIMISED_TASK_SELECTION` 说了算——本机实测：配置里不写这一行，等于写 1，两份目标文件逐字节相同。第二钩是位图只有 32 位：把 `configMAX_PRIORITIES` 掰成 33，位图路 `portmacro.h:162:10: error: #error` 当场拦下，通用路照编，只是 `pxReadyTasksLists` 变成 660 字节。",
+      "hookRef": "code/rtos/03-scheduler/probe.sh 七步实跑（上游 FreeRTOS-Kernel V11.1.0 的 tasks.c / list.c 本体，只编不链）+ docs/rtos/freertos/03-scheduler.md",
+      "punchline": "位图置位，CLZ 秒选；tick 三事：醒人、轮转、换片场。比结论更重要的是方法论——读 FreeRTOS 的任何结论，先问一句 configUSE_PORT_OPTIMISED_TASK_SELECTION 是哪条路",
+      "note": "取证链七步，对象是上游内核本体而不是抄本：① 走哪条路是谁说了算——端口层 portmacro.h 与通用层 FreeRTOS.h 各留一份默认值，看 include 顺序谁先生效，再实测『不写』与『写 1』两份机身逐字节相同 ② 机身对照：一条 clz vs 往下摸的循环，顺手验『clz 之后要过一遍 uint8_t』（ucPortCountLeadingZeros 的返回宽度），再换优化档证明那个形状不是 -O0 的产物 ③ 把两条路的规则各抄成模拟器跑同一张事件表，一致性门禁是每一次选出的优先级都必须相同，账是 58 条零回边 / 70 条一回边 ④ RAM 账：每多一级收 20 字节租，`i*20` 在机身里被拆成 `(i*4+i)*4` ⑤ 33 级优先级被谁拦下来（#error 原文 vs 660 字节）⑥ tick 干的三件事在机身里就那三段 ⑦ 链表两兄弟：一个管轮转、一个管守时。成片：bilibili 34 场 627.730s、douyin 12 场 68.300s，两平台 h264@30 + aac 44100 立体声、与旁白 wav 漂移 0.0000s。抖音三处 set 覆写（bilibili 一侧一字未改）：body-04、tick-04 标题按语义缝换行消孤字；cap-01 那条 46 格的 #error 原文在 9:16 里两栏几何上放不下（并排后字号 7.9px），改成单栏只留报错原文 + note 一句『通用路：同一个 33 照编，只是数组变大』。",
+      "masters": "video/out/f3-scheduler/bilibili.mp4（10:28）· douyin.mp4（01:08）"
+    }
+  ],
+  "next": [
+    {
+      "id": "s7-usart-baud",
+      "title": "波特率是算出来的：16MHz 差 -0.08%，1MHz 差 -3.549%，921600 差 +2.124%",
+      "source": "docs/stm32/07-usart.md",
+      "status": "planned",
+      "anims": [
+        "uart-frame",
+        "usart-txe-tc",
+        "uart-hal-init-path",
+        "dma-circular-buffer"
+      ],
+      "hook": "同一个 115200：PCLK=16MHz 时 BRR=139 → 115107.91，误差 -0.080%，很干净；PCLK=1MHz 时把 1..65535 全扫一遍，最好的也就是 BRR=9 → 111111.11，误差 -3.549%。第二钩更难受：16MHz 想要常用的 921600，最近的 BRR=17 给 941176.47，误差 +2.124%——不是没配好，是这个时钟根本够不着。",
+      "hookRef": "code/stm32/03-uart-dma/probe.sh 第 1/2/3 步本机实跑（断言全绿 + 33 条位号 + 25 个地址 + 8 行误差表三方对账 + -O2/-O0 反汇编）+ docs/stm32/07-usart.md §二 86-107",
+      "punchline": "波特率不是填出来的，是拿实际 PCLK 除出来的；误差沿整帧累积，8N1 的总预算 0.5/8.5 = 5.88% 还要收发两端对半分——这才是「±2% 经验值」的来历",
+      "evidence": "取证链已按 S2/S14/S4 的无板三步建好，probe.sh 全绿（本机 xpack 15.2.1 + 宿主 gcc）：① probe.c 用 `#define REG f_x` + `MCU_PROBE_NO_MAIN` 把 main.c 的函数体整个跑一遍，`_Static_assert` 把正文数字与 CMSIS 现挖值逐格对撞，运行期打 BRR 表（§6 的 markdown 模式与 §1 同一份数据）、1..65535 最优 BRR 穷举、OVER8=1 那次翻倍（同 BRR=139 在 16MHz 给 230215.83）、帧预算倒推、clocks_read() 六组回读 ② probe.sh 拿第 ① 步的输出与 CMSIS 官方头文件逐位 diff（33 条 `_Pos` + 25 个 base+偏移地址），再与 docs/stm32/07-usart.md 那张表逐行 diff——正文改一个数就红，这一步不依赖 CMSIS 也在跑 ③ 交叉链 -O2/-O0 各编一遍 main.c 反汇编：`/115200` 编成 `add.w r3,r3,#57600` + `.word 0x91a2b3c5` + `umull` + `lsrs r3,r3,#16`（没有 udiv，`/1000` 另有一枚 magic 0x10624dd3），BRR 落 `[r5,#8]`、CR1 那笔是 `movw r2,#8220`（0x201C）；DMA2 Stream5 的 PAR 直接给 0x40011004、字面量池把基址锚到 0x40026000 再用 +1160 的立即数补回 DMA2，清标志写的是 HIFCR(+0x40c) 而不是只读 HISR；-O0 有 `<usart1_init>` 标签和 `[r7,#12]` 那个 BRR 栈临时，-O2 两者皆无（text 1964 → 1121，bss 两边都 1140）。还能与 S14 串一格：84MHz 的 729 被带回 8MHz 就是 10973。",
+      "storyboard": "B站 7 幕：对账事故开场 → 一帧长什么样（uart-frame 12s）→ baud=PCLK/BRR 与误差表 → 误差为什么沿帧累积（0.5/8.5）→ 1MHz 与 921600 两个反例 → TXE/TC 分工（usart-txe-tc）+ DMA 不理解帧（dma-circular-buffer 16s）→ 金句 + CTA"
     }
   ],
   "backlog": [
-    "S7 USART：115200 误差算例（docs/stm32/07-usart.md）",
-    "F6 软件定时器：configTOTAL_HEAP_SIZE 那笔 RAM 账",
-    "C2 指针：docs/video/c2-pointer-storyboard.md 是旧产线留下的分镜，可按 episode.json 重排",
-    "F3 调度器：docs/video/f3-scheduler-storyboard.md 同上（片单里目前只有 F2）"
+    "F6 软件定时器：configTOTAL_HEAP_SIZE 那笔 RAM 账"
   ]
 }

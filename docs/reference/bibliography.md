@@ -96,7 +96,7 @@ description: 全站引证的一手资料总表：芯片手册与内核文档的�
 |---|---|---|---|
 | F1 | [FreeRTOS/FreeRTOS-Kernel](https://github.com/FreeRTOS/FreeRTOS-Kernel) | **V11.1.0**，`portable/GCC/ARM_CM4F` | F 篇全部行号；ESP-IDF 内置的是 V10.5.1 SMP 改版，行号/结论不混读 |
 | F2 | [espressif/esp-idf](https://github.com/espressif/esp-idf) | **v5.5.2** | P 篇驱动框架、`soc_caps.h` 结论；CI 用 `espressif/idf:v5.5.2` 容器干净构建 |
-| F3 | [STMicroelectronics/cmsis_device_f4](https://github.com/STMicroelectronics/cmsis_device_f4) | 当前主线 | 寄存器基址/位域第二来源 |
+| F3 | [STMicroelectronics/cmsis_device_f4](https://github.com/STMicroelectronics/cmsis_device_f4) | **v2.6.11**（`stm32f407xx.h`，sha256 `bd21220e…`）+ [ARM-software/CMSIS_5](https://github.com/ARM-software/CMSIS_5) **5.9.0** 的 `core_cm4.h`（sha256 `f5b63d52…`） | 寄存器基址/位域第二来源；CI 的 `arm-host` job 按这两个版本拉取并逐字节校验，`probe.sh` 的位号与地址对账吃的就是它 |
 | F4 | [STMicroelectronics/stm32f4xx_hal_driver](https://github.com/STMicroelectronics/stm32f4xx_hal_driver) | `@ 1f6451c` | S2/S7 的上游对照 |
 | F5 | STM32F4 **StdPeriph（SPL）** | V1.8.0（官方未随 GitHub 分发，取自板卡资料盘） | [S11](../stm32/11-i2c.md)、[S15](../stm32/15-spl-anatomy.md) |
 | F6 | GigaDevice **GD32F4xx Firmware Library** | V3.3.3 `@ 10d02f4` | G 篇 RCU/FMC 逐字段对照 |

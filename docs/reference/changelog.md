@@ -8,6 +8,19 @@ title: 更新日志
 
 站点统计（成稿章节 / 实验 / 动画 / 工程数）由 `npm run docs:gen` 扫描全站章节 frontmatter 得出，[首页学习地图](/)与本页同源。
 
+## 2026-10-13 · S7 误差表换成本机实跑 · 取证脚本第一次进 CI
+
+- **[S7 USART](../stm32/07-usart.md) 的波特率误差表从"手写三行"换成"实跑八行"**：新增 `code/stm32/03-uart-dma/probe.c` + `probe.sh`，沿用 S2/S14/S4 的无板三步——① 宿主 gcc 把二十多个寄存器改指假寄存器再 `#include "main.c"`，断言跑的是固件本体的 `BAUD_FROM_PCLK` / `PCLK_OF_BRR`，编译期另有 `_Static_assert` 把正文数字与 CMSIS 现挖值逐格对撞 ② 33 条位号与头文件 `_Pos` 逐位 diff、25 个寄存器地址用"现挖 base + 结构体成员偏移"独立重拼、正文那张 markdown 表逐行 diff（**正文改一个数就红**）③ 交叉链 -O2/-O0 各编一遍反汇编，把"除以 115200 在机身里没有除法"这类结论落到指令上（那一步只在钉住的工具链版本上判定，版本不同只打印不裁定，没有本机证据就不套给别人）。
+- **顺出来三处过时口径**：16MHz/9600 实际是 9598.1（-0.020%，原先写 9599 / -0.005%）；1MHz 喂 115200 是 **-3.549%** 而不是流传的 -3.6%，全站六处（正文两处、常见坑、题库、工程 README、`main.c` 注释、发布摘要）同步；新增【注 2】把 RM0090 的 `DIV_Mantissa[15:4] + DIV_Fraction[3:0]` 与"直接往 BRR 写整数"对上——`16 × USARTDIV` 正好就是寄存器那 16 位，所以 1 位粒度已是硬件最细分频，不存在"小数位还没用上"。误差预算也不再是"经验 ±2%"：8N1 最坏采样点在 8.5 位时刻，总容差 0.5/8.5 = 5.882%，收发两端对半分成每端 2.941%（`BaudCalc` 组件本来就是按这套算的，注释口径归到 RM0090/F4）。
+- **CI 补了两块真缺口**：`code/projects.json` 新增可选 `probe` 钩子（只允许 arm-make、值必须是真实存在的 `probe.sh`，`project-catalog` 校验 + `tests/catalog.test.mjs` 覆盖），`firmware:check` 建完 ELF 就跑这一遍；`arm-host` job 新增 CMSIS provision，把 `stm32f407xx.h` 钉到 cmsis-device-f4 **v2.6.11**、`core_cm4.h` 钉到 CMSIS_5 **5.9.0** 并逐字节校验 sha256。此前参考文献 F3 那条写的"当前主线"其实是空话——CI 从来没拉过这两个头文件，各章 `probe.sh` 的位号/地址对账在 CI 上一直是跳过状态。[关于我们](about.md)与参考文献的 CMSIS 行按实际版本改写，本地存档同步换成上游逐字节版本。
+
+## 2026-10-13 · 第 13、14 集成片：C2 指针与 F3 调度器 · 示例工程 44 → 45
+
+- **F3《调度器》有了自己的无板取证项目 `code/rtos/03-scheduler/`**（示例工程 44 → 45，README 进度块同源）：七步一条命令跑完——把 `configUSE_PORT_OPTIMISED_TASK_SELECTION` 掰成不写 / 1 / 0 编出三份 `tasks.o` 逐字节对照（不写与写 1 **逐字节相同**，`.text.vTaskSwitchContext` 都是 140 字节，写 0 那份 160）；数两条选择路径的指令（位图路 58 条无后向跳转，通用路 70 条含一个循环）；把两条规则各抄成宿主机模拟器、喂同一张 10 次选择的事件表（通用路累计判空 21 次、平均 2.10、最坏 5，位图路累计 clz 10 次、平均 1.00）；用 `configMAX_PRIORITIES=5` 与 `=33` 两次段大小测量反推 `sizeof(List_t) = (660 − 100) ÷ (33 − 5) = 20` 字节；再把 33 级交给位图路径，看 `portmacro.h:162` 那条 `#error` 原文——它住在端口头文件里，不在 `tasks.c` 里。[F3 章节](../rtos/freertos/03-scheduler.md) 的"实物实验"与对照表按这些数改写。
+- **C2 探针补了一刀**：`code/c/02-pointer/probe.sh` 原先只从 `-S` 的汇编文本里看到 `.L12` 这个标号，字面量池里到底装的什么没有证据。现在把同一份源码 `-c` 成 `.o` 再 `objdump` 单独反汇编 `led_on_indexed`，断言 `str.w r2, [r3, #1048] @ 0x418` 与池里的 `.word 0x40021000` 都在——两者相加才是片头那句 `0x40021418`。
+- **两集 `episode.json` 重排完成并出片**（`video/episodes/c2-pointer`、`video/episodes/f3-scheduler`，B站 16:9 与抖音 9:16 各一条），`video/series.json` 片单 12 → 14 集；仓库里保留的两份旧分镜页顶部就地挂横幅："现行事实源是 episode.json，页内 C2 三处 / F3 四处与本机实测不符，留档不照做"。
+- **C3 章节那条链接一直在递 404**：`docs/c/03-volatile.md` 写死指向 `docs/video/c3-volatile-storyboard.md`，而那个文件在清理旧产线时已经删掉——VitePress 的死链检查只管站内相对链接，这种写死的 GitHub 绝对地址它查不到。改指仓库里真实存在的 `video/episodes/c3-volatile/episode.json` 与同目录 `storyboard.md`；顺手删掉同一页里被重复插入的 `volatile-as-if.svg` 配图（同标题同文件出现两次，第二次前后都没有上下文）。
+
 ## 2026-10-10 · S4 抢占判定动画：谁能打断谁 · 短自测 8 → 12 章
 
 - **新增深度动画 `nvic-preempt-arbitration.svg`**（全站动画 100 → 101）：S4 §3.2 的"谁能打断谁"此前只有文字规则，现在演成五幕——EXTI0（抢占2）在跑 ISR 时同抢占级的 EXTI9_5 只能挂起排队（子优先级没有打断能力，pending 芯片亮在 CPU 栈旁），抢占号更小的 EXTI1 一到硬件立刻压栈换人，ISR1 退出回到 ISR0 断点、ISR0 再退出才轮到 EXTI9 补位；末幕收拢成 NVIC 仲裁三规则 + "PRIGROUP 这把尺子换了全变"一条警示。三个请求卡的指示灯用外层阶段遮罩 + 内层 1s 节拍脉冲两层结构，"在跑"的是中断本身而不是转场。接入 [S4 引脚中断与 NVIC](../stm32/04-nvic-exti.md) §3.2，与"实物实验"一节的按键嵌套实验互为纸面/上板两头。

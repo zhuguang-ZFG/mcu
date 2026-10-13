@@ -2,7 +2,7 @@
 # probe.sh —— C2《指针》章全部取证，一条命令跑完（不需要开发板）
 #
 #   sh probe.sh          跑全部
-#   sh probe.sh asm      现场1/2/3：arm-none-eabi-gcc -O2 -S 汇编取证
+#   sh probe.sh asm      现场1/2/3：arm-none-eabi-gcc -O2 -S 汇编取证 + 现场3 的 objdump 补刀
 #   sh probe.sh run      现场2/3/4：宿主 gcc 真跑
 #   sh probe.sh const    const 反例：三个「必须编译失败」的取证
 #   sh probe.sh clean
@@ -50,6 +50,20 @@ do_asm() {
     show_fn build/probe.m4.s led_on_macro
     echo
     echo "（_Static_assert 已随上面编译通过：6*sizeof(uint32_t)==0x18）"
+
+    # 汇编文本里的 .L12 只是一个标号，真正的字面量要连机器码一起编出来才看得见。
+    # 这一步把同一份源码 -c 成 .o（分段，好单独反汇编），再看 led_on_indexed 的全貌。
+    echo
+    echo "-- 现场3 补一刀：那个 .L12 里装的到底是什么（-c + objdump）--"
+    echo "== 命令行: $ACC $CFLAGS $MCU -ffunction-sections -c probe.c -o build/probe.o =="
+    "$ACC" $CFLAGS $MCU -ffunction-sections -c probe.c -o build/probe.o
+    "${ARM_PREFIX}objdump" -d --no-show-raw-insn build/probe.o \
+        | awk '/<led_on_indexed>:/{p=1} p&&NF==0{exit} p' | tee build/led_on_indexed.dis
+    grep -qE 'str\.?[w]?\s+r2, \[r3, #1048\][[:space:]]*@ 0x418' build/led_on_indexed.dis \
+        || { echo "!! 没看到那条 [r3, #1048] 的 str —— 编译器换了拆法，本章数字要重核"; exit 1; }
+    grep -qE '\.word[[:space:]]+0x40021000' build/led_on_indexed.dis \
+        || { echo "!! 字面量池里不是 0x40021000 —— 本章「地址被拆成两段」的说法要重核"; exit 1; }
+    echo "（两条都到位：0x40021000 + 0x418 = 0x40021418，就是片头那个地址）"
 }
 
 do_run() {

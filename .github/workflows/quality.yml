@@ -65,6 +65,17 @@ jobs:
           git clone --depth 1 --filter=blob:none --sparse https://github.com/RT-Thread/rt-thread.git .trellis/ref/rt-thread
           cd .trellis/ref/rt-thread
           git sparse-checkout set src include libcpu/arm/cortex-m4 include/klibc src/klibc
+      - name: 固定 CMSIS 头文件（probe.sh 的位号与地址对账要它）
+        # 这两个头文件是所有位号/基址的第二来源。上游动一个空格，diff 口径就变了，
+        # 所以不只看 tag，还逐字节校验 sha256——漂移要当场失败，不能悄悄换个版本继续"对账通过"。
+        run: |
+          mkdir -p .trellis/ref/cmsis
+          curl -fsSL -o .trellis/ref/cmsis/stm32f407xx.h https://raw.githubusercontent.com/STMicroelectronics/cmsis-device-f4/v2.6.11/Include/stm32f407xx.h
+          curl -fsSL -o .trellis/ref/cmsis/core_cm4.h https://raw.githubusercontent.com/ARM-software/CMSIS_5/5.9.0/CMSIS/Core/Include/core_cm4.h
+          cd .trellis/ref/cmsis
+          echo 'bd21220ea8b6858c2d727cca1d2a5f1077f8a81717acdac583a1e9165d858160  stm32f407xx.h' > expected.sha256
+          echo 'f5b63d52dd1557b15ca414cb59c264f595a7b5669db2a5878dffe22f4caedc8c  core_cm4.h' >> expected.sha256
+          sha256sum --check --strict expected.sha256
       - name: 全工程编译与场景切换回归
         run: npm run firmware:check
 

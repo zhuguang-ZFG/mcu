@@ -5,6 +5,15 @@
 
 ---
 
+::: warning 本页是旧产线留下的分镜，成片已经不按它走
+这一集的现行事实源是 [`video/episodes/f3-scheduler/episode.json`](https://github.com/zhuguang-ZFG/mcu/blob/main/video/episodes/f3-scheduler/episode.json)，取证是 [`code/rtos/03-scheduler/probe.sh`](https://github.com/zhuguang-ZFG/mcu/blob/main/code/rtos/03-scheduler/probe.sh)（`sh probe.sh`，不需要开发板，只要交叉编译器加一份上游 FreeRTOS-Kernel V11.1.0）。页内四处与本机实测不符，留档不照做：
+
+- **`__CLZ` 不是这个端口里的名字**：GCC 的 ARM_CM4F 端口用的是 `ucPortCountLeadingZeros`（`portmacro.h:151`，函数体里一条 `clz %0, %1` 在 `:155`），选优宏 `portGET_HIGHEST_PRIORITY` 在 `:171`；
+- **附录那三条命令跑不通**：`code/rtos/freertos/03-scheduler/` 这个目录和里面的 `generic.c` / `m4f.c` / `tick.c` 都不存在。真办法不是手写三份等价 C，而是把内核的 `tasks.c` 按 `configUSE_PORT_OPTIMISED_TASK_SELECTION` 取 0 和 1 各编一遍，再逐条对照两份 `tasks.o`；
+- **`scheduler-ready-list.svg` / `scheduler-tick.svg` 两张图站内不存在**，这一集实际用的动画是 `systick-tick`、`list-insert`、`rtt-bitmap-256`、`vtaskdelay-lifecycle`；
+- **「遍历几遍」这个问法要换成实测**：两条路径的选优函数 `.text.vTaskSwitchContext` 分别是 140 / 160 字节，机身 58 条指令零回边 / 70 条指令一条回边；同一个 5 级事件表，通用路径平均摸 2.10 下、最坏 5 下，32 级最坏摸 31 下，位图路径永远 1 下。
+:::
+
 ## 片头（0:00–0:50）—— 钩子
 
 **画面**：黑屏，一行白字逐字打出：

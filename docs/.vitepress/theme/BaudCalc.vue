@@ -1,10 +1,11 @@
 <script setup>
 import { ref, computed } from 'vue'
 
-// UART 波特率误差计算器：按 STM32F1/GD32F1 的 BRR 编码规则做分频量化，
-// 再把误差放进整帧采样漂移的预算里判定成败——"±2% 经验值"从哪来，看图便知。
+// UART 波特率误差计算器：按 RM0090 的 BRR 编码（DIV_Mantissa[15:4] + DIV_Fraction[3:0]，
+// F1/F4 同一套布局）做分频量化，再把误差放进整帧采样漂移的预算里判定成败。
+// 量化结果与 code/stm32/03-uart-dma 固件的 `round(PCLK/baud)` 逐格相同（probe.sh 第 1 步实测）。
 
-const clockMHz = ref(72)
+const clockMHz = ref(16)
 const oversamp = ref(16)
 const targetBaud = ref(115200)
 

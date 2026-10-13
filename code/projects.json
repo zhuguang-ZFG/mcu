@@ -121,7 +121,8 @@
     "id": "stm32-03-uart-dma",
     "path": "code/stm32/03-uart-dma",
     "kind": "arm-make",
-    "entry": "Makefile"
+    "entry": "Makefile",
+    "probe": "probe.sh"
   },
   {
     "id": "stm32-09-adc",
@@ -359,6 +360,12 @@
   {
     "id": "rtos-00-why-rtos",
     "path": "code/rtos/00-why-rtos",
+    "kind": "host-probe",
+    "entry": "probe.sh"
+  },
+  {
+    "id": "rtos-03-scheduler",
+    "path": "code/rtos/03-scheduler",
     "kind": "host-probe",
     "entry": "probe.sh"
   }

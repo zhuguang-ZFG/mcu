@@ -16,6 +16,8 @@ export function loadProjects(repo = root) {
     const entry = { 'arm-make': 'Makefile', 'esp-idf': 'CMakeLists.txt', 'host-probe': 'probe.sh', 'host-make': 'Makefile' }[p.kind]
     if (p.entry !== entry || !fs.statSync(path.join(repo, p.path, entry), { throwIfNoEntry: false })?.isFile()) throw new Error(`构建入口不存在: ${p.id}`)
     if (p.kind === 'esp-idf' && p.target !== 'esp32s3') throw new Error(`目标必须为 esp32s3: ${p.id}`)
+    // probe 是 arm-make 工程的可选取证钩子：值固定、文件必须真实存在，否则登记了就跑不起来。
+    if (p.probe !== undefined && (p.kind !== 'arm-make' || p.probe !== 'probe.sh' || !fs.statSync(path.join(repo, p.path, p.probe), { throwIfNoEntry: false })?.isFile())) throw new Error(`probe 钩子非法: ${p.id}`)
     if (p.variants && (p.kind !== 'arm-make' || !Array.isArray(p.variants) || !p.variants.length || p.variants.some(v=>!/^build\/[a-z0-9-]+$/.test(v.dir)||!Array.isArray(v.args)||!v.args.length||v.args.some(a=>!/^(MODE=[0-3]|FAULTS=[01])$/.test(a))))) throw new Error(`非法构建变体: ${p.id}`)
     if (p.scenes && (p.kind !== 'arm-make' || !['[1,2,3,4,5]','[1,2,3,4,5,6]','[1,6]'].includes(JSON.stringify(p.scenes)))) throw new Error(`非法场景列表: ${p.id}`)
   }

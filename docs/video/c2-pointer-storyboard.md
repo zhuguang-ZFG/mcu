@@ -5,6 +5,14 @@
 
 ---
 
+::: warning 本页是旧产线留下的分镜，成片已经不按它走
+这一集的现行事实源是 [`video/episodes/c2-pointer/episode.json`](https://github.com/zhuguang-ZFG/mcu/blob/main/video/episodes/c2-pointer/episode.json)，取证是 [`code/c/02-pointer/probe.sh`](https://github.com/zhuguang-ZFG/mcu/blob/main/code/c/02-pointer/probe.sh)（`sh probe.sh`，不需要开发板）。页内三处与本机实测不符，留档不照做：
+
+- **宿主机 `gcc -S` 生不出 `STRB/STRH/STR`**：那三个是 ARM 指令名，附录那三条 `gcc -std=c11 ... -S` 在你的 x86 电脑上跑出的是 `movzbl/movzwl/movl`。本站取证一律用 `arm-none-eabi-gcc -O2 -S -mcpu=cortex-m4 -mthumb`；
+- **`pointer-address.svg` / `pointer-arithmetic.svg` / `pointer-qualifiers.svg` 三张图站内不存在**，这一集实际用的动画是 `pointer-arrows`（12 s）和 `struct-alignment`；
+- **「三次读优化成一次 vs 三个 LDR」那段是 C3 volatile 的取证**，不在本章 probe 里，别在 C2 页下找它。
+:::
+
 ## 片头（0:00–0:40）—— 钩子
 
 **画面**：黑屏，一行白字逐字打出：

@@ -206,6 +206,7 @@ void vTaskDelay( const TickType_t xTicksToDelay )
 
 ## 实物实验
 
+- **不用板子也能把本章每一个数字打出来**：`cd code/rtos/03-scheduler && sh probe.sh`。七步一条命令跑完——把 `configUSE_PORT_OPTIMISED_TASK_SELECTION` 掰成不写 / 1 / 0 编三份 `tasks.o` 逐字节对照（实测：不写与写 1 的两份**逐字节相同**，`.text.vTaskSwitchContext` 都是 140 字节，写 0 那份 160 字节）；数两条路的指令（58 条无后向跳转 vs 70 条含一个循环）；跑一遍把两条规则抄成的宿主机模拟器（同一张 10 次选择的事件表：通用路累计判空 21 次、平均 2.10、最坏 5；位图路 10 次、平均 1.00、最坏 1）；用 `configMAX_PRIORITIES=5` 与 `=33` 两个测量反推 `sizeof(List_t) = (660−100)÷(33−5) = 20` 字节；再把 `NPRIO=33` 交给位图路径，看 `portmacro.h:162` 那条 `#error` 原文。需要交叉工具链与 V11.1.0 内核（CI 的 arm-host 作业两样都装）。
 - quick win 轮转证据 + RunTimeStats 占比实验（本章目标三）；
 - 进阶：逻辑分析仪夹 LED，把 `configTICK_RATE_HZ` 从 1000 改 100 再测，看交替周期跟着变——tick 频率物理化。
 
@@ -241,6 +242,7 @@ void vTaskDelay( const TickType_t xTicksToDelay )
 | 排序/队尾插入 | `list.c` vListInsert / vListInsertEnd |
 | tick 醒人剪枝 | `tasks.c` xTaskIncrementTick（xNextTaskUnblockTime 比较+队首循环） |
 | 延时挂表 | `tasks.c` vTaskDelay → prvAddCurrentTaskToDelayedList |
+| 本章所有数字怎么复核 | `code/rtos/03-scheduler/probe.sh` 七步一条命令跑完（三份 `tasks.o` 逐字节对照 / 两条路指令数 / 模拟器判空次数 / 20 字节每级 / 33 级被 `#error` 拦下 / tick 三段 / 链表两兄弟） |
 
 ## 延伸阅读
 

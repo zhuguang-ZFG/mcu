@@ -46,3 +46,15 @@ test('classic ESP32 target cannot silently pass', t => {
   write([{ ...entries[0], target: 'esp32' }])
   assert.throws(() => loadProjects(dir), /esp32s3/)
 })
+test('probe hook is opt-in, arm-make only, and must point at a real file', t => {
+  const { dir, entries, write } = fixture(t)
+  fs.mkdirSync(path.join(dir, 'code/stm32/board'), { recursive: true })
+  fs.writeFileSync(path.join(dir, 'code/stm32/board/Makefile'), '')
+  const arm = { id: 'board', path: 'code/stm32/board', kind: 'arm-make', entry: 'Makefile' }
+  write([...entries, { ...arm, probe: 'probe.sh' }])
+  assert.throws(() => loadProjects(dir), /probe 钩子/)
+  fs.writeFileSync(path.join(dir, 'code/stm32/board/probe.sh'), '#!/bin/sh\n')
+  assert.equal(loadProjects(dir).length, 2)
+  write([{ ...entries[0], probe: 'probe.sh' }])
+  assert.throws(() => loadProjects(dir), /probe 钩子/)
+})

@@ -61,11 +61,9 @@ arm-none-eabi-gcc -std=c11 -Wall -Wextra -mcpu=cortex-m4 -mthumb -O2 -S -o opt_p
 
 本章有配套视频（约 12 分钟），用 4 个犯罪现场、6 个变体实验把 volatile 讲透。视频将在 B 站发布后在此更新链接。
 
-视频脚本与分镜见 [c3-volatile-storyboard.md](https://github.com/zhuguang-ZFG/mcu/blob/main/docs/video/c3-volatile-storyboard.md)（仓库内，未发布到站点）。
+视频的分幕、旁白与动画绑定见 [`video/episodes/c3-volatile/episode.json`](https://github.com/zhuguang-ZFG/mcu/blob/main/video/episodes/c3-volatile/episode.json)（成片的唯一事实源，渲染脚本只吃这一个文件），写作阶段的分镜见 [`storyboard.md`](https://github.com/zhuguang-ZFG/mcu/blob/main/video/episodes/c3-volatile/storyboard.md)。两个都在仓库里，未发布到站点。
 
 四阶段：优化器的世界观 → 不加 volatile 的下场 → 加 volatile 的下场 → 边界在哪里。
-
-![volatile 的访存合同：读一次 vs 每次读](/anim/volatile-as-if.svg)
 
 ## 小节结构
 
