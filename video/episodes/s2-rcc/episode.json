@@ -253,7 +253,7 @@
           "title": "时钟一动，第一个被出卖的是延时",
           "codeLabel": "你写的 C",
           "code": "/* 关键：传进去的是回读出来的 HCLK，不是猜的 */\nsystick_init(g_clock_tree[1]);\n\nSysTick_LOAD = hclk_hz / 1000UL - 1UL;\nSysTick_VAL  = 0;\nSysTick_CTRL = 0x7UL;   /* ENABLE|TICKINT|CLKSOURCE */\n\n[[bad]]LOAD 还按 16MHz 算的话：\n  168 / 16 = 10.5 → 红灯闪快 10.5 倍\n  而且它不崩，只是快——最难查的那一类",
-          "codeB": " 13e:  ldr   r2, [r4, #4]     ← g_clock_tree[1]\n 13c:  ldr   r3, [pc, #332]   ← .word 0x10624dd3\n 140:  umull r3, r2, r3, r2   ← 除以 1000 编成取乘积高位\n 148:  lsrs  r2, r2, #6\n 14e:  subs  r2, #1\n 154:  str   r2, [r1, #20]    ← SysTick LOAD\n 14c:  movs  r0, #7\n 158:  str   r0, [r1, #16]    ← CTRL = 7\n\n!r1 = 0xe000e000：内核外设，不在 STM32 地址空间",
+          "codeB": " 13c:  ldr   r2, [r4, #4]     ← g_clock_tree[1]\n 13e:  ldr   r3, [pc, #332]   ← .word 0x10624dd3\n 140:  umull r3, r2, r3, r2   ← 除以 1000 编成取乘积高位\n 148:  lsrs  r2, r2, #6\n 14e:  subs  r2, #1\n 154:  str   r2, [r1, #20]    ← SysTick LOAD\n 14c:  movs  r0, #7\n 158:  str   r0, [r1, #16]    ← CTRL = 7\n\n!r1 = 0xe000e000：内核外设，不在 STM32 地址空间",
           "codeBLabel": "-O2 实测：一次除法变成 umull + lsrs",
           "note": "魔数 0x10624dd3 就在字面量池里，可以当场对账",
           "narration": "时钟一动，最容易被忘掉的是延时。滴答定时器按处理器时钟打拍，装载值就是一毫秒里有多少个周期。我的代码把回读出来的那个时钟传进去，所以一毫秒真的是一毫秒。汇编里除以一千变成了乘一个魔数再右移六位，魔数就躺在字面量池里，可以当场对账。反过来说，你要是提了频忘了改这里，板上那颗灯就快十倍半——这个症状很好认，因为它不崩，只是快。"
@@ -377,7 +377,8 @@
           "code": " d8  bic #3 / orr #2\n e0  str → CFGR\n\n ea  ldr ← CFGR\n!ee  and #12\n!f2  cmp #8   ← 比 8 不是比 2\n f4  bne 继续等\n\n!写完 ≠ 切完"
         },
         "bus-div": {
-          "code": "喂进去：PPRE1=0b101, PPRE2=0b100\n!解出来（本机实测）\n SYSCLK = 168000000\n HCLK   = 168000000\n PCLK1  =  42000000\n PCLK2  =  84000000\n! TIM2CLK =  84000000 ← 不是 42\n\n~ APB 分频 ≠ 1 → 定时器 ×2"
+          "code": "喂进去：PPRE1=0b101, PPRE2=0b100\n!解出来（本机实测）\n SYSCLK = 168000000\n HCLK   = 168000000\n PCLK1  =  42000000\n PCLK2  =  84000000\n! TIM2CLK =  84000000 ← 不是 42\n\n~ APB 分频 ≠ 1 → 定时器 ×2",
+          "codeB": "HPRE  [7:4]  4 位字段\n  0xxx=/1  1000=/2\n  1001=/4  1010=/8\n  1011=/16 1100=/64\n  1101=/128 1110=/256\n  1111=/512\n~ 注意：F4 没有 /32\n\nPPRE [12:10] [15:13]  3 位字段\n  0xx=/1  100=/2  101=/4\n  110=/8  111=/16\n!隐藏规则：分频 ≠ 1 → 定时器时钟 ×2"
         },
         "mco-trap": {
           "code": "!想要 /4 → pre=0b110 → PA8=42MHz\n[[bad]]写成分频比减一 = 0b011\n → 落进 0xx 区 = 不除\n → PA8 = 168000000 Hz\n[[bad]]再按 /4 把读数乘回去：\n 672000000 Hz\n!凭空多出 504 MHz"

@@ -270,7 +270,7 @@
           "kind": "code",
           "title": "封棺为什么敢写偏移 0",
           "codeLabel": "凭据在成员自己的注释里",
-          "code": "!tasks.c:360\n  volatile StackType_t * pxTopOfStack;\n  /**< Points to the location of the last item placed on the tasks stack.\n       THIS MUST BE THE FIRST MEMBER OF THE TCB STRUCT. */\n\n反汇编里三处 #0 全指同一个约定：\n   a:  681a   ldr  r2, [r3, #0]   取当前 TCB\n  1a:  6010   str  r0, [r2, #0]   封\n  3e:  6819   ldr  r1, [r3, #0]   起 → 40: ldr r0, [r1, #0]",
+          "code": "!tasks.c:360\n  volatile StackType_t * pxTopOfStack;\n  /**< Points to the location of the last item\n       placed on the tasks stack.\n       THIS MUST BE THE FIRST MEMBER OF THE TCB STRUCT. */\n\n反汇编里三处 #0 全指同一个约定：\n   a:  681a   ldr  r2, [r3, #0]   取当前 TCB\n  1a:  6010   str  r0, [r2, #0]   封\n  3e:  6819   ldr  r1, [r3, #0]   起 → 40: ldr r0, [r1, #0]",
           "codeB": "~一个容易认错的同名陷阱：\n\n[[bad]]task.h:171 也有 pxTopOfStack\n\n~ 但它属于 TaskStatus_t——\n~ 那是 uxTaskGetSystemInfo() 给外部看的信息结构，\n~ 不是 TCB。\n\n!移植层要写的偏移 0，永远指 tasks.c 里那个。",
           "codeBLabel": "别认错结构体",
           "note": "移植层和内核之间的接口，就是「第一个成员永远是栈顶」这一句话",
@@ -415,6 +415,9 @@
         },
         "name-map": {
           "title": "断点打不上：\n一行宏\n换了名字"
+        },
+        "why-systick-not": {
+          "code": "SysTick（每 1ms）\n  └─ xTaskIncrementTick() 发现：有更高优先级任务就绪了\n       └─ 它不切换，只写一笔挂起位\n\n!portmacro.h:99   portNVIC_INT_CTRL_REG =\n!                 *( volatile uint32_t * ) 0xe000ed04\n!portmacro.h:100  portNVIC_PENDSVSET_BIT = ( 1UL << 28UL )\n!portmacro.h:91   portYIELD_WITHIN_API() 的全部动作 = 写这一笔\n\nPendSV（优先级最低，永远排队到最后）\n  └─ 真正的换魂在这里执行"
         }
       }
     }

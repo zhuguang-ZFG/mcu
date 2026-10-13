@@ -455,18 +455,19 @@
         },
         "delay-m4": {
           "code": "static void delay(uint32_t count)\n{\n    while (count--) {\n        __asm__ volatile (\"nop\");\n    }\n}",
-          "codeB": "!delay_plain:\n!   bx   lr           ← 空函数，直接返回\n\ndelay_volatile:\n    str   r0, [sp, #4]\n.L17:\n    ldr   r3, [sp, #4]\n    subs  r2, r3, #1\n    str   r2, [sp, #4]\n    bne   .L17\n    bx    lr"
+          "codeB": "!delay_plain:\n!   bx   lr        ← 空函数，直接返回\n\ndelay_volatile:\n    str   r0, [sp, #4]\n.L17:\n    ldr   r3, [sp, #4]\n    subs  r2, r3, #1\n    str   r2, [sp, #4]\n    bne   .L17\n    bx    lr"
         },
         "var-F": {
-          "code": "#define GPIOF_MODER\\\n  (*(uint32_t *)(GPIOF_BASE + 0x00UL))",
-          "codeB": "    ldr   r1, [pc, #104]\n    ldr   r2, [pc, #108]\n!   ldr.w r3, [r1, #1024]  ← 先读 MODER\n    ldr.w r4, [r2, #2096]\n!   str.w r4, [r2, #2096]  ← 这行才开时钟\n    orr.w r3, r3, #4096\n    str.w r3, [r1, #1024]",
+          "code": "#define GPIOF_MODER\\\n  (*(uint32_t *)(GPIOF_BASE +\\\n                 0x00UL))",
+          "codeB": "    ldr   r1, [pc, #104]\n    ldr   r2, [pc, #108]\n!   ldr.w r3, [r1, #1024]  ← 先读\n    ldr.w r4, [r2, #2096]\n!   str.w r4, [r2, #2096]  ← 开时钟\n    orr.w r3, r3, #4096\n    str.w r3, [r1, #1024]",
           "title": "只拔宏的 volatile"
         },
         "var-C": {
-          "code": "delay(uint32_t count)\n{\n    while (count--) { } /* nop 也没了 */\n}"
+          "code": "delay(uint32_t count)\n{\n    while (count--) { }\n}",
+          "codeB": "!delay 被优化成空函数：\n!   bx  lr\n\n~调用点整个内联掉，\n~拉高和拉低两次写挤在一起：\n   str.w r3, [r1, #24] ; BSRR 置位\n   str.w r3, [r1, #24] ; BSRR 复位\n\n!中间一条等待都没有"
         },
         "fix-bsrr": {
-          "code": "GPIOF_BSRR = 1UL << 6;        /* 置位 */\nGPIOF_BSRR = 1UL << (6 + 16);  /* 复位 */"
+          "code": "/* 置位 */\nGPIOF_BSRR = 1UL << 6;\n/* 复位 */\nGPIOF_BSRR = 1UL << (6 + 16);"
         }
       },
       "narration": {

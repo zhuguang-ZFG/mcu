@@ -322,6 +322,10 @@
           "note": "PRECISERR 说地址准；BFARVALID 说 BFAR 可信",
           "code": "! CFSR  0xE000ED28  ← 罪名\n! HFSR  0xE000ED2C  ← 是不是升级案\n! BFAR  0xE000ED38  ← 现场\n\n!位号对账：39 条逐位一致",
           "codeB": "!本机一份真实验尸报告：\n! CFSR = 0x00008200\n!   命中 PRECISERR + BFARVALID\n! BFAR = 0x1FFFFFFF\n~ EXC_RETURN = 0xFFFFFFFD → PSP"
+        },
+        "code-gas": {
+          "code": "!【照收不误】bad_slot.s：槽位对调\n  f3ef 8009  mrseq r0, PSP   ← 本该取 MSP\n  f3ef 8008  mrsne r0, MSP   ← 本该取 PSP\n! GAS 一声不吭，机身正常产出，语义整反\n\n!【当场拒绝】bad_cond.s：Error: incorrect condition\n!        in IT block -- `mrseq r0,psp'\n\n!【当场拒绝】bad_noite.s：Error: thumb conditional\n!        should be in IT block -- `mrsne r0,psp'",
+          "codeB": "!GAS 校验的是什么？\n!  条件后缀跟 IT 块匹不匹配\n!  ——只此一条\n\n[[GAS 不校验语义]]\n它不知道你想让哪条生效\n\n!真正的坑不是拦得住的那种，是它照收不误的那种\n\n~ 工具链拦得住的，都不是真坑"
         }
       },
       "narration": {

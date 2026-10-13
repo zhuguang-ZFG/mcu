@@ -328,6 +328,8 @@
         "cta"
       ],
       "set": {
+        "hook-01": { "code": "while( listLIST_IS_EMPTY( &( pxReadyTasksLists[ uxTopPriority ] ) )\n       != pdFALSE )\n{\n    configASSERT( uxTopPriority );\n    --uxTopPriority;\n}" },
+        "body-03": { "codeB": "  24:  ldr   r3, [r7, #4]\n  26:  subs  r3, #1\n  28:  str   r3, [r7, #4]\n  2a:  ldr   r1, [pc, #108]\n  ...\n  3c:  beq.n 24\n      <vTaskSwitchContext+0x24>" },
         "body-04": { "title": "账：58 条零回边，\n70 条一回边" },
         "tick-04": { "title": "为什么\n敢只查队首" },
         "cap-01": {

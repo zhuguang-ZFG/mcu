@@ -209,7 +209,7 @@
           "id": "fsm-table",
           "kind": "code",
           "codeLabel": "probe.c 里的动作表，原文照抄",
-          "code": "typedef state_t (*trans_t)(fsm_t *f, char ch);  /* 动作 = 返回下一状态的函数 */\n\nstatic trans_t const FSM[3][4] = {\n  /*              EV_LETTER   EV_DIGIT   EV_LF    EV_OTHER */\n  /* S_IDLE */ { act_save_cmd, act_ignore, act_ignore, act_ignore },\n  /* S_ARG  */ { act_save_cmd, act_save_arg, act_error,  act_error  },\n  /* S_END  */ { act_error,    act_error,    act_exec,   act_error  },\n};",
+          "code": "typedef state_t (*trans_t)(fsm_t *f, char ch);   /* 动作 = 返回下一状态的函数 */\n\nstatic trans_t const FSM[3][4] = {\n    /*              EV_LETTER     EV_DIGIT      EV_LF       EV_OTHER  */\n    /* S_IDLE */ { act_save_cmd, act_ignore,  act_ignore, act_ignore },\n    /* S_ARG  */ { act_save_cmd, act_save_arg, act_error, act_error  },\n    /* S_END  */ { act_error,    act_error,    act_exec,  act_error  },\n};",
           "narration": "这张表就是全部业务。三行状态、四列事件，每一格填的是该干的事。想加一种行为，就多写一列函数，不用改任何判断逻辑。"
         },
         {
@@ -440,6 +440,9 @@
         },
         "punch": {
           "title": "中断里只做快递分拣，\n不下厨房"
+        },
+        "fsm-table": {
+          "code": "typedef state_t (*trans_t)(fsm_t *f, char ch);\n   /* 动作 = 返回下一状态的函数 */\n\nstatic trans_t const FSM[3][4] = {\n    /*              EV_LETTER     EV_DIGIT      EV_LF       EV_OTHER  */\n    /* S_IDLE */ { act_save_cmd, act_ignore,  act_ignore, act_ignore },\n    /* S_ARG  */ { act_save_cmd, act_save_arg, act_error, act_error  },\n    /* S_END  */ { act_error,    act_error,    act_exec,  act_error  },\n};"
         }
       }
     }

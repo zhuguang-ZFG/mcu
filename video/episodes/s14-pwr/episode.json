@@ -156,9 +156,9 @@
           "codeLabel": "你写的 C",
           "code": "CR = (CR & ~PDDS) | LPDS;   /* bit1=0 bit0=1 */\nSCR |= SLEEPDEEP;           /* bit2 */\nMCU_BARRIER();\nMCU_WFI();\n\n/* 醒来：时钟已经在 16MHz 上跑了 */\nsys_tick_load = 16000000 / 1000 - 1;\n\n! 这段代码有地方执行\n~ 所以重配时钟必须写在 wfi 后面",
           "codeBLabel": "-O2 实测（本机 objdump）",
-          "codeB": " 1fc: ldr   r0,[pc,#48]  ; 0x40007000\n 1fe: mov.w r2,#3758153728 ; 0xe000e000\n 202: ldr   r3,[r0,#0]\n 204: ldr.w r1,[r2,#3344] ; 0xd10\n 208: bic.w r3,r3,#2   ← PDDS=0\n 20c: f041 0104 orr.w r1,r1,#4 ← SLEEPDEEP=1\n 210: orr.w r3,r3,#1   ← LPDS=1\n 214: str   r3,[r0,#0]\n 216: str.w r1,[r2,#3344]\n 21a: dsb sy\n 21e: wfi\n 220: ... 醒来这一段 6 条 / 14 字节\n 226: mov.w r3,#15999\n 22a: str   r3,[r2,#20] ← SysTick LOAD\n 22c: bx lr",
+          "codeB": " 1fc: ldr   r0,[pc,#48]  ; 0x40007000\n 1fe: mov.w r2,#3758153728 ; 0xe000e000\n 202: ldr   r3,[r0,#0]\n 204: ldr.w r1,[r2,#3344] ; 0xd10\n 208: bic.w r3,r3,#2   ← PDDS=0\n 20c: f041 0104 orr.w r1,r1,#4 ← SLEEPDEEP=1\n 210: orr.w r3,r3,#1   ← LPDS=1\n 214: str   r3,[r0,#0]\n 216: str.w r1,[r2,#3344]\n 21a: dsb sy\n 21e: wfi\n 220: ... 醒来这一段 6 条 / 14 字节\n 226: movw  r3,#15999\n 22a: str   r3,[r2,#20] ← SysTick LOAD\n 22c: bx lr",
           "note": "探针断言：dsb sy 与 wfi 是相邻两条，中间一条指令都没插",
-          "narration": "停摆这一档的机身，两个位都在：减法清掉第二位、或运算置上第一位，再用一条或运算把系统控制寄存器的第二位置起来——注意它写的是那个偏移三千三百四十四，跟前一档同一个地址。然后是屏障、停机。真正值得看的是 wfi 之后：还剩六条指令、十四个字节，第一条就是一万五千九百九十九这个立即数，写进偏移二十——那是滴答定时器的装载值。这一段会执行。所以重配时钟的代码必须写在 wfi 后面，写在这儿才有地方放。"
+          "narration": "停摆这一档的机身，两个位都在：减法清掉第二位、或运算置上第一位，再用一条或运算把系统控制寄存器的第二位置起来——注意它写的是那个偏移三千三百四十四，跟前一档同一个地址。然后是屏障、停机。真正值得看的是 wfi 之后：还剩六条指令、十四个字节，第四条才是一万五千九百九十九这个立即数，第五条写进偏移二十——那是滴答定时器的装载值。这一段会执行。所以重配时钟的代码必须写在 wfi 后面，写在这儿才有地方放。"
         },
         {
           "id": "tree-standby",
@@ -175,9 +175,9 @@
           "kind": "code",
           "title": "wfi 之后那 7 条指令，编译器照样生成了",
           "codeLabel": "-O2 实测（本机 objdump）",
-          "code": " 23c: ldr   r2,[pc,#52]  ; 0x40007000\n 23e: mov.w r0,#3758153728\n 242: push  {r3, lr}\n 244: ldr   r3,[r2,#0]\n 246: ldr.w r1,[r0,#3344] ; 0xd10\n 24a: bic.w r3,r3,#1   ← LPDS=0\n 24e: orr.w r1,r1,#4   ← SLEEPDEEP=1\n 252: orr.w r3,r3,#2   ← PDDS=1\n 256: str   r3,[r2,#0]\n 258: str.w r1,[r0,#3344]\n 25a: f3bf 8f4f dsb sy\n 260: bf30 wfi\n! 262: 之后 7 条 / 18 字节 —— 永不执行",
+          "code": " 23c: ldr   r2,[pc,#52]  ; 0x40007000\n 23e: mov.w r0,#3758153728\n 242: push  {r3, lr}\n 244: ldr   r3,[r2,#0]\n 246: ldr.w r1,[r0,#3344] ; 0xd10\n 24a: bic.w r3,r3,#1   ← LPDS=0\n 24e: orr.w r1,r1,#4   ← SLEEPDEEP=1\n 252: orr.w r3,r3,#2   ← PDDS=1\n 256: str   r3,[r2,#0]\n 258: str.w r1,[r0,#3344]\n 25c: f3bf 8f4f dsb sy\n 260: bf30 wfi\n! 262: 之后 7 条 / 18 字节 —— 永不执行",
           "codeBLabel": "wfi 之后那一段是什么",
-          "codeB": " 262: ldr   r3,[pc,#20] ; 0x40023000\n 264: ldr.w r0,[r3,#2164] ; 0x874\n!     ↑ 0x40023000 + 0x874 = 0x40023874\n!       源码写的是 RCC_BASE + 0x74\n 268: ldr   r1,[r2,#4]   ← PWR_CSR\n 26a: bl  <reset_cause_decode>\n 270: str   r0,[r3,#0]\n 272: pop {r3, pc}\n\n! 编译器不知道你要不要醒\n! 它照着你写的顺序生成\n! 这 18 字节静静躺在 Flash 里\n~ text/data/bss = 796 / 4 / 4",
+          "codeB": " 262: ldr   r3,[pc,#20] ; 0x40023000\n 264: ldr.w r0,[r3,#2164] ; 0x874\n!     ↑ 0x40023000 + 0x874 = 0x40023874\n!       源码写的是 RCC_BASE + 0x74\n 268: ldr   r1,[r2,#4]   ← PWR_CSR\n 26a: bl  198 <reset_cause_decode>\n 26e: ldr r3,[pc,#12]\n 270: str   r0,[r3,#0]\n 272: pop {r3, pc}\n\n! 编译器不知道你要不要醒\n! 它照着你写的顺序生成\n! 这 18 字节静静躺在 Flash 里\n~ text/data/bss = 796 / 4 / 4",
           "note": "「醒来是复位」最硬的机器层证据：函数后半截连那句准备读复位标志的取数都不会跑",
           "narration": "假死这一档的前半截跟前两档一模一样：清一位、置两位、屏障、停机。看后面。wfi 之后还剩七条指令、十八个字节：一条取数把 RCC 基址拿出来，读偏移两千一百六十四——那是复位状态寄存器，源码写的基址加七十四被编译器合成成了一个偏移；再读控制状态寄存器，调用那个解码函数，把结果存起来，返回。这七条永远不执行。编译器不知道你要不要醒过来，它只按你写的顺序生成代码，于是这十八个字节静静躺在闪存里。这就是「醒来是复位」最硬的证据。"
         },
@@ -309,7 +309,8 @@
         },
         "disasm-standby": {
           "title": "wfi 之后那 18 个字节",
-          "code": " 25a: dsb sy\n 260: wfi\n\n! 262: 之后 7 条 / 18 字节\n  读复位状态寄存器\n  调用解码函数\n  存结果，返回\n\n! 永不执行\n~ 编译器照样生成了它\n~ 它就躺在 Flash 里"
+          "code": " 25c: dsb sy\n 260: wfi\n\n! 262: 之后 7 条 / 18 字节\n  读复位状态寄存器\n  调用解码函数\n  存结果，返回\n\n! 永不执行\n~ 编译器照样生成了它\n~ 它就躺在 Flash 里",
+          "codeB": " 262: ldr   r3,[pc,#20]\n 264: ldr.w r0,[r3,#2164] ; 0x874\n!     ↑ 0x40023000 + 0x874\n!       = 0x40023874\n!       源码写的是 RCC_BASE + 0x74\n 268: ldr   r1,[r2,#4]   ← PWR_CSR\n 26a: bl  198 <reset_cause_decode>\n 26e: ldr r3,[pc,#12]\n 270: str   r0,[r3,#0]\n 272: pop {r3, pc}\n\n! 编译器不知道你要不要醒\n! 它照着你写的顺序生成\n! 这 18 字节静静躺在 Flash 里\n~ text/data/bss = 796 / 4 / 4"
         },
         "wake": {
           "code": "睡前什么都没配：\n! PA0 叫得醒吗 → −1\n! RTC 闹钟呢   → −1\n! 欠压呢      → −1\n\n  写 1<<17 落进 0x00020000\n! EWUP 管不到 17 这根线\n\n! 那条 WFI 就是睡死"

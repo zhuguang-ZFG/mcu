@@ -418,7 +418,11 @@
       ],
       "set": {
         "break-short": {
-          "code": "  volatile uint32_t BSRR;     /* 0x18 */\n  volatile uint32_t LCKR;     /* 0x1C */\n! volatile uint32_t AFR;    ← 应为 AFR[2]\n} Short_t;"
+          "code": "  volatile uint32_t BSRR; // 0x18\n  volatile uint32_t LCKR; // 0x1C\n! volatile uint32_t AFR;  ← AFR[2]\n} Short_t;",
+          "codeB": "! offsetof(BSRR) = 0x18\n! sizeof = 0x24\n! GPIO_TypeDef 应为 0x28"
+        },
+        "packed-calc": {
+          "codeB": "! Packed_t: sizeof=8\n  offsets a=4 b=0 c=5\n~ （Padded_t: sizeof=12）"
         },
         "break-hole-silent": {
           "title": "这种错，\n编译通过"

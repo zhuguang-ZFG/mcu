@@ -263,7 +263,8 @@
         "hook-01": { "title": "这行咒语，\n人人都抄过" },
         "hook-02": { "title": "指针\n只有三件事" },
         "punch": { "title": "地址 + 宽度\n+ 纪律" },
-        "step-01": { "codeB": "next8:\n    ldrb  r0, [r0, #1]\nnext16:\n    ldrh  r0, [r0, #2]\nnext32:\n    ldr   r0, [r0, #4]" }
+        "step-01": { "codeB": "next8:\n    ldrb  r0, [r0, #1]\nnext16:\n    ldrh  r0, [r0, #2]\nnext32:\n    ldr   r0, [r0, #4]" },
+        "width-01": { "codeB": "read8:\n    ldrb  r0, [r0]\n    bx    lr\n\nread16:\n    ldrh  r0, [r0]\n    bx    lr\n\nread32:\n    ldr   r0, [r0]\n    bx    lr" }
       },
       "narration": {
         "hook-01": "这行点灯咒语你抄过，可没人讲过这个地址是哪来的。",

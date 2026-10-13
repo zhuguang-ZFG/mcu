@@ -1,4 +1,6 @@
 import { spawn } from 'node:child_process'
+import { writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { FFMPEG, log } from './util.mjs'
 import { iterateFrames } from './timeline.mjs'
 
@@ -97,6 +99,9 @@ function spawnEncoder({ ffmpeg, fps, outPath }) {
 }
 
 export async function renderFrames(plan, stage, { outPath, ffmpeg, onFrame }) {
+  // 捕获起点单独落一枚戳。成片 mtime 拦不住"文本改在捕获中间"——mux 在捕获之后才写 mp4，
+  // 于是 mtime 必然比改动晚，比对会假绿；NTFS 的 birthtime 在覆盖写时也不刷新。只有当场记时间才留得下证据。
+  writeFileSync(join(dirname(outPath), 'capture-stamp'), `${new Date().toISOString()} ${outPath}\n`)
   const enc = spawnEncoder({ ffmpeg, fps: plan.fps, outPath })
   let lastKey = null
   let lastBuf = null
