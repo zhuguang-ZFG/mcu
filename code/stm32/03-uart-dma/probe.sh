@@ -213,9 +213,11 @@ fi
 
 echo
 echo "############ 3. 交叉编译：波特率与两级缓冲在指令流里长什么样 ############"
-ARMCC=$("${ARMPREFIX}gcc" -dumpfullversion 2>/dev/null || echo "")
+# Windows 的工具链把版本号打成 CRLF：dash 不剥 \r、bash 剥，所以必须 tr 一遍，
+# 否则本机 15.2.1 会因为尾巴上那个 \r 判成「版本不对」，第 3 步静默跳过——证据没了却不红。
+ARMCC=$("${ARMPREFIX}gcc" -dumpfullversion 2>/dev/null | tr -d '\r')
 if [ "$ARMCC" = "$PINNED_CC" ]; then
-    echo "交叉工具链：$("${ARMPREFIX}gcc" -dumpfullversion)"
+    echo "交叉工具链：$ARMCC"
     "${ARMPREFIX}gcc" $MCU -std=c11 -Wall -Wextra -Werror -O2 -c main.c -o build/probe/main_o2.o
     "${ARMPREFIX}gcc" $MCU -std=c11 -Wall -Wextra -Werror -O0 -c main.c -o build/probe/main_o0.o
     "${ARMPREFIX}objdump" -d build/probe/main_o2.o > build/probe/main_o2.dis
