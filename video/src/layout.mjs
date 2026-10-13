@@ -328,6 +328,24 @@ window.MCU = (function () {
   var ticks = document.getElementById('ticks');
   var current = -1, svg = null;
 
+  // 子孙的文字溢出不冒泡：pre.code 里超长那一行是 .ln（display:block、
+  // overflow:visible）自己的 scrollWidth 超了 18px，父级 .fit 的 pre 却报
+  // sw==cw——抖音 code-04 被切掉的那个 "B" 就是这么在 fitAll 和审计两轮里
+  // 都全绿的。横向裁切必须连着块级子孙一起量，纵向不用：块级子项撑高父盒，
+  // scrollHeight 本来就带上了。
+  function overX(el, bh) {
+    var v = el.scrollWidth - el.clientWidth - bh;
+    for (var i = 0; i < el.children.length; i++) {
+      var k = el.children[i];
+      var kcs = getComputedStyle(k);
+      if (kcs.overflowX !== 'visible') continue;
+      var kbh = parseFloat(kcs.borderLeftWidth) + parseFloat(kcs.borderRightWidth);
+      var kv = k.scrollWidth - k.clientWidth - kbh;
+      if (kv > v) v = kv;
+    }
+    return v;
+  }
+
   function fitAll(root) {
     root.querySelectorAll('.fit').forEach(function (el) {
       var cs = getComputedStyle(el);
@@ -342,10 +360,11 @@ window.MCU = (function () {
         // 四行能累计 7px，被当成"放不下"就会把大标题一路砍到地板。
         // 真溢出至少是一整行（≈1.3fs），0.12fs 不可能吞掉它。
         var slackV = 1 + bv + Math.ceil(fs * 0.12)
-        var slackH = 1 + bh
-        if (el.scrollHeight <= el.clientHeight + slackV && el.scrollWidth <= el.clientWidth + slackH) break
-        fs -= fs > 40 ? 2 : 1
-        el.style.fontSize = fs + 'px'
+        if (el.scrollHeight <= el.clientHeight + slackV && overX(el, bh) <= 1) break
+        // 步长跟着字号走。固定 1px 太粗：c3 抖音 var-C 只溢出 2px，一步就从
+        // 16.88 掉到 15.88，撞进审计 16px 的地板，把"缩一点就好"变成"报错"。
+        fs -= Math.max(0.25, fs * 0.02)
+        el.style.fontSize = fs.toFixed(2) + 'px'
       }
     });
   }

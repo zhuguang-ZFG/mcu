@@ -1,0 +1,457 @@
+{
+  "id": "f6-timers",
+  "title": "软件定时器的 RAM 账：一个都没建，已经付了 1312 字节",
+  "badge": "F6",
+  "voice": "zh-CN-YunxiNeural",
+  "rate": "+4%",
+  "fps": 30,
+  "sampleRate": 44100,
+  "channels": 2,
+  "cover": {
+    "kicker": "通往单片机之路 · F6",
+    "line1": "一个定时器",
+    "line2": "都没建"
+  },
+  "platforms": {
+    "bilibili": {
+      "size": [
+        1920,
+        1080
+      ],
+      "targetSec": [
+        480,
+        720
+      ],
+      "scenes": [
+        {
+          "id": "hook-01",
+          "kind": "hook",
+          "title": "「软件定时器 RAM 开销：零」",
+          "sub": "站内那张选型表原本这么写。这一集把它重算一遍。",
+          "code": "configUSE_TIMERS = 1\nconfigTIMER_TASK_PRIORITY = 4      configTIMER_QUEUE_LENGTH = 8\nconfigTIMER_TASK_STACK_DEPTH = 256 字\nconfigTOTAL_HEAP_SIZE = 16384\n\n一个 xTimerCreate 都还没调。",
+          "narration": "选型表里那一格写着零，理由是共用守护任务，所以不额外开栈。听着很讲道理。这一集把内核本体编一遍，逐笔量：共用可以，零不行。屏幕上这几个配置数也不是抄的，是让编译器自己报出来的。"
+        },
+        {
+          "id": "card-01",
+          "kind": "card",
+          "tone": "warn",
+          "kicker": "先说结论",
+          "title": "零不成立，而且两个方向都不成立",
+          "bullets": [
+            "0 个定时器也要付 1312 B——守护任务与命令队列先建好",
+            "另有 60 B 落在 .bss，堆调多大都管不到它",
+            "每建一个定时器再收 56 B"
+          ],
+          "narration": "结论先放这儿。第一，一个定时器都不建，一千三百一十二字节已经付掉了，因为守护任务和它的命令队列是你用定时器之前就得存在的。第二，另外六十字节根本不在堆里，configTOTAL_HEAP_SIZE 调大调小都碰不到它。"
+        },
+        {
+          "id": "anim-01",
+          "kind": "anim",
+          "anim": "software-timer-service",
+          "t0": 0,
+          "t1": 12,
+          "smil": "stretch",
+          "title": "要算账的三样东西",
+          "note": "命令队列 → 守护任务 → 回调，一条串行流水线",
+          "narration": "这张图就是这笔账的形状：你调 xTimerStart，命令进队列；守护任务从队列里取出命令，安排到期；到点了，回调一个一个串行跑。三样东西——队列、任务、表——各自占多少字节，接下来一样一样量。"
+        },
+        {
+          "id": "code-01",
+          "kind": "code",
+          "title": "先量一个结构体：三条独立路子",
+          "codeLabel": "三条路子都不读文档（本机 V11.1.0 实测）",
+          "code": "①  nm 报的符号尺寸   sizeof(Timer_t) = 44\n②  反汇编里的立即数  movs r0, #44\n   ← timers.c:349  pxNewTimer = pvPortMalloc( sizeof( Timer_t ) );\n③  静态孪生结构体    sizeof(StaticTimer_t) = 44\n\n一个问 nm，一个问 objdump，一个是孪生体——三条都不读文档",
+          "narration": "先量最小的那块：一个定时器对象多大。不查文档，走三条独立路子——让符号表报尺寸，让反汇编报那句 malloc 入参的立即数，再看静态分配那个孪生结构体。三条都给四十四。"
+        },
+        {
+          "id": "code-02",
+          "kind": "code",
+          "title": "这 44 字节里装了七个成员",
+          "codeLabel": "第 6 步逐个 sizeof 打印（结构体在 timers.c:83-94）",
+          "code": "pcTimerName          指针                    4\nxTimerListItem       ListItem_t             20\nxTimerPeriodInTicks  TickType_t              4\npvTimerID            指针                    4\npxCallbackFunction   指针                    4\nuxTimerNumber        timers.c:91 仅 TRACE=1  4\nucStatus             uint8_t                 1\n和 = 41  →  尾部对齐补 3  =  44",
+          "narration": "四十四拆开来是这样：一个名字指针、一个链表节点、一个周期、一个 ID、一个回调函数指针、一个跟踪编号、一个状态字节。字段本身加起来四十一，补三个字节对齐到四十四。链表节点二十字节，是这里面最贵的一格。"
+        },
+        {
+          "id": "card-02",
+          "kind": "card",
+          "tone": "warn",
+          "title": "那个编号，是 TRACE 收的税",
+          "bullets": [
+            "configUSE_TRACE_FACILITY = 0：Timer_t 44 → 40",
+            "同一开关：TCB_t 88 → 80，Queue_t 80 → 72",
+            "字段和 37，补 3 → 40；差值必须落在对齐范围内"
+          ],
+          "narration": "那个跟踪编号只在 TRACE 打开时存在。关掉它，定时器对象从四十四掉到四十，任务控制块从八十八掉到八十，队列对象从八十掉到七十二。一个调试开关，三个结构体同时瘦下来，这就是配置税的长相。"
+        },
+        {
+          "id": "code-03",
+          "kind": "code",
+          "title": "还有一笔看不见的税：分配器本身",
+          "codeLabel": "heap_4.c:104 / :187 / :198（三条凭据本机打印）",
+          "code": "xHeapStructSize = (8 + 8 - 1) & ~(8 - 1) = 8 B\n\nheap_4.c:187   xWantedSize += xHeapStructSize;\nheap_4.c:198   xWantedSize += xAdditionalRequiredSize;\nheap_4.c:104   } BlockLink_t;   sizeof = 8\n\n每笔 pvPortMalloc(n) 真正扣的：align_up(n + 8, 8)\n（两个输入都是量出来的，不是查表的）",
+          "narration": "还没完。堆是 heap_4，每笔分配前面要贴一个块头。块头本身八字节，整个分配还要向上取整。所以结构体大小和真正扣的钱是两笔账——四十四字节的东西，从池子里拿走五十六。"
+        },
+        {
+          "id": "code-04",
+          "kind": "code",
+          "title": "第一笔：守护任务",
+          "codeLabel": "第 6 步打印的原文（栈深 256 字由编译器报出）",
+          "code": "sizeof(StackType_t) = 4 → 256 字 = 1024 B\n\n守护任务 TCB：  pvPortMalloc(88)               →  实付    96  B\n守护任务栈 ：   pvPortMallocStack(256×4=1024)  →  实付  1032  B\n─────────────────────────────────────────────────────────────\n守护任务 = 1128 B（两笔分配）",
+          "narration": "第一笔，守护任务。栈深二百五十六个字，一个字四字节，一千零二十四；任务控制块八十八。各加一个块头、各自向上取整，得到九十六和一千零三十二。一个任务要两笔分配，这是第一千一百二十八字节。"
+        },
+        {
+          "id": "code-05",
+          "kind": "code",
+          "title": "第二笔：命令队列",
+          "codeLabel": "第 6 步原文：命令队列",
+          "code": "命令队列：pvPortMalloc(80 + 8×12 = 176) → 实付 184 B\n\nqueue.c:526  —— 为什么是一笔：\npxNewQueue = pvPortMalloc( sizeof(Queue_t) + xQueueSizeInBytes );\n\nxQueueGenericCreate( 8, 12 )  ← 机身里的两个立即数\n队列对象和数据区一次分配，不是两笔",
+          "narration": "第二笔，命令队列。源码那一行写得很清楚：队列头和格子数一次分配。长度八、每条消息十二，加在八十上是一百七十六，取整一百八十四。注意这是一笔，不是两笔。"
+        },
+        {
+          "id": "card-03",
+          "kind": "card",
+          "tone": "gold",
+          "kicker": "固定开销",
+          "title": "1128 + 184 = 1312 字节",
+          "bullets": [
+            "configTOTAL_HEAP_SIZE = 16384 → 千分比 80，也就是 8.0%",
+            "1312 ÷ 616 = 2.12 个最小任务的名额",
+            "(16384 − 1312) ÷ 56 = 269 个定时器的上限"
+          ],
+          "narration": "两笔合起来，一千三百一十二字节，一个定时器都还没有。对一万六千字节的池子来说，光这一项就占掉百分之八。这个数不是估计，是把上面每一条实测值代进同一个公式算出来的，屏幕上每一步都能手算复核。"
+        },
+        {
+          "id": "code-06",
+          "kind": "code",
+          "title": "配置里的默认值：让编译器自己说",
+          "codeLabel": "INCLUDE_xTimerPendFunctionCall：lab 的配置一个字都没写",
+          "code": "FreeRTOS.h:284  #define INCLUDE_xTimerPendFunctionCall  0\n\n不写这一行  vs  -DPEND=0 → 两份 timers.o 逐字节相同\n-DPEND=1 与不写逐字节不同\n体积：不写 10012 B，-DPEND=1 10616 B\n\n多出来的符号只有两个：\nxTimerPendFunctionCall / xTimerPendFunctionCallFromISR",
+          "narration": "这里有个方法问题：配置里没写的宏，默认值到底是多少？答案是别猜。同一份源码编两遍，一遍不写、一遍写零，两个目标文件逐字节一样——那才是默认值。写一才多出来的，是那两个函数和消息宽度。"
+        },
+        {
+          "id": "code-07",
+          "kind": "code",
+          "title": "队列那两个参数，是从机身里读的",
+          "codeLabel": "第 4 步打印：objdump -drS timers.o | grep -B2 xQueueGenericCreate",
+          "code": "默认编      →  xQueueGenericCreate( 8, 12 )\n-DPEND=1   →  xQueueGenericCreate( 8, 16 )\n-DQLEN=16  →  长度立即数 16、消息立即数仍是 12\n\n8×12 = 96 B 变 8×16 = 128 B（涨 32）\n8×12 = 96 B 变 16×12 = 192 B（涨 96）\ntimers.o 全文只有 1 处该调用点（已 assert）",
+          "narration": "那两个参数不是从文档抄的，是从反汇编读的：建队列那句前面两条 movs，一个是长度、一个是消息宽。三个配置各读一次，两个数各自跟着动。这个文件里这个调用点只有一处，这条 grep 才站得住。"
+        },
+        {
+          "id": "code-08",
+          "kind": "code",
+          "title": "开关不是随便组合的：有一条 #error",
+          "codeLabel": "-DTRACE=0 -DSTATS=1 的报错原文（FreeRTOS.h:2824）",
+          "code": "error: #error configUSE_STATS_FORMATTING_FUNCTIONS is 1\nbut the functions it enables are not used because neither\nconfigUSE_TRACE_FACILITY or configGENERATE_RUN_TIME_STATS\nare 1.  Set configUSE_STATS_FORMATTING_FUNCTIONS to 0\nin FreeRTOSConfig.h.\n\n脚本数的是「error: #」出现 1 次——一条不多一条不少才算命中\n-DTRACE=0 单独编：通过",
+          "narration": "顺手验一条边界：格式化统计函数要求跟踪功能是开的，内核用一句真实的 error 把非法组合拦住。这一笔在取证里做成了负向测试——它必须失败，而且只报一条错。护栏本身也要被测试一次。"
+        },
+        {
+          "id": "code-09",
+          "kind": "code",
+          "title": "每建一个定时器，收多少",
+          "codeLabel": "tap( sizeof(Timer_t) )",
+          "code": "tap(44) = 56 B   ← 一笔 malloc，没有第二笔\n\n为什么只有一笔？\n因为 Timer_t 自带 xTimerListItem——\n它自己就是链表节点，不必再配一个 ListItem_t\n\nTRACE=0 时：tap(40) = 48 B",
+          "narration": "回到正题：多建一个定时器要多付多少。五十六字节，只一笔。因为定时器对象自带链表节点，插进到期表不需要再配一个节点。这也是为什么它比很多人心算的便宜。"
+        },
+        {
+          "id": "code-10",
+          "kind": "code",
+          "title": "同一个公式，换个输入：一个最小任务",
+          "codeLabel": "configMINIMAL_STACK_SIZE = 128 字",
+          "code": "tap( sizeof(TCB_t) )     =  tap(88)   =   96\ntap( 128 字 × 4 = 512 )  =  tap(512)  =  520\n────────────────────────────────────────────\n一个最小任务 = 616 B\n\n把 256 字换成 128 字，就是这一笔",
+          "narration": "要判断贵不贵，得有个参照。同一个公式，把守护任务的栈深换成最小栈深一百二十八，得到九十六加五百二十，六百一十六字节——一个最普通的最小任务。"
+        },
+        {
+          "id": "card-05",
+          "kind": "card",
+          "tone": "gold",
+          "title": "一个任务的名额，够放 11 个定时器",
+          "bullets": [
+            "616 ÷ 56 = 11 个（同一笔参照里最直观的一格）",
+            "固定那笔 1312 = 2.12 个最小任务",
+            "所以省的不是内存，是那 616 字节的栈与 TCB；1312 省不掉"
+          ],
+          "narration": "六百一十六除五十六，十一个。也就是说一个任务的内存名额，能放十一个定时器；而固定那一千三百一十二，等于两点一二个最小任务。共用守护任务省的，是那六百一十六字节的栈和块头，不是那一千三百一十二。"
+        },
+        {
+          "id": "code-11",
+          "kind": "code",
+          "title": "开关价目表：同一笔账换三个输入",
+          "codeLabel": "固定那笔 1312 B 随配置移动",
+          "code": "-DPEND=1        1344 B   (+32)\n-DQLEN=8→16     1408 B   (+96)\n-DTRACE=0       1296 B   (−16)\n\n三个数都由第 1–5 步量到的常数代入同一个公式算出，\n脚本逐条 assert，改一个配置就会被看见。",
+          "narration": "三个开关各值多少，一次列清楚：多开一个挂起函数三十二字节，队列长度从八翻到十六九十六字节，关掉跟踪功能省十六。每一条都是同一笔账换个输入，脚本逐条对账。"
+        },
+        {
+          "id": "code-12",
+          "kind": "code",
+          "title": "第二头大象：那 60 字节不在堆里",
+          "codeLabel": "timers.c:143-150 的 statics",
+          "code": "xActiveTimerList1 / xActiveTimerList2     List_t 20 × 2\npxCurrentTimerList / pxOverflowTimerList  指针 × 4\nxTimerQueue / xTimerTaskHandle            指针 × 2\nxLastTime                                 TickType_t 4\n\n合计 60 B = 本机读 .bss.* 逐项求和\n这笔 configTOTAL_HEAP_SIZE 管不到",
+          "narration": "第二个方向更隐蔽。两张到期表、四个指针、一个时间基准，六十字节，全部落在 .bss。它们不从那十六千字节的池子里出，所以你把堆调大十倍也消不掉它。这六十是源码里数出来的项数，再和段大小对上的。"
+        },
+        {
+          "id": "hook-02",
+          "kind": "hook",
+          "title": "「共用一个守护任务」——真的只有一个吗",
+          "sub": "把 timers.c 全文里建任务的那几句都列出来",
+          "code": "260: xTimerTaskHandle = xTaskCreateStaticAffinitySet( prvTimerTask,\n276: xReturn          = xTaskCreateAffinitySet( prvTimerTask,\n295: xTimerTaskHandle = xTaskCreateStatic( prvTimerTask,\n310: xReturn          = xTaskCreate( prvTimerTask,\n\n全文 xTaskCreate 调用点：4 ｜ xTimerCreateTimerTask 函数体内：4\n第一个实参只有 prvTimerTask 一个名字\n守护任务的名字：timers.c:65  #define ... \"Tmr Svc\"",
+          "narration": "现在验那句共用守护任务。把整个 timers.c 里创建任务的调用全找出来：四处，对应静态、亲和性、动态那几种组合，但四个实参都是同一个入口，而且四行都在同一个函数体里。所以确实只有一个守护任务，这句是对的。"
+        },
+        {
+          "id": "cb-01",
+          "kind": "code",
+          "title": "全内核只有四处会调用你的回调",
+          "codeLabel": "timers.c 里 pxCallbackFunction( 那四行",
+          "code": "713:  pxTimer->pxCallbackFunction( ( TimerHandle_t ) pxTimer );\n744:  pxTimer->pxCallbackFunction( ( TimerHandle_t ) pxTimer );\n960:  pxCallback->pxCallbackFunction( pxCallback->pvParameter1, ... );\n1021: pxTimer->pxCallbackFunction( ( TimerHandle_t ) pxTimer );\n\n回调调用点总数（已 assert）= 4\n分属三个 static 函数，三函数只在 prvTimerTask 的调用树里",
+          "narration": "串行的证据在这儿：整个文件里能调到用户回调的地方只有四处，分属三个内部函数，而这三个函数只出现在守护任务的调用树里。所以你的回调只有一个执行线程，这不是比喻，是把调用点数出来的。"
+        },
+        {
+          "id": "code-13",
+          "kind": "code",
+          "title": "它也不是每一拍都醒",
+          "codeLabel": "timers.c:820",
+          "code": "vQueueWaitForMessageRestricted( xTimerQueue,\n                                ( xNextExpireTime - xTimeNow ),\n                                xListWasEmpty );\n\n阻塞时长就是「下一个到期时刻减现在」。\n表空时那个时刻是 0，它一直睡到 tick 溢出。",
+          "narration": "守护任务在睡什么？这一行给了答案：它按下一个到期时刻减去现在来阻塞，不是每拍醒一次。表空的时候下一个时刻是零，它干脆睡到滴答溢出。所以它对 CPU 的占用是按到期事件算的，不是按秒算的。"
+        },
+        {
+          "id": "code-14",
+          "kind": "code",
+          "title": "一轮只读一次时钟：这个细节决定平局",
+          "codeLabel": "timers.c:795",
+          "code": "xTimeNow = prvSampleTimeNow( &xTimerListsWereSwitched );\n\n一轮只采样一次；这一轮里所有到期判定\n用的都是同一个 xTimeNow。\n→ 同时到期的两个定时器，看到的是同一刻。",
+          "narration": "还有个要命的细节：一轮处理里时钟只采样一次。整轮判定都拿同一个当前时刻去比。也就是说，两个同时到期的定时器在内核眼里就是同一刻到期——于是必须有第二条规则来决定谁先。"
+        },
+        {
+          "id": "card-06",
+          "kind": "card",
+          "tone": "warn",
+          "kicker": "换掉一句话",
+          "title": "「排在后面的定时器全部晚一拍」",
+          "bullets": [
+            "晚一拍？它其实是晚多少、会不会一直晚——这能算",
+            "把守护任务的规则抄成宿主机模拟器，事件表写死",
+            "五幕跑完，一条律出来：占空比小于一，迟到有界"
+          ],
+          "narration": "该换掉正文里那句话了。晚一拍是意象，不是结论。把守护任务的规则原样抄成一个宿主机模拟器，事件表写死，每幕跑同一份规则，迟到多少、欠多少、连发几拍，全部是打印出来的数。"
+        },
+        {
+          "id": "sim-A",
+          "kind": "code",
+          "title": "A 幕：对照组，没人磨蹭",
+          "codeLabel": "fast 周期 100 耗时 0 ｜ slow 周期 120 耗时 0",
+          "code": "timer  周期  耗时  应拍  实拍  最大迟到  补拍  欠\nfast   100     0   12    12       0     0   0\nslow   120     0   10    10       0     0   0\n\n占空比 0.000，最大迟到 0",
+          "narration": "第一幕是对照组：两个定时器，周期一百和一百二，回调耗时都是零。应到十二拍和十拍，实到十二拍和十拍，最大迟到零。没有耗时就没有迟到，这条先钉住，后面的偏移才有基准。"
+        },
+        {
+          "id": "sim-B",
+          "kind": "code",
+          "title": "B 幕：站内场景 4 那一条",
+          "codeLabel": "slow 回调耗时 50 ｜ 占空比 0.416",
+          "code": "timer  周期  耗时  应拍  实拍  最大迟到  补拍  欠\nfast   100     0   12    11      50     0  50\nslow   120    50   10    10       0     0   0\n\nfast 的最大迟到 = 50 = 那个耗时本身",
+          "narration": "第二幕就是章节场景四那条：慢回调每次磨蹭五十毫秒。快定时器的最大迟到正好五十，等于那个耗时本身；补拍是零，欠账五十。所以不是晚一拍——是被别人的耗时压住，而欠下的那一拍还在账上。"
+        },
+        {
+          "id": "sim-E",
+          "kind": "code",
+          "title": "E 幕：耗时可以大于别人的周期",
+          "codeLabel": "fast 100/0 ＋ slow 300/200 ｜ 占空比 0.666",
+          "code": "fast  应拍 12  实拍 11  最大迟到 200  连发 3  欠 200\nslow  应拍  4  实拍  4  最大迟到   0          欠   0\n\n耗时 200 > fast 的周期 100，\n但 < slow 自己的周期 300 → 占空比仍小于一 → 迟到有界",
+          "narration": "第三幕挑一个反直觉的组合：慢定时器周期三百、耗时二百。二百比快定时器的周期一百还大，可它小于自己的三百。结果快定时器最大迟到刚好二百，有界。所以关键不是谁的耗时长，而是总占空比。"
+        },
+        {
+          "id": "sim-C",
+          "kind": "code",
+          "title": "C 幕：越过一，开始发散",
+          "codeLabel": "fast 100/0 ＋ slow 120/200 ｜ 占空比 1.666",
+          "code": "fast  应拍 12  实拍 9  最大迟到 520  连发 6  欠 520\nslow  应拍 10  实拍 7  最大迟到 720  连发 3  欠 560\n\n同一个回调耗时，占空比一过线\n零耗时的定时器也被卷进连环补拍",
+          "narration": "把周期从三百改成一百二，同样二百毫秒的耗时，占空比就冲过一。快定时器的最大迟到跳到五百二十，连发六拍，自己也欠着；磨蹭的那个更惨，迟到七百二十。越线之后，连不干活的人都一起被拖下水。"
+        },
+        {
+          "id": "sim-D",
+          "kind": "code",
+          "title": "D 幕：更狠一点，欠的更多",
+          "codeLabel": "fast 100/0 ＋ slow 120/250 ｜ 占空比 2.083",
+          "code": "fast  实拍 8  最大迟到  470  欠 970\nslow  实拍 7  最大迟到 1140  欠 910\n\n欠账 970 拍，比整个观测窗口 1200 拍只少一点——\n它不是迟到，是排队",
+          "narration": "第四幕把耗时再加到二百五。快定时器的欠账飙到九百七十拍，观测窗口总共才一千二百拍。这个数字说明得很直白：这不是偶尔迟到，是队列在堆积。"
+        },
+        {
+          "id": "punch-01",
+          "kind": "card",
+          "tone": "gold",
+          "kicker": "这条律",
+          "title": "Σ(耗时 ÷ 周期) < 1 → 迟到有界",
+          "bullets": [
+            "A 0.000 / B 0.416 / E 0.666：零耗时那个定时器，最大迟到 = 最大的回调耗时",
+            "C 1.666 / D 2.083：最大迟到超过任何一次耗时，且连发不断",
+            "五幕 truncated 全为 0——欠下的拍没丢，是还没还"
+          ],
+          "narration": "五幕汇总成一句话：占空比小于一的时候，一个零耗时定时器的最大迟到，就等于所有回调里最大的那个耗时；一旦不小于一，迟到就跳出耗时之外发散，还带连环补拍。小于一的三幕、不小于一的两幕，各自都有一条断言对着，没有一个数是拟合出来的。"
+        },
+        {
+          "id": "punch-02",
+          "kind": "card",
+          "tone": "good",
+          "title": "拍没有丢，是欠着",
+          "bullets": [
+            "每一对（场景 × 定时器）都满足：欠账小于周期，或补拍大于零",
+            "自动重装的锚点是「到期时刻 + 周期」，不是「现在 + 周期」（timers.c:709、:735）",
+            "所以周期不漂，欠的一定要还"
+          ],
+          "narration": "还要翻掉另一句：正文的实物实验让人去数丢了几拍。拍没丢。自动重装的锚点写的是上次到期时刻加周期，不是现在加周期，欠下的会被连环补拍还回来。脚本对十对数据逐条断言这一条。"
+        },
+        {
+          "id": "code-15",
+          "kind": "code",
+          "title": "同一刻到期，谁先跑：一个 <= 决定的",
+          "codeLabel": "list.c:192（插入循环的条件）",
+          "code": "while( pxIterator->pxNext->xItemValue <= xValueOfInsertion )\n                                        ↑ 是 <=，不是 <\n\n模拟里 t=600 那一拍：先服务 slow，再服务 fast\n（谁先被插进表，谁先跑——不是谁先创建）",
+          "narration": "那个平局谁赢？答案在链表插入那一行的条件里：是小于等于，不是小于。等于的时候继续往后走，所以先插入的排在前面。模拟里第六百拍先服务慢定时器——注意，是插入顺序，不总是创建顺序。"
+        },
+        {
+          "id": "card-08",
+          "kind": "card",
+          "tone": "warn",
+          "title": "所以回调里该写什么",
+          "bullets": [
+            "回调只发通知、置标志、写不阻塞的队列——它占用的是所有人共用的那一个执行线程",
+            "耗时活挪进专门的任务：花 616 B，买一条独立时间线",
+            "非要把占空比压在一以下，就别让任何一个回调接近别人的周期"
+          ],
+          "narration": "把这条律用回工程：回调里只发信号，不干活，因为它跑在那条唯一的串行线上。真需要几百毫秒的活，就开一个任务，花六百一十六字节买一条属于自己的时间线。想守住一这条线，就别让任何回调逼近别人的周期。"
+        },
+        {
+          "id": "punch",
+          "kind": "card",
+          "tone": "gold",
+          "kicker": "一句话记住",
+          "title": "软件定时器不是零成本，是公摊",
+          "bullets": [
+            "1312 B 摊在守护任务和命令队列上，56 B 一个定时器，另有 60 B 在 .bss",
+            "回调串行：占空比小于一，迟到有界；不小于一，连环补拍",
+            "欠的拍不会丢，因为锚在「到期时刻 + 周期」上"
+          ],
+          "narration": "一句话记住这一集：软件定时器不是零成本，是公摊。一千三百一十二字节摊在守护任务上，每个定时器五十六，另外六十在 .bss。回调串行，占空比小于一才有界，不小于一就一起排队。"
+        },
+        {
+          "id": "cta",
+          "kind": "outro",
+          "title": "不要板子，一条命令复现",
+          "sub": "cd code/rtos/06-timers && sh probe.sh",
+          "narration": "屏幕上每一个字节、每一条立即数、那句报错原文和那五幕的迟到值，都是本机一条命令跑出来的：只要交叉编译器和上游内核，不要开发板。站内这一章全文免费。下一站我们看优先级反转怎么把公平全部打乱，我们下期见。"
+        }
+      ]
+    },
+    "douyin": {
+      "size": [
+        1080,
+        1920
+      ],
+      "targetSec": [
+        45,
+        75
+      ],
+      "reuseFrom": "bilibili",
+      "pick": [
+        "hook-01",
+        "card-01",
+        "code-04",
+        "card-03",
+        "code-09",
+        "code-10",
+        "card-05",
+        "code-12",
+        "sim-B",
+        "punch-01",
+        "punch",
+        "cta"
+      ],
+      "set": {
+        "hook-01": {
+          "title": "「软件定时器\nRAM 开销：零」"
+        },
+        "card-01": {
+          "title": "「零」不成立\n两个方向都错",
+          "bullets": [
+            "0 个定时器也要付 1312 B",
+            "另有 60 B 落在 .bss",
+            "每建一个定时器再收 56 B"
+          ]
+        },
+        "card-03": {
+          "title": "1128 + 184\n= 1312 字节"
+        },
+        "code-09": {
+          "title": "每建一个定时器\n收多少"
+        },
+        "code-10": {
+          "title": "参照：一个最小任务"
+        },
+        "card-05": {
+          "title": "一个任务名额\n= 11 个定时器"
+        },
+        "punch-01": {
+          "title": "Σ(耗时 ÷ 周期) < 1\n迟到才有界"
+        },
+        "punch": {
+          "title": "不是零成本，\n是公摊"
+        }
+      },
+      "narration": {
+        "hook-01": "选型表写「软件定时器 RAM 开销：零」。这一集重算一遍。",
+        "card-01": "零不成立：一个都没建，1312 字节已经付了。",
+        "code-04": "守护任务是两笔分配：控制块实付 96，栈实付 1032，一共 1128 字节。",
+        "card-03": "1312 字节，占 16 KiB 堆的 8%。",
+        "code-09": "每建一个定时器，再收 56 字节。",
+        "code-10": "同一个公式：一个最小任务 616 字节。",
+        "card-05": "一个任务的名额，够放 11 个定时器。",
+        "code-12": "另有 60 字节在 .bss，堆调多大都管不到。",
+        "sim-B": "回调磨蹭 50 拍，别人就迟到 50 拍——不是晚一拍。",
+        "punch-01": "占空比大于一，迟到开始发散，还连环补拍。",
+        "punch": "软件定时器不是零成本，是公摊。",
+        "cta": "每个数都是本机跑的，站内 F6 全文免费。"
+      }
+    }
+  },
+  "publish": {
+    "bilibili": {
+      "titles": [
+        "软件定时器 RAM 开销：零？一个都没建，已经付了 1312 字节",
+        "1312 字节买一条串行队列：FreeRTOS 软件定时器逐笔算账",
+        "回调磨蹭 50 拍，别人迟到 50 拍——不是「晚一拍」那么简单"
+      ],
+      "intro": "「软件定时器 RAM 开销：零，因为共用守护任务」——这句话在很多选型表里都能看到，包括本站自己原来那一格。这一集把它逐笔重算：守护任务的栈和 TCB 共 1128 字节，命令队列 184 字节，一个定时器都还没建就已经付了 1312 字节（16 KiB 堆的 8.0%）；每建一个定时器再收 56 字节；另有 60 字节落在 .bss，configTOTAL_HEAP_SIZE 调多大都管不到它。参照是同一个公式换个输入：一个最小任务 616 字节——一个任务的名额够放 11 个定时器。\n\n另一半是把「一个回调磨蹭，排在后面的定时器全部晚一拍」换成一条能算的律。把守护任务的规则抄成宿主机模拟器跑五幕：占空比 Σ(耗时/周期) 小于一时，零耗时定时器的最大迟到恰好等于最大的回调耗时（0 / 50 / 200 拍）；不小于一时开始发散并连环补拍（520 拍、连发 6）。而拍没有丢——自动重装的锚点是「到期时刻 + 周期」，欠的一定要还。同一刻到期谁先跑，由 list.c:192 那个 <= 决定，是插入顺序而不是创建顺序。\n\n全部取证：code/rtos/06-timers/probe.sh（七步，不需要开发板，只要交叉编译器和上游 V11.1.0 内核），站内 F6 章全文。\n屏上每一个字节数、每一条立即数、那句 #error 原文和五幕的迟到值，都是本机实跑的产物。\n\n本片所有数字均为本机实测所得，非摘抄。",
+      "tags": [
+        "FreeRTOS",
+        "RTOS",
+        "单片机",
+        "嵌入式",
+        "软件定时器",
+        "内存占用",
+        "Cortex-M4"
+      ],
+      "topics": [
+        "科技数码",
+        "知识",
+        "校园学习"
+      ]
+    },
+    "douyin": {
+      "titles": [
+        "软件定时器 RAM 开销为零？先算这一笔",
+        "一个定时器都没建，已经付了 1312 字节",
+        "回调磨蹭 50 拍，别人迟到 50 拍"
+      ],
+      "intro": "「软件定时器 RAM 开销：零」——这句话得重算。守护任务 1128 字节，命令队列 184 字节，一个定时器都没建就付 1312 字节；每建一个再收 56 字节，另有 60 字节在 .bss 里，堆调多大都管不到。回调串行：占空比大于一，迟到就开始发散。全部数字本机实测，站内 F6 章全文免费。\n",
+      "tags": [
+        "FreeRTOS",
+        "单片机",
+        "RTOS",
+        "程序员",
+        "嵌入式"
+      ],
+      "topics": [
+        "知识",
+        "科技数码"
+      ]
+    }
+  }
+}

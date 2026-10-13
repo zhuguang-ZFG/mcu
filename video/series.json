@@ -259,10 +259,26 @@
       "punchline": "波特率不是填出来的，是拿实际 PCLK 除出来的；误差沿整帧累积，8N1 的总预算 0.5/8.5 = 5.88% 还要收发两端对半分——这才是「±2% 经验值」的来历",
       "note": "取证链三步，全程无板（本机 xpack 15.2.1 + 宿主 gcc），probe.sh 全绿：① probe.c 用 `#define REG f_x` + `MCU_PROBE_NO_MAIN` 把 main.c 的函数体整个跑一遍，`_Static_assert` 把正文数字与 CMSIS 现挖值逐格对撞，运行期打 BRR 表（§6 的 markdown 模式与 §1 同一份数据）、1..65535 最优 BRR 穷举、OVER8=1 那次翻倍（同 BRR=139 在 16MHz 给 230215.83）、帧预算倒推、clocks_read() 六组回读 ② probe.sh 拿第 ① 步的输出与 CMSIS 官方头文件逐位 diff（33 条 `_Pos` + 25 个 base+偏移地址），再与 docs/stm32/07-usart.md 那张表逐行 diff——正文改一个数就红，这一步不依赖 CMSIS 也在跑 ③ 交叉链 -O2/-O0 各编一遍 main.c 反汇编：`/115200` 编成 `add.w r3,r3,#57600` + `.word 0x91a2b3c5` + `umull` + `lsrs r3,r3,#16`（没有 udiv，`/1000` 另有一枚 magic 0x10624dd3），BRR 落 `[r5,#8]`、CR1 那笔是 `movw r2,#8220`（0x201C）；DMA2 Stream5 的 PAR 直接给 0x40011004、字面量池把基址锚到 0x40026000 再用 +1160 的立即数补回 DMA2，清标志写的是 HIFCR(+0x40c) 而不是只读 HISR；-O0 有 `<usart1_init>` 标签和 `[r7,#12]` 那个 BRR 栈临时，-O2 两者皆无（text 1964 → 1121，bss 两边都 1140）。还能与 S14 串一格：84MHz 的 729 被带回 8MHz 就是 10973。 成片：bilibili 33 场 671.267s、douyin 11 场 69.667s，两平台 h264@30 + aac 44100 立体声、与旁白 wav 漂移 0.003s；两条成片逐帧解码核对 20138 / 2090 帧，与计划帧数一致（`-t` + `-shortest` 没截尾）。抖音侧两处返工：初版 12 场旁白实测 76.02s，撞 45–75s 的渲前时长闸，砍掉 clock-04（与 clock-02 同讲『时钟源配错波特率就崩』，留 PLL 那颗更普遍的）；budget-04/hal-02 原本没有 set 覆写，横版长标题在 9:16 里折出末行 1 字（「成」「倍」），被排版审计拦下，补 `一兆那档\n吃掉六成`、`OVER8 一改\n同一个数翻倍` 才过——横版标题直接搬到竖屏是会违规的。",
       "masters": "video/out/s7-usart-baud/bilibili.mp4（11:11）· douyin.mp4（01:09）"
+    },
+    {
+      "no": 16,
+      "id": "f6-timers",
+      "title": "软件定时器「RAM 开销：零」：公摊不叫免费",
+      "source": "docs/rtos/freertos/06-notify-event-timer.md",
+      "script": "video/episodes/f6-timers/episode.json",
+      "status": "done",
+      "anims": [
+        "software-timer-service"
+      ],
+      "hook": "选型表那一格写着『RAM 开销：零，共用守护任务』，本站自己也写过。本机把 `configUSE_TIMERS=1` 一开就要付的账逐笔算出来：守护任务 TCB 实付 96 + 栈 256 字实付 1032 = 1128，命令队列 `pvPortMalloc(80 + 8×12)` 实付 184，合计 1312 字节——一个定时器都还没建，16 KiB 堆已经去掉 8.0%。第二钩更难受：另有 60 字节落在 `.bss`，`configTOTAL_HEAP_SIZE` 调多大都管不到它；而参照物用同一个公式换个输入就得到——一个最小任务 616 字节，一个任务的名额够放 11 个定时器。",
+      "hookRef": "code/rtos/06-timers/probe.sh 七步本机实跑（上游 FreeRTOS-Kernel V11.1.0 timers.c 本体，`-O0` 只编不链，无需开发板）+ docs/rtos/freertos/06-notify-event-timer.md §五 §八",
+      "punchline": "软件定时器不是零成本，是公摊；回调串行也不是『晚一拍』，判据是 Σ(耗时 ÷ 周期) 有没有过 1——没过，零耗时定时器的最大迟到恰好等于最大那次耗时；过了就发散并连环补拍，而欠的那一拍没丢，是还没还",
+      "note": "取证链七步，全程无板（本机 xpack 15.2.1 + 宿主 gcc）：① `sizeof` 三条独立路子对上同一个 44——nm 符号尺寸、`pvPortMalloc` 里那枚 `movs r0, #44` 立即数、StaticTimer_t 静态孪生；成员和 41 + 尾对齐 3 = 44，差值必须落在 `[0, 对齐)` 内 ② 配置三个数由编译器报出而不是抄写（QLEN 8、STACKW 256 字、MINIMAL 128 字）③ heap_4 的 `tap()`：`(x + 8 + 8 - 1) & ~7`，两个输入都是量出来的 ④ `.bss` 那 60 字节先按源码预测（到期表 20×2 + 指针 4×4 + `xLastTime` 4×1）再与 nm 对撞 ⑤ 开关价目表：`PEND=1` +32、`QLEN 8→16` +96、`TRACE=0` −16（每定时器 −8），`-DTRACE=0 -DSTATS=1` 被 `FreeRTOS.h` 那条 `#error` 当场拦停 ⑥ 总账全由 shell 现场算：1312 = 80‰、每定时器 56、上限 `(16384−1312)÷56 = 269` ⑦ 五幕模拟器 + 11 条 `at_line` 行号护栏（R6 一度指错到 `list.c:67`，纠正为 `:192`——那个 `<=` 才是『同刻到期先入表者先服务』的本体，t=600 打印 `slow fast`）。成片：bilibili 34 场 623.370s、douyin 12 场 66.730s，两平台 h264@30 + aac 44100 立体声、与旁白 wav 漂移 0.000s；逐帧解码核对 18701 / 2002 帧与计划一致，字幕 286 / 28 条时间轴单调，两平台各 15 条断言全绿。短版结构：`pick` 12 场 + 8 处 `set` 覆写 + 12 句旁白全部重写，一张动画都不挂——B站唯一那场 `anim-01` 是三张横版卡并排，竖屏里等比缩放后标题与字幕挤不下，不如把省下的格子给 Σ 那条律。抖音侧两处返工：`card-01` 标题折行后末行只剩 2 字『成立』，被排版审计拦下，覆写成 `「零」不成立\\n两个方向都错` 才过；抽帧人检发现共用动画 `software-timer-service` 有五行字压出卡片边框（CI 字体度量下最宽 +38px），拆成两行断行并把时间线那句『fast 晚一拍才轮到』改成『fast 迟 50ms 才轮到』——旧口径本身也是被实测否掉的那半句。同一轮人检还抓到两处：抖音 code-04 行尾那个 B 被右边界切掉而审计一路全绿（Chromium 不把块级子元素的文字溢出冒泡给祖先 scrollWidth，layout.mjs 的 fitAll 与 cli.mjs 的审计各补一份“连子孙一起量”）；屏上表格按 1 CJK = 2 拉丁格手补空格必然漂——舞台 MONO 栈实测 1 CJK = 128/75 = 1.70667 格，sim-A 最右一列散到 4.4 格，八场改成按实测字宽解整数空格的最小散布布置（最差 0.587 格 ≈ 8.9px @26px，已是这个字宽比下的下界），求和横线跟着表格加宽。同一检测器回扫旧片单：54 处横向裁切、17 条成片待重渲（未动，待批准）。",
+      "masters": "video/out/f6-timers/bilibili.mp4（10:23）· douyin.mp4（01:06）"
     }
   ],
-  "next": [],
-  "backlog": [
-    "F6 软件定时器：configTOTAL_HEAP_SIZE 那笔 RAM 账"
-  ]
+  "next": [
+    "F5 语义互斥量与优先级反转：天花板那一格（`docs/rtos/freertos/05-sem-mutex.md` + 实验 E04，F6 片尾 CTA 已点名这一站）"
+  ],
+  "backlog": []
 }

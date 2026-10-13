@@ -135,6 +135,21 @@ async function auditLayout(stage, plan) {
         // 场景的标题就是这么被 flex 挤成 5.9px 的——审计当时全绿。16px 按本机实测定：
         // 1080 画布上约 1.5% 高，手机上勉强可读；S16 抖音最紧的一场落在 16.9px。
         const MIN_FONT = 16
+        // 横向裁切藏在块级子项里：pre.code 的超长一行是 .ln 自己 scrollWidth 超出，
+        // 父级 .fit 的 pre 报 sw==cw（Chromium 不把可见子项的文字溢出冒泡上去）。
+        // 只量 .fit 本身就会放行"字被切一半"，所以口径必须跟 layout.mjs 的 overX 一致。
+        const overX = (el, bh) => {
+          let v = el.scrollWidth - el.clientWidth - bh
+          let src = el
+          for (const k of el.children) {
+            const kcs = getComputedStyle(k)
+            if (kcs.overflowX !== 'visible') continue
+            const kbh = parseFloat(kcs.borderLeftWidth) + parseFloat(kcs.borderRightWidth)
+            const kv = k.scrollWidth - k.clientWidth - kbh
+            if (kv > v) { v = kv; src = k }
+          }
+          return { v, src }
+        }
         let minFont = Infinity
         let minFontTag = '-'
         const tooSmall = []
@@ -154,9 +169,10 @@ async function auditLayout(stage, plan) {
           const bv = parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth)
           const bh = parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth)
           const overV = el.scrollHeight - el.clientHeight - bv - Math.ceil(fs * 0.12)
-          const overH = el.scrollWidth - el.clientWidth - bh
-          if (overV > 1 || overH > 1) {
-            clipped.push(`${tag} 超出 ${Math.round(overV)}px/${Math.round(overH)}px @${fs.toFixed(1)}px`)
+          const ox = overX(el, bh)
+          if (overV > 1 || ox.v > 1) {
+            const who = ox.src === el ? '' : `（切在 ${ox.src.tagName.toLowerCase()}.${String(ox.src.className).split(' ')[0]}「${ox.src.textContent.trim().slice(0, 20)}」）`
+            clipped.push(`${tag} 超出 ${Math.round(overV)}px/${Math.round(ox.v)}px @${fs.toFixed(1)}px${who}`)
           }
         }
 

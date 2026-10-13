@@ -36,7 +36,7 @@ K=${FREERTOS_KERNEL:-../../../.trellis/ref/freertos-v11/kernel}
 # 所以是硬失败，不静默跳过——CI 的 arm-host 作业两样都装了。
 command -v "${ARMPREFIX}gcc" >/dev/null 2>&1 || { echo "找不到 ${ARMPREFIX}gcc"; exit 1; }
 [ -f "$K/tasks.c" ] || { echo "找不到内核 $K/tasks.c（FREERTOS_KERNEL= 可覆盖）"; exit 1; }
-KC=$(grep -n "tskKERNEL_VERSION_NUMBER" "$K/include/FreeRTOS.h" | head -1)
+KC=$(grep -n '#define tskKERNEL_VERSION_NUMBER' "$K/include/task.h" | head -1)
 
 mkdir -p build/opt build/omit build/gen build/gen33 build/opt_o2
 

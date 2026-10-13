@@ -215,8 +215,10 @@ static void cb_fast(TimerHandle_t t)
 static void cb_slow(TimerHandle_t t)
 {
     (void)t;
-    /* 故意磨蹭 ~50ms：守护任务是串行执行回调的，
-     * 它慢一拍，排在后面的定时器就晚一拍——这不是 bug，是模型。 */
+    /* 故意磨蹭 ~50ms：守护任务是串行执行回调的，它磨蹭多久，
+     * 排在后面的定时器就迟到多久——这不是 bug，是模型。
+     * 本机模拟实测（code/rtos/06-timers/sim_daemon.c 幕 B）：fast 的最大迟到恰好 50 拍。
+     * 改成 200ms 就跨过 Σ(耗时/周期)=1 那条线（幕 C），迟到开始超出耗时本身并连环补拍。 */
     uint32_t t0 = xTaskGetTickCount();
     while ((xTaskGetTickCount() - t0) < 50) { /* 忙等，不许 vTaskDelay */ }
     log_line("slow cb", 1);

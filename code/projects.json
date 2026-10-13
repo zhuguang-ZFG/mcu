@@ -368,5 +368,11 @@
     "path": "code/rtos/03-scheduler",
     "kind": "host-probe",
     "entry": "probe.sh"
+  },
+  {
+    "id": "rtos-06-timers",
+    "path": "code/rtos/06-timers",
+    "kind": "host-probe",
+    "entry": "probe.sh"
   }
 ]
