@@ -11,6 +11,7 @@
     "kicker": "通往单片机之路 · S2",
     "line1": "程序说 168MHz",
     "line2": "引脚上只有 53.76",
+    "vs": {"left":"程序以为 168","right":"引脚只有 53.76","motif":"wave"},
     "sizes": {
       "bilibili": [
         1920,

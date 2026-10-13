@@ -11,6 +11,7 @@
     "kicker": "通往单片机之路 · F6",
     "line1": "一个定时器",
     "line2": "都没建",
+    "vs": {"left":"表上写：零","right":"实测 1312 B"},
     "proof": "!守护任务 TCB：  pvPortMalloc(88)               →  实付    96  B\n!守护任务栈 ：   pvPortMallocStack(256×4=1024)  →  实付  1032  B\n!命令队列：pvPortMalloc(80 + 8×12 = 176) → 实付 184 B",
     "num": "1312 B",
     "numNote": "一个定时器都没建，这笔 RAM 已经花出去",

@@ -11,6 +11,7 @@
     "kicker": "通往单片机之路 · C5",
     "line1": "你的回调",
     "line2": "只是一条 blx",
+    "vs": {"left":"源码两行","right":"只剩一条 blx"},
     "sizes": {
       "bilibili": [
         1920,

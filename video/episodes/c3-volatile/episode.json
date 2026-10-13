@@ -11,6 +11,11 @@
     "kicker": "通往单片机之路 · C3",
     "line1": "你的 volatile",
     "line2": "白加了",
+    "vs": {
+      "left": "-O0 灯在闪",
+      "right": "-O2 灯灭了",
+      "motif": "led"
+    },
     "proof": "!   ldr   r3, [r3]         ← 读进 r3，就这一次\n.L4:\n!   b     .L4              ← 空转，只盯 r3",
     "num": "1 次",
     "numNote": "整个轮询循环，内存被读的次数"

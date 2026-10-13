@@ -11,6 +11,7 @@
     "kicker": "通往单片机之路 · C2",
     "line1": "你抄的点灯公式",
     "line2": "只有三件事",
+    "vs": {"left":"看着是魔数","right":"其实是三件事"},
     "proof": "sizeof: uint8_t=1 uint16_t=2 uint32_t=4  指针自身=8 字节\n!p+1 字节增量: uint8_t* +1  uint16_t* +2  uint32_t* +4",
     "num": "0x40021418",
     "numNote": "这一行你抄过，它是三件事的积",

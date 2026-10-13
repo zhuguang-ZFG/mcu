@@ -11,6 +11,7 @@
     "kicker": "通往单片机之路 · P4",
     "line1": "Cache 一关",
     "line2": "你的 ISR 就不存在了",
+    "vs": {"left":"Cache 开着能跑","right":"一关就没了"},
     "sizes": { "bilibili": [1920, 1200], "douyin": [1080, 1440] },
     "proof": "! 0x42008f08  isr_plain   → iram0_2_seg\n! iram0_2_seg  Flash 映射的取指窗口",
     "num": "0x42008f08",

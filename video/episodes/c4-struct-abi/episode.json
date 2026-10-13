@@ -11,6 +11,7 @@
     "kicker": "通往单片机之路 · C4",
     "line1": "GPIOF->BSRR",
     "line2": "凭什么对",
+    "vs": {"left":"一行箭头","right":"一行裸地址"},
     "sizes": {
       "bilibili": [
         1920,

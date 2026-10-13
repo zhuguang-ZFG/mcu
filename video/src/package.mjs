@@ -8,75 +8,143 @@ import { fmtClock, log } from './util.mjs'
 // 封面 = 一句钩子 + 一张物证 + 一个数字。
 // 物证卡吃 episode.json 里那几行实跑产物，行首 "!"、{{}}、[[]] 的解释直接借正片的 codeHtml/inline
 // （layout.mjs 导出），所以封面上那条红边和观众点进去看到的红边是同一句真话——不为封面另写一套。
-function coverHtml({ kicker, line1, line2, tag, proof, proofShort, num, numNote, badge, size }) {
+// 封面 v2「撞色对切」。上一版被否的原因是它在信息流里等于一张纯文字卡：
+// 近黑底融进列表、中间一条死白带、336px 下除了标题全糊。这一版的三条硬指标：
+//   ① 高饱和对切底（左预期=翠绿 / 右实测=警示红），16 集同一对色 ⇒ 刷到第二次就认得出是本系列
+//   ② 画面里必须有一个"看得见的东西"：要么是会亮/会灭的主体，要么是红圈圈住的实测大数字
+//   ③ 336px 缩略图下逐条回看，读不到的元素一律不上封面（汇编卡从横版撤下，竖版留）
+// B站信息流按 16:9 裁 16:10 的封面，上下各切掉 60px，所以关键元素全部落在 5u 以内侧。
+const VS_COLORS = ['#0f7a4f', '#c0251f']
+
+// 主体图形：封面要的是"一眼看懂的那一下"，不是示意图。只画到能认出是什么为止。
+// 只收两种"定性不定量"的图形：灯亮/灯灭、时钟密/疏。柱状图那种会被人当成数据的先不做，
+// 除非哪天柱子的高度真能由标签里那两个实测数算出来。
+function coverMotif(name, u, vert) {
+  const mw = vert ? 46 : 44, mh = vert ? 29 : 28
+  const wrap = (vb, inner) => `<svg class="motif" width="${u * mw}" height="${u * mh}" viewBox="${vb}">${inner}</svg>`
+  if (name === 'led') {
+    const led = (lit, x) => `
+  <g transform="translate(${x},0)">
+    ${lit ? '<circle cx="0" cy="0" r="150" fill="url(#cv-glow)"/>' : ''}
+    <path d="M-64 40 L-64 -22 A64 64 0 0 1 64 -22 L64 40 Z" fill="${lit ? '#ffde59' : '#39445a'}" stroke="${lit ? '#fff3b0' : '#5a6478'}" stroke-width="8"/>
+    <rect x="-64" y="40" width="128" height="26" rx="6" fill="${lit ? '#e8a020' : '#2b3446'}"/>
+    <rect x="-30" y="66" width="14" height="70" fill="#9fb0c8"/><rect x="16" y="66" width="14" height="70" fill="#9fb0c8"/>
+  </g>`
+    return wrap('-270 -170 540 340', `
+  <defs><radialGradient id="cv-glow"><stop offset="0%" stop-color="rgba(255,222,89,.95)"/><stop offset="55%" stop-color="rgba(255,170,40,.35)"/><stop offset="100%" stop-color="rgba(255,170,40,0)"/></radialGradient></defs>
+  <g transform="translate(0,10)">${led(true, -108)}${led(false, 118)}</g>`)
+  }
+  if (name === 'wave') {
+    // 一条方波跨过颜色分界：左半密、右半疏。跳变只发生在分界线那一格，读出来就是"同一个信号慢下来了"
+    const sq = (x0, x1, half, top, bot) => {
+      let d = `M${x0} ${top}`, cur = top, nxt = bot
+      for (let x = x0 + half; x < x1; x += half) { d += ` L${x} ${cur} L${x} ${nxt}`; const t = cur; cur = nxt; nxt = t }
+      return d + ` L${x1} ${cur}`
+    }
+    return wrap('-270 -170 540 340', `
+  <path d="${sq(-250, -6, 31, -78, 78)}" fill="none" stroke="#fff6d0" stroke-width="15" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="${sq(-6, 250, 86, -78, 78)}" fill="none" stroke="#ffd7d2" stroke-width="15" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M-6 -152 L-6 152" stroke="rgba(255,255,255,.5)" stroke-width="5" stroke-dasharray="14 12"/>`)
+  }
+  return ''
+}
+
+function coverHtml({ kicker, line1, line2, tag, proof, proofShort, num, numNote, badge, vs, size }) {
   const [w, h] = size
   const u = coverU(size)
   const vert = h > w
-  // 竖版一行只放得下 ⌊929/字号⌋ 个汉字：158px 时是 5 个，"你给优先级 16" 会被断成
-  // "你给优 / 先级 16"。汉字没有词边界，balance 只配平长度、救不了把词劈开，
-  // 所以标题改成 keep-all：一段连着写死的汉字整体不许断，只能整段换行或整段缩——
-  // 于是字号被自动顶到"最长那一段刚好放得下"的最大值，断点只会落在空格处。
-  const big = vert ? (line2 ? 14.2 : 15.6) : line2 ? 13.2 : 14.6
-  const wm = badge || (kicker || '').replace(/^.*·\s*/, '') || ''
-  // 竖版窄，长证据行缩到地板也放不下——换一条更短的证据，而不是把字压到看不清
-  const card = (vert ? proofShort || proof : proof) || ''
-  const numbox = num
-    ? `<div class="numbox"><div class="num" data-want="${(u * 13).toFixed(2)}">${inline(num)}</div>${numNote ? `<div class="numnote">${inline(numNote)}</div>` : ''}</div>`
-    : ''
-  const codeCard = card ? `<pre class="code fit" data-want="${(u * 3.35).toFixed(2)}">${codeHtml(card)}</pre>` : '<div class="spacer"></div>'
-  // 横版：证据卡与数字并排压在底部。竖版：数字吃中间那段空白，卡留在脚注上方——
-  // 不然 1440 高的画布会在标题和数字之间空出一条谁都不看的带子。
-  const bottom = vert ? `<div class="mid">${numbox}</div>${codeCard}` : `<div class="bottom">${codeCard}${numbox}</div>`
+  const [cl, cr] = VS_COLORS
+  // 竖版一行只放得下 ⌊929/字号⌋ 个汉字，所以标题走 keep-all：整段汉字不许劈开，
+  // 字号被自动顶到"最长那一段刚好放得下"的最大值，断点只会落在空格处。
+  // 竖版这个上限是量出来的：12.4u 下"程序说 168MHz"会断成两行，四行标题一路压到底部证据卡，
+  // 而缩字只量得出"出界"、量不出"多占一行"——所以宁可从源头就把字号定在断行点以下。
+  const big = vert ? (line2 ? 10.6 : 12.0) : line2 ? 12.8 : 14.4
+  const lab = vert ? 4.8 : 5.0
+  const numFs = vert ? 8.8 : 11
+  const card = vert ? (proofShort || proof || '') : ''
+  const headTxt = `<div class="l1">${headline(line1 || '')}</div>${line2 ? `<div class="l2">${headline(line2)}</div>` : ''}`
+  // 对撞区。横版：标签贴在自己那颗灯旁边，读"谁 vs 谁"不用让视线在画面上来回跳。
+  // 竖版一行的宽度只够"一个图形 + 一列文字"，所以图形单独一行、两个标签压在它下面分居两侧。
+  const slab = (t) => `<div class="vslab" data-want="${(u * lab).toFixed(2)}">${headline(t)}</div>`
+  const colL = `<div class="col">${slab(vs.left)}</div>`
+  const colR = `<div class="col r">${slab(vs.right)}</div>`
+  const vsx = `<div class="vsx">VS</div>`
+  const motif = vs.motif ? coverMotif(vs.motif, u, vert) : ''
+  // 横版有图形：标签贴着图形，视线从字走到自己那颗灯。
+  // 其余两种（横版无图形 / 竖版）：两列必须被推到行的两端——挤在中间的话，"左边那句"会掉到红色那一侧，
+  // 而左右两侧各是什么颜色正是这套封面的读法，站错边就等于说反话。竖版一行也放不下"图+字+字"。
+  const vsHtml = vs ? (motif && !vert
+    ? `<div class="vs">${colL}${motif}${colR}</div>`
+    : `<div class="vs">${motif}<div class="vsrow">${colL}${vsx}${colR}</div></div>`) : ''
+  const numbox = num ? `<div class="numbox">
+    <div class="numwrap"><svg class="cir" viewBox="0 0 460 300" preserveAspectRatio="none"><path d="M52 232 C14 128 118 26 250 24 C378 22 442 118 424 214 C406 306 250 300 150 276" fill="none" stroke="#ff4d4f" stroke-width="14" stroke-linecap="round" vector-effect="non-scaling-stroke" opacity=".92"/></svg>
+      <div class="num" data-want="${(u * numFs).toFixed(2)}">${inline(num)}</div></div>
+    ${numNote ? `<div class="numnote" data-want="${(u * 2.6).toFixed(2)}">${inline(numNote)}</div>` : ''}
+  </div>` : ''
+  const codeCard = card ? `<pre class="code fit" data-want="${(u * 3.35).toFixed(2)}">${codeHtml(card)}</pre>` : ''
+  // 竖版也用近竖直的分界（96°），左右两列标签才分别落在两种颜色上；
+  // 用 168° 会得到一条近乎水平的界线，"左绿右红"的读法当场失效。
   return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{width:${w}px;height:${h}px;font-family:${FONT};color:#e6eaf2;overflow:hidden;
-  background:radial-gradient(125% 115% at 18% -8%,#16223c 0%,#0b1220 55%,#05080f 100%)}
-.wm{position:absolute;right:${u * 1}px;top:${u * 26}px;font-size:${u * 44}px;font-weight:900;letter-spacing:-.05em;
-  line-height:1;color:rgba(138,180,255,.075);font-family:${MONO};z-index:0}
-.trace{position:absolute;left:0;right:0;bottom:${u * 20}px;height:${u * 1}px;
-  background:linear-gradient(90deg,transparent,rgba(138,180,255,.22) 22%,rgba(79,209,150,.18) 60%,transparent)}
-.pad{position:absolute;inset:0;padding:${u * 6.2}px ${u * 7}px;display:flex;flex-direction:column;gap:${u * 2.6}px;z-index:1}
-.pill{flex:none;align-self:flex-start;font-size:${u * 2.9}px;font-weight:800;letter-spacing:.16em;color:#f0b45c;
-  border:${u * .28}px solid rgba(240,180,92,.7);border-radius:999px;padding:${u * 1}px ${u * 3}px;background:rgba(240,180,92,.08)}
-/* 标题两行共用 .head 上的字号：分行只换颜色。写在 .l1/.l2 上就得事后把 l1 缩完的值同步给 l2，
-   那个同步既难读又会让"两行必须同大"这条不变量只在运行时成立。 */
-.head{flex:none;margin-top:${u * 1.4}px;font-size:${u * big}px;line-height:1.12;font-weight:900;letter-spacing:-.025em;
-  text-wrap:balance;word-break:keep-all}
+  background:linear-gradient(${vert ? '96deg' : '112deg'},${cl} 0%,${cl} 46%,${cr} 46.2%,${cr} 100%)}
+.grain{position:absolute;inset:0;background:repeating-linear-gradient(${vert ? '0deg' : '90deg'},rgba(0,0,0,.055) 0 ${u * 6}px,transparent ${u * 6}px ${u * 12}px)}
+.pad{position:absolute;inset:0;padding:${u * (vert ? 5.4 : 6.6)}px ${u * 6}px;display:flex;flex-direction:column;gap:${u * 2.4}px;z-index:1}
+.top{flex:none;display:flex;align-items:flex-start;gap:${u * 2}px}
+.pill{flex:none;align-self:flex-start;font-size:${u * 2.5}px;font-weight:900;letter-spacing:.14em;color:#fff;
+  background:rgba(4,10,22,.34);border-radius:999px;padding:${u * .95}px ${u * 2.6}px}
+/* 数字牌不给 max-width：一旦封顶，牌子自己是"装得下"的，超长的数字却会从牌子里淌出去，
+   而缩字量的是元素矩形，量不到这淌出去的半截——f0 的 "3298.96 ms" 就是这么被裁掉一个 s 的。
+   让牌子跟着数字长，超界就会体现在 .num 的矩形上，缩字才管得住。 */
+.numbox{flex:none;margin-left:auto;text-align:center;
+  background:rgba(6,12,26,.62);border-radius:${u * 1.4}px;padding:${u * 1.4}px ${u * 2.2}px ${u * 1.6}px}
+.numwrap{position:relative;display:inline-block;padding:0 ${u * 2.4}px}
+.numwrap .cir{position:absolute;left:0;top:${u * -1.6}px;width:100%;height:calc(100% + ${u * 3.2}px)}
+.num{font-size:${u * numFs}px;font-weight:900;line-height:.98;letter-spacing:-.03em;color:#ffde59;white-space:nowrap;
+  text-shadow:0 ${u * .8}px 0 rgba(0,0,0,.4)}
+.numnote{margin:${u * 1.2}px auto 0;max-width:${u * 44}px;font-size:${u * 2.6}px;font-weight:800;color:#fff;line-height:1.28;word-break:keep-all}
+.mid{flex:1;display:flex;flex-direction:column;justify-content:center;gap:${u * 2.2}px;min-height:0}
+.head{flex:none;font-size:${u * big}px;font-weight:900;line-height:1.04;letter-spacing:-.03em;word-break:keep-all;text-align:center;
+  text-shadow:0 ${u * 1}px 0 rgba(0,0,0,.42)}
 /* keep-all 之后不能再加 overflow-wrap：那会让超长段自己劈开，缩字就量不到溢出，
    等于把"装不下"从一次硬失败换成一张悄悄断错的封面。 */
-.l1{color:#f2f5fa}
-.l2{color:#f0b45c}
+.l1{color:#fff}
+.l2{color:#ffe9a8}
 .tk{white-space:nowrap}
-.bar{height:${u * 1.1}px;width:${u * 15}px;margin:${u * 2.6}px 0 0;background:linear-gradient(90deg,#8ab4ff,#4fd196);border-radius:999px}
-.mid{flex:1 0 auto;display:flex;flex-direction:column;justify-content:center;min-height:0}
-.bottom{flex:none;margin-top:auto;display:flex;flex-direction:row;align-items:flex-end;gap:${u * 3}px}
-/* 竖版里 pre.code 是列的直接子元素，flex:1 会去长"高度"——证据卡被拉成一大一空框。
-   横版那条 flex:1 1 auto 要的是长宽度，所以只在竖版关掉。 */
-.v pre.code{flex:none}
-pre.code{flex:1 1 auto;min-width:0;background:rgba(15,23,40,.92);border:1px solid #26314a;border-left:${u * .55}px solid #8ab4ff;
+.vs{flex:none;display:flex;flex-direction:${vert ? 'column' : 'row'};align-items:center;justify-content:center;gap:${u * (vert ? 1.6 : 2.4)}px;width:100%}
+svg.motif{flex:none;display:block}
+.vsrow{display:flex;flex-direction:row;align-items:baseline;justify-content:space-between;width:100%;gap:${u * 2}px}
+/* 横版两列贴着图形（各自的文字朝灯那一侧收），竖版两列被拉到行两端对望 */
+.col{min-width:0;text-align:right}
+.col.r{text-align:left}
+.vsrow .col{flex:1 1 0;text-align:left}
+.vsrow .col.r{text-align:right}
+.vslab{font-size:${u * lab}px;font-weight:900;color:#fff;line-height:1.16;word-break:keep-all;
+  text-shadow:0 ${u * .7}px 0 rgba(0,0,0,.4)}
+.vsx{flex:none;font-size:${u * 4}px;font-weight:900;color:rgba(255,255,255,.7);letter-spacing:.02em}
+pre.code{flex:none;background:rgba(6,12,26,.82);border:1px solid rgba(255,255,255,.16);border-left:${u * .55}px solid #ffde59;
   border-radius:${u * .9}px;padding:${u * 1.5}px ${u * 1.8}px;font-family:${MONO};font-size:${u * 3.35}px;line-height:1.42;
   color:#dbe3f0;white-space:pre;tab-size:4;overflow:hidden}
 pre.code .ln{display:block;padding:0 ${u * .5}px;border-radius:3px}
 pre.code .ln.ev{background:rgba(255,138,128,.15);box-shadow:inset ${u * .35}px 0 0 #ff8a80;color:#ffd9d5}
 pre.code .ln.dim{color:#7f8ba0}
-pre.code .hl{font-style:normal;color:#f0b45c;font-weight:700}
+pre.code .hl{font-style:normal;color:#ffde59;font-weight:700}
 pre.code .bad{font-style:normal;color:#ff8a80;font-weight:700}
 pre.code b{color:#8ab4ff}
-.spacer{flex:1}
-.numbox{flex:none;max-width:${vert ? 1e4 : u * 50}px;text-align:${vert ? 'left' : 'right'};padding-bottom:${u * .4}px}
-.num{font-size:${u * 13}px;font-weight:900;line-height:.94;letter-spacing:-.03em;color:#f0b45c;font-family:${FONT};white-space:nowrap;
-  text-shadow:0 0 ${u * 5}px rgba(240,180,92,.35)}
-.numnote{margin-top:${u * 1.2}px;font-size:${u * 2.5}px;color:#8ab4ff;font-weight:600;letter-spacing:.02em}
-.foot{flex:none;display:flex;align-items:center;gap:${u * 1.8}px;font-size:${u * 2.3}px;color:#8f9bb0}
-.chip{border:1px solid #3b4453;border-radius:999px;padding:${u * .55}px ${u * 2}px;color:#4fd196;font-weight:700;background:rgba(79,209,150,.07)}
+.foot{flex:none;display:flex;align-items:center;justify-content:center;gap:${u * 1.6}px;font-size:${u * 2.2}px;color:rgba(255,255,255,.86)}
+.chip{border:${u * .2}px solid rgba(255,255,255,.6);border-radius:999px;padding:${u * .5}px ${u * 1.8}px;color:#fff;font-weight:900;background:rgba(4,10,22,.28)}
 </style></head><body>
-<div class="wm">${esc(wm)}</div>
-<div class="trace"></div>
+<div class="grain"></div>
 <div class="pad${vert ? ' v' : ''}">
-  <div class="pill">${esc(kicker || '通往单片机之路')}</div>
-  <div class="head" data-want="${(u * big).toFixed(2)}"><div class="l1">${headline(line1 || '')}</div>${line2 ? `<div class="l2">${headline(line2)}</div>` : ''}
-    <div class="bar"></div></div>
-  ${bottom}
+  <div class="top">
+    <div class="pill">${esc(kicker || '通往单片机之路')}</div>
+    ${numbox}
+  </div>
+  <div class="mid">
+    ${vsHtml}
+    <div class="head" data-want="${(u * big).toFixed(2)}">${headTxt}</div>
+    ${codeCard}
+  </div>
   <div class="foot"><span class="chip">${esc(tag || '本机实跑')}</span><span>${esc(siteNote(size))}</span></div>
 </div>
 </body></html>`
@@ -127,11 +195,16 @@ async function fitCover(page, u) {
       if (own) v = Math.max(v, el.scrollWidth - el.clientWidth)
       return v
     }
-    const shrink = (el, floor, own) => {
+    // 代码卡还要多量一层：.ln 那条证据高亮条是块级、宽度等于卡的内容宽，
+    // 文字超出它只会淌进卡片自己的右内边距（u*1.8）。量卡片的话这十几像素是"装得下"的，
+    // 量到的却是高亮条短了一截、末字符贴着卡片边框——c2 的 "@ zero_extendqisi2" 就是这么糊的。
+    const codeOver = (el) => Math.max(over(el, true), ...[...el.querySelectorAll('.ln')].map((ln) => ln.scrollWidth - ln.clientWidth))
+    const shrink = (el, floor, measure) => {
+      const over1 = typeof measure === 'function' ? measure : (x) => over(x, measure === true)
       let fs = parseFloat(getComputedStyle(el).fontSize)
       const start = fs
       for (let i = 0; i < 400; i++) {
-        if (over(el, own) <= 1) break
+        if (over1(el) <= 1) break
         const next = Math.max(floor, fs - Math.max(0.25, fs * 0.02))
         if (next === fs) break
         fs = next
@@ -141,23 +214,51 @@ async function fitCover(page, u) {
       return {
         from: start,
         to: fs,
-        over: over(el, own),
+        over: over1(el),
         // 起始字号对不上元素自己声明的期望值 ⇒ 那条 CSS 规则根本没生效。
         // 这一轮真踩过：把 // 注释写进 <style> 里，CSS 顺手吞掉紧跟它的 .l1 规则，
         // 标题退回 16px、缩字量不到溢出，于是一张废封面"渲染成功"。
         lost: el.dataset.want ? start < parseFloat(el.dataset.want) * 0.9 : false,
         want: el.dataset.want || '',
-        box: `${Math.round(q.width)}×${Math.round(q.height)} 右${Math.round(q.right)} 底${Math.round(q.bottom)} / 界${Math.round(lim.r)}×${Math.round(lim.b)}${own ? ` 文宽${el.scrollWidth}` : ''}`,
+        box: `${Math.round(q.width)}×${Math.round(q.height)} 右${Math.round(q.right)} 底${Math.round(q.bottom)} / 界${Math.round(lim.r)}×${Math.round(lim.b)}${measure ? ` 文宽${el.scrollWidth}` : ''}`,
       }
     }
     const out = {}
     const code = document.querySelector('pre.code')
-    if (code) out.code = shrink(code, u * 2.1, true)
+    if (code) out.code = shrink(code, u * 2.1, codeOver)
     const head = document.querySelector('.head')
     // own=true：标题里的英文段是 .tk nowrap、整段汉字是 keep-all，撑出去的是 scrollWidth 而不是块的矩形
     if (head) out.head = shrink(head, u * 7, true)
     const num = document.querySelector('.num')
-    if (num) out.num = shrink(num, u * 6, true)
+    if (num) out.num = shrink(num, u * 5, true)
+    const note = document.querySelector('.numnote')
+    if (note) out.note = shrink(note, u * 1.8, true)
+    // 对切两列标签各是独立的一段话，必须逐块量：只量第一块的话，右边那条悄悄出画没人知道
+    document.querySelectorAll('.vslab').forEach((el, i) => { out['lab' + (i + 1)] = shrink(el, u * 2.6, true) })
+    // 上面每一趟都只量"这一块自己出不出界"。竖版真正的失败方式是标题多断一行：
+    // 每一块都还在自己框里，但 .mid 里最后那块（证据卡）被顶到画布外——单块量不出来，只能整列合量。
+    const mid = document.querySelector('.mid')
+    if (mid && head) {
+      const kids = [...mid.children]
+      // .mid 是 justify-content:center：内容一超高就上下同时溢出，所以两头都要量。
+      // 容差给半格 gap，吸收居中带来的亚像素抖动，不让每张都误判。
+      const spill = () => {
+        const m = mid.getBoundingClientRect()
+        return Math.max(0, ...kids.map((k) => {
+          const q = k.getBoundingClientRect()
+          return Math.max(q.bottom - m.bottom, m.top - q.top)
+        })) - u * 0.6
+      }
+      const from = parseFloat(getComputedStyle(head).fontSize)
+      let fs = from
+      for (let i = 0; i < 200 && spill() > 0; i++) {
+        const next = Math.max(u * 6, fs - Math.max(0.25, fs * 0.015))
+        if (next === fs) break
+        fs = next
+        head.style.fontSize = fs + 'px'
+      }
+      out.mid = { from, to: fs, over: spill(), lost: false, want: '', box: `整列压出 ${Math.round(spill())}px` }
+    }
     return out
   }, u)
 }

@@ -11,6 +11,7 @@
     "kicker": "通往单片机之路 · C6",
     "line1": "参数装 r0-r3",
     "line2": "多余的上栈",
+    "vs": {"left":"宿主 64 字节","right":"M4 只用 24"},
     "sizes": {
       "bilibili": [
         1920,

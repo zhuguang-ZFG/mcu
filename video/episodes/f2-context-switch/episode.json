@@ -11,6 +11,7 @@
     "kicker": "通往单片机之路 · F2",
     "line1": "每毫秒一次",
     "line2": "偷梁换柱",
+    "vs": {"left":"看着两个任务","right":"其实一个 CPU"},
     "sizes": {
       "bilibili": [
         1920,

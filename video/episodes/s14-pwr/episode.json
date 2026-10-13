@@ -11,6 +11,7 @@
     "kicker": "通往单片机之路 · S14",
     "line1": "睡下去之前",
     "line2": "谁叫你起床",
+    "vs": {"left":"睡前 1 ms","right":"醒后 10.5 ms","motif":"wave"},
     "sizes": {
       "bilibili": [
         1920,
