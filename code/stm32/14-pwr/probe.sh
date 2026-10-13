@@ -219,7 +219,9 @@ if command -v "${ARMPREFIX}gcc" >/dev/null 2>&1; then
     echo "----- 内核外设不是 STM32 地址空间：SCR/SysTick 都是 SCS_BASE 的偏移 -----"
     need enter_stop '22e0[[:space:]]+mov\.w[[:space:]]+r2, #3758153728' 'SCS_BASE = 0xE000E000 在机身里是一个立即数'
     need enter_stop '#3344\]' 'SCB->SCR 编成 [r2, #3344] = SCS+0xD10'
-    need enter_stop ';[[:space:]]*0xd10' 'objdump 自己把这个十进制偏移还原成 ; 0xd10'
+    # 注释符认两个：binutils 2.45 打 "; 0xd10"，2.42（CI 的 apt 工具链）打 "@ 0xd10"，
+    # 要断的是「objdump 把十进制偏移还原成了可读的十六进制」这件事，不是某个版本的标点。
+    need enter_stop '[@;][[:space:]]*0xd10' 'objdump 自己把这个十进制偏移还原成 0xd10'
     need enter_standby '#2164\]' 'Standby：读复位标志编成 [r3, #2164]，r3=0x40023000 → 0x40023874 = RCC_CSR（编译器把 base+0x74 合成一个偏移）'
 
     echo "----- 备份域解锁那五笔写，和那一个回执位 -----"
