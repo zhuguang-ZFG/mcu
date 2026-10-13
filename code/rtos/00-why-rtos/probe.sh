@@ -13,7 +13,7 @@
 # 第 3、4 步需要交叉工具链。本机装了 xpack 15.2.1 就钉它，没装退回 PATH 里默认那把：
 #   ARM_PREFIX=/path/to/arm-none-eabi- sh probe.sh
 #
-# 宿主机那两步每档连跑几局（REPS，默认 5）。宿主机不是真板，Windows 会随机抢走
+# 宿主机那两步每档连跑几局（REPS，默认 5）。宿主机不是真板，宿主 OS 会随机抢走
 # 十几毫秒，单局读数是抽奖；跨局中位数才是能写进章里、印到屏幕上的数。
 #   REPS=1 sh probe.sh    只看一局（快，但别引用它的"最坏迟到"）
 #   REPS=8 sh probe.sh    更稳的中位数
@@ -37,7 +37,7 @@ COMMON="-std=c11 -Wall -Wextra -Werror"
 
 echo "############ 1. 阻塞版 vs 改良版：元凶就是那一句死等 ############"
 echo "宿主工具链：$HOSTCC $("$HOSTCC" -dumpfullversion 2>/dev/null || "$HOSTCC" -dumpversion)"
-echo "每档连跑 $REPS 局：宿主机不是真板，Windows 会随时抢走十几毫秒，"
+echo "每档连跑 $REPS 局：宿主机不是真板，宿主 OS 随时能抢走十几毫秒，"
 echo "单局的\"最坏迟到\"能差一个数量级——只认跨局中位数（REPS=1 可退回单局）"
 "$HOSTCC" $COMMON -O2 main_host.c superloop.c board_host.c -o build/f0.exe
 ./build/f0.exe block $REPS

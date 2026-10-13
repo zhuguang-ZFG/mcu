@@ -3,27 +3,41 @@
  *
  * 为什么不用线程、不用真实串口：字节到达时刻与按键按下/松开时刻全部由脚本决定，
  * 于是"阻塞版"和"改良版"跑的是同一条剧情，两边的数字可以并排比。
- * 时钟用 QueryPerformanceCounter（1 ms 的 SysTick 读数由它换算出来，粒度真实），
+ * 时钟只要一把单调纳秒表：Windows 用 QueryPerformanceCounter，POSIX 用
+ * clock_gettime(CLOCK_MONOTONIC)——1 ms 的 SysTick 读数都由它换算，粒度真实。
  * 发送用线上速率记账：115200 8N1 一个字符 10 bit → 86.805 µs，谁也快不了。
  *
  * 打印全部攒到报告阶段：跑循环的时候一个字符都不往 stdout 写，
  * 否则终端 I/O 会把要量的东西量歪。
  */
+#if !defined(_WIN32)
+/* 必须抢在任何一个系统头文件之前：glibc 的 features.h 在第一次 include 就定好了
+   暴露哪些符号，而 probe 用 -std=c11（=__STRICT_ANSI__）会把 clock_gettime 藏起来。 */
+#define _POSIX_C_SOURCE 199309L
+#endif
+
 #include "superloop.h"
 #include "board_host.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <windows.h>
 
 #define RUN_END_MS  6000u        /* 脚本放完的时刻，也是本局的终点 */
 #define TX_CHAR_NS  86805LL      /* 10 bit ÷ 115200 bit/s = 86.805 µs/字符 */
 
 /* ---------------- 时钟 ---------------- */
 
+#if defined(_WIN32)
+
+#include <windows.h>
+
 static LARGE_INTEGER s_qpc_freq;
-static long long     s_t0_ns;
+
+static void clock_init(void)
+{
+    QueryPerformanceFrequency(&s_qpc_freq);
+}
 
 /* 绝对纳秒：只问 QPC，不做任何平移 */
 static long long clock_ns(void)
@@ -33,6 +47,24 @@ static long long clock_ns(void)
     QueryPerformanceCounter(&c);
     return (long long)((double)c.QuadPart * 1e9 / (double)s_qpc_freq.QuadPart);
 }
+
+#else
+
+#include <time.h>
+
+static void clock_init(void) {}
+
+static long long clock_ns(void)
+{
+    struct timespec ts;
+
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (long long)ts.tv_sec * 1000000000LL + ts.tv_nsec;
+}
+
+#endif
+
+static long long     s_t0_ns;
 
 /* 本局纳秒：一局从 0 起算，所以 host_run_begin 换局时各局的剧情时刻完全对齐 */
 static long long now_ns(void)
@@ -284,7 +316,7 @@ void host_pass_end(void)
 
 void host_init(void)
 {
-    QueryPerformanceFrequency(&s_qpc_freq);
+    clock_init();
     script_build();
     host_run_begin();
 }
