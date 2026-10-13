@@ -20,7 +20,11 @@
         1080,
         1440
       ]
-    }
+    },
+    "proof": "!  sall   %cl, %edx     @ 计数 33 → 移位器只认低 5 位\n!  xorl   %edx, %edx     @ 把 0 塞给 printf：最省指令的答案",
+    "num": "2 或 0",
+    "numNote": "同一行 1u << 33，-O0 与 -O2 各给一个",
+    "proofShort": "!  sall   %cl, %edx     @ 计数 33 → 移位器只认低 5 位"
   },
   "publish": {
     "bilibili": {

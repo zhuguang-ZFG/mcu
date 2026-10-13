@@ -11,7 +11,10 @@
     "kicker": "通往单片机之路 · S4",
     "line1": "你给优先级 16",
     "line2": "芯片收到的是 0",
-    "sizes": { "bilibili": [1920, 1200], "douyin": [1080, 1440] }
+    "sizes": { "bilibili": [1920, 1200], "douyin": [1080, 1440] },
+    "proof": "!写 AIRCR 高 16 位必须是 0x5FA\n! 0x40013000 + 0xC14 = 0x40013C14 = EXTI->PR",
+    "num": "0",
+    "numNote": "你写 16，芯片存进寄存器的是这个"
   },
   "publish": {
     "bilibili": {

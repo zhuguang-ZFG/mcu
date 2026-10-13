@@ -20,7 +20,10 @@
         1080,
         1440
       ]
-    }
+    },
+    "proof": "!   push    {r4, lr}        @ 8 字节：r4 与回家地址\n!   sub     sp, sp, #16     @ 16 字节：buf[16] 的家\n!   pop     {r4, pc}        @ 返回地址直接弹进 PC",
+    "num": "24 字节",
+    "numNote": "这一帧的全部家当，宿主同一个函数是 64"
   },
   "publish": {
     "bilibili": {

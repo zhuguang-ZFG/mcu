@@ -42,14 +42,15 @@ const DARK = {
   washAmber: 'rgba(240,180,92,0.14)',
 }
 
-const FONT = "'Microsoft YaHei','PingFang SC','Noto Sans SC','Segoe UI',system-ui,sans-serif"
-const MONO = "'Cascadia Mono','Consolas','Microsoft YaHei Mono',monospace"
+// 封面和正片共用同一套字体栈：封面换了字体，观众会以为是另一个频道做的
+export const FONT = "'Microsoft YaHei','PingFang SC','Noto Sans SC','Segoe UI',system-ui,sans-serif"
+export const MONO = "'Cascadia Mono','Consolas','Microsoft YaHei Mono',monospace"
 
 function esc(s) {
   return String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]))
 }
 
-function inline(s) {
+export function inline(s) {
   // \n 留到最后一步再换：作者写 \n 就是要控制断行——竖屏三行大标题放任浏览器折行，
   // 会把"就死/了"劈开。放在 **…** 之后替换，才不会打断跨行的加粗匹配。
   return esc(s)
@@ -60,7 +61,7 @@ function inline(s) {
 }
 
 // 代码块行内标记：行首 "!" = 证据行（红底 + 左侧红条），"~" = 弱化行
-function codeHtml(src) {
+export function codeHtml(src) {
   const lines = String(src).replace(/\n$/, '').split('\n')
   return lines
     .map((line) => {

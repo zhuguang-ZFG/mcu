@@ -20,7 +20,11 @@
         1080,
         1440
       ]
-    }
+    },
+    "proof": "!9a:  f852 3023   ldr.w   r3, [r2, r3, lsl #2]   ; 查表：取出函数地址\n!9e:  4798        blx     r3                     ; 跳过去",
+    "num": "0 条",
+    "numNote": "classify 被 -O2 摊平后，剩下的 bl 调用",
+    "proofShort": "!94:  9e:  4798   blx  r3\n!133:  22:  4798   blx  r3"
   },
   "publish": {
     "bilibili": {

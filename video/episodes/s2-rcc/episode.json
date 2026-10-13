@@ -20,7 +20,10 @@
         1080,
         1440
       ]
-    }
+    },
+    "proof": "  引脚上实际 = 53760000 Hz\n! 差 114240000 Hz；pll_params_from_hse() 返回值 = 0",
+    "num": "53.76 MHz",
+    "numNote": "引脚上量到的，程序以为自己在跑 168"
   },
   "publish": {
     "bilibili": {

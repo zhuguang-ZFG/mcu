@@ -29,6 +29,13 @@ function parseArgv(argv) {
       pos.push(a)
       continue
     }
+    const eq = a.indexOf('=')
+    if (eq > 2) {
+      // --k=v 必须认：--out= 写错被当成布尔量吞掉，产物就落进 video/out/，
+      // 而那条路径正被投稿队列读着。
+      flags[a.slice(2, eq)] = a.slice(eq + 1)
+      continue
+    }
     const key = a.slice(2)
     const next = rest[i + 1]
     if (next && !next.startsWith('--')) {
@@ -481,6 +488,35 @@ async function cmdBuild(ids, flags) {
 // 只跑「舞台 + 排版审计」，一帧不渲、一句配音都不合成（时间轴必须已存在）。
 // 改完 episode.json 想确认版式没塌、孤字有没有犯，用这条：几秒出结果，
 // 不用为了看一眼标题折行等两万帧。
+// 只重画封面，一帧成片都不渲、一句配音都不合成。封面是 package 阶段里唯一能独立重做的产物
+// （换钩子、换配色这类事不该付两万帧的代价）。--out 把候选画到别处，免得半成品封面被正在排队的投稿读走。
+async function cmdCover(ids, flags) {
+  const want = !flags.platform || flags.platform === 'both' ? ['bilibili', 'douyin'] : [flags.platform]
+  const targets = pickEpisodes(ids)
+  const browser = await openBrowser()
+  let bad = 0
+  try {
+    for (const id of targets) {
+      const ep = loadEpisode(id)
+      for (const platform of want) {
+        if (!ep.platforms[platform]) continue
+        const dir = flags.out ? join(String(flags.out), targets.length > 1 ? id : '') : join(OUT_DIR, id)
+        mkdirSync(dir, { recursive: true })
+        try {
+          await buildCover(browser, ep, platform, join(dir, `${platform}-cover.png`))
+        } catch (e) {
+          log(`❌ ${id} · ${platform}：${e.message}`)
+          bad++
+        }
+      }
+    }
+  } finally {
+    await browser.close()
+  }
+  if (bad) log(`\n❌ ${bad} 张封面装不下，见上面逐条`)
+  return bad ? 1 : 0
+}
+
 async function cmdCheck(ids, flags) {
   const want = !flags.platform || flags.platform === 'both' ? ['bilibili', 'douyin'] : [flags.platform]
   const targets = pickEpisodes(ids)
@@ -532,9 +568,10 @@ async function main() {
   mkdirSync(OUT_DIR, { recursive: true })
   if (cmd === 'lint') return cmdLint(pos)
   if (cmd === 'check') return cmdCheck(pos, flags)
+  if (cmd === 'cover') return cmdCover(pos, flags)
   if (cmd === 'build') return cmdBuild(pos, flags)
   if (cmd === 'calib') return runCalibration(flags.anims ? String(flags.anims).split(',') : undefined)
-  throw new Error(`未知子命令 "${cmd || '(空)'}"，可用：lint / check / build / calib`)
+  throw new Error(`未知子命令 "${cmd || '(空)'}"，可用：lint / check / cover / build / calib`)
 }
 
 main()

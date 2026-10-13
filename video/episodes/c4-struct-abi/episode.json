@@ -20,7 +20,10 @@
         1080,
         1440
       ]
-    }
+    },
+    "proof": "! offsetof(BSRR) = 0x18\n! sizeof = 0x24   (GPIO_TypeDef 应为 0x28)",
+    "num": "0x24",
+    "numNote": "少写一个中括号，整块只剩这么大"
   },
   "publish": {
     "bilibili": {

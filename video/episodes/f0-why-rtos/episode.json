@@ -20,7 +20,10 @@
         1080,
         1440
       ]
-    }
+    },
+    "proof": "! be:  bpl.n b8               ← 字节不来就转不完\n! min = 中位 = max = 3298.96 ms",
+    "num": "3298.96 ms",
+    "numNote": "min = 中位 = max：它占住 CPU 这么久"
   },
   "publish": {
     "bilibili": {
