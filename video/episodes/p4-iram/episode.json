@@ -29,7 +29,7 @@
       "topics": ["嵌入式开发", "ESP32 从寄存器学起", "单片机学习"]
     },
     "douyin": {
-      "titles": ["Cache 一关，你的 ISR 就不存在了", "标了 IRAM_ATTR 还是会崩：断链在那条 call 里", "同一个 helper，一个在 IRAM 一个在 Flash"],
+      "titles": ["中断函数该放哪一段？Cache 一关它就不执行", "标了 IRAM_ATTR 还是会崩：断链在那条 call 里", "同一个 helper，一个在 IRAM 一个在 Flash"],
       "tags": ["ESP32", "嵌入式", "单片机", "中断"],
       "intro": "ESP32 的代码住在外部 Flash，靠 Cache 映射执行。写 Flash（NVS、OTA）时 Cache 暂时关闭——那一刻 Flash 里的代码等于不存在，而中断是异步的。标 ESP_INTR_FLAG_IRAM 是承诺：系统不再推迟你；承诺没做到不是变慢，是当场崩。断链藏在调用指令的目标地址里：isr_leaky 每条指令都在 IRAM，可它 callx8 过去的是 0x42008f1c——Flash 映射段。全部本机实跑，一条 sh probe.sh，不需要开发板。站内通往单片机之路 P4 有全篇。#ESP32 #嵌入式 #单片机",
       "topics": ["ESP32", "嵌入式开发", "单片机"],
