@@ -75,6 +75,13 @@ function lintEpisode(id) {
   for (const [name, cfg] of Object.entries(ep.platforms || {})) {
     if (!ep.publish?.[name]?.titles?.length) errs.push(`publish.${name}.titles 为空`)
     if (!ep.publish?.[name]?.intro?.trim()) errs.push(`publish.${name}.intro 为空`)
+    // 抖音创作中心的作品标题框硬上限 30 字，超了不报错、直接从尾部截断——
+    // c4 那条 32 字被截成 "…就是 0x400214"，把地址的尾巴砍掉了，所以在这里拦下来。
+    if (name === 'douyin') {
+      for (const [i, t] of (ep.publish.douyin.titles || []).entries()) {
+        if ([...t].length > 30) errs.push(`publish.douyin.titles[${i}] ${[...t].length} 字 > 30（抖音标题框会静默截尾）：${t}`)
+      }
+    }
     const sceneIds = new Set(resolveScenes(ep, name).map((s) => s.id))
     for (const key of Object.keys(cfg.narration || {})) {
       if (!sceneIds.has(key)) errs.push(`platforms.${name}.narration 覆写了不存在的场景 "${key}"`)
