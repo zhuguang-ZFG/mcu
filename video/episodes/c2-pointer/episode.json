@@ -252,9 +252,8 @@
       "targetSec": [45, 75],
       "reuseFrom": "bilibili",
       "pick": [
-        "hook-01",
-        "hook-02",
         "addr-01",
+        "hook-01",
         "addr-04",
         "width-01",
         "step-01",
@@ -265,16 +264,15 @@
         "cta"
       ],
       "set": {
+        "addr-01": { "t0": 6.05, "t1": 9, "smil": "loop", "title": "指针存地址，\n不是那份数据", "note": "读写访问目标内存，指针里的地址不变" },
         "hook-01": { "title": "这行咒语，\n人人都抄过" },
-        "hook-02": { "title": "指针\n只有三件事" },
         "punch": { "title": "地址 + 宽度\n+ 纪律" },
         "step-01": { "codeB": "next8:\n    ldrb  r0, [r0, #1]\nnext16:\n    ldrh  r0, [r0, #2]\nnext32:\n    ldr   r0, [r0, #4]" },
         "width-01": { "codeB": "read8:\n    ldrb  r0, [r0]\n    bx    lr\n\nread16:\n    ldrh  r0, [r0]\n    bx    lr\n\nread32:\n    ldr   r0, [r0]\n    bx    lr" }
       },
       "narration": {
+        "addr-01": "指针里存的是地址，不是那份数据。读写顺着地址找到内存，指针里的地址没变。",
         "hook-01": "这行点灯咒语你抄过，可没人讲过这个地址是哪来的。",
-        "hook-02": "指针只有三件事：地址、宽度、纪律。",
-        "addr-01": "内存是一排一字节的小格子，指针里存的是门牌号。",
         "addr-04": "那个地址是基址 0x40021400 加偏移 0x18 算出来的。",
         "width-01": "三行只差一个类型名，编出来是三条指令：ldrb、ldrh、ldr。",
         "step-01": "p 加一加几？加它指向的元素的大小：一、二、四。",
