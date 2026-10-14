@@ -67,7 +67,10 @@
       "topics": [
         "嵌入式开发",
         "单片机调试"
-      ]
+      ],
+      "caption": "有些崩溃，光把代码放那儿死不了\n未对齐和除零被硬件兜住，开 trap 才报案\n#STM32 #单片机 #嵌入式",
+      "pinned": "完整图文在「通往单片机之路」S16《HardFault：崩溃现场的法医技术》。CFSR=0x00008200 只命中两位、BFAR 直接写出现场、EXC_RETURN 第三位决定挖哪个栈。四段一条命令跑完：sh code/stm32/16-debug-hardfault/probe.sh",
+      "repro": "sh code/stm32/16-debug-hardfault/probe.sh"
     }
   },
   "platforms": {

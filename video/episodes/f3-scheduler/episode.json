@@ -378,7 +378,10 @@
       ],
       "intro": "调度器每一拍都要挑最高优先级。通用路径一层层往下摸，硬件加速路径一条 CLZ 直接出结果。\n平均 2.10 下 vs 最坏 31 下，位图路永远 1 下。全部汇编本机实跑，站内 F3 章全文免费。\n",
       "tags": ["FreeRTOS", "单片机", "RTOS", "程序员", "嵌入式"],
-      "topics": ["知识", "科技数码"]
+      "topics": ["知识", "科技数码"],
+      "caption": "32 个优先级挑最高，源码给两个答案\n通用路最坏摸 31 下，位图路永远 1 下\n#FreeRTOS #单片机 #RTOS",
+      "pinned": "完整图文在「通往单片机之路」F3《调度器：位图、tick 与阻塞延时》。位图只有 32 位，把 configMAX_PRIORITIES 掰成 33 会被 #error 当场拦下——本机实测，一条命令：sh code/rtos/03-scheduler/probe.sh",
+      "repro": "sh code/rtos/03-scheduler/probe.sh"
     }
   }
 }

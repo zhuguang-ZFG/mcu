@@ -536,7 +536,10 @@
       "topics": [
         "知识",
         "科技"
-      ]
+      ],
+      "caption": "-O0 灯在闪，-O2 灯灭了\n源码一个字没改，编译器也没坏\n#STM32 #C语言 #单片机",
+      "pinned": "完整图文在「通往单片机之路」C3《volatile：跟编译器约法三章》。六个变体、两份 -O2 反汇编，一条命令全跑出来，不需要开发板：sh code/c/03-volatile/blink-variants.sh",
+      "repro": "sh code/c/03-volatile/blink-variants.sh"
     }
   }
 }

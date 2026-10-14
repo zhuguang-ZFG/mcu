@@ -69,7 +69,10 @@
         "嵌入式开发",
         "单片机",
         "STM32"
-      ]
+      ],
+      "caption": "delay 全改成状态机，抖动就没了？\n五局中位 1.49 对 1.60 ms，判不出胜负\n#RTOS #嵌入式 #单片机",
+      "pinned": "完整图文在「通往单片机之路」F0《为什么需要 RTOS：先失败一次》。六秒 55 圈、该翻 12 次的灯只翻 5 次、15 ms 短按五局全丢——四步一条命令复现，不需要开发板：sh code/rtos/00-why-rtos/probe.sh",
+      "repro": "sh code/rtos/00-why-rtos/probe.sh"
     }
   },
   "platforms": {

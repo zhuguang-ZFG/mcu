@@ -69,7 +69,10 @@
         "STM32",
         "嵌入式开发",
         "单片机"
-      ]
+      ],
+      "caption": "程序以为 168MHz，引脚只有 53.76\n而算 PLL 那个函数返回值是 0：它认为正常\n#STM32 #嵌入式 #单片机",
+      "pinned": "完整图文在「通往单片机之路」S2《RCC 时钟树》。五个闸门顺序错了不是跑慢是跑飞；0x07405408 这个字，源码算一遍、-O2 反汇编的字面量池里逐字节挖一遍，当场对上。一条命令：sh code/stm32/01-rcc-clock/probe.sh",
+      "repro": "sh code/stm32/01-rcc-clock/probe.sh"
     }
   },
   "platforms": {

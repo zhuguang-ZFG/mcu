@@ -66,7 +66,10 @@
       "topics": [
         "单片机",
         "嵌入式开发"
-      ]
+      ],
+      "caption": "中断里只做快递分拣，不下厨房\n你写的回调，-O2 之后只剩一条 blx\n#C语言 #单片机 #嵌入式",
+      "pinned": "完整图文在「通往单片机之路」C5《函数指针与状态机》。环形缓冲 A 派 7 格 B 派 8 格那笔账也在里面，560 条断言本机全绿：sh code/c/05-func-pointer/probe.sh",
+      "repro": "sh code/c/05-func-pointer/probe.sh"
     }
   },
   "platforms": {

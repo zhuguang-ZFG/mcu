@@ -456,7 +456,10 @@
       "topics": [
         "知识",
         "科技数码"
-      ]
+      ],
+      "caption": "选型表写：软件定时器 RAM 开销零\n一开就付 1312 字节，一个都没建\n#FreeRTOS #单片机 #RTOS",
+      "pinned": "完整图文在「通往单片机之路」F6《任务通知、事件组与软件定时器》。守护任务 1128 + 命令队列 184，另有 60 字节在 .bss 里堆管不到；一个任务的名额够放 11 个定时器。七步一条命令，不需要开发板：sh code/rtos/06-timers/probe.sh",
+      "repro": "sh code/rtos/06-timers/probe.sh"
     }
   }
 }

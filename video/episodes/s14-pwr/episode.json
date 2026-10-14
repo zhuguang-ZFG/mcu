@@ -69,7 +69,10 @@
         "STM32",
         "嵌入式开发",
         "单片机"
-      ]
+      ],
+      "caption": "睡一觉醒来，1ms 量出了 10.5ms\nStandby 之后那 18 字节，一句都不会跑\n#STM32 #嵌入式 #单片机",
+      "pinned": "完整图文在「通往单片机之路」S14《低功耗：三种睡眠的唤醒与代价》。三档在 wfi 之后各剩 1 / 6 / 7 条指令，装载值不改 1ms 变 10500µs，唤醒源漏配一格就是睡死。一条命令，不需要开发板：sh code/stm32/14-pwr/probe.sh",
+      "repro": "sh code/stm32/14-pwr/probe.sh"
     }
   },
   "platforms": {

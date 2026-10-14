@@ -66,7 +66,10 @@
       "topics": [
         "单片机",
         "嵌入式开发"
-      ]
+      ],
+      "caption": "一次函数调用，机器层只有四件事\n宿主开 64 字节栈帧，M4 只花 24\n#汇编 #C语言 #单片机",
+      "pinned": "完整图文在「通往单片机之路」C6《调用约定与栈帧》。参数进 r0-r3、回家路记在 lr、多余的走栈、结果从 r0 带出去——9 条断言一条命令：sh code/c/06-abi-stack/probe.sh",
+      "repro": "sh code/c/06-abi-stack/probe.sh"
     }
   },
   "platforms": {

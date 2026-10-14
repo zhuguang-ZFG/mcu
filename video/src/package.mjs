@@ -310,8 +310,75 @@ function agenda(timeline, scenes) {
     .join('\n')
 }
 
+const OFFSITE_RE = /站内|通往单片机之路|全文免费|有全篇|仓库|链接|主页|公众号|微信|QQ|B站|b站|bilibili|抖音号|关注|加群|粉丝群/
+
+// 抖音这条分支和 B站那条不共用正文：B站是"标题 + 长简介 + 时间轴 + 标签"，
+// 抖音只有"一段 60 字上下的描述 + 一条置顶评论"，把时间轴和三个候选标题印上去，
+// 投稿的人就得自己在里面挑——发布文案的职责是给出可以直接粘的东西，不是给一份需要再加工的材料。
+function douyinBlock(ep, pub, secs, cfg, coverPath, videoPath, srtPath, timeline) {
+  const id = ep.id
+  const cap = pub.caption
+  const pin = pub.pinned
+  const repro = pub.repro
+  const die = (m) => { throw new Error(`发布文案 ${id}/douyin：${m}`) }
+  if (!cap) die('缺 publish.douyin.caption')
+  if (!pin) die('缺 publish.douyin.pinned')
+  if (!repro) die('缺 publish.douyin.repro')
+  const wlen = (s) => s.replace(/\s/g, '').length
+  const [l1, l2, topicLine = ''] = cap.split('\n')
+  if (wlen(l1) > 20) die(`描述首行 ${wlen(l1)} 字 > 20——折叠前那一眼放不下：${l1}`)
+  if (wlen(l2) > 24) die(`描述次行 ${wlen(l2)} 字 > 24`)
+  if (wlen(cap) > 62) die(`描述共 ${wlen(cap)} 字 > 62`)
+  if (OFFSITE_RE.test(cap)) die('描述里出现了站外导流字样——本站口径是全进置顶评论')
+  if (!pin.includes('通往单片机之路')) die('置顶评论没写站名，导流就没落地')
+  if (!pin.includes(repro.split(' ').pop())) die(`置顶评论没写复现脚本：${repro}`)
+  const topics = topicLine.split(/\s+/).filter(Boolean)
+  if (topics.length < 3 || topics.length > 5) die(`话题数 ${topics.length}，应为 3~5`)
+  const [lo, hi] = ep.platforms.douyin.targetSec
+  if (!(secs >= lo && secs <= hi)) die(`时长 ${secs.toFixed(1)}s 不在 ${lo}–${hi}s 区间`)
+  if (cfg.size[0] >= cfg.size[1]) die('抖音这条不是竖屏尺寸')
+  return [
+    '## ① 作品描述（整段复制，含换行和话题）',
+    '',
+    '```text',
+    cap,
+    '```',
+    '',
+    `实测 ${wlen(cap)} 字（首行 ${wlen(l1)} / 次行 ${wlen(l2)} / 话题 ${topics.length} 个），描述里不含任何站外字样。`,
+    '抖音早年的硬上限是 55 字、后来传已解除但查不到权威现值，所以这里自限 ≤62 并把两句话排在最前：',
+    '真被截只会掉尾部话题。粘贴若报"超出字数"，删掉最后一个话题再贴。',
+    '',
+    '## ② 置顶评论（发布后立刻用自己账号发一条，长按 → 置顶）',
+    '',
+    '```text',
+    pin,
+    '```',
+    '',
+    `导流只出现在这一条，逐字对应仓库里的复现命令：\`${repro}\``,
+    '',
+    '## ③ 投稿参数',
+    '',
+    `- 竖屏 ${cfg.size.join('×')} / ${cfg.fps} fps / ${secs.toFixed(1)}s（${fmtClock(secs)}），落在 ${lo}–${hi}s`,
+    `- 文件：\`${videoPath}\``,
+    `- 封面：\`${coverPath}\`（竖版 3:4，图上的钩子与描述首行是同一句反差）`,
+    `- 字幕：\`${srtPath}\`（${timeline.captions.length} 条，导剪映用；抖音本身不粘 srt）`,
+    `- 序号：见 \`video/series.json\` 的 \`no\`（与 B站同一编号）；合集名 16 条共用，第一条发布时建`,
+    '- 不填：位置/POI、@、商品、挑战（挑战名不在本机可核验范围，别顺手挂错话题）',
+    '',
+  ]
+}
+
 export function writeRelease({ ep, platform, outDir, timeline, cfg, videoPath, srtPath, coverPath, sceneTexts }) {
   const secs = timeline.totalFrames / timeline.fps
+  const pub = ep.publish?.[platform] || {}
+  if (platform === 'douyin') {
+    const lines = [`# ${ep.title} · 抖音投稿（可直接粘贴）`, '']
+    lines.push(...douyinBlock(ep, pub, secs, cfg, coverPath, videoPath, srtPath, timeline))
+    const p = join(outDir, `发布-${platform}.md`)
+    writeFileSync(p, lines.join('\n'))
+    log(`  📝 发布文案 → ${p}`)
+    return p
+  }
   const lines = [
     `# ${ep.title} · ${platform} 发布文案`,
     '',
@@ -324,11 +391,11 @@ export function writeRelease({ ep, platform, outDir, timeline, cfg, videoPath, s
     '',
     '## 标题',
     '',
-    ...((ep.publish?.[platform]?.titles) || [ep.title]).map((t, i) => `${i + 1}. ${t}`),
+    ...((pub.titles) || [ep.title]).map((t, i) => `${i + 1}. ${t}`),
     '',
     '## 简介',
     '',
-    (ep.publish?.[platform]?.intro || '').trim(),
+    (pub.intro || '').trim(),
     '',
     '## 时间轴',
     '',
@@ -338,11 +405,11 @@ export function writeRelease({ ep, platform, outDir, timeline, cfg, videoPath, s
     '',
     '## 标签',
     '',
-    (ep.publish?.[platform]?.tags || []).map((t) => `#${t}`).join(' '),
+    (pub.tags || []).map((t) => `#${t}`).join(' '),
     '',
     '## 话题',
     '',
-    (ep.publish?.[platform]?.topics || []).map((t) => `#${t}`).join(' '),
+    (pub.topics || []).map((t) => `#${t}`).join(' '),
     '',
   ]
   const p = join(outDir, `发布-${platform}.md`)

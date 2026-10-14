@@ -67,7 +67,10 @@
       "topics": [
         "单片机",
         "嵌入式开发"
-      ]
+      ],
+      "caption": "同一行代码，-O0 给你 2，-O2 给你 0\nUB 的题目没有标准答案，这才要避开\n#C语言 #单片机 #嵌入式",
+      "pinned": "完整图文在「通往单片机之路」C7《未定义行为》。三档读数 1/1/0、移位两档变脸、别名违规的报错原文，全部本机实跑：sh code/c/07-ub-misra/probe.sh",
+      "repro": "sh code/c/07-ub-misra/probe.sh"
     }
   },
   "platforms": {

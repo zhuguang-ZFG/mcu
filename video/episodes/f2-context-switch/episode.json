@@ -69,7 +69,10 @@
         "STM32",
         "嵌入式开发",
         "单片机"
-      ]
+      ],
+      "caption": "两个任务同时在跑？每毫秒换一次魂\nPendSV 必须最低，它要最后上场\n#FreeRTOS #STM32 #嵌入式",
+      "pinned": "完整图文在「通往单片机之路」F2《上下文切换：PendSV 逐指令》。软件帧 9 个字、正文 27 条指令、新任务第一帧 18 个字，三个数一条命令复现：sh code/rtos/01-freertos-lab/probe.sh",
+      "repro": "sh code/rtos/01-freertos-lab/probe.sh"
     }
   },
   "platforms": {

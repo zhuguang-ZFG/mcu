@@ -65,7 +65,10 @@
       "topics": [
         "单片机",
         "嵌入式开发"
-      ]
+      ],
+      "caption": "结构体那根箭头，凭什么罩住寄存器\n偏移不是背的：第七个成员 4×6=0x18\n#单片机 #STM32 #C语言",
+      "pinned": "完整图文在「通往单片机之路」C4《结构体与 ABI》。每一个 offsetof 都能自己重跑，条数是数出来的不是抄的，一条命令复现：sh code/c/04-struct-abi/probe.sh",
+      "repro": "sh code/c/04-struct-abi/probe.sh"
     }
   },
   "platforms": {
