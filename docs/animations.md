@@ -31,6 +31,8 @@ title: 动画演示中心
 
 ![volatile 的访存合同：读一次 vs 每次读](/anim/volatile-as-if.svg)
 
+![删掉三处 volatile，-O2 把 37 条的 main 删成 2 条](/anim/volatile-main-collapse.svg)
+
 ![全局变量在 .bss/.data 的两地生活](/anim/memory-two-homes.svg)
 
 ![指针三件事：取地址 · 存门牌 · 解引用登门](/anim/pointer-arrows.svg)
