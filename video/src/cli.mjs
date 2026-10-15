@@ -67,6 +67,26 @@ function pickEpisodes(pos) {
 
 // ---------------------------------------------------------------- lint
 
+// 抖音那两条「流量减少」，平台原文是"出现批量发布违规或低质内容的行为"，不指到具体元素。
+// 逐条比对后，机制性的成因在文案本身：12 条挂的是完全相同的一组话题、同一句模板式首行，
+// 外加仓库早删掉的 "*"。这类"批量同质"在单集里看不出来，只能在聚合处拦。
+function lintDouyinOverlap() {
+  const byTopics = new Map()
+  const byLine1 = new Map()
+  for (const id of listEpisodes()) {
+    const cap = JSON.parse(readFileSync(episodePath(id), 'utf8')).publish?.douyin?.caption
+    if (!cap) continue
+    const [l1, , topicLine = ''] = cap.split('\n')
+    const key = topicLine.split(/\s+/).filter(Boolean).sort().join(' ')
+    if (key) byTopics.set(key, [...(byTopics.get(key) ?? []), id])
+    if (l1) byLine1.set(l1.trim(), [...(byLine1.get(l1.trim()) ?? []), id])
+  }
+  const errs = []
+  for (const [key, ids] of byTopics) if (ids.length > 1) errs.push(`话题组完全相同（${key}）：${ids.join('、')}`)
+  for (const [line, ids] of byLine1) if (ids.length > 1) errs.push(`描述首行完全相同（${line}）：${ids.join('、')}`)
+  return errs
+}
+
 function lintEpisode(id) {
   const ep = JSON.parse(readFileSync(episodePath(id), 'utf8'))
   const { errs, warns } = validateEpisode(ep, id)
@@ -81,6 +101,10 @@ function lintEpisode(id) {
       for (const [i, t] of (ep.publish.douyin.titles || []).entries()) {
         if ([...t].length > 30) errs.push(`publish.douyin.titles[${i}] ${[...t].length} 字 > 30（抖音标题框会静默截尾）：${t}`)
       }
+      // "*" 是早代 packaging 的行首标记，仓库删掉了、线上 13 条还挂着它。
+      // 描述是发布前最后一道能改的东西，这种脏字符不能等到 package 才发现。
+      const cap = ep.publish.douyin.caption
+      if (cap && /^\s*\*/m.test(cap)) errs.push(`publish.douyin.caption 有 "*" 行首（老 packaging 残留，会原样发到线上）`)
     }
     const sceneIds = new Set(resolveScenes(ep, name).map((s) => s.id))
     for (const key of Object.keys(cfg.narration || {})) {
@@ -104,6 +128,13 @@ function cmdLint(ids) {
     for (const e of errs) log(`  ❌ ${e}`)
     if (errs.length) bad++
     else log(`  ✅ 通过：${plats.map((p) => `${p} ${resolveScenes(ep, p).length} 场`).join('，')}`)
+  }
+  // 跨集检查看的是全集，跟本次选了哪几集无关：单集跑 lint 也得能发现"这个话题组别人用过了"
+  const overlap = lintDouyinOverlap()
+  if (overlap.length) {
+    log(`\n▶ 跨集文案重复（抖音描述）`)
+    for (const e of overlap) log(`  ❌ ${e}`)
+    bad += overlap.length
   }
   log(`\n${bad ? `❌ ${bad} 个 episode 未通过` : '✅ 全部通过'}`)
   return bad ? 1 : 0
@@ -413,7 +444,21 @@ async function buildOne(browser, ep, id, platform, flags) {
     await auditLayout(stage, plan)
     if (flags.stills) {
       const dir = ensureDir(join(workDir, 'stills'))
-      const marks = [0.5, ...plan.scenes.filter((s) => s.anim).map((s) => s.startFrame / plan.fps + s.duration / 2)].slice(0, 6)
+      // 抽帧要覆盖"首帧亮不亮"和"转场那一帧"：只从 0.5s 往后取，暗首帧恰好落在采样之外。
+      // 0.5 / 片尾留给旧口径，场起点抓 reveal，动画场中点抓画面本身。
+      const fps = plan.fps
+      const last = (plan.totalFrames - 1) / fps
+      const all = [
+        ...new Set([
+          0,
+          0.5,
+          ...plan.scenes.map((s) => s.startFrame / fps),
+          ...plan.scenes.filter((s) => s.anim).map((s) => s.startFrame / fps + s.duration / 2),
+          last,
+        ]),
+      ].sort((a, b) => a - b)
+      const marks = all.slice(0, 12)
+      if (all.length > 12 && !marks.includes(last)) marks.push(last)
       const picked = await captureStills(plan, stage, marks, (name, buf) => writeFileSync(join(dir, `${name}.png`), buf))
       log(`  🖼️  抽帧 ${picked.length} 张 → ${dir}`)
     }
