@@ -49,7 +49,7 @@ function coverMotif(name, u, vert) {
   return ''
 }
 
-function coverHtml({ kicker, line1, line2, tag, proof, proofShort, num, numNote, badge, vs, size }) {
+export function coverHtml({ kicker, line1, line2, tag, proof, proofShort, num, numNote, badge, vs, size }) {
   const [w, h] = size
   const u = coverU(size)
   const vert = h > w
@@ -98,8 +98,15 @@ body{width:${w}px;height:${h}px;font-family:${FONT};color:#e6eaf2;overflow:hidde
    让牌子跟着数字长，超界就会体现在 .num 的矩形上，缩字才管得住。 */
 .numbox{flex:none;margin-left:auto;text-align:center;
   background:rgba(6,12,26,.62);border-radius:${u * 1.4}px;padding:${u * 1.4}px ${u * 2.2}px ${u * 1.6}px}
+/* 红圈按 .numwrap 整框缩放，数字一长，弧的落点就爬进最后一个字形：实测 16 张竖封面 4 张越界，
+   s2-rcc 的 "53.76 MHz" 被压成 "MH2"（弧就切在 z 的下半笔上）。往右外抛救不了——字形右缘距
+   .pad 安全界只剩 38px（c2-pointer 竖版，最紧的一张），弧要同时让开字形和安全界是无解的；
+   缩字也不行：框宽和弧同步收，缩 100px 字只换来 7px 净空。
+   真凶是层序：.cir 是 absolute，默认盖在静态的 .num 上，红笔把黄字的像素吃了。
+   让文字压在笔上，弧从字形后面穿过去——手绘圈本来就该是这样，且不多占一个像素的横向空间。 */
 .numwrap{position:relative;display:inline-block;padding:0 ${u * 2.4}px}
 .numwrap .cir{position:absolute;left:0;top:${u * -1.6}px;width:100%;height:calc(100% + ${u * 3.2}px)}
+.num,.numnote{position:relative;z-index:1}
 .num{font-size:${u * numFs}px;font-weight:900;line-height:.98;letter-spacing:-.03em;color:#ffde59;white-space:nowrap;
   text-shadow:0 ${u * .8}px 0 rgba(0,0,0,.4)}
 .numnote{margin:${u * 1.2}px auto 0;max-width:${u * 44}px;font-size:${u * 2.6}px;font-weight:800;color:#fff;line-height:1.28;word-break:keep-all}
@@ -164,7 +171,9 @@ function headline(s) {
   return esc(s).replace(/[A-Za-z0-9_][A-Za-z0-9_&;.#+\-/<>=:%()]*/g, (t) => `<span class="tk">${t}</span>`)
 }
 
-export const COVER_SIZES = { bilibili: [1920, 1200], douyin: [1080, 1440] }
+// 知乎视频封面板要求 16:9，喂 1920×1200 它不缩放、直接在底部切掉一条（实测把「本机实跑」那行
+// 证据徽章切掉一半）。所以给它单开一档，让 coverHtml 按 u=10.8 重排，而不是裁交付物。
+export const COVER_SIZES = { bilibili: [1920, 1200], douyin: [1080, 1440], zhihu: [1920, 1080] }
 
 // 封面字号单位：跟短边走（竖版按高度算，同样的代码行会直接顶出画布）。
 // 排版和缩字地板两处都用它，各算一次的话竖版会一个用 10.8、一个用 14.4，地板凭空抬高 33%。
@@ -177,7 +186,7 @@ function coverU(size) {
 // 判据是"这块的矩形出了 .pad 内容区"，不是 scrollHeight>clientHeight：
 // 雅黑的自然行高约 1.21em，标题和数字都是故意压着行高排的，用后者量会把每一张都判成溢出。
 // 相应地 .pad 的每个直接子元素都写了 flex:none——一允许压缩，超出的部分就从"出界"变成"被压扁"，量不到了。
-async function fitCover(page, u) {
+export async function fitCover(page, u) {
   return page.evaluate(async (u) => {
     const pad = document.querySelector('.pad')
     const cs = getComputedStyle(pad)
@@ -264,11 +273,14 @@ async function fitCover(page, u) {
 }
 
 export async function buildCover(browser, ep, platform, outPath) {
-  const size = ep.cover?.sizes?.[platform] || COVER_SIZES[platform] || [1920, 1200]
+  // 平台可以整对象换一份封面：F0 的抖音短版讲的是另一个问题，不该继续挂横版那句钩子和那张跑分卡。
+  // 是替换不是合并——合并会让横版的 num/proof 残影留在竖版上，"两个钩子同屏"正是要治的毛病。
+  const cover = ep.platforms?.[platform]?.cover ?? ep.cover
+  const size = cover?.sizes?.[platform] || COVER_SIZES[platform] || [1920, 1200]
   const u = coverU(size)
   const badge = ep.badge || ep.id.split('-')[0].toUpperCase()
   const page = await browser.newPage({ viewport: { width: size[0], height: size[1] }, deviceScaleFactor: 1 })
-  await page.setContent(coverHtml({ ...ep.cover, badge, tag: ep.cover?.tag, size }), { waitUntil: 'load' })
+  await page.setContent(coverHtml({ ...cover, badge, tag: cover?.tag, size }), { waitUntil: 'load' })
   await page.evaluate(() => document.fonts.ready)
   const fit = await fitCover(page, u)
   const lost = Object.entries(fit).filter(([, r]) => r.lost)
