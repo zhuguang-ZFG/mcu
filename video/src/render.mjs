@@ -27,9 +27,12 @@ export function captionOpacity(cap, abs, fps) {
 
 // 内容淡入：ease-out，前 8 帧从 0.12 走到 1。淡入不到 0，否则整屏黑帧会被
 // 静止帧去重当成"和下一帧一样"而吃掉。
-export function revealOpacity(frameInScene) {
-  if (frameInScene >= REVEAL) return 1
-  const p = frameInScene / REVEAL
+// revealFrames 由场景自己定：0 = 首帧就全亮。开场场若留着 8 帧淡入，前两秒是一层
+// 半透明的图，"结果先行"就白做了；但只有被点名的场景才改，其余仍走默认。
+export function revealOpacity(frameInScene, revealFrames = REVEAL) {
+  if (revealFrames <= 0) return 1
+  if (frameInScene >= revealFrames) return 1
+  const p = frameInScene / revealFrames
   return Math.round((0.12 + 0.88 * (1 - (1 - p) ** 2)) * 100) / 100
 }
 
@@ -112,7 +115,7 @@ export async function renderFrames(plan, stage, { outPath, ffmpeg, onFrame }) {
   try {
     for (const frame of iterateFrames(plan)) {
       const opacity = captionOpacity(frame.caption, frame.abs, plan.fps)
-      const reveal = revealOpacity(frame.frameInScene)
+      const reveal = revealOpacity(frame.frameInScene, frame.scene.revealFrames)
       const key = stateKey(frame, opacity, reveal)
       if (key !== lastKey || !lastBuf) {
         lastBuf = await stage.capture(frame.scene.index, frame.smilTime, frame.caption?.text ?? null, opacity, reveal)
@@ -161,7 +164,10 @@ export async function captureStills(plan, stage, times, save) {
       continue
     }
     const opacity = captionOpacity(frame.caption, frame.abs, plan.fps)
-    const buf = await stage.capture(frame.scene.index, frame.smilTime, frame.caption?.text ?? null, opacity, 1)
+    // 抽帧必须和正式编码用同一个 reveal：硬传 1 会把"暗首帧"抽成亮帧，
+    // 人检看过了成片却仍然是暗的——检查就等于没做。
+    const reveal = revealOpacity(frame.frameInScene, frame.scene.revealFrames)
+    const buf = await stage.capture(frame.scene.index, frame.smilTime, frame.caption?.text ?? null, opacity, reveal)
     const name = `${String(Math.round(t * 1000)).padStart(8, '0')}ms_f${frame.scene.id}`
     await save(name, buf)
     results.push({ t: frame.abs, scene: frame.scene.id, smil: frame.smilTime, caption: frame.caption?.text ?? null })

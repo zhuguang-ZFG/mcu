@@ -99,6 +99,12 @@ export function validateEpisode(ep, id) {
       if (sc.kind === 'code') check(sc.code?.trim(), `${at}: kind=code 但没给 code`, errs)
       if (sc.kind === 'card') check(sc.title?.trim(), `${at}: kind=card 但没给 title`, errs)
       check(sc.tail === undefined || (sc.tail >= 0 && sc.tail <= 3), `${at}: tail 必须在 0..3`, errs)
+      // revealFrames 是"这一场开头淡入几帧"，0 = 首帧即全亮；非负整数以外没有意义
+      check(
+        sc.revealFrames === undefined || (Number.isInteger(sc.revealFrames) && sc.revealFrames >= 0),
+        `${at}: revealFrames 必须是非负整数`,
+        errs,
+      )
 
       if (h && w) {
         const maxLines = Math.max(6, Math.floor((h * 0.5) / (h * 0.038)))
