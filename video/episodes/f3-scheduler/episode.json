@@ -11,15 +11,24 @@
     "kicker": "通往单片机之路 · F3",
     "line1": "32 个优先级",
     "line2": "它只问一次",
-    "vs": {"left":"通用路 5.10 次","right":"位图路 1.00 次"},
+    "vs": {
+      "left": "通用路 5.10 次",
+      "right": "位图路 1.00 次"
+    },
     "proof": "!通用路累计判空 51 次，平均每次选择 5.10 次\n!位图路累计 clz 10 次，平均 1.00 次",
     "num": "1.00 次",
     "numNote": "位图路平均每次选择问几回 clz（通用路 5.10）"
   },
   "platforms": {
     "bilibili": {
-      "size": [1920, 1080],
-      "targetSec": [480, 720],
+      "size": [
+        1920,
+        1080
+      ],
+      "targetSec": [
+        480,
+        720
+      ],
       "scenes": [
         {
           "id": "hook-01",
@@ -314,8 +323,14 @@
       ]
     },
     "douyin": {
-      "size": [1080, 1920],
-      "targetSec": [45, 75],
+      "size": [
+        1080,
+        1920
+      ],
+      "targetSec": [
+        45,
+        75
+      ],
       "reuseFrom": "bilibili",
       "pick": [
         "hook-01",
@@ -332,10 +347,18 @@
         "cta"
       ],
       "set": {
-        "hook-01": { "code": "while( listLIST_IS_EMPTY( &( pxReadyTasksLists[ uxTopPriority ] ) )\n       != pdFALSE )\n{\n    configASSERT( uxTopPriority );\n    --uxTopPriority;\n}" },
-        "body-03": { "codeB": "  24:  ldr   r3, [r7, #4]\n  26:  subs  r3, #1\n  28:  str   r3, [r7, #4]\n  2a:  ldr   r1, [pc, #108]\n  ...\n  3c:  beq.n 24\n      <vTaskSwitchContext+0x24>" },
-        "body-04": { "title": "账：58 条零回边，\n70 条一回边" },
-        "tick-04": { "title": "为什么\n敢只查队首" },
+        "hook-01": {
+          "code": "while( listLIST_IS_EMPTY( &( pxReadyTasksLists[ uxTopPriority ] ) )\n       != pdFALSE )\n{\n    configASSERT( uxTopPriority );\n    --uxTopPriority;\n}"
+        },
+        "body-03": {
+          "codeB": "  24:  ldr   r3, [r7, #4]\n  26:  subs  r3, #1\n  28:  str   r3, [r7, #4]\n  2a:  ldr   r1, [pc, #108]\n  ...\n  3c:  beq.n 24\n      <vTaskSwitchContext+0x24>"
+        },
+        "body-04": {
+          "title": "账：58 条零回边，\n70 条一回边"
+        },
+        "tick-04": {
+          "title": "为什么\n敢只查队首"
+        },
         "cap-01": {
           "codeLabel": "位图路：同一个 NPRIO=33 交给编译器",
           "codeB": "",
@@ -367,8 +390,20 @@
         "一条 CLZ 对一个循环：把调度器编成机器码给你看"
       ],
       "intro": "调度器每一拍都要回答同一个问题：32 个优先级里，哪个最高的还活着？FreeRTOS 给了两个答案——通用路径一层层往下摸，硬件加速路径一条 CLZ 直接出结果。走哪条，由一个配置宏决定，而这个宏有两个互相打架的默认值。\n\n这一集把同一个 vTaskSwitchContext 按两条路各编一遍：140 字节 vs 160 字节、58 条指令零回边 vs 70 条指令一回边；再把两条规则抄成模拟器跑同一张事件表：5 级优先级平均摸 2.10 下、32 级最坏摸 31 下，而位图路永远是 1 下。RAM 账也算给你看：每多一个优先级多一条 20 字节的链表，开到 33 级会被端口头文件一句 #error 当场拦下。\n\n全部取证：code/rtos/03-scheduler/probe.sh（不需要开发板，只要交叉编译器和上游 V11.1.0 内核），站内 F3 章全文。\n屏上每一条汇编、每一个字节数、那句 #error 原文，都是本机实跑的产物。\n\n本片所有数字均为本机实测所得，非摘抄。",
-      "tags": ["FreeRTOS", "RTOS", "单片机", "嵌入式", "调度器", "源码阅读", "Cortex-M4"],
-      "topics": ["科技数码", "知识", "校园学习"]
+      "tags": [
+        "FreeRTOS",
+        "RTOS",
+        "单片机",
+        "嵌入式",
+        "调度器",
+        "源码阅读",
+        "Cortex-M4"
+      ],
+      "topics": [
+        "科技数码",
+        "知识",
+        "校园学习"
+      ]
     },
     "douyin": {
       "titles": [
@@ -377,11 +412,30 @@
         "最坏那一次，它摸了 31 下"
       ],
       "intro": "调度器每一拍都要挑最高优先级。通用路径一层层往下摸，硬件加速路径一条 CLZ 直接出结果。\n平均 2.10 下 vs 最坏 31 下，位图路永远 1 下。全部汇编本机实跑，站内 F3 章全文免费。\n",
-      "tags": ["FreeRTOS", "单片机", "RTOS", "程序员", "嵌入式"],
-      "topics": ["知识", "科技数码"],
-      "caption": "32 个优先级挑最高，源码给两个答案\n通用路最坏摸 31 下，位图路永远 1 下\n#FreeRTOS #单片机 #RTOS",
+      "tags": [
+        "FreeRTOS",
+        "单片机",
+        "RTOS",
+        "程序员",
+        "嵌入式"
+      ],
+      "topics": [
+        "知识",
+        "科技数码"
+      ],
+      "caption": "32 个优先级挑最高，源码给两个答案\n通用路最坏摸 31 下，位图路永远 1 下\n#FreeRTOS #调度器 #位图",
       "pinned": "完整图文在「通往单片机之路」F3《调度器：位图、tick 与阻塞延时》。位图只有 32 位，把 configMAX_PRIORITIES 掰成 33 会被 #error 当场拦下——本机实测，一条命令：sh code/rtos/03-scheduler/probe.sh",
       "repro": "sh code/rtos/03-scheduler/probe.sh"
+    },
+    "zhihu": {
+      "titles": [
+        "32 个优先级里挑最高的，FreeRTOS 只问一次",
+        "一条 CLZ 对一个循环：把调度器编成机器码给你看"
+      ],
+      "intro": "调度器每一拍都要回答同一个问题：32 个优先级里，哪个最高的还活着？FreeRTOS 给了两个答案——通用路径一层层往下摸，硬件加速路径一条 CLZ 直接出结果。走哪条由一个配置宏决定，而这个宏有两个互相打架的默认值。\n这一集把同一个 vTaskSwitchContext 按两条路各编一遍：140 字节 vs 160 字节、58 条指令零回边 vs 70 条指令一回边；再把两条规则抄成模拟器跑同一张事件表：5 级优先级平均摸 2.10 下、32 级最坏摸 31 下，而位图路永远是 1 下。RAM 账也算给你看：每多一个优先级多一条 20 字节的链表，开到 33 级会被端口头文件一句 #error 当场拦下。\n取证：code/rtos/03-scheduler/probe.sh，不需要开发板，只要交叉编译器和上游 V11.1.0 内核。站内 F3 有全篇。",
+      "domain": "科学工程",
+      "mark": "个人观点仅供参考",
+      "original": true
     }
   }
 }

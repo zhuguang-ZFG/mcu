@@ -11,7 +11,10 @@
     "kicker": "通往单片机之路 · S16",
     "line1": "程序死了",
     "line2": "但它没报案",
-    "vs": {"left":"崩了不报案","right":"地址躺在栈里"},
+    "vs": {
+      "left": "崩了不报案",
+      "right": "地址躺在栈里"
+    },
     "sizes": {
       "bilibili": [
         1920,
@@ -68,9 +71,19 @@
         "嵌入式开发",
         "单片机调试"
       ],
-      "caption": "有些崩溃，光把代码放那儿死不了\n未对齐和除零被硬件兜住，开 trap 才报案\n#STM32 #单片机 #嵌入式",
+      "caption": "有些崩溃，光把代码放那儿死不了\n未对齐和除零被硬件兜住，开 trap 才报案\n#HardFault #STM32 #调试 #嵌入式开发",
       "pinned": "完整图文在「通往单片机之路」S16《HardFault：崩溃现场的法医技术》。CFSR=0x00008200 只命中两位、BFAR 直接写出现场、EXC_RETURN 第三位决定挖哪个栈。四段一条命令跑完：sh code/stm32/16-debug-hardfault/probe.sh",
       "repro": "sh code/stm32/16-debug-hardfault/probe.sh"
+    },
+    "zhihu": {
+      "titles": [
+        "程序跑着不动了：没有调试器时，你手上只剩三条寄存器",
+        "HardFault 现场只值四条指令：tst / ite / mrs / b"
+      ],
+      "intro": "灯不闪、printf 沉默、串口一个字节都不吐。没有调试器的时候，你手上只剩三条寄存器。这一集把 Cortex-M4 的崩溃取证从案发走到对行号，屏幕上每一条反汇编、每一个地址、每一行 GAS 报错都是本机实跑：\n真凶指令地址 0x0800008e，nm 给的函数入口是 0x08000084——差 6 个字节，拿入口对行号必错；CFSR = 0x00008200 命中 PRECISERR + BFARVALID，BFAR = 0x1FFFFFFF 可信；EXC_RETURN 第三位决定挖哪个栈；两具「死不了的尸体」——奇地址 0x08010131 配最普通的 str、sdiv 除零，机身再无 bl/udf/bkpt/svc；入口第一句 orr.w r3, r3, #24 先把 UNALIGN_TRP / DIV_0_TRP 拧开才报案；把 mrsne r0, PSP 写成 MSP，机身只差 1 个字节，语义整反。\n诚实记录：本机没有 qemu-system-arm，这一集不演示真实故障触发，结论只靠宿主断言、CMSIS 位号对账、交叉反汇编 + addr2line + map 三源交叉、条件指令字节级对比。\n取证：code/stm32/16-debug-hardfault 里 sh probe.sh，不需要开发板。站内 S16 有全篇。",
+      "domain": "科学工程",
+      "mark": "个人观点仅供参考",
+      "original": true
     }
   },
   "platforms": {

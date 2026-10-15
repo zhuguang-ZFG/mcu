@@ -537,9 +537,19 @@
         "知识",
         "科技"
       ],
-      "caption": "-O0 灯在闪，-O2 灯灭了\n源码一个字没改，编译器也没坏\n#STM32 #C语言 #单片机",
+      "caption": "-O0 灯在闪，-O2 灯灭了\n源码一个字没改，编译器也没坏\n#C语言 #嵌入式 #GPIO",
       "pinned": "完整图文在「通往单片机之路」C3《volatile：跟编译器约法三章》。六个变体、两份 -O2 反汇编，一条命令全跑出来，不需要开发板：sh code/c/03-volatile/blink-variants.sh",
       "repro": "sh code/c/03-volatile/blink-variants.sh"
+    },
+    "zhihu": {
+      "titles": [
+        "把驱动里的 volatile 逐个拔掉，六个变体的汇编都在这",
+        "volatile 到底管什么？四个拔掉的现场，编译器一个都没报错"
+      ],
+      "intro": "三处 volatile 逐个拔掉，做出六个变体，在 x86 和 Cortex-M4 两份 -O2 反汇编里看个清楚：轮询为什么会死等、软件延时为什么会整个消失、三次寄存器写为什么被并成一次、加了 volatile 的读-改-写为什么照样会被中断插队。\nvolatile 管的是登门，不管排队。\n取证脚本：code/c/03-volatile/blink-variants.sh，站内 C3 有全篇。\n屏上所有汇编都是本机 -O2 实跑反汇编出来的，非摘抄。",
+      "domain": "科学工程",
+      "mark": "个人观点仅供参考",
+      "original": true
     }
   }
 }

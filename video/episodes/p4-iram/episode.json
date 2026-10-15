@@ -11,8 +11,20 @@
     "kicker": "通往单片机之路 · P4",
     "line1": "Cache 一关",
     "line2": "你的 ISR 就不存在了",
-    "vs": {"left":"Cache 开着能跑","right":"一关就没了"},
-    "sizes": { "bilibili": [1920, 1200], "douyin": [1080, 1440] },
+    "vs": {
+      "left": "Cache 开着能跑",
+      "right": "一关就没了"
+    },
+    "sizes": {
+      "bilibili": [
+        1920,
+        1200
+      ],
+      "douyin": [
+        1080,
+        1440
+      ]
+    },
     "proof": "! 0x42008f08  isr_plain   → iram0_2_seg\n! iram0_2_seg  Flash 映射的取指窗口",
     "num": "0x42008f08",
     "numNote": "这条 ISR 的真实落点——不在 IRAM 就没有它"
@@ -25,23 +37,67 @@
         "没有开发板也能把 IRAM 讲清楚：一次本机链接，nm/map/objdump/size 全摆平"
       ],
       "intro": "ESP32 上你的代码绝大多数住在外部 Flash，靠 Cache 映射窗口执行。系统写 Flash（NVS 提交、OTA）时会暂时关掉 Cache——那一刻 Flash 里的代码等于不存在。中断是异步的：偏偏这时候来，你标没标 ESP_INTR_FLAG_IRAM，决定它是被推迟还是当场崩。\n\n这一集屏幕上每个地址、每行段名都是本机实跑（ESP-IDF v5.5.2 / esp32s3，进 code/esp32/09-iram-discipline 跑一条 sh probe.sh，不需要开发板）：\n· 七个符号一次摆全四种断法：isr_plain 不标 → 0x42008f08 落在 iram0_2_seg（那是 Flash 映射窗口）；isr_leaky 只标本体 → 0x4037668c 确实在 IRAM，可它 l32r 取出的跳转目标是 0x42008f1c 那个 Flash 里的 helper_far；isr_tight 整条链都标 → call8 0x40376698 还在 IRAM 区间内；isr_rodata 代码进了 IRAM，读的常量 k_table 还在 0x3c028810 的 DROM\n· 区间不写死：脚本从本次构建的 .map 里读 Memory Configuration——iram0_0_seg = 0x40374000 + 0x57700、iram0_2_seg = 0x42000020、drom0_0_seg = 0x3c000020，归类当场算；初代 ESP32 是 0x400xxxxx 那一片，两代数字不能互抄\n· IRAM_ATTR 展开是 esp_attr.h:23 那句 _SECTION_ATTR_IMPL(\".iram1\", __COUNTER__)：map 里因此看得见 .iram1.0/.1/.2/.3 四个输入段，应用自己钉进 IRAM 的代码一共 75 字节\n· 只有实跑才会撞见的坑：IDF 默认开 -Wl,--gc-sections，没人引用的 ISR 会被整段收掉——第一版探针 nm 里只剩 app_main 和 g_hits，七个符号一个不剩\n· idf.py size 的整本账：IRAM 16384 字节 100.0%（.text 15356 + .vectors 1028）、DIRAM 55463/341760（16.23%）、Flash Code 78770、Flash Data 41324、整镜像 189693 字节\n· 中断矩阵规模也是实测：ETS_MAX_INTR_SOURCE 编译器打印 = 99（编号 0–98），但枚举里 98 个名字只覆盖 95 个不同编号——23/33/34/46 是保留位，三条 SYSTIMER_EDGE 与各自 TARGET 同值；LEVEL1..6 的位移量就是级别号，NMI 是 1<<7，源码注释直说 Level 7\n· 双核那半边：portMUX_TYPE 在 portmacro.h:188 就是 spinlock_t；tskNO_AFFINITY 实测 = 0x7FFFFFFF（第 207 行还挂着一条\"应该改成 -1\"的 Todo）；xTaskCreate 的函数体就一句 return xTaskCreatePinnedToCore(...)\n\n复现：git clone 后进 code/esp32/09-iram-discipline，sh probe.sh，一条命令跑完八段与全部断言。\n\n站内全文：docs/esp32/04-irq-dualcore.md（通往单片机之路 P4）。",
-      "tags": ["ESP32", "ESP-IDF", "中断", "IRAM", "嵌入式", "单片机", "反汇编", "FreeRTOS", "双核", "链接器"],
-      "topics": ["嵌入式开发", "ESP32 从寄存器学起", "单片机学习"]
+      "tags": [
+        "ESP32",
+        "ESP-IDF",
+        "中断",
+        "IRAM",
+        "嵌入式",
+        "单片机",
+        "反汇编",
+        "FreeRTOS",
+        "双核",
+        "链接器"
+      ],
+      "topics": [
+        "嵌入式开发",
+        "ESP32 从寄存器学起",
+        "单片机学习"
+      ]
     },
     "douyin": {
-      "titles": ["中断函数该放哪一段？Cache 一关它就不执行", "标了 IRAM_ATTR 还是会崩：断链在那条 call 里", "同一个 helper，一个在 IRAM 一个在 Flash"],
-      "tags": ["ESP32", "嵌入式", "单片机", "中断"],
+      "titles": [
+        "中断函数该放哪一段？Cache 一关它就不执行",
+        "标了 IRAM_ATTR 还是会崩：断链在那条 call 里",
+        "同一个 helper，一个在 IRAM 一个在 Flash"
+      ],
+      "tags": [
+        "ESP32",
+        "嵌入式",
+        "单片机",
+        "中断"
+      ],
       "intro": "ESP32 的代码住在外部 Flash，靠 Cache 映射执行。写 Flash（NVS、OTA）时 Cache 暂时关闭——那一刻 Flash 里的代码等于不存在，而中断是异步的。标 ESP_INTR_FLAG_IRAM 是承诺：系统不再推迟你；承诺没做到不是变慢，是当场崩。断链藏在调用指令的目标地址里：isr_leaky 每条指令都在 IRAM，可它 callx8 过去的是 0x42008f1c——Flash 映射段。全部本机实跑，一条 sh probe.sh，不需要开发板。站内通往单片机之路 P4 有全篇。#ESP32 #嵌入式 #单片机",
-      "topics": ["ESP32", "嵌入式开发", "单片机"],
-      "caption": "Cache 一关，你的 ISR 就不存在了\n每条指令都在 IRAM，跳过去的地址在 Flash\n#ESP32 #嵌入式 #单片机",
+      "topics": [
+        "ESP32",
+        "嵌入式开发",
+        "单片机"
+      ],
+      "caption": "Cache 一关，你的 ISR 就不存在了\n每条指令都在 IRAM，跳过去的地址在 Flash\n#ESP32 #Cache #中断",
       "pinned": "完整图文在「通往单片机之路」P4《中断与双核》。isr_tight 在 0x403766ac、isr_plain 在 0x42008f08、isr_leaky 本体对但 callx8 目标是 42008f1c——断链不写在段名里，只能反汇编查。一条命令：sh code/esp32/09-iram-discipline/probe.sh",
       "repro": "sh code/esp32/09-iram-discipline/probe.sh"
+    },
+    "zhihu": {
+      "titles": [
+        "Cache 一关，你的中断服务函数就不存在了：ESP32 的 IRAM 纪律",
+        "标了 IRAM_ATTR 还是会崩：一个地址就把你出卖了"
+      ],
+      "intro": "ESP32 上你的代码绝大多数住在外部 Flash，靠 Cache 映射窗口执行。系统写 Flash（NVS 提交、OTA）时会暂时关掉 Cache——那一刻 Flash 里的代码等于不存在。中断是异步的：偏偏这时候来，你标没标 ESP_INTR_FLAG_IRAM，决定它是被推迟还是当场崩。\n屏幕上每个地址、每行段名都是本机实跑（ESP-IDF v5.5.2 / esp32s3，不需要开发板）：七个符号一次摆全四种断法——isr_plain 不标 → 0x42008f08 落在 iram0_2_seg（那是 Flash 映射窗口）；isr_leaky 只标本体 → 0x4037668c 确实在 IRAM，可它 l32r 取出的跳转目标是 0x42008f1c 那个 Flash 里的 helper_far；isr_tight 整条链都标 → call8 0x40376698 还在 IRAM 区间内；isr_rodata 代码进了 IRAM，读的常量 k_table 还在 0x3c028810 的 DROM。\n区间不写死：脚本从本次构建的 .map 里读 Memory Configuration 当场归类——初代 ESP32 是 0x400xxxxx 那一片，两代数字不能互抄。只有实跑才会撞见的坑：IDF 默认开 -Wl,--gc-sections，没人引用的 ISR 会被整段收掉，第一版探针 nm 里七个符号一个不剩。\n取证：code/esp32/09-iram-discipline 里 sh probe.sh。站内 P4 有全篇。",
+      "domain": "科学工程",
+      "mark": "个人观点仅供参考",
+      "original": true
     }
   },
   "platforms": {
     "bilibili": {
-      "size": [1920, 1080],
-      "targetSec": [480, 720],
+      "size": [
+        1920,
+        1080
+      ],
+      "targetSec": [
+        480,
+        720
+      ],
       "scenes": [
         {
           "id": "hook-01",
@@ -289,8 +345,14 @@
       ]
     },
     "douyin": {
-      "size": [1080, 1920],
-      "targetSec": [45, 75],
+      "size": [
+        1080,
+        1920
+      ],
+      "targetSec": [
+        45,
+        75
+      ],
       "reuseFrom": "bilibili",
       "pick": [
         "hook-01",

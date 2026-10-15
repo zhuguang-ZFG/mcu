@@ -89,7 +89,7 @@
         "知识",
         "科技"
       ],
-      "caption": "同一份代码，同一个 -O2\n删掉三处 volatile，37 条塌成 2 条\n#STM32 #C语言 #单片机",
+      "caption": "-O2 前后：37 条 → 2 条\n删掉的是三个 volatile，不是那行自增\n#C语言 #编译优化 #volatile #单片机",
       "pinned": "完整图文在「通往单片机之路」C3《volatile：跟编译器约法三章》。六个变体、一份 -O2 反汇编，一条命令全跑出来，不需要开发板：sh code/c/03-volatile/blink-variants.sh",
       "repro": "sh code/c/03-volatile/blink-variants.sh"
     }

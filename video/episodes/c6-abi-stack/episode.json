@@ -11,7 +11,10 @@
     "kicker": "通往单片机之路 · C6",
     "line1": "参数装 r0-r3",
     "line2": "多余的上栈",
-    "vs": {"left":"宿主 64 字节","right":"M4 只用 24"},
+    "vs": {
+      "left": "宿主 64 字节",
+      "right": "M4 只用 24"
+    },
     "sizes": {
       "bilibili": [
         1920,
@@ -67,9 +70,19 @@
         "单片机",
         "嵌入式开发"
       ],
-      "caption": "一次函数调用，机器层只有四件事\n宿主开 64 字节栈帧，M4 只花 24\n#汇编 #C语言 #单片机",
+      "caption": "一次函数调用，机器层只有四件事\n宿主开 64 字节栈帧，M4 只花 24\n#汇编 #调用约定 #栈帧",
       "pinned": "完整图文在「通往单片机之路」C6《调用约定与栈帧》。参数进 r0-r3、回家路记在 lr、多余的走栈、结果从 r0 带出去——9 条断言一条命令：sh code/c/06-abi-stack/probe.sh",
       "repro": "sh code/c/06-abi-stack/probe.sh"
+    },
+    "zhihu": {
+      "titles": [
+        "第 5 个参数去哪了？把 AAPCS 逐条对到真实汇编上",
+        "同一个函数，宿主开 64 字节栈帧，Cortex-M4 只花 24 字节"
+      ],
+      "intro": "函数凭什么调完就回来？参数凭什么送得到？局部变量凭什么用完自动回收？这一集把 AAPCS 调用约定逐条对到真实汇编上：前 4 个参数在 r0-r3、第 5 个起走栈（strd 上栈 / ldr 读回，@ args = 8）、64 位必须占偶奇寄存器对（mix 里 r1 被整个跳过）、硬浮点 double 走 d0/d1 不占 r0:r1、非叶子函数 push {r4, lr} + sub sp 进、pop {r4, pc} 出。\n字节账也是实跑的：同一个 non_leaf，宿主 gcc 16.1.0 一帧吃掉 64 字节，arm-none-eabi-gcc 10.3.1 编到 Cortex-M4 只要 24 字节。\n取证：cd code/c/06-abi-stack && sh probe.sh（9/9 断言全绿，不需要开发板）。站内 C6 有全篇。",
+      "domain": "科学工程",
+      "mark": "个人观点仅供参考",
+      "original": true
     }
   },
   "platforms": {

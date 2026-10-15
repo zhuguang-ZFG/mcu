@@ -11,7 +11,10 @@
     "kicker": "通往单片机之路 · C4",
     "line1": "GPIOF->BSRR",
     "line2": "凭什么对",
-    "vs": {"left":"一行箭头","right":"一行裸地址"},
+    "vs": {
+      "left": "一行箭头",
+      "right": "一行裸地址"
+    },
     "sizes": {
       "bilibili": [
         1920,
@@ -66,9 +69,19 @@
         "单片机",
         "嵌入式开发"
       ],
-      "caption": "结构体那根箭头，凭什么罩住寄存器\n偏移不是背的：第七个成员 4×6=0x18\n#单片机 #STM32 #C语言",
+      "caption": "结构体那根箭头，凭什么罩住寄存器\n偏移不是背的：第七个成员 4×6=0x18\n#C语言 #结构体 #寄存器 #STM32",
       "pinned": "完整图文在「通往单片机之路」C4《结构体与 ABI》。每一个 offsetof 都能自己重跑，条数是数出来的不是抄的，一条命令复现：sh code/c/04-struct-abi/probe.sh",
       "repro": "sh code/c/04-struct-abi/probe.sh"
+    },
+    "zhihu": {
+      "titles": [
+        "GPIOF->BSRR 凭什么是 0x40021418？把这句翻译彻底拆开",
+        "结构体罩寄存器：声明顺序定先后，对齐规则把布局焊死"
+      ],
+      "intro": "GPIOF->BSRR = 1<<6 比 *(volatile uint32_t*)(0x40021418) 好看一百倍，但它凭什么是对的？这一集把这句翻译彻底拆开：偏移是数出来的（offsetof 实测逐个对齐）、对齐三规则把布局焊死（Padded 12 字节 vs Packed 8 字节）、填充肉眼可见、位域布局是实现定义的（换工具链就翻车）、pack(1) 是给协议帧的不是给寄存器的。\n所有数字来自本机实测：cd code/c/04-struct-abi && sh probe.sh; sh broken.sh。站内 C4 有全篇。",
+      "domain": "科学工程",
+      "mark": "个人观点仅供参考",
+      "original": true
     }
   },
   "platforms": {

@@ -11,7 +11,10 @@
     "kicker": "通往单片机之路 · C7",
     "line1": "同一行代码",
     "line2": "两档两个答案",
-    "vs": {"left":"-O0 打印 2","right":"-O2 打印 0"},
+    "vs": {
+      "left": "-O0 打印 2",
+      "right": "-O2 打印 0"
+    },
     "sizes": {
       "bilibili": [
         1920,
@@ -68,9 +71,19 @@
         "单片机",
         "嵌入式开发"
       ],
-      "caption": "同一行代码，-O0 给你 2，-O2 给你 0\nUB 的题目没有标准答案，这才要避开\n#C语言 #单片机 #嵌入式",
+      "caption": "同一行代码，-O0 给你 2，-O2 给你 0\nUB 的题目没有标准答案，这才要避开\n#C语言 #未定义行为 #MISRA",
       "pinned": "完整图文在「通往单片机之路」C7《未定义行为》。三档读数 1/1/0、移位两档变脸、别名违规的报错原文，全部本机实跑：sh code/c/07-ub-misra/probe.sh",
       "repro": "sh code/c/07-ub-misra/probe.sh"
+    },
+    "zhihu": {
+      "titles": [
+        "同一行代码，-O0 给你 2，-O2 给你 0：未定义行为现场直播",
+        "老教程说 -O0 会返回 0，gcc 16 实测两档都返回 1"
+      ],
+      "intro": "未定义行为最阴险的地方：看起来对、编译通过、今天能跑。这一集全部用本机实跑取证——x+1>x 在 -O0/-O2/-O2 -fwrapv 三档下的读数是 1/1/0；1u<<33 在 -O0 是 2、-O2 是 0；宿主 gcc 16.1.0 的 -O0 函数体里已经只剩一句 movl $1, %eax，-O2 的 main 连 call 都不剩，printf 直接吃立即数；arm-none-eabi-gcc 15.2.1 把整个函数折成 movs r0, #1 两行。\n还有严格别名的抓捕现场（-Wstrict-aliasing / -Warray-bounds / -Wuninitialized 三条警告原文）、union 与 memcpy 两种合法位读法为什么必须给出同一个 0x3F800000、嵌入式 MISRA 自用十条。\n诚实记录：本机 MinGW 没有 UBSan 运行库，probe.sh 第 4 步自动跳过。\n取证：cd code/c/07-ub-misra && sh probe.sh，不需要开发板。站内 C7 有全篇。",
+      "domain": "科学工程",
+      "mark": "个人观点仅供参考",
+      "original": true
     }
   },
   "platforms": {
