@@ -139,6 +139,8 @@ title: 动画演示中心
 
 ![为什么需要 RTOS：超级循环 vs 平行世界](/anim/why-rtos.svg)
 
+![超级循环里的接收死等：串口等一个字节，LED 也停止翻转](/anim/superloop-uart-block.svg)
+
 ![任务创建与栈初始化](/anim/task-create-stack.svg)
 
 ![FreeRTOS GDB 调试实战：指认 TCB 与栈内容](/anim/freertos-gdb-debug.svg)
