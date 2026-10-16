@@ -370,6 +370,12 @@
     "entry": "probe.sh"
   },
   {
+    "id": "rtos-05-sem-mutex",
+    "path": "code/rtos/05-sem-mutex",
+    "kind": "host-probe",
+    "entry": "probe.sh"
+  },
+  {
     "id": "rtos-06-timers",
     "path": "code/rtos/06-timers",
     "kind": "host-probe",
