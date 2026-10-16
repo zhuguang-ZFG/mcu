@@ -33,7 +33,7 @@ minutes: 40
 
 ## 先跑起来（10 分钟 quick win）
 
-[E04 优先级反转实验](../../lab/e04-priority-inversion.md)：串口日志打印三任务执行序——"H 等锁，M 狂跑，L 没机会还锁"的死亡螺旋全程可见。
+[E04 优先级反转实验](../../lab/e04-priority-inversion.md)：把 `DEMO_SCENE=6` 烧上板子，串口日志就打出三任务执行序——"H 等锁，M 狂跑，L 没机会还锁"的死亡螺旋。注意 E04 的"实测记录"那张表至今是空的，所以这一集里那两个数都还不来自板子（见第四节末尾的注）。
 
 ## 动画：计数牌与钥匙
 
@@ -54,7 +54,7 @@ minutes: 40
 | 一、宏的血缘 | semphr.h 三个宏展开：全是 queue.c 马甲 | 库解析 |
 | 二、互斥锁出生证 | `prvInitialiseMutex`：为什么创建即"白送" | 库解析 |
 | 三、继承逐行 | `xTaskPriorityInherit` 搬表现场 | 库解析 |
-| 四、反转实验 | E04 三任务配置与日志判读 | 代码分析 |
+| 四、反转实验 | E04 三任务配置；≈6000/≈2500 那两个数是什么身份 | 代码分析 |
 | 五、选型与纪律 | 四种选型；递归配对；多锁顺序 | 代码分析 |
 
 ## 一、宏的血缘：semphr.h 没有函数，只有马甲
@@ -133,15 +133,17 @@ if( pxMutexHolderTCB->uxPriority < pxCurrentTCB->uxPriority )  /* 持锁者比�
 
 ## 四、反转实验：E04 的死亡螺旋判读
 
-三任务配置与预期日志：
+三任务配置（`code/rtos/01-freertos-lab/main.c:309-358`，`DEMO_SCENE=6`，`USE_MUTEX` 编译期二选一把锁换成互斥量）：
 
 | 任务 | 优先级 | 行为 |
 |---|---|---|
-| L | 1 | 拿"锁"（二值信号量）→ 模拟干活 50ms → 还锁 |
-| M | 2 | 无锁狂跑，死循环打印 |
-| H | 3 | 周期性拿同一把"锁" |
+| L | 1 | t=0 拿"锁"→ 临界区 `cpu_work_ms(3000)` → 还锁 → 长眠 |
+| M | 2 | t=500ms 起 `busy_until(4500)`：不碰锁、不阻塞，连续占 CPU 到 t=4500ms |
+| H | 3 | t=1000ms 要同一把"锁"，拿到后打印 `waited` |
 
-二值信号量版本日志：`H: take...` 之后**长时间没有下文**，M 的打印刷屏，L 的"give"迟迟不出现——H 优先级最高却在饿死。换互斥锁版本：H 阻塞瞬间 L 被继承到 3，M 的打印立刻断流，L 快进快出还锁，H 接管。**同一实验两种结局，就是本章的全部论点**（日志判读细节见 [E04](../../lab/e04-priority-inversion.md)）。
+台词全在 `waited` 这一个数上。二值信号量没有持有者，H 在 t=1000ms 就挂住了，可 CPU 归 M 一路霸占到 4500ms，L 才轮到跑满 3000ms——按剧本参数推出的 `waited ≈ 6000ms`。换互斥量，H 挂下的同一刻 L 被抬到 3 级，M 抢不动它，L 跑完 3000ms 就还锁，`waited ≈ 2500ms`。
+
+> **【注】** 这两个数是**理论值，不是实测**。E04 文档里"实测记录"那张表到今天还是空的，谁在屏上把它们说成板子上串口打出来的毫秒，就是替 E04 撒谎。`code/rtos/05-sem-mutex/sim_invert.c` 跑出来的是同一对数，身份也只到**模型值**为止（日志判读细节见 [E04](../../lab/e04-priority-inversion.md)）。
 
 ## 五、选型与纪律：剩下的都是工程规矩
 
@@ -162,13 +164,13 @@ if( pxMutexHolderTCB->uxPriority < pxCurrentTCB->uxPriority )  /* 持锁者比�
 ## 实物实验
 
 - [E04 优先级反转实验](../../lab/e04-priority-inversion.md)：二值版死亡螺旋 + 互斥锁版起死回生，两份日志贴进实验报告；
-- 进阶：把 L 的持锁时间改成 5ms 再跑反转版——反转窗口变窄但**依然存在**，理解"窗口大小≠有无"。
+- 进阶：把 L 的临界区从 `cpu_work_ms(3000)` 改小（如 200ms）再跑二值信号量版——反转窗口变窄但**依然存在**，理解"窗口大小≠有无"。
 
 ## 常见坑
 
 - **二值信号量当互斥锁**：无继承，反转照常——选型第一坑；
 - **take/give 不配对**：递归锁少 give 一次，其他任务永久等锁；
-- **ISR 里 take 互斥锁**：互斥锁为任务间设计，中断里没有"持有者"概念（继承源码第一行注释：holder 为 NULL 时不继承）；
+- **ISR 里 take 互斥锁**：`xSemaphoreTakeFromISR` 展开为 `xQueueReceiveFromISR`（semphr.h:675 → queue.c:2035），那条路上不写 `xMutexHolder`、不比 `uxQueueType`、也不调 `xTaskPriorityInherit`（`queue.c:2035-2132` 整个函数体里这三样各命中 0 处）——中断里就算"取到"也不会登记持有者，于是既没有继承也没有回落；所有权是任务之间才谈得成的事；
 - **临界区里 vTaskDelay**：持锁睡觉，把继承机制变成全系统的瓶颈放大器；
 - **多锁乱序**：A→B 与 B→A 两条路径并存，死锁迟早登门。
 
@@ -184,7 +186,7 @@ if( pxMutexHolderTCB->uxPriority < pxCurrentTCB->uxPriority )  /* 持锁者比�
 <details><summary>参考答案</summary>判(持锁者更低)→改(uxPriority=等待者优先级)→搬(从旧就绪链表摘除、portRESET 记账、挂进新链表)。不搬表则调度器仍在旧链表/旧位图位里找它,改了优先级也轮不到它跑,继承失效。</details>
 
 4. 为什么二值信号量不能替代互斥锁保护共享数据？
-<details><summary>参考答案</summary>二值信号量没有持有者与继承逻辑(xTaskPriorityInherit 只在互斥锁 take 失败路径被调用)。用它护数据时,H 等、L 持、M 插队,反转完整上演——E04 实验的第一组日志就是证据。</details>
+<details><summary>参考答案</summary>二值信号量没有持有者与继承逻辑(xTaskPriorityInherit 只在互斥锁 take 失败路径被调用)。用它护数据时,H 等、L 持、M 插队,反转完整上演——`DEMO_SCENE=6` 那出不带 `USE_MUTEX=1` 的剧本就是演这件事的。</details>
 
 ## 对照表：本章概念 → 源码落点
 
@@ -194,7 +196,7 @@ if( pxMutexHolderTCB->uxPriority < pxCurrentTCB->uxPriority )  /* 持锁者比�
 | 互斥锁出生证 | `queue.c` xQueueCreateMutex → prvInitialiseMutex（创建即 give） |
 | 继承搬表 | `tasks.c` xTaskPriorityInherit（判→改→搬三步） |
 | 还锁回落 | `queue.c` prvCopyDataToQueue 互斥锁分支 → xTaskPriorityDisinherit |
-| 反转实验 | [E04](../../lab/e04-priority-inversion.md) + 动画 [priority-inversion.svg](/anim/priority-inversion.svg) |
+| 反转实验 | 板子：[E04](../../lab/e04-priority-inversion.md)（`DEMO_SCENE=6`）＋动画 [priority-inversion.svg](/anim/priority-inversion.svg)；不要板子：`code/rtos/05-sem-mutex/probe.sh` 静态血缘＋`sim_invert.c` 反转模型 |
 
 ## 延伸阅读
 
