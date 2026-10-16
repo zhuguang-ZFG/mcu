@@ -195,3 +195,64 @@ F5《信号量和互斥量》收进片单（no:17、next 清空），断行修�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 6: B站 17 条简介脱 markdown 残留 + 合集门槛取证
+
+**Date**: 2026-10-16
+**Task**: B站 17 条简介脱 markdown 残留 + 合集门槛取证
+**Branch**: `main`
+
+### Summary
+
+实测 B站简介区按纯文本渲染（pre/code 数 0），17 条线上稿件的 ``` 围栏/行内反引号/** 全部原样露出；逐字核验只删标记后全量回传，公开页复读 17/17 干净，生成端加 plain() 断源。合集建集被 code=20082 挡，真因是 season=false（权益中心 Lv2 门槛），判据与就绪三步记进新任务 PRD。
+
+### Main Changes
+
+**做了什么**
+
+用户指令两条：先建 B站合集挂 17 条，再补简介去反引号。第二条做完，第一条撞平台门槛，证据已入账（`.trellis/tasks/10-16-bili-season-after-unlock/`，commit `0cc07d6`）。
+
+**关键发现**
+
+1. B站简介区是 `white-space: pre-line` 的纯文本——实测视频页 `pre`/`code` 元素数为 0，`span.desc-info-text` 里 ``` 围栏、`行内代码`、`**粗体**` 全部原样露给观众。发布稿本身是 markdown，围栏是给 md 用的，问题只在跨到平台这一发没脱标记。
+2. 合集那条 `code=20082 您创建的合集个数太多了` 是伪装文案：`seasons` 返回 `total=0`，账号一条都没有。真门槛在投稿页那行「开通合集功能需满足权益中心等级达 Lv2」，`white` 接口 `season=false`/`new_season=false` 读死，两个合集管理路由都打回 `/platform/home`。
+3. `x/member/web/exp` 的 `current_level`（本账号 Lv4）是用户经验等级，不是权益中心等级，`.temp/bili-level.mjs` 里那句「能否建合集=level>=2」推断是错的，已在 PRD 写明别再拿它当判据。
+
+**改了哪些**
+
+- `.temp/bili-desc-fix.mjs`（新）：dry 逐条算脱标记差异并留改前原文 `.temp/desc-live/`，post 一发一条走全量回传，发完立刻复读核对。`vupre` 连打会 `-702` 限频，加了 1.5s 间隔 + 退避重打。
+- `.temp/bili-cover-edit.mjs`：`k=v` 的 v 支持 `@文件` 写法——简介上千字带换行，走命令行必然被 shell 掰断。
+- `.temp/bili-submit.mjs`：desc 组装加 `plain()`，新集投稿前就脱标记，2000 字上限按脱完的长度拦。
+- `.temp/bili-season-page.mjs`、`.temp/bili-upower.mjs`、`.temp/bili-right-center.mjs`（新，只读探针，只 `page.close()`）。
+
+**验证**
+
+- 脱标记前后逐字核验：去掉 ` * 空白` 后 17/17 与原文完全一致、顺序不变，只删了 2 行围栏 + 成对反引号 + 成对星号（F5 另有 9 对行内反引号、2 对粗体）。
+- 17 条 `edit` 全 `code=0`，复读编辑框与公开 `view` 接口：简介长度逐条等于目标、残留归零、`state=0`。作者侧 `state=-6` 只是改动复核标记，公开页不受影响。
+- 观众侧页面复扫：`命中反引号节点数 0`。
+- 生成端 `--dry` 的 17 条简介长度与线上逐条相等，两条通道口径一致。
+
+**待办**
+
+- 知乎 F5 仍被账号级 24h 频控挡着，草稿完整，闸门文件 `.temp/zh-run/I_HAVE_USER_OK=f5-sem-mutex` 留在原地，窗口过了跑 `node .temp/f5-zh-publish.mjs`。
+- 抖音 F5 那条评论需用户在 App 里长按置顶（web 端无置顶入口，`stick_position=0` 已留痕）。
+
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `0cc07d6` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
