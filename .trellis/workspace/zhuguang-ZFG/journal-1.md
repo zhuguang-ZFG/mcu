@@ -162,3 +162,36 @@ F5《信号量和互斥量》收进片单（no:17、next 清空），断行修�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 5: F5 投放收尾 + 与 STM32 项目逐帧对比，开出两条后续任务
+
+**Date**: 2026-10-16
+**Task**: F5 投放收尾 + 与 STM32 项目逐帧对比，开出两条后续任务
+**Branch**: `main`
+
+### Summary
+
+抖音腿补齐：导流评论 cid=7697253575721992960 逐字校验通过并写进 .temp/douyin-submitted.txt（置顶仍须 App 长按）。知乎三次被拒后确认是账号级滚动频控（code=10000），草稿完整无需重传；顺手把 f5-zh-publish.mjs 补成「成功才落 published.txt 留痕 + 用掉即删闸门 + 有留痕就拒跑」，这三处缺的语义正是今晚「弹窗没抓到却无从证伪」的同一种瞎。知乎这条线跑了 16 条一直没有 runbook，补 .temp/zhihu-plan.md（与 douyin-plan/wx-plan/yt-plan 同规格）：成功只认「发布成功」弹窗、失败只认 /api/v4/content/publish 响应体、creations/v2/zvideo 返回的是 pin 不能当回读、续传前必须逐字比对草稿标题前 60 字（今天横幅上挂的是别的会话的稿）、CDP 里 browser.close() 会杀常驻 9223 浏览器。与 D:/Users/STM32/final-videos 逐帧对比（同物种：1080p30/配音+SRT/11–14 分钟）：差距两处——常驻页头不答「第几章哪一节」、内容块纵向只用了 y≈300–700 中间一条；不抄的两处也记了数（他们单条 1 GB/10 Mbps vs 我们 539 kbps；选择题卡片+吉祥物会稀释「屏上每个数都能 probe.sh 复现」这条卖点）。据此开两条 Trellis 任务：10-16-e04-board-measurement（填 docs/lab/e04-priority-inversion.md:101 那张至今全空的四行表，硬约束=模型值 6000/2500 永不作为实测填入）、10-16-video-layout-header-fill（版式两处改造，只对未发布新集生效，依赖下一集立项，因 series.json 的 next/backlog 现在都是空）。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `797a228` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
