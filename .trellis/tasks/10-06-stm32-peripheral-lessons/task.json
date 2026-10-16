@@ -19,7 +19,7 @@
   "pr_url": null,
   "subtasks": [],
   "children": [],
-  "parent": "10-06-stm32-depth-animations",
+  "parent": null,
   "relatedFiles": [],
   "notes": "批次一内容/动画/工程已随 main 多轮提交交付（S2/S6/S7 等章节、97 张动画、BaudCalc 等），2026-10-10 会话核验后补记状态。",
   "meta": {}
