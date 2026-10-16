@@ -291,10 +291,22 @@
       "punchline": "编译器没写错，它只是认定没人会再看这些值",
       "masters": "video/out/c3b-volatile/douyin.mp4（00:27）",
       "note": "C3 的抖音对照版：首帧即动画、30 秒以内、每场 ≥8 秒。只比 2s 跳出率，不进 B站队列。"
+    },
+    {
+      "no": 17,
+      "id": "f5-sem-mutex",
+      "title": "信号量和互斥量是两样东西？xSemaphore 一个函数都没有",
+      "source": "docs/rtos/freertos/05-sem-mutex.md",
+      "script": "video/episodes/f5-sem-mutex/episode.json",
+      "status": "done",
+      "anims": ["semaphore-mutex", "priority-inversion"],
+      "hook": "选型表把二值信号量、计数信号量、互斥锁列成三行。本机把 semphr.h 那五个名字 `gcc -E` 展开一遍：展开文本里 xSemaphore 字样剩 0 个，`nm -u` 读到的未定义引用正好是五个队列入口，反向扫内核自己的 queue.o 与 tasks.o 也没有一个 xSemaphore* 的定义。第二钩更难受：锁和队列共用同一个 Queue_t，pcTail 与 xMutexHolder 同在偏移 8、pcReadFrom 与 uxRecursiveCallCount 同在偏移 12，结构体里没有一格专门记「我是锁」——身份就是 queue.c:65 `#define uxQueueType pcHead` 那一格指针等不等于 NULL，全文七处判断读的都是这一条。",
+      "hookRef": "code/rtos/05-sem-mutex/probe.sh 八步本机实跑（上游 FreeRTOS-Kernel V11.1.0 的 queue.c / tasks.c / list.c 本体，`-O0` 只编不链，无需开发板）+ docs/rtos/freertos/05-sem-mutex.md + 实验 E04（那两个反转时长至今只有模型值，实测记录表仍空）",
+      "punchline": "五种名字，一个结构体，一个指针槽；互斥量多出来的从来不多一个字段，只是那格指针的读法，和挂在它上面那一小段抬优先级的代码",
+      "note": "取证链八步，全程无板（本机 xpack 15.2.1 + 宿主 gcc 16.1.0；CI ubuntu-latest 的 apt 13.2.1 + gcc 13 跑同一份脚本也全绿）：① semphr.h 五个 #define 各指向哪个队列入口，外加中断版 take 的落点——函数体 2035→2132 共 98 行，逐条查过它不写 xMutexHolder、不比 uxQueueType、不调 xTaskPriorityInherit，「中断里不该拿互斥锁」的凭据从 tasks.c:6589 那一问换到这一条 ② `gcc -E` 展开文本里 xSemaphore 剩 0 个、五个队列入口各 ≥1 ③ `nm -u` 未定义引用正好五个 xQueue*，逐函数从重定位表配对而不是按名字猜，反向扫 queue.o + tasks.o 定义数 0 ④ 一把锁的账两条独立路子对上同一个 80——nm 符号尺寸与机身那句 `adds r3, #80`；孪生 StaticQueue_t 同 80 且 queue.c:406 有 configASSERT 钉它；偏移表 17 个数全部由 probe_off_* 量出（pcHead 0、u 8、xMutexHolder 8、uxRecursiveCallCount 12、uxMessagesWaiting 56、ucQueueType 76），TRACE=0 时 80→72 且机身那句 strb 一起消失 ⑤ 出生那发 give：源码 647/651/652/631 四行 + 机身 `bl xQueueGenericCreate` 第 16 行 < `bl prvInitialiseMutex` 第 20 行 ⑥ 身份 = pcHead 与 NULL 比，七处判断点行号现读 ⑦ 继承三步判→改→搬：整个函数只有一次函数调用（uxListRemove，挂表是宏不产生调用）、机身顺序 摘 45 → 改 64 → 搬 110、`rsb r2, r3, #5` 那个 5 是探针量出来的 configMAX_PRIORITIES、镜像回落 ldr #72 → str #44、MUTEX=0 那档 .text.xTaskPriorityInherit 320→0 而 xQueueSemaphoreTake 还在 ⑧ 反转的两个数来自宿主机调度模型 sim_invert.c：无真时钟无随机数、同一二进制连跑两次逐字节相同（cmp -s 断言），二值档 waited=6000、互斥量档 waited=2500，差 3500 由脚本相减断言，两档 l_ran 都是剧本写死的 3000；屏上这两个数只叫模型值，E04 那张实测记录表断言命中 0 个数字。成片：bilibili 35 场 703.830s、douyin 12 场 66.967s，两平台 h264@30 + aac 44100 立体声，实测响度 -15.0 / -15.1 LUFS，两版排版审计（越界/裁切/压字幕/相叠/字号/顶穿/孤字）全 0。短版结构：pick 12 场 + 12 处 set 覆写 + 12 句旁白全部重写，两张动画一张都不挂——semaphore-mutex 与 priority-inversion 分别是 1100×642 和 1155×642 的横图，竖屏等比缩放后标题与字幕挤不下。抖音侧一处返工：四处标题孤字被排版审计拦下（bilibili card-04 末行剩 2 字，douyin card-01/05/06 各剩 1 字），判据是末行必须 ≥3 字，机制是竖版标题字号被 `xSemaphore` 那段拉丁文顶住、CJK 行按同一尺寸折行必留孤字；card-06 第一版把「毫秒」单独拆一行仍剩 2 字，第二次拆成「不是／板子的毫秒」才过（此处／表示断行）。发布前置补了两件仓库里没人生成的东西：douyin-cover-1440x1080.png（.temp/douyin-step.mjs 的硬输入，14 步流程第 6 步就死，但全仓库只有消费方、没有生成方）与 zhihu-cover.png，两张都用 buildCover 加 sizes 覆盖补出。同一轮把 F5 取证工程补登进 code/projects.json（有 probe.sh 却没登记，project-catalog.mjs 直接 throw，连带 deploy 被跳过），并修掉 probe.sh 两处靠平台默认值的断言：隐式函数声明的 severity 写死成 `-Werror=implicit-function-declaration`（apt 的 13.2.1 只给警告、照样出 .o，负例反过来变绿），模型可执行名按 `uname` 分支（MinGW 的 gcc 自动补 .exe，Linux 不补，CI 上是 exit 127）。",
+      "masters": "video/out/f5-sem-mutex/bilibili.mp4（11:43）· douyin.mp4（01:06）"
     }
   ],
-  "next": [
-    "F5 语义互斥量与优先级反转：天花板那一格（`docs/rtos/freertos/05-sem-mutex.md` + 实验 E04，F6 片尾 CTA 已点名这一站）"
-  ],
+  "next": [],
   "backlog": []
 }
