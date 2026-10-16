@@ -208,7 +208,7 @@
           "id": "card-04",
           "kind": "card",
           "tone": "warn",
-          "title": "那个 0/1/3/4 只是标签，它要收八个字节",
+          "title": "那个 0/1/3/4 只是标签，\n它要收八个字节",
           "bullets": [
             "ucQueueType 在偏移 76，只在 configUSE_TRACE_FACILITY=1 时存在",
             "TRACE=0：sizeof(Queue_t) 80 → 72，标签税 8 字节",
@@ -381,7 +381,7 @@
           "code": "semphr.h:167  xSemaphoreCreateBinary\nsemphr.h:735  xSemaphoreCreateMutex\nsemphr.h:1025 xSemaphoreCreateCounting\nsemphr.h:298  xSemaphoreTake\nsemphr.h:460  xSemaphoreGive\n\n以上五条，全是 #define。"
         },
         "card-01": {
-          "title": "xSemaphore\n一个函数都没有",
+          "title": "xSemaphore\n一个函数\n都没有",
           "bullets": [
             "那五个名字全是 #define，不是函数",
             "-E 展开后 xSemaphore 剩 0 个",
@@ -405,7 +405,7 @@
           "code": "6612  uxListRemove( xStateListItem )\n6617  portRESET_READY_PRIORITY(...)\n6626  prvAddTaskToReadyList(...)\n\n函数调用个数 = 1（只有摘表那次）\nlist.h:362  挂表是宏，就地改指针\n\n机身顺序：摘 45 → 改 64 → 搬 110"
         },
         "card-05": {
-          "title": "不开 MUTEX\n这段机身 0 字节",
+          "title": "不开 MUTEX\n这段机身\n0 字节",
           "bullets": [
             "MUTEX=0：Inherit/Disinherit 符号数都是 0",
             ".text.xTaskPriorityInherit 320 → 0 字节",
@@ -429,7 +429,7 @@
           ]
         },
         "card-06": {
-          "title": "这是模型值\n不是板子的毫秒",
+          "title": "这是模型值\n不是\n板子的毫秒",
           "bullets": [
             "E04 自己写着：不是实测数据",
             "那张实测记录表里 0 个数字",
