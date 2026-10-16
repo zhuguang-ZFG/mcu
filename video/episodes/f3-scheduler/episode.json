@@ -424,6 +424,8 @@
         "科技数码"
       ],
       "caption": "32 个优先级挑最高，源码给两个答案\n通用路最坏摸 31 下，位图路永远 1 下\n#FreeRTOS #调度器 #位图",
+      "declare": "内容为个人观点或见解",
+      "declareNote": "抖音发布页的「自主声明」是必填项：不选时点发布不报错、页面原地不动（f3 第一次就这么静默卡住）。选项六项，取与知乎 mark 同一口径的那条——文案是人组织的，edge-tts 只是朗读工具。",
       "pinned": "完整图文在「通往单片机之路」F3《调度器：位图、tick 与阻塞延时》。位图只有 32 位，把 configMAX_PRIORITIES 掰成 33 会被 #error 当场拦下——本机实测，一条命令：sh code/rtos/03-scheduler/probe.sh",
       "repro": "sh code/rtos/03-scheduler/probe.sh"
     },
