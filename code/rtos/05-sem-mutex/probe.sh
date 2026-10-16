@@ -217,7 +217,7 @@ ISR_TO=$(awk -v s="$ISR_FROM" 'NR>s && /^}/ {print NR; exit}' "$QC")
 ISR_REF=$(awk -v a="$ISR_FROM" -v b="$ISR_TO" 'NR>=a && NR<=b' "$QC" \
           | grep -c -E 'xMutexHolder|uxQueueType|xTaskPriorityInherit' || true)
 printf '  函数体范围：%s → %s（共 %s 行，行号是现读的，没写死）\n' \
-    "$ISR_FROM" "${ISR_TO:-NONE}" "$(( ${ISR_TO:-0} - ISR_FROM + 1 ))"
+    "$ISR_FROM" "${ISR_TO:-NONE}" "$(( ${ISR_TO:-0} - ${ISR_FROM:-0} + 1 ))"
 eq "整条 ISR 取锁路上 xMutexHolder / uxQueueType / xTaskPriorityInherit 的引用次数" "$ISR_REF" 0
 # 尺子自检：同一条正则拿去量任务那条 take，必须数得出东西来。
 # 不然这个 0 可能是"范围取空了"或"模式写瞎了"，而不是"那段真没有"。
@@ -235,7 +235,11 @@ echo "----- 同一件事在 queue.c 内部还有第二个名字：两个 0 是�
 cred "$QC" "queue.c 自己的 0" '#define queueSEMAPHORE_QUEUE_ITEM_LENGTH'
 cred "$QC" "mutex give 的 0"  '#define queueMUTEX_GIVE_BLOCK_TIME'
 echo "----- 递归/计数那几条门控：configUSE_MUTEXES=0 时名字直接不存在 -----"
-if "${ARMPREFIX}gcc" -O0 $BASE -DMUTEX=0 -c lineage_probe.c -o build/mutex0/lin.o 2> build/mutex0/lin.err; then
+# 这条负例成立的条件是「隐式函数声明」被判成错误。GCC 14+ 默认就是错误，
+# 而 CI 装的 apt 版是 13.2.1——它只给警告，照样编得过，负例就反过来变成 [失]。
+# severity 写死在命令行上，不赌某个编译器版本的默认值。
+if "${ARMPREFIX}gcc" -O0 $BASE -Werror=implicit-function-declaration \
+        -DMUTEX=0 -c lineage_probe.c -o build/mutex0/lin.o 2> build/mutex0/lin.err; then
     echo "  [失] -DMUTEX=0 竟然还编得过 lineage_probe.c" >&2; FAIL=1
 else
     echo "  [中] -DMUTEX=0 时 xSemaphoreCreateMutex 这个名字不存在，编译器当场拒绝："
@@ -340,7 +344,7 @@ echo "----- 换个独立路子验一次：objdump 里那句 pvPortMalloc 的实�
 dis_func build/queue/queue.o xQueueGenericCreate build/queue/gc.dis
 sed -n '/mul/,/pvPortMalloc/p' build/queue/gc.dis | sed 's|^|  |'
 IMM=$(grep -B3 -E 'R_ARM_THM_CALL[[:space:]]+pvPortMalloc' build/queue/gc.dis \
-      | grep -oE '#[0-9]+' | head -1 | grep -oE '[0-9]+')
+      | grep -oE '#[0-9]+' | head -1 | grep -oE '[0-9]+' || true)
 printf '  机身里加在乘积上的那个立即数（结构体那部分）= %s\n' "${IMM:-NONE}"
 need "机身里读到了那个立即数" test -n "$IMM"
 eq "两条独立路子给出同一个 sizeof(Queue_t)" "$IMM" "$SQ_Q"
@@ -571,10 +575,16 @@ at_line ../01-freertos-lab/main.c 356 'xTaskCreate(task_low,  "L", configMINIMAL
 at_line ../01-freertos-lab/main.c 358 'xTaskCreate(task_high, "H", configMINIMAL_STACK_SIZE, NULL, 3, NULL);'
 at_line ../01-freertos-lab/main.c 339 '理论值：信号量版 ≈6000，互斥量版 ≈2500'
 echo "----- 编模型：宿主机 gcc，-Wall -Wextra -Werror（这份规则抄得干不干净，编译器先过一遍）-----"
-gcc -std=c11 -O0 -Wall -Wextra -Werror -o build/sim/sim sim_invert.c
-need "模型编得过" test -x build/sim/sim
-./build/sim/sim.exe > build/sim/run.txt
-./build/sim/sim.exe > build/sim/run2.txt
+# 可执行文件名由平台决定：MinGW 的 gcc 会把 -o build/sim/sim 自动补成 sim.exe，
+# Linux 的 gcc 不会——之前「编 sim、跑 sim.exe」在 CI 上是 exit 127。
+case "$(uname -s)" in
+    MINGW*|MSYS*|CYGWIN*) SIMX=build/sim/sim.exe ;;
+    *)                    SIMX=build/sim/sim ;;
+esac
+gcc -std=c11 -O0 -Wall -Wextra -Werror -o "$SIMX" sim_invert.c
+need "模型编得过（$SIMX）" test -x "$SIMX"
+"$SIMX" > build/sim/run.txt
+"$SIMX" > build/sim/run2.txt
 need "同一个二进制连跑两次输出逐字节相同（事件表写死，没有真时钟）" \
     cmp -s build/sim/run.txt build/sim/run2.txt
 SIM=build/sim/run.txt
@@ -608,7 +618,7 @@ gt "互斥量档里出现了 prio_inherited" "$(N_of prio_inherited "$SIM")" 0
 eq "整份日志里 inherit_skipped 只出现在二值档，共 1 次" "$(N_of inherit_skipped "$SIM")" 1
 gt "互斥量档里出现了 prio_disinherited（还锁回落）" "$(N_of prio_disinherited "$SIM")" 0
 printf '  继承那三步在日志里的现场（判 → 改 → 搬），互斥量档 t=1000 那一刻：\n'
-INHERIT_SLICE=$(grep -E '^EVT tag=mutex[[:space:]]+t=1000' "$SIM")
+INHERIT_SLICE=$(grep -E '^EVT tag=mutex[[:space:]]+t=1000' "$SIM" || true)
 need "这一片切片非空（EVT 行的 tag/t 格式没漂）" test -n "$INHERIT_SLICE"
 printf '%s\n' "$INHERIT_SLICE" | sed 's|^|    |'
 printf '  二值档同一刻的现场（同一条规则走另一扇门）：\n'
