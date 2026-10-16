@@ -127,3 +127,38 @@
 ### Next Steps
 
 - None - task complete
+
+
+## Session 4: F5 片单补录 + 三平台投放（抖音/B站成，知乎撞频控）
+
+**Date**: 2026-10-16
+**Task**: F5 片单补录 + 三平台投放（抖音/B站成，知乎撞频控）
+**Branch**: `main`
+
+### Summary
+
+F5《信号量和互斥量》收进片单（no:17、next 清空），断行修复与 B站简介压字（2177→1982，publish.bilibili.intro 1310→1115）都已提交推送。投放：抖音在线（aweme_id 7697231677763931428，66977ms 与成片一致，导流评论 cid=7697253575721992960 逐字校验，置顶仍需 App 手动）；B站 BV1JsJt6bEFH（9 项回读全过）。知乎三次被拒，响应体 code=10000「近期发布频率过高，请24小时后重试~」——账号 10-15 15:43 批量 8 条 + 当晚并发投 STM32 系列，是账号级滚动频控，草稿完整无需重传，窗口过后 node .temp/f5-zh-publish.mjs 续传。平台实测事实落 .temp/zhihu-plan.md：成功只认「发布成功」弹窗、失败只认 /api/v4/content/publish 响应体、内容管理列表返回的是 pin 不能当回读、CDP 里 browser.close() 会杀常驻浏览器。顺手补了两处会复发的坑：f5-zh-publish.mjs 原先成功也不写 published.txt 留痕（下轮会误判成没投）且不删闸门，现在留痕+删闸门+有留痕即拒跑。遗留观察：抖音合集把 F5 排成第16集，与片单 no:17 不同源——合集序号由平台按入集合顺序自己排，B站分P才用我们的编号。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `49b9250` | (see git log) |
+| `f9d00a2` | (see git log) |
+| `8c14cfd` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
