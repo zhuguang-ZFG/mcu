@@ -59,8 +59,8 @@ title 18 字 / body 475 字（去空白，页面计数 539）/ topics 三个 / p
 - 观众侧详情页从笔记管理点标题打不开（只会选中，弹出的新标签不导航），本轮没能从公网侧回读；
   发布前 1 分钟对编辑器正文做过逐字比对，`http(s)://` 与 `github` 两个正则双双「无」。
 
-这条线上还欠着的：置顶导流评论（文案在 `publish.xiaohongshu.pinned`，但小红书还没有对应的置顶工具，
-抖音那个 `douyin-pin.mjs` 不通用于这里）、合集（要起名）、内容类型声明与原创声明（都没选）。
+这条线上还欠着的：内容类型声明与原创声明（都没选，属人工决定）、合集挂载的最后一下提交（见下面两节）。
+置顶导流评论这条已经打通并且真发出去了，见下一节。
 
 取证截图：`f5-sem-mutex-filled.png`（填写后）、`f5-sem-mutex-topics.png`（话题成 chip）、
 `f5-sem-mutex-coverset.png`（封面编辑器喂图）、`f5-sem-mutex-cover-applied.png`（封面落定 + 绿勾）、
@@ -68,8 +68,9 @@ title 18 字 / body 475 字（去空白，页面计数 539）/ topics 三个 / p
 
 ## 置顶评论这条线（2026-10-17 打通到「只填不发」）
 
-用户口径是「先写工具，我来发」。工具已经写成 `xhs-step.mjs comment`，**默认只把字填进评论框，「发送」归人点**，
-也不给 `--go`：没实测过的写动作不写进代码，跟 `publish` 步一个道理。
+用户口径是「先写工具，我来发」。工具写成 `xhs-step.mjs comment`，**默认只把字填进评论框、「发送」归人点**；
+后来用户明确点头「发送这条置顶评论」，才给它加了 `--go` 分支——闸门是**另一个文件名**
+`I_HAVE_USER_OK_COMMENT=<ep>`，不复用 `I_HAVE_USER_OK=<ep>`：那个是"这一集可以发布"的授权，混用等于以后谁看见它在就以为发评论也批过了。
 
 先记下为什么创作者中心不行（四条实测证据，别再从头探一遍）：
 
@@ -88,16 +89,50 @@ title 18 字 / body 475 字（去空白，页面计数 539）/ topics 三个 / p
 `div.not-active.inner-when-not-active`（文案就是「评论」）是**同一个 rect 的兄弟**，占位盖在上面；
 直接 `click()` 那个 `p` 会 `TimeoutError: ... intercepts pointer events`。先点占位才换到输入态。
 
-实跑验证（只填不发）：`node video/publish/xhs-step.mjs comment --ep=f5-sem-mutex`
-→ 稿件 138 字、评论框回填 138 字，截图 `.temp/xhs-run/f5-sem-mutex-comment.png` 里「发送」红按钮就在旁边等人点。
+实跑验证（发出去的那一次）：`node video/publish/xhs-step.mjs comment --ep=f5-sem-mutex --go`
+→ 稿件 138 字、评论框回填 138 字一致；点「发送」后**评论框剩 0 字**（清空即发出去了），列表里按前 18 字找回这条：是。
+截图 `f5-sem-mutex-comment.png`（填好待发）、`f5-sem-mutex-comment-sent.png`（发完）。
 
-**还欠一步实测**：评论发出去之后才有「置顶」入口长什么样（在自家评论上？还是要 `--go` 之后才出现），
-所以现在只写到了"填好"，没写"置顶"。谁要补这一步，得先有一条真评论再量，别先写代码。
+## 置顶这件事在网页版做不了（2026-10-17 量完，据此**不写** `pin` 步）
 
-## 合集这轮不建（2026-10-17 定）
+评论真发出去之后按用户要求补量了置顶入口，结论是否定的，四条证据：
 
-给已发布笔记挂合集要走「编辑」，而编辑已发布笔记可能重新进审核（B站那边改稿有 `state=-6` 的先例），
-所以合集名一旦定了就得连带改所有后续条目。这轮先只留 F5 一条，等第二条上小红书再定名。
+| 探到的事实 | 怎么量的 |
+|---|---|
+| 网页版自家评论上「…」菜单**只有「删除评论」**，没有置顶 | `.temp/xhs-pin-probe4.mjs` 点开自己那条评论的菜单，截图 `.temp/xhs-run/comment-menu-open.png` |
+| 整页扫不到「置顶」字样 | 同一次跑里对 `document.body.innerText` 正则匹配「置顶」→ 无 |
+| 创作者中心那条路也没有 | 上一节四条证据：导航里没评论项，笔记行的「置顶」置顶的是**笔记**不是评论 |
+| 数据看板只报「评论数」 | `/statistics/note-detail?noteId=...` 上没有任何评论管理按钮 |
+
+所以小红书这条线的口径与抖音一致：**置顶评论只能在 App 里长按做**，`xhs-step.mjs` 里不写 `pin` 步。
+没实测过的写动作不写进代码——这条就是那个规矩的一次兑现：探完发现入口不存在，那就停，不拿"大概是这样"编一个 `pin` 出来。
+
+## 合集：已建好，挂载差最后一下提交（2026-10-17 改口径）
+
+上午定的「这轮先不建」被用户改掉了：合集「STM32 零基础自学」已由人在网页端建好，现在授权把 F5 挂上去。
+合集名进事实源 `publish.xiaohongshu.collection`，脚本里不写字面量。
+
+挂载链路（`xhs-step.mjs collection` 就是照这个写的，全程不拼 URL、noteId 不抄进代码）：
+
+1. 笔记管理里按标题找到那张 `.note-card__body`，逐个 `hover()` 它的 `[class*="action-btn"]`，
+   认 tooltip 逐字等于「编辑」的那颗（按下标猜会在别的集上点错）。
+2. 点它 → **新标签**落到 `/publish/update?id=<noteId>&noteType=video`，表单回填标题/正文/话题（话题 chip 还在，538/1000）。
+3. 点 `.collection-plugin-button`（文案「选择合集」）→ 弹层 `.d-popover` 里可选项是 `div.item`，
+   逐字文本 `STM32 零基础自学`（**中间一个半角空格**），footer 是「创建合集」。按整段文本全等认领，别按子串——子串会把含 footer 的容器也捞进来。
+4. 点中之后：那一行末尾的「选择合集」换成合集名，而 `.collection-plugin-button` 这个类**消失**。
+   所以判据只能读 `.collection-plugin-wrapper` 整行文本，不能盯按钮在不在。
+
+两个关键实测结论：
+
+- **选中只活在表单里**。关掉编辑页重开，那行又回落到「选择合集」（本轮冷跑两次都是这个结果）——不提交就不算挂上。
+- 提交那颗按钮是 `<xhs-publish-btn is-publish=true is-save-draft=false submit-text=发布 save-text=暂存离开 submit-disabled=false submit-loading=false>`，
+  rect `220,740 680x90`，**closed shadow root**：全页 `getByText('发布', {exact:true})` 命中 0，
+  从 x=240 到 880 每隔 40px 做 `elementFromPoint` 全部命中宿主自身（覆盖不出左右两半，坐标点也点不准）。
+  实例上挂着 `_onPublish` / `_onSave` 两个函数——那是绕过前端校验直接触发提交，不做。
+  顺带一个撞名坑：左上角导航里 `div.publish-video > .btn-wrapper` 文案是「发布笔记」，按"含发布的按钮"去点会点到它。
+
+所以 `collection` 步做到"选中 + 回读 + 截图"就停手，最后那一下红色「发布」归人点（`is-publish=true` 时点下去等于把这条公开笔记重新提交，大概率再走一次审核）。
+人点完之后要补的实测：重开编辑页那行应显示合集名（或去合集页看到这条视频），那才算挂上。
 
 ## 踩过的两个坑（写下来免得重来）
 

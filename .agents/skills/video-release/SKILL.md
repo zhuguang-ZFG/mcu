@@ -72,6 +72,8 @@ node video/publish/xhs-step.mjs cover --ep=<ep>        # 只读：把封面面�
 node video/publish/xhs-step.mjs coverset --ep=<ep>     # 喂自定义封面，停在裁剪页不点应用
 node video/publish/xhs-step.mjs coverapply --ep=<ep>   # 点「完成」，封面才落定
 node video/publish/xhs-step.mjs comment --ep=<ep>      # 网页版自家笔记页：把置顶评论填进评论框，不发
+node video/publish/xhs-step.mjs comment --ep=<ep> --go # 加 --go 且写好 I_HAVE_USER_OK_COMMENT=<ep> 才真发这条评论
+node video/publish/xhs-step.mjs collection --ep=<ep>   # 编辑页选合集，到"选中"为止，不点提交
 ```
 
 `measure` 是量字段上限用的探针步——**别在正经稿件上跑，它会把测试字写进标题和正文**。
@@ -80,7 +82,9 @@ node video/publish/xhs-step.mjs comment --ep=<ep>      # 网页版自家笔记�
 - **平台不替我们拦超限**：标题 39 字喂进去 `input.value` 还是 39，计数器只印成「39 / 20」，拦的是提交。所以断言写在本机侧——`fill` 先按码点断 标题 ≤20、正文 ≤1000，任何字段出现 `http(s)://` 或 `github` 字样就退出码 2 停手（口径见 §4）。
 - **成功只认笔记管理 `/new/note-manager` 的「已发布」标签里有这条**（「审核中」「未通过」两个标签同时应当是空的——落在审核里不等于发出去了）。发布后表单 URL 会变成 `?source=&published=true`、草稿箱归零，但那是**事后信号不是回执**，别拿它写判据。本机侧的账是 `.temp/xhs-run/<ep>-published.txt`；草稿留痕也在同一个目录，**草稿不等于已发布**。
 - **回读观众侧文案这条路暂时不可用**：笔记管理里点标题只会选中，弹出的标签页不导航到详情页。所以"有没有漏地址"要在**发布前**用编辑器正文逐字比（`.temp` 下的一次性脚本即可，别把判据留到发出去之后）。
-- **评论只在网页版发得出去，创作者中心没有评论区**（十项导航里没有任何评论项，数据看板只报「评论数」；笔记行上那个「置顶」图标置顶的是**笔记本身**不是评论）。链路是 `/explore` 顶栏的 `a[href^="/user/profile/"]` → 主页按标题找到带 `xsec_token` 的卡片 → 笔记页，**token 每次现取别抄存**；未登录 `www` 域时直连笔记页会吃 `error_code=300031`。`comment` 步照旧只填不发。
+- **评论只在网页版发得出去，创作者中心没有评论区**（十项导航里没有任何评论项，数据看板只报「评论数」；笔记行上那个「置顶」图标置顶的是**笔记本身**不是评论）。链路是 `/explore` 顶栏的 `a[href^="/user/profile/"]` → 主页按标题找到带 `xsec_token` 的卡片 → 笔记页，**token 每次现取别抄存**；未登录 `www` 域时直连笔记页会吃 `error_code=300031`。`comment` 步默认只填不发，`--go` 走的是**另一个闸门** `I_HAVE_USER_OK_COMMENT=<ep>`——别拿发布那张闸来放评论。
+- **「置顶这条评论」在网页版做不到**：自家评论的「…」菜单里只有「删除评论」，整页扫不到「置顶」二字（2026-10-17 量完四条证据见 `xhs-plan.md`）。所以这一条线**没有 `pin` 步**，跟抖音同口径——置顶只能在 App 里长按。以后谁想补，先量到入口再写代码。
+- **合集挂载只到"选中"**：`collection` 步从笔记管理认 tooltip「编辑」进 `/publish/update`，选完把整行文本回读给你看。选中**不落盘**（重开页面回落「选择合集」），落盘要点那颗 `<xhs-publish-btn>`——它是 closed shadow 的自定义元素（文本扫不到、坐标覆盖不出左右两半、只能靠 `_onPublish` 硬触发），而且 `is-publish=true` 时点下去等于把公开笔记重新提交。这一下**归人点**。
 
 ## 3. 平台的"没做成"分别长什么样
 
@@ -99,6 +103,7 @@ node video/publish/xhs-step.mjs comment --ep=<ep>      # 网页版自家笔记�
 | 小红书 正文里的 `#词` 显示成黑字 | 纯文本 `#` 不是话题，只有输入 `#名字` 后弹出来的那条候选被接住才成 chip | `topics` 步用回车接弹层；**不许用 locator 点候选**——先匹配到的正是刚打进正文的那串黑字 |
 | 小红书 封面点了没反应 | 「设置封面」那四个字只是标题，入口是默认封面缩略图本身（三层才到 file input） | 先 `cover` 量结构，再 `coverset` 喂图、`coverapply` 点完成 |
 | 小红书 点评论框报 `intercepts pointer events` | 「评论」那条占位与 `p.content-input` 是同 rect 的兄弟，占位盖在上面 | 先点 `.engage-bar .inner-when-not-active` 换到输入态，再敲字（`comment` 步已这么写） |
+| 小红书 合集选完、重开页面又变回「选择合集」 | 选中只是表单状态，不提交不落盘；且选中后 `.collection-plugin-button` 那个类会消失 | 判据读 `.collection-plugin-wrapper` 整行文本；要生效得人点 `<xhs-publish-btn>` 里的「发布」（左上角那颗「发布笔记」是导航，按"含发布"去点会点错） |
 | 小红书 上一步的弹层还挂着，下一步点击超时 | 一次实验遗留的 `d-modal-mask` 在拦 pointer events | 驱动已把 `coverset` 做成幂等（见到 file input 直接喂）；手工救援前先看有没有遮罩，别急着 reload |
 
 ## 4. 字怎么出去（简介与文案）
