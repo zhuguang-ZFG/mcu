@@ -74,6 +74,7 @@ node video/publish/xhs-step.mjs coverapply --ep=<ep>   # 点「完成」，封�
 node video/publish/xhs-step.mjs comment --ep=<ep>      # 网页版自家笔记页：把置顶评论填进评论框，不发
 node video/publish/xhs-step.mjs comment --ep=<ep> --go # 加 --go 且写好 I_HAVE_USER_OK_COMMENT=<ep> 才真发这条评论
 node video/publish/xhs-step.mjs collection --ep=<ep>   # 编辑页选合集，到"选中"为止，不点提交
+node video/publish/xhs-step.mjs collectioncheck --ep=<ep>   # 只读：认领编辑页→重载→核验那一行=合集名（批后抽样用这个，别用一次性探针）
 node video/publish/xhs-step.mjs collectioncreate --ep=<ep> --desc=<简介>   # 建合集并加入（闸门 I_HAVE_USER_OK_COLLECTION=<合集名>）
 node video/publish/xhs-step.mjs collection --ep=<ep> --go   # 换/挂合集并点提交（闸门 I_HAVE_USER_OK_SUBMIT=<ep>；坐标点击+回读落盘）
 node video/publish/xhs-step.mjs attach --ep=<ep>       # 发布表单上把合集选好——发出去时一并挂上（不点提交，不要闸门）
@@ -90,7 +91,7 @@ sh video/publish/xhs-batch.sh <ep> [<ep> ...]          # 逐集跑完七步表�
 - **回读观众侧文案这条路暂时不可用**：笔记管理里点标题只会选中，弹出的标签页不导航到详情页。所以"有没有漏地址"要在**发布前**用编辑器正文逐字比（`.temp` 下的一次性脚本即可，别把判据留到发出去之后）。
 - **评论只在网页版发得出去，创作者中心没有评论区**（十项导航里没有任何评论项，数据看板只报「评论数」；笔记行上那个「置顶」图标置顶的是**笔记本身**不是评论）。链路是 `/explore` 顶栏的 `a[href^="/user/profile/"]` → 主页按标题找到带 `xsec_token` 的卡片 → 笔记页，**token 每次现取别抄存**；未登录 `www` 域时直连笔记页会吃 `error_code=300031`。`comment` 步默认只填不发，`--go` 走的是**另一个闸门** `I_HAVE_USER_OK_COMMENT=<ep>`——别拿发布那张闸来放评论。
 - **「置顶这条评论」在网页版做不到**：自家评论的「…」菜单里只有「删除评论」，整页扫不到「置顶」二字（2026-10-17 量完四条证据见 `xhs-plan.md`）。所以这一条线**没有 `pin` 步**，跟抖音同口径——置顶只能在 App 里长按。以后谁想补，先量到入口再写代码。
-- **合集：选中不落盘，落盘要提交**。`collection` 步从笔记管理认 tooltip「编辑」进 `/publish/update`（**认领按标题框逐字**——开着的编辑页不一定是这一条的，实测踩过）；选中后重开页面会回落「选择合集」，要落盘得点那颗 `<xhs-publish-btn>`（`collection --go`，闸门 `I_HAVE_USER_OK_SUBMIT=<ep>`）。落盘判据=**重开编辑页那一行仍显示合集名**，不认 toast（toast 偶发读不到）。两个实测坑：入口分两态（没挂时 `.collection-plugin-button`、已挂时它消失、换 `.collection-plugin-choose`）；`is-publish=true` 的提交可能把笔记拉回审核（S5 被拉回、几分钟后回「已发布」；F5 没有——平台不保证，提交前要预期）。**新发的稿子在发布表单上就有「加入合集」**（`attach` 步），选好再发比发完回编辑页补一遍省事。
+- **合集：选中不落盘，落盘要提交**。`collection` 步从笔记管理认 tooltip「编辑」进 `/publish/update`（**认领按标题框逐字**——开着的编辑页不一定是这一条的，实测踩过；笔记管理是虚拟列表，`claimEditPage` 会先缩小再三种滚动扫卡，2026-10-17 加）；选中后重开页面会回落「选择合集」，要落盘得点那颗 `<xhs-publish-btn>`（`collection --go`，闸门 `I_HAVE_USER_OK_SUBMIT=<ep>`）。落盘判据=**重开编辑页那一行仍显示合集名**，不认 toast（toast 偶发读不到）；随时复查用只读的 `collectioncheck --ep=<ep>`。两个实测坑：入口分两态（没挂时 `.collection-plugin-button`、已挂时它消失、换 `.collection-plugin-choose`）；`is-publish=true` 的提交可能把笔记拉回审核（S5 被拉回、几分钟后回「已发布」；F5 没有——平台不保证，提交前要预期）。**新发的稿子在发布表单上就有「加入合集」**（`attach` 步），选好再发比发完回编辑页补一遍省事。
 
 ## 3. 平台的"没做成"分别长什么样
 

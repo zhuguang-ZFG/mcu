@@ -12,9 +12,9 @@
 
 - 常驻进程：`video/publish/xhs-daemon.mjs`，profile 目录 `.temp/douyin-profile`（与抖音/B站/知乎共用同一个窗口），CDP 端口 **9223**
 - 探针：`video/publish/xhs-probe.mjs`（只读，导航 + 取文本 + 截图；`--click` 只点"打开编辑器"这类入口，不点任何提交按钮）
-- 驱动：`video/publish/xhs-step.mjs <verb> --ep=<id>`，步骤 `status open upload measure fill topics cover coverset coverapply comment collection collectioncreate publish`（`comment`/`collection` 认 `--go`；`publish` 仍只查闸门后抛错）
-- 放行：`publish` 之前必须有 `.temp/xhs-run/I_HAVE_USER_OK=<ep>`，这个文件只能来自对话里对这一条的点头；
-  **而且就算闸门在，`publish` 步也还是直接抛错**——发布这一步至今没写进驱动，F5 那条是人点的
+- 驱动：`video/publish/xhs-step.mjs <verb> --ep=<id>`，步骤 `status open upload measure fill topics cover coverset coverapply comment collection collectioncheck collectioncreate attach publish`（`comment`/`collection`/`publish` 认 `--go`，各自有闸门；`collectioncheck` 只读）
+- 放行：`publish` 必须同时有 `.temp/xhs-run/I_HAVE_USER_OK=<ep>`（只来自对话里对这一条的点头）**和** `--go`；
+  F5/S5 两条是人点的发布键，2026-10-17 夜起批量走 `xhs-batch.sh`（点击=CDP 穿透量内部「发布」盒，见「合集」「批量」两节）
 - 登录态：2026-10-17 用户在常驻窗口里以手机号验证码登录，账号「本机实跑」（小红书号 4947744565）；凭证不落对话、不落仓库
 
 ## 实测事实（每条都写着怎么量出来的，别当常识抄）
@@ -129,6 +129,9 @@ title 18 字 / body 475 字（去空白，页面计数 539）/ topics 三个 / p
 1. 笔记管理里按标题找到 `.note-card__body`，逐个 `hover()` `[class*="action-btn"]`，认 tooltip 逐字「编辑」的那颗（按下标猜会点错）。
 2. 点它 → **新标签**落 `/publish/update?id=<noteId>`（noteId 现拿不抄存）。**认领编辑页按标题框逐字**：
    开着的 `/publish/update` 不一定是这一条的（实测踩过：F5 那步复用了 S5 留下的页，把 S5 的合集行当 F5 的读、截图还被覆盖）。
+   找卡片时笔记管理是**虚拟列表**（默认只渲染约 10 条）——`claimEditPage` 先 Ctrl+Minus 缩小、
+   再 `PageDown`/滚轮/scrollTop 三种齐上扫到卡片为止（2026-10-17 加；此前条目一多旧笔记会扫不到）。
+   只读复查用它：`collectioncheck --ep=<ep>`——认领后**重载一次**读服务端，不点任何东西，退出码 0/4。
 3. 合集入口分**两态**（DOM 实测）：没挂/没选时是 `.collection-plugin-button`（文案「选择合集」）；
    已挂/已选时这个类**消失**，那一行末尾换成 `.collection-plugin-choose`（`span.collection-name` + `span.icon-arrow` 的 ⌄）。两个都试，找不到就报现状。
 4. 弹层 `.d-popover` 里可选项是 `div.item`，按**整段文本全等**认领（子串会把含 footer 的容器也捞进来）。

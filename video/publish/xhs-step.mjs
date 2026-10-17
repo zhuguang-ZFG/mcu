@@ -210,11 +210,29 @@ async function claimEditPage(xsTitle) {
     nm.setDefaultTimeout(60_000)
     await nm.goto(NOTE_MANAGER_URL, { waitUntil: 'domcontentloaded' })
     await nm.waitForTimeout(9000)
+    // 笔记管理是**虚拟列表**：默认只渲染可视区约 10 条，旧笔记整批看不见（2026-10-17 实测：
+    // 44 条时 22:2x 那批一条都不在首屏）。所以先 Ctrl+Minus 缩小让一屏装更多，再
+    // PageDown/滚轮/把可滚动祖先的 scrollTop 推着走——三种齐上，单用任一种都不动（实测）。
+    for (let i = 0; i < 4; i++) { await nm.keyboard.press('Control+Minus'); await nm.waitForTimeout(300) }
+    await nm.waitForTimeout(1200)
     const card = nm.locator('.note-card__body').filter({ hasText: xsTitle }).first()
+    for (let round = 0; round < 25 && !(await card.count()); round++) {
+      await nm.keyboard.press('PageDown')
+      await nm.mouse.move(700, 600)
+      await nm.mouse.wheel(0, 1400)
+      await nm.evaluate(() => {
+        let el = document.querySelector('.note-card__body')
+        while (el && el.scrollHeight <= el.clientHeight) el = el.parentElement
+        if (el) el.scrollTop = el.scrollTop + Math.floor(el.clientHeight * 0.9)
+      })
+      await nm.waitForTimeout(1200)
+    }
     if (!(await card.count())) {
       await nm.close().catch(() => {})
-      throw new Error(`笔记管理里没有标题含「${xsTitle}」的卡片——先核这条到底发出去了没，别猜`)
+      throw new Error(`笔记管理里没有标题含「${xsTitle}」的卡片（缩小+三种滚动扫了 25 轮）——先核这条到底发出去了没，别猜`)
     }
+    await card.scrollIntoViewIfNeeded().catch(() => {})
+    await nm.waitForTimeout(600)
     // 「编辑」是图标按钮，只能靠 hover 出来的 tooltip 认领（按下标猜会在别的集上点错）
     const icons = card.locator('[class*="action-btn"]')
     const n = await icons.count()
@@ -240,6 +258,9 @@ async function claimEditPage(xsTitle) {
     await nm.waitForTimeout(12_000)
     const fresh = ctx.pages().filter((x) => !before.has(x))
     form = fresh[0] || nm
+    // 缩放是 origin 级的（编辑页与笔记管理同域）：把 nm 的缩放还原回 100%，
+    // 免得编辑页的截图带着缩放、以及后续按截图像素读尺度时对不上。
+    await nm.keyboard.press('Control+0').catch(() => {})
   }
   await form.waitForLoadState('domcontentloaded').catch(() => {})
   // SPA 带未保存改动时导航会弹原生 confirm（beforeunload 之类）；不接住的话 playwright 的竞态
@@ -513,14 +534,27 @@ if (verb === 'status') {
   await wp.goto(prof, { waitUntil: 'domcontentloaded' })
   await wp.waitForTimeout(9000)
   const xsTitle = ep.publish?.xiaohongshu?.title || ''
-  const note = await wp.evaluate((t) => {
-    const txt = (s) => (s || '').replace(/\s+/g, ' ').trim()
-    for (const a of document.querySelectorAll('a[href*="xsec_token"]')) {
-      if (t && txt(a.innerText).includes(t)) return a.href
+  const findCard = () =>
+    wp.evaluate((t) => {
+      const txt = (s) => (s || '').replace(/\s+/g, ' ').trim()
+      for (const a of document.querySelectorAll('a[href*="xsec_token"]')) {
+        if (t && txt(a.innerText).includes(t)) return a.href
+      }
+      return null
+    }, xsTitle)
+  let note = await findCard()
+  // 主页是懒加载：首屏扫不到不等于没有——有界滚几轮再扫（2026-10-17 加：条目一多旧笔记会掉出首屏，
+  // 原来直接抛"没找到"就误判了；S5 那次首屏就命中，纯属运气好）。
+  for (let round = 0; round < 6 && !note; round++) {
+    await wp.mouse.move(700, 600)
+    for (let i = 0; i < 3; i++) {
+      await wp.mouse.wheel(0, 1400)
+      await wp.waitForTimeout(500)
     }
-    return null
-  }, xsTitle)
-  if (!note) throw new Error(`主页上没找到标题含「${xsTitle}」的卡片——先回笔记管理核这条到底发出去了没，别猜`)
+    await wp.waitForTimeout(1200)
+    note = await findCard()
+  }
+  if (!note) throw new Error(`主页上没找到标题含「${xsTitle}」的卡片（滚了 6 轮）——先回笔记管理核这条到底发出去了没，别猜`)
   await wp.goto(note, { waitUntil: 'domcontentloaded' })
   await wp.waitForTimeout(9000)
   const box = wp.locator('p.content-input').first()
@@ -629,6 +663,28 @@ if (verb === 'status') {
       console.log(`    ${readFileSync(gate, 'utf8').trim()}`)
       await submitEditAndVerify(form, readRow, name)
     }
+  }
+} else if (verb === 'collectioncheck') {
+  // 只读核验一条已发布笔记的合集归属：认领编辑页（虚拟列表扫卡见 claimEditPage）→ **重载一次**
+  // （读的是服务端，不信任何表单残留）→ 回读那一行。不点任何东西；
+  // 退出码 0=那一行写着合集名，4=没写上。批后抽样与随时复查都用它，别再用一次性探针。
+  const name = ep.publish?.xiaohongshu?.collection
+  if (!name) throw new Error(`${EP} 没有 publish.xiaohongshu.collection——不替这一集猜合集名`)
+  const xsTitle = ep.publish?.xiaohongshu?.title || ''
+  const form = await claimEditPage(xsTitle)
+  const readRow = makeReadRow(form, name)
+  const url = form.url()
+  await form.goto(url, { waitUntil: 'domcontentloaded' })
+  await form.waitForTimeout(12_000)
+  const ver = await readRow()
+  console.log(`\n【collectioncheck】${EP}（重载后读的是服务端）编辑页：${ver.url}`)
+  console.log(`  合集那一行写着：「${ver.row}」`)
+  console.log(`  归属核验：显示「${name}」：${ver.picked ? '是' : '否'}`)
+  await form.screenshot({ path: `${RUN}/${EP}-collectioncheck.png` })
+  console.log(`  截图：${RUN}/${EP}-collectioncheck.png`)
+  if (!ver.picked) {
+    process.exitCode = 4
+    throw new Error(`${EP} 的合集行没显示「${name}」——按未挂对待`)
   }
 } else if (verb === 'collectioncreate') {
   // 建合集并把当前这条「创建并加入」：链路来自 ops 线实测（D:/tmp/xhs_make_collection.py，2026-10-17 建章节合集的同一条路）——
@@ -792,7 +848,7 @@ if (verb === 'status') {
     console.log(`  截图：${RUN}/${EP}-published.png`)
   }
 } else {
-  throw new Error(`未知步骤「${verb}」，认得的是 status / open / upload / measure / fill / topics / cover / coverset / coverapply / comment / collection / collectioncreate / attach / publish`)
+  throw new Error(`未知步骤「${verb}」，认得的是 status / open / upload / measure / fill / topics / cover / coverset / coverapply / comment / collection / collectioncheck / collectioncreate / attach / publish`)
 }
 
 function statSize(p) {
