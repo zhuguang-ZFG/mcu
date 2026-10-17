@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 8
+- **Total Sessions**: 9
 - **Last Active**: 2026-10-17
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~394 | Active |
+| `journal-1.md` | ~470 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 9 | 2026-10-17 | 小红书置顶评论已发出、置顶入口实测不存在；合集挂载做到「选中」待人提交 | - | `main` |
 | 8 | 2026-10-17 | 开小红书第四条投放线，F5 竖版笔记已发布 | `018c542` | `main` |
 | 7 | 2026-10-17 | 视频版式改版落地：页头小节 chip + 纵向分布，填充率判据被实测否掉 | `1fa7d1d`, `69fd32a`, `78e67f6`, `83a292a`, `ce08dc7`, `29def0a` | `main` |
 | 6 | 2026-10-16 | B站 17 条简介脱 markdown 残留 + 合集门槛取证 | `0cc07d6` | `main` |

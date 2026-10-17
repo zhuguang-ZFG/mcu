@@ -394,3 +394,77 @@ F5《信号量和互斥量》收进片单（no:17、next 清空），断行修�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 9: 小红书置顶评论已发出、置顶入口实测不存在；合集挂载做到「选中」待人提交
+
+**Date**: 2026-10-17
+**Task**: 小红书置顶评论已发出、置顶入口实测不存在；合集挂载做到「选中」待人提交
+**Branch**: `main`
+
+### Summary
+
+comment 步补 --go（闸门另起一张 I_HAVE_USER_OK_COMMENT）并真发出 138 字置顶评论；量到网页版评论菜单只有「删除评论」，据此不写 pin 步。合集名进 episode.json，新写 collection 步：认 tooltip「编辑」进 /publish/update、弹层按整段文本全等选中「STM32 零基础自学」，冷跑两次验到选中不落盘、提交那颗是 closed shadow 的 <xhs-publish-btn>，所以停在未提交等人点。
+
+### Main Changes
+
+### 做了什么
+
+接上一轮小红书那条线的两个尾巴，都按"先实测再写代码"走完。
+
+1. **置顶评论发出去了，并量到"置顶"在网页版做不到**
+   - 用户点头「发送这条置顶评论」→ 给 `xhs-step.mjs comment` 补 `--go` 分支，闸门用**另一个文件**
+     `.temp/xhs-run/I_HAVE_USER_OK_COMMENT=f5-sem-mutex`（不复用发布那张 `I_HAVE_USER_OK=<ep>`，两种授权混一起，以后谁看见它就以为发布也批过了）。
+   - 实跑：138 字回填一致 → 点「发送」→ 评论框剩 0 字、列表按前 18 字找回这条 = 是。留痕 `f5-sem-mutex-comment-sent.png`。
+   - 再按用户要求量置顶入口，结论是**否定的**：自家评论的「…」菜单里只有「删除评论」，整页扫不到「置顶」二字
+     （`.temp/xhs-pin-probe4.mjs` + `comment-menu-open.png`）。据此**不写 `pin` 步**，与抖音同口径：置顶只能 App 内长按。
+2. **合集：建好了，挂载做到"选中"为止**
+   - 用户改口「可以创建合集了，另一个已经创建ok了」→ 合集名 `STM32 零基础自学` 进事实源
+     `episode.json` 的 `publish.xiaohongshu.collection`（含一个半角空格，是弹层里 `div.item` 的逐字文本）。
+   - 新写 `xhs-step.mjs collection`：笔记管理里 hover 图标认 tooltip「编辑」→ 新标签落 `/publish/update`（noteId 不抄进代码）
+     → 点 `.collection-plugin-button` → `.d-popover .item` 按整段文本全等认领 → 回读整行文本 + 截图。**不点提交。**
+   - 冷跑两次（中间关掉编辑页）量到两件事：选中**不落盘**（重开又回落「选择合集」）；判据只能读
+     `.collection-plugin-wrapper` 整行文本，因为选中后 `.collection-plugin-button` 那个类会消失。
+   - 提交那颗是 `<xhs-publish-btn submit-text=发布 save-text=暂存离开 is-publish=true is-save-draft=false>`，
+     rect `220,740 680x90`，**closed shadow root**：全页 `getByText('发布',{exact:true})` 命中 0，x=240→880 每 40px 做
+     `elementFromPoint` 全部命中宿主自身（坐标也点不准）；实例上只有 `_onPublish`/`_onSave`，那是绕过前端校验硬触发，不做。
+     顺带一个撞名坑：左上角导航 `div.publish-video > .btn-wrapper` 文案是「发布笔记」。
+   - 所以编辑页现在停在"已选中合集、未提交"，等人点那一下（`is-publish=true` 时点了等于把公开笔记重新提交，大概率再走审核）。
+
+### 改了哪些文件
+
+- `video/publish/xhs-step.mjs`：`comment` 补 `--go` + 独立闸门；新增 `collection` 步；`WEB_ONLY` 改 `NO_WORK_PAGE`（collection 走 `/publish/update`，不能被 `/publish/publish` 工作页认领抢走）。
+- `video/episodes/f5-sem-mutex/episode.json`：`publish.xiaohongshu.collection` + `collectionNote`。
+- `video/publish/xhs-plan.md`：置顶评论四条证据 → 已发出；新增「置顶这件事在网页版做不了」一节（四条证据 + 据此不写 pin）；「合集这轮不建」改成实测到的挂载链路与 `<xhs-publish-btn>` 契约。
+- `.agents/skills/video-release/SKILL.md`：命令块加 `collection` 与 `comment --go`；判据三条（评论闸门另起一张、置顶做不到、合集挂载只到选中）；§3 加"选完重开又变回选择合集"一行。
+- `.temp/xhs-run/f5-sem-mutex-published.txt`：评论已发（16:21）与合集选中未提交两条留痕。
+
+### 验证
+
+- `node --check video/publish/xhs-step.mjs` 过；`episode.json` JSON 解析过。
+- `collection` 步冷跑两次全绿：`弹层里的可选项（1）：「STM32 零基础自学」` → `这一行显示合集名：是` → 打印 `<xhs-publish-btn>` 属性契约 → 明确停手没点提交。
+- 探针全程只读：只 `page.close()`，没碰 `browser.close()`，常驻页与登录态没动。
+
+### 待办
+
+- 合集最后那一下提交归人点（编辑页就开着，选中状态在）；点完重开编辑页应仍显示合集名才算挂上。
+- 内容类型声明与原创声明仍未选（属人工决定）。
+- 知乎 F5 频控窗口 10-17 21:07 之后重跑 `node .temp/f5-zh-publish.mjs`；抖音 F5 置顶需用户在 App 内长按；E04 上板要真板；B站合集等 Lv2。
+- 标题体例：账号既有条目是「STM32零基础自学N｜…」，F5 这条是「xSemaphore 一个函数都没有」，要不要统一得定。
+
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
