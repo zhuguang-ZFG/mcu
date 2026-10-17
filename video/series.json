@@ -307,6 +307,13 @@
       "masters": "video/out/f5-sem-mutex/bilibili.mp4（11:43）· douyin.mp4（01:06）"
     }
   ],
-  "next": [],
-  "backlog": []
+  "next": [
+    "S5 SysTick：内核的心跳——RTOS 那个 tick 到底谁给的（`docs/stm32/05-systick.md` + `code/stm32/05-systick/probe.sh` 全章取证，无需开发板；先修 S4 已投，顺接 F3 调度器欠下的那句「谁在跳」，LOAD=167999 / 24 位上限 0xFFFFFF / COUNTFLAG 读清这几个数屏上都能当场复现）"
+  ],
+  "backlog": [
+    "C1 内存模型：`int led = 5;` 里其实没有这个 5（`docs/c/01-memory-model.md` + `code/c/01-memory-model/probe.sh` 全章取证、无需开发板；是 C2–C7 的前传，也是 B1/B2/B3 整条 build 轨的入口，那三章同样各有 probe.sh）",
+    "S9 ADC：逐次逼近 12 刀砍到 4096 分之一（`docs/stm32/09-adc.md` + `code/stm32/09-adc/probe.sh`，但 probe 只盖 SAR 换算模型，寄存器侧取证得现补；先修 S3、S8 都还没投）",
+    "S1 架构总览：位带别名为什么能当一个位用（`docs/stm32/01-arch.md` + `code/stm32/01-arch/probe.sh`，probe 只盖位带，总线矩阵与外设门牌推导待补；先修 S0 未投）",
+    "F1 任务与 TCB：xTaskCreate 逐行走查（`docs/rtos/freertos/01-task-tcb.md`，已投 F0/F2/F3/F5/F6，按号排还缺 F1、F4、F7、F8，F1 是最靠前的一个；这一章没有自己的 probe.sh，取证要现写）"
+  ]
 }

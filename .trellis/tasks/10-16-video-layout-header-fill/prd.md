@@ -39,5 +39,6 @@
 
 ## Notes / 依赖
 
-- 排在下一集立项之后：`video/series.json` 的 `next` 与 `backlog` 现在都是 `[]`，选题未定，
-  没有承载这次改版的新一集，改了也没地方生效。
+- 载体已定（2026-10-17 选题）：`video/series.json` 的 `next` = S5 SysTick，源 `docs/stm32/05-systick.md`，
+  取证 `code/stm32/05-systick/probe.sh`（全章、无需开发板）。
+- 顺序约束：本任务的两处改版要赶在 S5 出片**之前**落地。反过来做，第 18 集仍按旧版式生成，改版就继续往后拖一轮。
