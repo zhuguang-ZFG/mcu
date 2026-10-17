@@ -33,9 +33,10 @@ const COVER = `D:/Users/mcu/video/out/${EP}/douyin-cover.png`
 
 const browser = await chromium.connectOverCDP('http://127.0.0.1:9223')
 const ctx = browser.contexts()[0]
-// comment 走的是网页版（www.xiaohongshu.com），collection/collectioncreate 走的是编辑页（/publish/update），
-// 都不是 /publish/publish 那页草稿编辑器，所以这几步不参与工作页认领——认领错了会把没填完的草稿页当输入。
-const NO_WORK_PAGE = verb === 'comment' || verb === 'collection' || verb === 'collectioncreate'
+// comment 走的是网页版（www.xiaohongshu.com），collection/collectioncheck/collectioncreate 走的是编辑页（/publish/update），
+// 都不是 /publish/publish 那页草稿编辑器，所以这几步不参与工作页认领——认领错了会把没填完的草稿页当输入
+// （2026-10-17 补：collectioncheck 漏在这里过一版，会顺手开/认领一张发布页，纯只读的核对不该有这种副作用）。
+const NO_WORK_PAGE = verb === 'comment' || verb === 'collection' || verb === 'collectioncheck' || verb === 'collectioncreate'
 let page = null
 if (!NO_WORK_PAGE) {
   // 工作标签页按 URL 认领：已开着编辑器就回来接着用，没有就新开一页。
@@ -508,8 +509,8 @@ if (verb === 'status') {
   console.log(`  截图：${RUN}/${EP}-cover-applied.png`)
 } else if (verb === 'comment') {
   // 置顶评论只能在网页版发：创作者中心十项导航里没有任何评论项，数据看板只报「评论数」（实测与四条证据见 xhs-plan.md）。
-  // 这一步**只填不发**——发评论是公开动作，用户口径就是"我来发"，所以「发送」那颗按钮归人点，
-  // 本驱动也不给 --go：没实测过的写动作不写进代码，跟 publish 步一个道理。
+  // 默认**只填不发**（「发送」那颗按钮归人点）；`--go` 且写好**独立闸门** `I_HAVE_USER_OK_COMMENT=<ep>` 才代发
+  // （2026-10-17 F5/S5 各实发过一次；闸门只从对话里的点头来，不复用发布那张）。
   const text = ep.publish?.xiaohongshu?.pinned
   if (!text) throw new Error(`${EP} 没有 publish.xiaohongshu.pinned——不替这一集猜置顶评论`)
   const errs = []
