@@ -11,6 +11,9 @@ const RUN = 'D:/Users/mcu/.temp/xhs-run'
 mkdirSync(RUN, { recursive: true })
 const PUBLISH_URL = 'https://creator.xiaohongshu.com/publish/publish?target=video'
 const WORK_HOST = '/publish/publish'
+// 已发布笔记的编辑页是另一个 URL（/publish/update?id=…），noteId 只从笔记管理的「编辑」入口里拿，不拼、不抄。
+const EDIT_HOST = '/publish/update'
+const NOTE_MANAGER_URL = 'https://creator.xiaohongshu.com/new/note-manager'
 
 const verb = process.argv[2]
 function arg(name, dflt = null) {
@@ -30,10 +33,11 @@ const COVER = `D:/Users/mcu/video/out/${EP}/douyin-cover.png`
 
 const browser = await chromium.connectOverCDP('http://127.0.0.1:9223')
 const ctx = browser.contexts()[0]
-// comment 走的是网页版（www.xiaohongshu.com），不是创作者中心那页编辑器，所以不参与工作页认领。
-const WEB_ONLY = verb === 'comment'
+// comment 走的是网页版（www.xiaohongshu.com），collection 走的是编辑页（/publish/update），
+// 都不是 /publish/publish 那页草稿编辑器，所以这两步不参与工作页认领——认领错了会把没填完的草稿页当输入。
+const NO_WORK_PAGE = verb === 'comment' || verb === 'collection'
 let page = null
-if (!WEB_ONLY) {
+if (!NO_WORK_PAGE) {
   // 工作标签页按 URL 认领：已开着编辑器就回来接着用，没有就新开一页。
   // 新开而不是复用常驻页——上一版探针就是因为关掉常驻页把整个浏览器带没了。
   page = ctx.pages().find((p) => p.url().includes(WORK_HOST))
@@ -363,7 +367,138 @@ if (verb === 'status') {
   console.log(`  稿件 ${[...text].length} 字 → 评论框里 ${back.typed} 字${back.typed === [...text].length ? '（一致）' : '（不一致，看截图）'}`)
   await wp.screenshot({ path: `${RUN}/${EP}-comment.png` })
   console.log(`  截图：${RUN}/${EP}-comment.png`)
-  console.log('  只填不发：这一页留在这里，核对完由人点「发送」；发出去之后才有置顶入口，那一步还没实测')
+  // 发评论是公开写动作，闸门用**另一个文件名**：`I_HAVE_USER_OK=<ep>` 是"这一集可以发布"的授权，
+  // 拿它来放行一条评论，等于把两种授权混成一种——以后谁看到它在就以为发布也批过了。
+  if (!process.argv.includes('--go')) {
+    console.log('  只填不发：这一页留在这里，核对完由人点「发送」。要脚本代发：加 --go 并写好评论闸门文件')
+  } else {
+    const gate = `${RUN}/I_HAVE_USER_OK_COMMENT=${EP}`
+    if (!existsSync(gate)) {
+      console.log(`  停在发评论前：闸门文件不存在 ${gate}`)
+      console.log('  这个文件只能来自对话里对"发这条评论"的点头，脚本不自己造；字留在框里没动，人也可以直接点「发送」。')
+      process.exitCode = 3
+    } else {
+      console.log(`  闸门：${gate}`)
+      console.log(`    ${readFileSync(gate, 'utf8').trim()}`)
+      await wp.getByText('发送', { exact: true }).last().click({ timeout: 15_000 })
+      await wp.waitForTimeout(7000)
+      const after = await wp.evaluate((t) => {
+        const txt = (s) => (s || '').replace(/\s+/g, ' ').trim()
+        const list = [...document.querySelectorAll('[id^="comment"], [class*="comment"]')].map((e) => txt(e.innerText)).filter((s) => s && s.length > 8)
+        return { boxLeft: [...(document.querySelector('p.content-input')?.innerText || '')].length, posted: list.some((s) => s.includes(t.slice(0, 18))), sample: list.slice(0, 4) }
+      }, text)
+      console.log(`  点过「发送」：评论框剩 ${after.boxLeft} 字（清空=发出去了）；列表里找到这条：${after.posted ? '是' : '否'}`)
+      for (const s of after.sample) console.log(`    评论节点：「${s.slice(0, 70)}」`)
+      await wp.screenshot({ path: `${RUN}/${EP}-comment-sent.png` })
+      console.log(`  截图：${RUN}/${EP}-comment-sent.png`)
+    }
+  }
+} else if (verb === 'collection') {
+  // 挂合集要在**已发布笔记的编辑页**做：合集名从 episode.json 来，noteId 从笔记管理点「编辑」现拿（不拼 URL，noteId 抄进代码就是埋雷）。
+  // 本步骤做到「选中合集」为止。提交那颗按钮是 <xhs-publish-btn>（closed shadow，文本扫不到），
+  // 编辑已发布笔记时它带着 is-publish=true——点下去等于把这条公开笔记重新提交一遍，归人点，脚本不代点。
+  const name = ep.publish?.xiaohongshu?.collection
+  if (!name) throw new Error(`${EP} 没有 publish.xiaohongshu.collection——不替这一集猜合集名`)
+  const xsTitle = ep.publish?.xiaohongshu?.title || ''
+  let form = ctx.pages().find((p) => p.url().includes(EDIT_HOST))
+  if (form) {
+    console.log('  编辑页已经开着，接着用它')
+  } else {
+    const nm = await ctx.newPage()
+    nm.setDefaultTimeout(60_000)
+    await nm.goto(NOTE_MANAGER_URL, { waitUntil: 'domcontentloaded' })
+    await nm.waitForTimeout(9000)
+    const card = nm.locator('.note-card__body').filter({ hasText: xsTitle }).first()
+    if (!(await card.count())) {
+      await nm.close().catch(() => {})
+      throw new Error(`笔记管理里没有标题含「${xsTitle}」的卡片——先核这条到底发出去了没，别猜`)
+    }
+    // 「编辑」是图标按钮，只能靠 hover 出来的 tooltip 认领（按下标猜会在别的集上点错）
+    const icons = card.locator('[class*="action-btn"]')
+    const n = await icons.count()
+    let idx = -1
+    for (let i = 0; i < n; i++) {
+      await icons.nth(i).hover().catch(() => {})
+      await nm.waitForTimeout(700)
+      const tips = await nm.evaluate(() => {
+        const txt = (s) => (s || '').replace(/\s+/g, ' ').trim()
+        return [...document.querySelectorAll('[class*="tooltip"],[role="tooltip"],.d-popover,[class*="popover"]')]
+          .filter((e) => e.getBoundingClientRect().width)
+          .map((e) => txt(e.innerText))
+          .filter(Boolean)
+      })
+      if (tips.some((t) => t === '编辑')) { idx = i; break }
+    }
+    if (idx < 0) {
+      await nm.close().catch(() => {})
+      throw new Error(`这张卡片上 hover 遍 ${n} 个图标都没冒出「编辑」tooltip，不敢点`)
+    }
+    const before = new Set(ctx.pages())
+    await icons.nth(idx).click({ timeout: 15_000 })
+    await nm.waitForTimeout(12_000)
+    const fresh = ctx.pages().filter((x) => !before.has(x))
+    form = fresh[0] || nm
+  }
+  await form.waitForLoadState('domcontentloaded').catch(() => {})
+  await form.waitForTimeout(15_000)
+  const readRow = () =>
+    form.evaluate((want) => {
+      const txt = (s) => (s || '').replace(/\s+/g, ' ').trim()
+      const row = txt(document.querySelector('.collection-plugin-wrapper')?.innerText)
+      return {
+        row,
+        // 实测：没挂时这行末尾是占位「选择合集」，点中选项后占位没了、整行末尾换成合集名，
+        // 而且 .collection-plugin-button 这个类也随之消失——所以判据只能看整行文本，不能盯按钮。
+        picked: row.includes(want) && !row.includes('选择合集'),
+        url: location.href,
+      }
+    }, name)
+  const pre = await readRow()
+  console.log(`\n【collection】编辑页：${pre.url}`)
+  console.log(`  合集那一行现在是：「${pre.row}」`)
+  if (pre.picked) {
+    console.log(`  这一行已经写着「${name}」，不用再点（表单状态而已，没提交就不算挂上）`)
+  } else {
+    const trig = form.locator('.collection-plugin-button').first()
+    if (!(await trig.count())) throw new Error('编辑页里没有 .collection-plugin-button——入口换了样子，别硬点')
+    await trig.click({ timeout: 15_000 })
+    await form.waitForTimeout(4000)
+    // 弹层里可选项是 div.item（逐字「STM32 零基础自学」），「创建合集」在 .popover-footer 里——
+    // 所以按整段文本全等来认，不按子串：子串会把含 footer 的容器也捞进来。
+    const cand = form.locator('.d-popover .item')
+    const cnt = await cand.count()
+    const labels = []
+    let item = null
+    for (let i = 0; i < cnt; i++) {
+      const t = (await cand.nth(i).innerText().catch(() => '')).replace(/\s+/g, ' ').trim()
+      labels.push(t)
+      if (t === name) item = cand.nth(i)
+    }
+    console.log(`  弹层里的可选项（${cnt}）：${labels.map((s) => `「${s}」`).join(' | ') || '无'}`)
+    if (!item) throw new Error(`弹层里没有逐字等于「${name}」的选项——不猜该点哪一条`)
+    await item.click({ timeout: 15_000 })
+    await form.waitForTimeout(4000)
+  }
+  const after = await readRow()
+  console.log(`  现在这一行写着：「${after.row}」`)
+  console.log(`  这一行显示合集名：${after.picked ? '是' : '否'}`)
+  const btn = await form.evaluate(() => {
+    const el = document.querySelector('xhs-publish-btn')
+    if (!el) return null
+    const r = el.getBoundingClientRect()
+    return {
+      attrs: [...el.attributes].map((a) => `${a.name}=${a.value}`).join(' '),
+      rect: `${Math.round(r.x)},${Math.round(r.y)} ${Math.round(r.width)}x${Math.round(r.height)}`,
+      hasHandler: typeof el._onPublish === 'function',
+    }
+  })
+  if (btn) {
+    console.log(`  保存那颗按钮：<xhs-publish-btn ${btn.attrs}> rect=${btn.rect}，_onPublish 在=${btn.hasHandler}`)
+    console.log('  它是 closed shadow 的自定义元素：整页文本扫不到「发布」，坐标点又覆盖不出左右两半——所以本步骤不代点。')
+  }
+  await form.screenshot({ path: `${RUN}/${EP}-collection.png` })
+  console.log(`  截图：${RUN}/${EP}-collection.png`)
+  console.log('  到这里停手：没点提交。is-publish=true 时点下去等于把这条已发布笔记重新提交一遍（大概率再走一次审核），归人点。')
 } else if (verb === 'publish') {
   const gate = `${RUN}/I_HAVE_USER_OK=${EP}`
   if (!existsSync(gate)) {
@@ -374,7 +509,7 @@ if (verb === 'status') {
     throw new Error('发布这一步还没写进本驱动：字段上限与"外链能不能挂"尚未实测完，先别把不可逆动作自动化')
   }
 } else {
-  throw new Error(`未知步骤「${verb}」，认得的是 status / open / upload / measure / fill / topics / cover / coverset / coverapply / comment / publish`)
+  throw new Error(`未知步骤「${verb}」，认得的是 status / open / upload / measure / fill / topics / cover / coverset / coverapply / comment / collection / publish`)
 }
 
 function statSize(p) {
