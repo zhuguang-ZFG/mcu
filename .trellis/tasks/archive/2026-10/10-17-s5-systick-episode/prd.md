@@ -93,3 +93,14 @@
   （probe.sh 头部注释里写的那条），本次实跑用的是 10.3.1。
 - `code/**/build/` 与 `.trellis/ref/` 都在 `.gitignore` 里：屏上引用产物只能给命令 + 现场读数，不能给站内链接。
 - 站内这一章有现成动画 `/anim/systick-tick.svg`（倒数与 COUNTFLAG），与 F5 那两张横图的竖屏问题同一类，用前量一次。
+
+## 归档后核对（2026-10-17 深夜补记）
+
+归档前只有 AC 全勾 + grep 结论；这里补上"目标已完成"的实物证据（避免仅凭清单误退）：
+
+- 两份成片在位：`video/out/s5-systick/bilibili.mp4` **629.1667s**（ffprobe 实测，目标 480–720）、
+  `douyin.mp4` **67.9333s**（目标 45–75）；封面、srt、发布稿同目录。
+- B站：`.temp/bili-web-run/s5-systick.bvid` = **`BV1uEJi6vEnc`**（与 commit `a26d3a4` 记的一致）。
+- 抖音：`.temp/douyin-run/s5-systick-published.txt` 在位（回读 `status_code=0` + 作品管理 URL）。
+- 小红书（本任务之后开的那条线）：已发布 + 已挂合集「通往单片机之路」（见 10-17-xhs-series-collection/upload）。
+- 结论：目标「两平台成片」已达成，归档维持。
