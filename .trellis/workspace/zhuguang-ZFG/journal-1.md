@@ -468,3 +468,105 @@ comment 步补 --go（闸门另起一张 I_HAVE_USER_OK_COMMENT）并真发出 1
 ### Next Steps
 
 - None - task complete
+
+
+## Session 10: 小红书合集线收口（建「通往单片机之路」、F5/S5 换集落盘）+ 视频系列 17 条批量上传全发
+
+**Date**: 2026-10-17
+**Task**: 小红书合集线收口（建「通往单片机之路」、F5/S5 换集落盘）+ 视频系列 17 条批量上传全发
+**Branch**: `main`
+
+### Summary
+
+视频系列自建合集「通往单片机之路」建成、F5/S5 换集落盘（坐标点击+重开回读；S5 复审约 3-4 分钟后回稳）；用户「视频都要上传啊」后 17 条文案块从各集抖音稿派生（不新编）、xhs-batch.sh 逐集发布 17/17 零失败，「已发布」整列 43 张卡片对账逐条在列（=24 章+F5/S5+17 新）、3 条抽样合集行全中；发布点击改为 CDP 穿透量内部「发布」盒。
+
+### Main Changes
+
+### Summary
+
+视频系列自建合集「通往单片机之路」建成、F5/S5 换集落盘（坐标点击+重开回读；S5 被复审拉到「审核中」约 3-4 分钟后回稳）；
+用户「视频都要上传啊」后 17 条文案块从各集抖音稿派生（不新编一字），`xhs-batch.sh` 逐集发布，**17/17 零失败**，
+「已发布」整列 43 张卡片对账逐条在列、3 条抽样合集归属全中；发布点击改用 CDP 穿透量内部「发布」盒。
+
+### 做了什么
+
+1. **状态核实（不抄前一条会话的说法）**：S5 已发布且已挂章节合集「STM32 零基础自学」
+   （重开浏览器后经笔记管理「编辑」新开的页回读）；F5 未挂任何合集；账号弹层里只有 1 个合集；
+   抖音那条线的视频合集叫「通往单片机之路」（mix，c3b 排第 5 集）。
+2. **拍板（对话问答）**：新建「通往单片机之路」（给视频系列）＋提交那一下由我点（坐标点击+回读验证）＋立一个新任务。
+3. **建合集**：`collectioncreate --ep=f5-sem-mutex --desc=屏上每个数都是本机跑的`——
+   编辑页 → 加入合集 → footer「创建合集」→ 名称/简介 →「创建并加入」，回显「共1篇 成功创建」；
+   闸门 `I_HAVE_USER_OK_COLLECTION=通往单片机之路`。中途两个坑都修进驱动：认领编辑页要按标题框逐字
+   （F5 那步曾复用 S5 留下的页、把别人的合集行当自己的读）；「创建并加入」后立刻 reload 会撞 SPA 原生
+   confirm（ProtocolError: No dialog is showing）——统一挂 dialog 监听。
+4. **换集并提交**：`collection --ep=f5-sem-mutex --go` / `--ep=s5-systick --go`——真实点击 (560,789) →
+   F5 回读「更新成功」、S5 toast 偶发没读到 → 两条**重开编辑页回读那一行=「通往单片机之路」（落盘）**；
+   笔记管理里两条都在「已发布」；**S5 被拉回「审核中」约 3-4 分钟后转回「已发布」**（播放数 51 不变），
+   F5 同批没有——`is-publish=true` 的提交何时引复审平台不保证。
+5. **17 条批量上传**（用户「视频都要上传啊」→ 选「今晚 17 条连跑全发」）：
+   - 文案块派生：标题=抖音候选里最短 ≤20 字（f0/p4 两条人工指定；p4 三条候选全超 20）、
+     正文=抖音 `intro` 去掉含 站内/全篇/全文/免费/仓库/通往单片机之路 的句子 + 尾巴「复现：<repro>」、
+     置顶=抖音 `pinned` 同规则删句、话题=tags 前三个、合集=通往单片机之路。
+     插入按**花括号配平定位 publish 对象**（根键顺序不定：c4 的文件尾是 platforms 的收尾，
+     按尾锚会把块插进 platforms——被「除新块外一切不变」的守卫拦下）；文件是 CRLF，逐文件取 EOL。
+   - `video/publish/xhs-batch.sh`：逐集 `open→upload→fill→topics→coverset→coverapply→attach→publish --go`，
+     任一步非零即停；逐集闸门 `I_HAVE_USER_OK=<ep>`（内容=用户原话+该集 id）。
+   - `attach` 在**发布表单**上把合集选好（发出去一并落盘，省掉发完回编辑页补一遍）；
+     `publish --go` 的点击用 **CDP `DOM.getDocument(pierce:true)` + `DOM.getBoxModel`** 量内部「发布」盒
+     （573..693 × 769..809 → 点 (633,789)）——宿主 rect 221..901 的正中 (561,789) 落在
+     「暂存离开 429..549｜发布 573..693」之间的**空隙**上，点它什么都不发生（第一次白点过一次）。
+   - 结果：**17/17 发布成功、零失败**（c3-volatile 单跑 + 16 条批跑 1608s）；笔记管理「已发布」
+     整列 **43 张卡片**收齐（= 24 章 + F5/S5 + 17 新），新 17 条 22:22–22:49 逐条在列。
+6. **核对工具的两个坑**（写进 xhs-plan）：笔记管理**搜索框会偶发返回空结果**（同一前缀换个时刻能命中）——
+   别当唯一判据；该列表是**虚拟列表、只渲染可视区约 10 条**，`PageDown`/滚轮/scrollTop 单用都不动，
+   要 **Ctrl+Minus 缩小 + 三种滚动齐上**才收得全 43 条。
+7. **抽 3 条核合集归属**：f0-why-rtos / c3-volatile / f6-timers 编辑页回读那一行全部=「通往单片机之路」✓。
+
+### 改了哪些文件
+
+- `video/publish/xhs-step.mjs`：+`collectioncreate` / `attach` / `publish --go`、`collection --go`；
+  `claimEditPage`（按标题框认领）、`findPublishButtonBox`（CDP 穿透）、dialog 监听、
+  `openCollectionPicker`（入口两态回退）。
+- `video/publish/xhs-batch.sh`（新）：逐集跑批。
+- `video/episodes/<17 集>/episode.json`：+`publish.xiaohongshu` 块（派生稿）；`f5/s5` 的 `collection`
+  改「通往单片机之路」并更新 `collectionNote`。
+- `video/publish/xhs-plan.md`：合集一节重写、批量一节新增（含结果与核对坑）、四处旧口径改写。
+- `.agents/skills/video-release/SKILL.md`：命令块加 collectioncreate/--go、attach、publish --go、xhs-batch.sh；
+  发布/合集两条判据重写；§3/§6 补今天的三个坑。
+- `.trellis/tasks/10-17-xhs-series-collection/`（收口，AC 全勾+执行记录）、
+  `.trellis/tasks/10-17-xhs-series-upload/`（新建：PRD+AC 全勾）。
+
+### 验证
+
+- S5/F5 落盘：重开编辑页回读（含浏览器重启后新开页）；点击坐标与 toast 回读记录在案。
+- 批量：16 个「完成」标记 + 17 条 `published=true`；「已发布」整列对账；3 条抽样合集行回读。
+- `node --check video/publish/xhs-step.mjs` 过；17 份 episode.json 的深比对守卫（除新块外一切不变）全过。
+- 期间浏览器窗口无预警掉了三次（第三次由定时任务占用同一共享 profile 的嫌疑最大）——每次重启 daemon 后继续，
+  产物均在服务端，未影响结果。
+
+### 待办
+
+- S5 置顶评论未填未发（发送需 `I_HAVE_USER_OK_COMMENT=s5-systick` 的对话点头）；17 条新笔记的评论区置顶
+  只能在 App 内长按做。
+- 内容类型声明 / 原创声明：F5、S5 两集都没选（属人工决定）。
+- 笔记管理虚拟列表的核对方式已写进 xhs-plan，下次别再用"搜索一次没命中"下结论。
+
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e09345e` | (see git log) |
+| `0212cf3` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
