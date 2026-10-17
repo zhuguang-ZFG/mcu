@@ -32,3 +32,9 @@
 1. 封面已生成并上传过一次：`video/out/season-cover-bili.png`（1920×1200，走 `buildCover(browser, ep, 'bili', …)` 产线，`.temp/bili-season-cover.mjs`），URL `https://archive.biliimg.com/bfs/archive/4ab3266e20a3609f8a8d5aa44680959f6552a82b.png`。若隔太久失效，重跑 `node .temp/bili-collection.mjs cover video/out/season-cover-bili.png`。
 2. `node .temp/bili-collection.mjs create "<标题>" "<简介>" "<封面URL>"` → 写 `.temp/bili-season.json`，里面就是 `season_id`。
 3. 逐条 `node .temp/bili-collection.mjs resolve <bvid>` 取 `aid`/`cid`，再 `node .temp/bili-collection.mjs join <section_id> "aid:cid:标题"`；`section_id` 从 `seasons` 返回的 `sections[]` 里读，别猜。
+
+## 复测记录
+
+- 2026-10-17 深夜：`node video/publish/bili-level.mjs` → `season=false new_season=false`（`season_scope=2`，`season_add_multip=true`）
+  → **仍未解锁**，建集照旧会吃 `code=20082`（权限位伪装文案，不是额度）；等权益中心 Lv2 权限位翻上来再跑
+  `bili-collection.mjs create` 建季并挂 17 条。
