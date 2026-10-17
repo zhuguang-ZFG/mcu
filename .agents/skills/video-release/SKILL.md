@@ -71,6 +71,7 @@ node video/publish/xhs-step.mjs topics --ep=<ep>       # 打话题再接弹层�
 node video/publish/xhs-step.mjs cover --ep=<ep>        # 只读：把封面面板的结构和文案量下来
 node video/publish/xhs-step.mjs coverset --ep=<ep>     # 喂自定义封面，停在裁剪页不点应用
 node video/publish/xhs-step.mjs coverapply --ep=<ep>   # 点「完成」，封面才落定
+node video/publish/xhs-step.mjs comment --ep=<ep>      # 网页版自家笔记页：把置顶评论填进评论框，不发
 ```
 
 `measure` 是量字段上限用的探针步——**别在正经稿件上跑，它会把测试字写进标题和正文**。
@@ -79,7 +80,7 @@ node video/publish/xhs-step.mjs coverapply --ep=<ep>   # 点「完成」，封�
 - **平台不替我们拦超限**：标题 39 字喂进去 `input.value` 还是 39，计数器只印成「39 / 20」，拦的是提交。所以断言写在本机侧——`fill` 先按码点断 标题 ≤20、正文 ≤1000，任何字段出现 `http(s)://` 或 `github` 字样就退出码 2 停手（口径见 §4）。
 - **成功只认笔记管理 `/new/note-manager` 的「已发布」标签里有这条**（「审核中」「未通过」两个标签同时应当是空的——落在审核里不等于发出去了）。发布后表单 URL 会变成 `?source=&published=true`、草稿箱归零，但那是**事后信号不是回执**，别拿它写判据。本机侧的账是 `.temp/xhs-run/<ep>-published.txt`；草稿留痕也在同一个目录，**草稿不等于已发布**。
 - **回读观众侧文案这条路暂时不可用**：笔记管理里点标题只会选中，弹出的标签页不导航到详情页。所以"有没有漏地址"要在**发布前**用编辑器正文逐字比（`.temp` 下的一次性脚本即可，别把判据留到发出去之后）。
-- **想发/置顶评论，先确认入口在不在**：创作者中心压根没有评论区（导航只有 首页/笔记管理/Builder hub/小工具/Red Skill/数据看板/活动中心/笔记灵感/创作学院/创作百科），公网笔记页要 `xsec_token` 且要网页版另登录一次。笔记行上那个「置顶」图标置顶的是**笔记本身**，不是评论。别再从头探一遍，口径与证据在 `xhs-plan.md`。
+- **评论只在网页版发得出去，创作者中心没有评论区**（十项导航里没有任何评论项，数据看板只报「评论数」；笔记行上那个「置顶」图标置顶的是**笔记本身**不是评论）。链路是 `/explore` 顶栏的 `a[href^="/user/profile/"]` → 主页按标题找到带 `xsec_token` 的卡片 → 笔记页，**token 每次现取别抄存**；未登录 `www` 域时直连笔记页会吃 `error_code=300031`。`comment` 步照旧只填不发。
 
 ## 3. 平台的"没做成"分别长什么样
 
@@ -97,6 +98,7 @@ node video/publish/xhs-step.mjs coverapply --ep=<ep>   # 点「完成」，封�
 | 小红书 计数器印成「39 / 20」但字都还在 | 平台**不在 DOM 上限高**，超限只标红，真正拦在提交那一步 | 别信"看起来通过了"；`fill` 的前置断言没过就是没过，改稿件不改断言 |
 | 小红书 正文里的 `#词` 显示成黑字 | 纯文本 `#` 不是话题，只有输入 `#名字` 后弹出来的那条候选被接住才成 chip | `topics` 步用回车接弹层；**不许用 locator 点候选**——先匹配到的正是刚打进正文的那串黑字 |
 | 小红书 封面点了没反应 | 「设置封面」那四个字只是标题，入口是默认封面缩略图本身（三层才到 file input） | 先 `cover` 量结构，再 `coverset` 喂图、`coverapply` 点完成 |
+| 小红书 点评论框报 `intercepts pointer events` | 「评论」那条占位与 `p.content-input` 是同 rect 的兄弟，占位盖在上面 | 先点 `.engage-bar .inner-when-not-active` 换到输入态，再敲字（`comment` 步已这么写） |
 | 小红书 上一步的弹层还挂着，下一步点击超时 | 一次实验遗留的 `d-modal-mask` 在拦 pointer events | 驱动已把 `coverset` 做成幂等（见到 file input 直接喂）；手工救援前先看有没有遮罩，别急着 reload |
 
 ## 4. 字怎么出去（简介与文案）

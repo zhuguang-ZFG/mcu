@@ -66,21 +66,33 @@ title 18 字 / body 475 字（去空白，页面计数 539）/ topics 三个 / p
 `f5-sem-mutex-coverset.png`（封面编辑器喂图）、`f5-sem-mutex-cover-applied.png`（封面落定 + 绿勾）、
 `manager-已发布.png` / `manager-审核中.png` / `manager-未通过.png`（发布状态三查）。
 
-## 置顶评论为什么卡在网页侧（2026-10-17 实测）
+## 置顶评论这条线（2026-10-17 打通到「只填不发」）
 
-用户选的是「先写工具，我来发」。工具暂时写不出来，原因不是没写，是**入口不存在**，四条证据：
+用户口径是「先写工具，我来发」。工具已经写成 `xhs-step.mjs comment`，**默认只把字填进评论框，「发送」归人点**，
+也不给 `--go`：没实测过的写动作不写进代码，跟 `publish` 步一个道理。
+
+先记下为什么创作者中心不行（四条实测证据，别再从头探一遍）：
 
 | 探到的事实 | 怎么量的 |
 |---|---|
 | 创作者中心**没有评论区，也没有评论管理** | 笔记管理左侧导航全文只有：首页 / 笔记管理 / Builder hub / 小工具 / Red Skill / 数据看板 / 活动中心 / 笔记灵感 / 创作学院 / 创作百科。数据看板的 `/statistics/note-detail?noteId=...` 只报「评论数 0」，没有任何管理评论的按钮 |
 | 笔记那一行的图标按钮是：置顶 / 查看数据 / 编辑（+两个无 tooltip 的） | 逐个 `hover()` 读 tooltip（`.temp/xhs-comment-probe3.mjs`，全程不点——其中「编辑」会改已发布笔记，可能重新进审核，那是要人点头的动作）。**那个「置顶」置顶的是笔记本身，不是评论**，别拿它当置顶评论用 |
-| 公网笔记页直连被拒 | `https://www.xiaohongshu.com/explore/<noteId>` 落到 `/404?...error_code=300031&error_msg=当前笔记暂时无法浏览`——网页版要看笔记得带 `xsec_token`，而笔记管理页面上**没有任何指向 www 域的 `<a>`**（扫过，0 条），拿不到现成的分享出口 |
-| 这个 profile 只登录了创作者中心，没登录网页版 | explore 页上挂着「登录」按钮、输入框占位符是「登录探索更多内容」 |
+| 未登录网页版时公网笔记页直连被拒 | `https://www.xiaohongshu.com/explore/<noteId>` 落到 `/404?...error_code=300031&error_msg=当前笔记暂时无法浏览`——要看笔记必须带 `xsec_token`，而笔记管理页面上**没有任何指向 www 域的 `<a>`**（扫过，0 条） |
+| 创作者中心的登录态不等于网页版登录态 | 同一个 profile，创作者中心是登录的，`www` 域一开始挂着「登录」按钮。用户在窗口里补登网页版之后，顶栏出现 `<a href="/user/profile/5ffd8d4b0000000001000162">我</a>`，这条路才通 |
 
-noteId 是量到了的：`6ad324850000000018004361`（点笔记管理里那条的封面，新标签页落到 `/statistics/note-detail?noteId=...` 抄下来的）。
+通链路的走法（`comment` 步就是照这个写的，全程不拼 URL）：
+`/explore` 顶栏那个 `a[href^="/user/profile/"]` → 主页上按标题匹配到 `a[href*="xsec_token"]` → 跟到 `/explore/<noteId>?xsec_token=...&xsec_source=pc_user`。
+**token 每次现取**，抄进台账会跟着会话过期成雷。noteId 是 `6ad324850000000018004361`（点笔记管理里那条的封面，新标签落到 `/statistics/note-detail?noteId=...` 抄来的）。
 
-所以这条路要么 **(a) 在同一个常驻窗口里再登录一次网页版小红书**（扫码或手机号），我从那里找到自家笔记、量评论区结构，再写 `xhs-step.mjs comment` 步（照旧只填不发 + 闸门）；
-要么 **(b) 手机 App 里发并长按置顶**，最快且不留未验证的代码。文案在 `episode.json` 的 `publish.xiaohongshu.pinned`。
+评论区自己的结构也有一个坑：`div.content-edit` 里 `p.content-input`（`contenteditable="true"`）和
+`div.not-active.inner-when-not-active`（文案就是「评论」）是**同一个 rect 的兄弟**，占位盖在上面；
+直接 `click()` 那个 `p` 会 `TimeoutError: ... intercepts pointer events`。先点占位才换到输入态。
+
+实跑验证（只填不发）：`node video/publish/xhs-step.mjs comment --ep=f5-sem-mutex`
+→ 稿件 138 字、评论框回填 138 字，截图 `.temp/xhs-run/f5-sem-mutex-comment.png` 里「发送」红按钮就在旁边等人点。
+
+**还欠一步实测**：评论发出去之后才有「置顶」入口长什么样（在自家评论上？还是要 `--go` 之后才出现），
+所以现在只写到了"填好"，没写"置顶"。谁要补这一步，得先有一条真评论再量，别先写代码。
 
 ## 合集这轮不建（2026-10-17 定）
 

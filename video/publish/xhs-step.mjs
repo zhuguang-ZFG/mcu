@@ -30,14 +30,19 @@ const COVER = `D:/Users/mcu/video/out/${EP}/douyin-cover.png`
 
 const browser = await chromium.connectOverCDP('http://127.0.0.1:9223')
 const ctx = browser.contexts()[0]
-// 工作标签页按 URL 认领：已开着编辑器就回来接着用，没有就新开一页。
-// 新开而不是复用常驻页——上一版探针就是因为关掉常驻页把整个浏览器带没了。
-let page = ctx.pages().find((p) => p.url().includes(WORK_HOST))
-if (!page) {
-  page = await ctx.newPage()
-  await page.goto(PUBLISH_URL, { waitUntil: 'domcontentloaded' })
+// comment 走的是网页版（www.xiaohongshu.com），不是创作者中心那页编辑器，所以不参与工作页认领。
+const WEB_ONLY = verb === 'comment'
+let page = null
+if (!WEB_ONLY) {
+  // 工作标签页按 URL 认领：已开着编辑器就回来接着用，没有就新开一页。
+  // 新开而不是复用常驻页——上一版探针就是因为关掉常驻页把整个浏览器带没了。
+  page = ctx.pages().find((p) => p.url().includes(WORK_HOST))
+  if (!page) {
+    page = await ctx.newPage()
+    await page.goto(PUBLISH_URL, { waitUntil: 'domcontentloaded' })
+  }
+  page.setDefaultTimeout(120_000)
 }
-page.setDefaultTimeout(120_000)
 
 async function dump(label) {
   const info = await page.evaluate(() => {
@@ -302,6 +307,63 @@ if (verb === 'status') {
   console.log(`\n【coverapply】编辑器还开着：${st.modal ? '是' : '否'}；封面条：${st.thumbs.join(' | ') || '无'}`)
   await page.screenshot({ path: `${RUN}/${EP}-cover-applied.png` })
   console.log(`  截图：${RUN}/${EP}-cover-applied.png`)
+} else if (verb === 'comment') {
+  // 置顶评论只能在网页版发：创作者中心十项导航里没有任何评论项，数据看板只报「评论数」（实测与四条证据见 xhs-plan.md）。
+  // 这一步**只填不发**——发评论是公开动作，用户口径就是"我来发"，所以「发送」那颗按钮归人点，
+  // 本驱动也不给 --go：没实测过的写动作不写进代码，跟 publish 步一个道理。
+  const text = ep.publish?.xiaohongshu?.pinned
+  if (!text) throw new Error(`${EP} 没有 publish.xiaohongshu.pinned——不替这一集猜置顶评论`)
+  const errs = []
+  if (/https?:\/\//.test(text)) errs.push('置顶评论里有站外链接')
+  if (/github/i.test(text)) errs.push('置顶评论里有 GitHub 字样')
+  if (errs.length) {
+    console.log('停在发评论前：')
+    for (const e of errs) console.log(`  - ${e}`)
+    process.exit(2)
+  }
+  const wp = await ctx.newPage()
+  wp.setDefaultTimeout(60_000)
+  // 笔记地址每次现取：/explore/<id> 少了 xsec_token 直接落 300031「当前笔记暂时无法浏览」，
+  // 而 token 挂在主页那批 <a> 上、会跟着会话过期——抄进台账就是埋雷。
+  await wp.goto('https://www.xiaohongshu.com/explore', { waitUntil: 'domcontentloaded' })
+  await wp.waitForTimeout(8000)
+  const prof = await wp.evaluate(() => {
+    const a = document.querySelector('a[href^="/user/profile/"]')
+    return a ? new URL(a.getAttribute('href'), location.href).href : null
+  })
+  if (!prof) throw new Error('网页版没登录：顶栏里没有 <a href="/user/profile/...">。先在这个窗口里登录网页版小红书再跑')
+  await wp.goto(prof, { waitUntil: 'domcontentloaded' })
+  await wp.waitForTimeout(9000)
+  const xsTitle = ep.publish?.xiaohongshu?.title || ''
+  const note = await wp.evaluate((t) => {
+    const txt = (s) => (s || '').replace(/\s+/g, ' ').trim()
+    for (const a of document.querySelectorAll('a[href*="xsec_token"]')) {
+      if (t && txt(a.innerText).includes(t)) return a.href
+    }
+    return null
+  }, xsTitle)
+  if (!note) throw new Error(`主页上没找到标题含「${xsTitle}」的卡片——先回笔记管理核这条到底发出去了没，别猜`)
+  await wp.goto(note, { waitUntil: 'domcontentloaded' })
+  await wp.waitForTimeout(9000)
+  const box = wp.locator('p.content-input').first()
+  await box.waitFor({ state: 'attached', timeout: 20_000 })
+  // 「评论」那条占位（.inner-when-not-active）与 p.content-input 是同一个 rect 的兄弟，占位盖在上面；
+  // 直接点 p 会被它拦下（实测 TimeoutError: intercepts pointer events）。先点占位换到输入态。
+  const ph = wp.locator('.engage-bar .inner-when-not-active').first()
+  if (await ph.count()) await ph.click({ timeout: 15_000 })
+  else await box.click({ timeout: 15_000 })
+  await wp.waitForTimeout(1200)
+  await wp.keyboard.insertText(text)
+  await wp.waitForTimeout(1500)
+  const back = await wp.evaluate(() => {
+    const el = document.querySelector('p.content-input')
+    return { typed: [...(el?.innerText || '')].length, url: location.href }
+  })
+  console.log(`\n【comment】笔记页：${back.url}`)
+  console.log(`  稿件 ${[...text].length} 字 → 评论框里 ${back.typed} 字${back.typed === [...text].length ? '（一致）' : '（不一致，看截图）'}`)
+  await wp.screenshot({ path: `${RUN}/${EP}-comment.png` })
+  console.log(`  截图：${RUN}/${EP}-comment.png`)
+  console.log('  只填不发：这一页留在这里，核对完由人点「发送」；发出去之后才有置顶入口，那一步还没实测')
 } else if (verb === 'publish') {
   const gate = `${RUN}/I_HAVE_USER_OK=${EP}`
   if (!existsSync(gate)) {
@@ -312,7 +374,7 @@ if (verb === 'status') {
     throw new Error('发布这一步还没写进本驱动：字段上限与"外链能不能挂"尚未实测完，先别把不可逆动作自动化')
   }
 } else {
-  throw new Error(`未知步骤「${verb}」，认得的是 status / open / upload / measure / fill / topics / cover / coverset / coverapply / publish`)
+  throw new Error(`未知步骤「${verb}」，认得的是 status / open / upload / measure / fill / topics / cover / coverset / coverapply / comment / publish`)
 }
 
 function statSize(p) {
