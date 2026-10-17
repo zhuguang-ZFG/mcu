@@ -17,5 +17,5 @@ npm run video:build -- <id>                         # 会渲帧写 out/：只对
 
 ## 金样例
 
-- 页头分节夹具：`.trellis/tasks/10-16-video-layout-header-fill/research/f5-sections.json`（测量夹具，故意不进 `episodes/`）
-- 版式改版的完整证据链：`.trellis/tasks/10-16-video-layout-header-fill/research/baseline-20261017.md`
+- 页头分节夹具：`.trellis/tasks/archive/2026-10/10-16-video-layout-header-fill/research/f5-sections.json`（测量夹具，故意不进 `episodes/`）
+- 版式改版的完整证据链：`.trellis/tasks/archive/2026-10/10-16-video-layout-header-fill/research/baseline-20261017.md`

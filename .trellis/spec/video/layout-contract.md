@@ -1,7 +1,7 @@
 # 成片版式合同：页头分节与纵向填充
 
 改 `video/src/layout.mjs`、`video/src/spec.mjs` 的页头/版式，或给某一集写 `sections` 之前读这份。
-判据全部来自 2026-10-17 的实测（`.trellis/tasks/10-16-video-layout-header-fill/research/baseline-20261017.md`），
+判据全部来自 2026-10-17 的实测（`.trellis/tasks/archive/2026-10/10-16-video-layout-header-fill/research/baseline-20261017.md`），
 不是原则陈述——每条都附了把它量出来的命令。
 
 ## 1. Scope / Trigger
@@ -24,8 +24,8 @@ openStage(browser, { platform, size, safe, scenes, kicker, badge, sections })
 ```bash
 npm run video:lint                # 18 集全量契约校验（含 sections 五条判据）
 npm run video:check -- [id…] [--platform p]   # 只跑舞台 + 排版审计，不渲帧、不写 video/out/
-node .trellis/tasks/10-16-video-layout-header-fill/research/fill-probe.mjs <epId> [platform] [--sections f.json] [--out 前缀]
-node .trellis/tasks/10-16-video-layout-header-fill/research/fill-sweep.mjs   # 18 集 × 双平台逐场填充分布
+node .trellis/tasks/archive/2026-10/10-16-video-layout-header-fill/research/fill-probe.mjs <epId> [platform] [--sections f.json] [--out 前缀]
+node .trellis/tasks/archive/2026-10/10-16-video-layout-header-fill/research/fill-sweep.mjs   # 18 集 × 双平台逐场填充分布
 ```
 
 ## 3. Contracts

@@ -264,7 +264,7 @@ pre.code b{color:var(--brand)}
 /* code/hook 的纵向空隙只加 gap，**justify-content 一律留 center**。
    试过 space-between + padding-block:5u/9u：填充读数从 0.55 涨到 0.74 看着达标，
    截图却是标题贴页头、代码贴下沿、中间空 250px——数字是被"拆开内容"刷上去的，画面更坏
-   （反例留档 .trellis/tasks/10-16-video-layout-header-fill/research/lever-spacebetween-*.png）。
+   （反例留档 .trellis/tasks/archive/2026-10/10-16-video-layout-header-fill/research/lever-spacebetween-*.png）。
    padding 那一半还有实伤：竖版加 3u/6u
    把长代码场挤给 fitAll，19.1px 压到 13.3px，三集 8 场撞了审计的 16px 地板。
    只加 gap 是居中一组重新呼吸，横版 code 0.64 / hook 0.59，18 集 694 场审计零新增失败。 */

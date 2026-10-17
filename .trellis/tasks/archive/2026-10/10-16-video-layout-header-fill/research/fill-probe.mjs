@@ -10,8 +10,8 @@
 //   改完 CSS 再跑一次会把改前读数覆盖掉，所以改版后的读数一律写 after-*。
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { episodePath, loadEpisode, platformConfig, resolveScenes } from '../../../../video/src/spec.mjs'
-import { openBrowser, openStage } from '../../../../video/src/stage.mjs'
+import { episodePath, loadEpisode, platformConfig, resolveScenes } from '../../../../../../video/src/spec.mjs'
+import { openBrowser, openStage } from '../../../../../../video/src/stage.mjs'
 
 const HERE = import.meta.dirname
 const argv = process.argv.slice(2)

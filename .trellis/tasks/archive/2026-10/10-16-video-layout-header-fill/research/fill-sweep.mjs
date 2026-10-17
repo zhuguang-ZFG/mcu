@@ -1,14 +1,14 @@
 // 全量纵向填充扫描：改版 CSS 之后，18 集 × 双平台每场的填充比。
 // 目的是给 cli.mjs 的那条新判据定阈值——阈值必须低于既有成片的实测最差值，
 // 否则一上线就红一整片，判据本身就成了噪声。
-// 用法：node .trellis/tasks/10-16-video-layout-header-fill/research/fill-sweep.mjs
+// 用法：node .trellis/tasks/archive/2026-10/10-16-video-layout-header-fill/research/fill-sweep.mjs
 // 只读测量，不写 video/out/。
-import { loadEpisode, platformConfig, resolveScenes } from '../../../../video/src/spec.mjs'
-import { openBrowser, openStage } from '../../../../video/src/stage.mjs'
+import { loadEpisode, platformConfig, resolveScenes } from '../../../../../../video/src/spec.mjs'
+import { openBrowser, openStage } from '../../../../../../video/src/stage.mjs'
 import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-const ids = readdirSync(join(import.meta.dirname, '../../../../video/episodes')).filter((d) => !d.startsWith('.'))
+const ids = readdirSync(join(import.meta.dirname, '../../../../../../video/episodes')).filter((d) => !d.startsWith('.'))
 const browser = await openBrowser()
 const rows = []
 for (const epId of ids) {
