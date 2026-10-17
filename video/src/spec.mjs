@@ -50,6 +50,49 @@ function check(cond, msg, errs) {
   if (!cond) errs.push(msg)
 }
 
+// 页头「第 i/n 节 · title」的数据源。platforms[p].sections 声明分节边界，
+// `at` 是该场第一幕的 scene id，一节管到下一节开始为止。
+// 缺省返回全 null——旧稿没有这个字段时，页头必须与改版前逐字节相同（回归口径）。
+// 首节之前的场次（比如没归进任何一节的片头）也是 null，页头保持旧文案。
+export function sceneSections(scenes, sections) {
+  if (!sections?.length) return scenes.map(() => null)
+  const byScene = new Map(sections.map((s, j) => [s.at, j]))
+  const n = sections.length
+  let k = -1
+  return scenes.map((sc) => {
+    const j = byScene.get(sc.id)
+    if (j !== undefined) k = j
+    return k < 0 ? null : { i: k + 1, n, title: sections[k].title }
+  })
+}
+
+// 12 字是页头字号（1.7u≈18.4px）下竖版 860px 可用宽的实测上限，不是拍脑袋：
+// 改版后 fill-probe 会量出真实占宽，宽度不够就先减字、不是先缩字号——
+// 页头一缩字号就撞审计的 16px 地板。
+export const SECTION_TITLE_MAX = 12
+
+function validateSections(sections, scenes, name, errs) {
+  if (!sections?.length) return
+  const seenAt = new Set()
+  let lastIdx = -1
+  for (const [j, s] of sections.entries()) {
+    const at = `${name}.sections[${j}]`
+    const idx = scenes.findIndex((sc) => sc.id === s.at)
+    // 命不中真实 id、顺序乱是写错稿。静默退回旧页头会把错误一路带到成片里，
+    // 而页头文本每帧都在画面中，错了没有第二处能看出来。
+    check(idx >= 0, `${at}: at="${s.at}" 不是平台 ${name} 里的真实 scene id`, errs)
+    check(!seenAt.has(s.at), `${at}: at="${s.at}" 与其它节重复`, errs)
+    seenAt.add(s.at)
+    check(s.title?.trim(), `${at}: 缺 title`, errs)
+    const len = s.title?.trim().length || 0
+    check(len <= SECTION_TITLE_MAX, `${at}: title ${len} 字，超过页头宽度上限 ${SECTION_TITLE_MAX} 字（先减字，别指望 fitAll 缩字号）`, errs)
+    if (idx >= 0) {
+      check(idx > lastIdx, `${at}: at="${s.at}" 在 scenes 里是第 ${idx} 场，不大于上一节的 ${lastIdx}（分节必须按场次递增）`, errs)
+      lastIdx = idx
+    }
+  }
+}
+
 export function validateEpisode(ep, id) {
   const errs = []
   const warns = []
@@ -112,6 +155,7 @@ export function validateEpisode(ep, id) {
         check(lines <= maxLines + 6, `${at}: 代码 ${lines} 行，超出 ${name} 可显示上限，请拆场`, warns)
       }
     }
+    validateSections(cfg.sections, scenes, name, errs)
     const [lo, hi] = cfg.targetSec || []
     if (lo && hi) {
       // 口径来自 11 集成片的实测回归（拿 narration.srt 末句时间当分母，最小二乘拟合）：

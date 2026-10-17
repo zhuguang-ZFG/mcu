@@ -37,7 +37,7 @@ export async function openBrowser() {
   })
 }
 
-export async function openStage(browser, { platform, size, safe, scenes, kicker, badge }) {
+export async function openStage(browser, { platform, size, safe, scenes, kicker, badge, sections }) {
   const [width, height] = size
   const page = await browser.newPage({
     viewport: { width, height },
@@ -47,7 +47,7 @@ export async function openStage(browser, { platform, size, safe, scenes, kicker,
   // 关掉平滑滚动和 transition：帧间只有我们 seek 出来的差异，不该有别的插值在动
   await page.addStyleTag({ content: '*,*::before,*::after{transition:none!important;animation:none!important}' })
   await page.setContent(
-    pageHtml({ platform, size, safe, scenes, anims: buildAnims(scenes, platform), kicker, badge }),
+    pageHtml({ platform, size, safe, scenes, anims: buildAnims(scenes, platform), kicker, badge, sections }),
     { waitUntil: 'load' },
   )
   await page.evaluate(() => document.fonts.ready)

@@ -3,7 +3,7 @@
   "name": "video-layout-header-fill",
   "title": "下一集起：视频版式补常驻页头与纵向填充",
   "description": "对照 D:/Users/STM32/final-videos 抽帧实测的两处差距：常驻页头带小节信息、内容块纵向铺满；只对未发布新集生效",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": null,

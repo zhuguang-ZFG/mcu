@@ -5,33 +5,60 @@
 
 ## 0. 护栏先立（改代码之前）
 
-- [ ] 生成既有产物清单：`find video/out -name '*.mp4' -o -name '发布*.md' | sort | xargs md5sum > .trellis/tasks/10-16-video-layout-header-fill/research/out-md5-before.txt`
-- [ ] 存一份改前的审计输出：`npm run video:check -- f5-sem-mutex --platform bilibili > research/check-before-f5.txt 2>&1`
-- [ ] 改前基线边界已经有了（`research/baseline-f5-sem-mutex.json`），本轮不许覆盖它——它是「改之前长什么样」的唯一凭据。
+- [x] 生成既有产物清单：`find video/out -type f | sort | xargs md5sum > research/out-md5-before.txt`
+      —— 实际覆盖 **1220 个文件 / 5.3 GB**（比原计划的 `-name '*.mp4' -o -name '发布*.md'` 更严：
+      封面 PNG、SRT、`bili-submit.yaml` 一起算）。
+- [x] 存一份改前的审计输出：`npm run video:check -- f5-sem-mutex > research/check-before-f5.txt 2>&1`
+      —— 不带 `--platform`，两平台一次收全（35 + 12 场）。
+- [x] 这条参照可复现，先证明再拿来当闸门：同一命令连跑两遍 `diff` 空。见 `research/baseline-20261017.md` §五。
+- [x] 改前基线边界（`research/baseline-f5-sem-mutex.json`）本轮不覆盖。
 
 ⛔ 本任务全程禁止对既有 18 个 id 跑 `video:build`（会按新版式重渲已发布的集）。`video:check` 允许，它不写 `video/out/`。
 
 ## 1. 数据契约（spec.mjs）
 
-- [ ] `sceneSections(scenes, sections)`：返回每场 `{ i, n, title }`；`sections` 缺省返回全 `null`。
-- [ ] `validateEpisode` 补四条 error：`at` 命中真实 scene id、下标严格递增、`title` 非空、`at` 不重复。
-- [ ] 验证：`npm run video:lint`（无参数=遍历 `video/episodes/`，18 个旧集都没有 `sections`，必须一条错都不报）
-      + `npm run video:lint -- s14-pwr`（14 张卡片、标题最长的那一集，拿来当误报试纸）。
+- [x] `sceneSections(scenes, sections)`：返回每场 `{ i, n, title }`（1-based 显示）；`sections` 缺省返回全 `null`；
+      首节之前的场次也是 `null`，页头保持旧文案。
+- [x] `validateEpisode` 补判据（都算 error）：`at` 命中真实 scene id、下标严格递增、`title` 非空、`at` 不重复，
+      外加 `SECTION_TITLE_MAX = 12` 的长度硬校验（1.4 复核已点头）。
+- [x] 验证：`npm run video:lint` 全绿（18 个旧集都没有 `sections`，一条错不报）；
+      正向/反向用一次性脚本在内存里造 sections（`.temp/sections-selftest.mjs`，不写 `video/episodes/`）：
+      缺省⇒全 null、合法⇒零报错、五种写错稿各报一条，6/6 符合预期。
+      `at` 重复那一例同时报「重复」与「不递增」两条，是同一处笔误的两个面，不合并——
+      合并就要在下标判断里加 `if (!seen)` 的特例，反而更难读。
 
 ## 2. 页头渲染（layout.mjs）
 
-- [ ] `pageHtml` 收 `sections`，`payload` 每项带 `sec`；新增 `.secchip`（横版只有文字）与 `.secbar`（只竖版）。
-- [ ] `MCU.setup(i)` 内在 `drawTicks(i)` 同一处更新页头，**只随 i 变**。
-- [ ] 左格去掉 `cover.kicker` 的 `· F5` 尾巴——但 `sections` 缺省时页头文本必须与改前逐字相同（旧集回归）。
-- [ ] 验证：`npm run video:check -- f5-sem-mutex`（旧稿无 `sections`）→ 审计输出与 `check-before-f5.txt` 逐字相同。
-      这条是兼容线的实测证明，不是「看起来没变」。
+- [x] `pageHtml` 收 `sections`，`payload` 每项带 `sec`；新增 `.secchip`（横版只有文字）与 `.secbar`（只竖版）。
+      **分叉点在"要不要生成这两个元素"**：没有 `sections` 就不生成，而不是生成了再用 CSS 藏——
+      藏起来仍然会进审计的相叠/越界名单，兼容线也就只剩半条。
+- [x] `MCU.setup(i)` 内在 `drawTicks(i)` 同一处更新页头（`drawHeader(item.sec)`），**只随 i 变**；
+      `setup` 的 `if (i === current) return` 天然保证同一场内页头 DOM 一个字不变。
+- [x] 左格去掉 `cover.kicker` 的 `· F5` 尾巴（按 `badge` 匹配剥，不写死集号）——`sections` 缺省时走旧字符串。
+- [x] 验证（两层，都不靠目测）：
+      ① `npm run video:check -- f5-sem-mutex` 与 `research/check-before-f5.txt` **逐字节相同**（diff 空）。
+      ② DOM 层面：老集 `.topbar` outerHTML 仍是 `<div class="topbar"><span class="badge">F5</span><span class="brand2">通往单片机之路 · F5</span></div>`，
+      `#secchip`/`#secbar` 都是 `null`；注入夹具后横版 chip 随场次推进到「第 6/6 节」，
+      竖版 `secbar` 段数 = n 且 `cur` 跟着节号走，`.ticks` 仍 `display:none`。
+- [x] 与设计的一处出入照记：`stage.mjs` 的 `openStage` 多了 `sections` 一个透传参数。
+      design §1 说它不动，但不改签名就送不进 `pageHtml`；用模块级全局注入（照 `setAnimSourceReader` 那套）
+      会把上一集的分节漏给下一集——`video:build` 是遍历多集的。seek/渲帧语义没动，标定仍不需要重跑。
 
 ## 3. 测量夹具（不动仓库里的已发布稿）
 
-- [ ] 给 `research/fill-probe.mjs` 加 `--sections <file>`：从 research 下的 JSON 注入分节，
-      在内存里造 `sections`，**不写 `video/episodes/`**（`video:lint` 无参数会遍历整个目录，
-      放一个 `_layout-lab` 假集进去就会被当成第 19 集校验，是污染）。
-- [ ] 造一份 F5 的 6 节分节表当夹具（按现有 narration 的语义段落划），存 `research/f5-sections.json`。
+- [x] `research/fill-probe.mjs` 加 `--sections <file>` 与 `--out <前缀>`。
+      `--out` 不在原计划里，但没有它就危险：默认前缀是 `baseline`，改完 CSS 再跑一次会把
+      「改之前长什么样」的唯一凭据（`baseline-f5-sem-mutex.json` + 五张 png）就地覆盖。改后读数一律 `--out after`。
+- [x] 夹具 `research/f5-sections.json`：横版 6 节、竖版 5 节，按现有 narration 的语义段落划。
+      **形状是按平台分组的** `{bilibili:[…], douyin:[…]}`——竖版 `pick` 是横版 35 场里的 12 场子集，
+      同一份边界表在竖版命不中 scene id，整集页头会全空。
+      这只是测量夹具，不构成「F5 该补 sections」：F5 已发布，不回炉。
+- [x] 12 字上限由实测背书，不是拍的：chip 实测最宽 横版 304px / 竖版 505px，
+      `scrollWidth − clientWidth = 0`，35 + 12 场无一溢出。
+- [x] 一条判据差点是假的，已纠：「同屏不许两根按场进度」最初按 `querySelectorAll('.ticks, .secbar').length` 判，
+      竖版 12 场**全**误报——`.ticks` 一直在 DOM 里，只是 `display:none`。
+      改成只数看得见的（computed display ≠ none）后竖版回到 1 根。
+      **步骤 7 写进 `cli.mjs` 的那条断言必须用可见性口径**，否则审计会红一整集。
 
 ## 4. 纵向填充 · 杠杆 (a)：分布空隙
 

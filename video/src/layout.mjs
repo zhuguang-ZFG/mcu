@@ -1,4 +1,5 @@
 import { decorateAnim } from '../../docs/.vitepress/anim-decorate.mjs'
+import { sceneSections } from './spec.mjs'
 
 // 竖屏两栏代码并排放的宽度上限（单位是"显示格"，不是字符数）。
 // 9:16 高而不宽：把 10 行的 codeB 摞在 code 底下，等于要在一屏里塞两屏代码，
@@ -155,14 +156,32 @@ function animSource(name) {
   return animReader(name)
 }
 
-export function pageHtml({ platform, size, safe, scenes, anims, kicker, badge }) {
+export function pageHtml({ platform, size, safe, scenes, anims, kicker, badge, sections }) {
   const [w, h] = size
+  const secs = sceneSections(scenes, sections)
+  // 分节页头是可选增量：sections 缺省时下面走今天这条旧 DOM，一个字符都不变。
+  // 旧集一旦误跑 video:check，审计输出要能一字不差复现，所以这里靠"要不要生成这两个
+  // 元素"来分叉，而不是生成了再用 CSS 藏起来。
+  const segmented = secs.some((s) => s)
   const payload = scenes.map((sc, i) => ({
     kind: sc.kind,
     html: sceneHtml(sc, { index: i, total: scenes.length, url: '通往单片机之路 · 见简介' }),
     anim: sc.anim || null,
     slug: `${platform}-${i}`,
+    sec: secs[i],
   }))
+  // 集号今天被印了两遍：badge 是「F5」，cover.kicker 是「通往单片机之路 · F5」。
+  // 右格要留给小节 chip，所以左格收拢成「F5 + 系列名」，把 kicker 那条重复的集号尾巴摘掉。
+  // 没分节的老集一个字都不动——那是回归口径的一部分。
+  const brand2 =
+    segmented && badge && kicker?.endsWith(` · ${badge}`) ? kicker.slice(0, -(badge.length + 3)) : kicker || ''
+  const head = segmented
+    ? `<div class="topbar"><span class="brandg"><span class="badge">${esc(badge || '')}</span>` +
+      `<span class="brand2">${esc(brand2)}</span></span><span class="secchip" id="secchip"></span></div>` +
+      // 横版底部已有 .ticks 按场分进度，页头只给文字；竖版 .ticks 是 display:none，
+      // 这条按节的杠就是竖版唯一的进度载体。同屏两根按场进度是审计要拦的事。
+      (platform === 'douyin' ? '<div class="secbar" id="secbar"></div>' : '')
+    : `<div class="topbar"><span class="badge">${esc(badge || '')}</span><span class="brand2">${esc(kicker || '')}</span></div>`
   return `<!doctype html>
 <html lang="zh-CN" class="dark"><head><meta charset="utf-8"><title>stage</title>
 <style>
@@ -186,6 +205,15 @@ body{font-family:var(--font);color:var(--ink);-webkit-font-smoothing:antialiased
 .topbar{position:absolute;left:calc(var(--sw)*6);right:calc(var(--sw)*6);top:calc(var(--u)*3.2);
   display:flex;align-items:center;justify-content:space-between;font-size:calc(var(--u)*1.7);color:var(--muted);letter-spacing:.06em}
 .topbar .badge{color:var(--brand);font-weight:600}
+/* 分节页头：左格把 badge 与系列名收成一个组，右格留给当前小节。
+   没 sections 的老集不会生成这两个元素，下面的规则也就不参与布局。 */
+.topbar .brandg{display:flex;align-items:center;gap:calc(var(--sw)*1.2)}
+.topbar .secchip{color:var(--sub);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.secbar{position:absolute;left:calc(var(--sw)*8);right:calc(var(--sw)*10);top:calc(var(--u)*8);
+  display:flex;gap:calc(var(--u)*.5)}
+.secbar i{flex:1;height:calc(var(--u)*.34);border-radius:99px;background:rgba(123,134,150,.22)}
+.secbar i.on{background:rgba(138,180,255,.5)}
+.secbar i.cur{background:var(--brand)}
 .step{position:absolute;right:0;bottom:calc(var(--u)*.4);font-size:calc(var(--u)*1.5);color:var(--muted);
   font-variant-numeric:tabular-nums;letter-spacing:.08em}
 /* padding-bottom 给 .step 单独留一条带：不留的话 .lay 撑满 .body，最后一行 .note 正好压在页码上 */
@@ -314,7 +342,7 @@ svg .a-mono{font-family:var(--mono)}
 <body>
 <div class="frame">
   <div class="watermark">${esc(badge || '')}</div>
-  <div class="topbar"><span class="badge">${esc(badge || '')}</span><span class="brand2">${esc(kicker || '')}</span></div>
+  ${head}
   <div class="body" id="body"></div>
   <div class="ticks" id="ticks"></div>
   <div class="caps" id="caps"><span id="captext"></span></div>
@@ -327,6 +355,8 @@ window.MCU = (function () {
   var caps = document.getElementById('caps');
   var captext = document.getElementById('captext');
   var ticks = document.getElementById('ticks');
+  var secchip = document.getElementById('secchip');
+  var secbar = document.getElementById('secbar');
   var current = -1, svg = null;
 
   // 子孙的文字溢出不冒泡：pre.code 里超长那一行是 .ln（display:block、
@@ -403,6 +433,7 @@ window.MCU = (function () {
     }
     fitAll(body);
     drawTicks(i);
+    drawHeader(item.sec);
     current = i;
   }
 
@@ -416,6 +447,23 @@ window.MCU = (function () {
     for (var j = 0; j < n; j++) {
       var el = ticks.children[j];
       el.className = j === i ? 'cur' : j < i ? 'on' : '';
+    }
+  }
+
+  // 页头和小节杠继承同一条硬约束：只随场次号变，绝不随帧时间 t 变
+  //（见上面 drawTicks 那条注释——一集上万帧，DOM 在场内必须一字不变）。
+  // 没分节的集这两个元素根本不存在，函数直接返回，DOM 与改版前完全相同。
+  function drawHeader(sec) {
+    if (secchip) secchip.textContent = sec ? ('第 ' + sec.i + '/' + sec.n + ' 节 · ' + sec.title) : '';
+    if (!secbar) return;
+    var n = sec ? sec.n : 0;
+    secbar.style.display = sec ? 'flex' : 'none';
+    if (secbar.childElementCount !== n) {
+      secbar.innerHTML = '';
+      for (var k = 0; k < n; k++) secbar.appendChild(document.createElement('i'));
+    }
+    for (var j = 0; j < n; j++) {
+      secbar.children[j].className = j + 1 === sec.i ? 'cur' : j + 1 < sec.i ? 'on' : '';
     }
   }
 

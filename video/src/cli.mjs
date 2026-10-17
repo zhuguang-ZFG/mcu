@@ -436,6 +436,7 @@ async function buildOne(browser, ep, id, platform, flags) {
     scenes,
     kicker: ep.cover?.kicker || '通往单片机之路',
     badge: ep.badge || id.split('-')[0].toUpperCase(),
+    sections: cfg.sections,
   })
   const srtFile = srtPathOf(workDir)
   verifySrt(srtFile, timeline, timeline.duration)
@@ -595,6 +596,7 @@ async function cmdCheck(ids, flags) {
           scenes,
           kicker: ep.cover?.kicker || '通往单片机之路',
           badge: ep.badge || id.split('-')[0].toUpperCase(),
+          sections: cfg.sections,
         })
         try {
           await auditLayout(stage, plan)
