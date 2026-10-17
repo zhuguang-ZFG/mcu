@@ -62,39 +62,58 @@
 
 ## 4. 纵向填充 · 杠杆 (a)：分布空隙
 
-- [ ] `lay-code` / `lay-hook` 横版：`justify-content:center` → `space-between` + `padding-block`（上≈5u、下≈9u 起量）。
-- [ ] 验证：`node research/fill-probe.mjs f5-sem-mutex --platform bilibili --sections research/f5-sections.json`
-      → code/hook 的内容上下界进 150…780 量级，`fill` 那一列的**最小值**要写进留档（最差场才算数，平均数会骗人）。
-- [ ] `npm run video:check -- f5-sem-mutex` → 七项判据（越界/裁切/压字幕/相叠/顶穿/孤字/字号）仍全 0。
-      这条杠杆不该引入任何新失败；一旦引入，说明是在拉伸而不是在分布。
+- [x] `lay-code` / `lay-hook` 横版：先按 design 试 `space-between` + `padding-block:5u 9u`，
+      实测填充 0.74 达标——**但截图否掉了它**：标题贴页头、代码贴下沿、中间空 250px
+      （`research/lever-spacebetween-bilibili-code.png`）。填充比是靠把内容拆开刷上去的。
+- [x] 落地的走法换成**保持 `justify-content:center`、只把 `.lay` 的 gap 从 1.6u/2.4u 加到 4u**。
+      实测横版 code 0.64（最差场 0.38）、hook 0.59（最差 0.51）——比 `space-between` 低，
+      但那是一组居中、间距均匀的内容（`research/after-bilibili-code.png`）。
+- [x] 验证：`npm run video:check -- f5-sem-mutex` 与 18 集全量（694 场）全 0；
+      逐场读数与改前**只差通过行那一项文案**（见步骤 7）。
 
 ## 5. 纵向填充 · 杠杆 (b)：卡片内部尺度
 
-- [ ] `lay-card`：`.cardpanel` padding 与 `.bullets`/`.title` 字号**一档一量**（改一档跑一次 fill-probe + check）。
-- [ ] ⛔ 这条杠杆会把横向放不下的场次交给 `fitAll` 压回，压到 16px 地板就触发 `tooSmall`；
-      出现任何 `tooSmall` 命中就退回上一档，别加特例、别动 `MIN_FONT`。
-- [ ] 目标带同样以实测为准；`anim`（实测 92%）与 `outro`（23%）不参与，别顺手改它们。
+- [x] 字号/padding 三档连加（4.2u→6.5u、gap→3.4u、`.bullets` 2.35u/1.5u）实测只到 **0.66（最差 0.56）**，
+      同时把竖版 card 顶到 0.95——三档全部退回。design §4 的这条走法被否。
+- [x] 换成**面板长满、内容框内居中**：`.lay-card{justify-content:stretch}` + `.cardpanel{flex:1 1 auto;justify-content:center}`。
+      横版 card 8 场 **0.82**（改前 0.55/0.45），18 集 125 场横版 card 全部 82%（几何钉死，与内容量无关）。
+- [x] ⛔ 全程零 `tooSmall`：`MIN_FONT` 没动、没加特例；`anim`（92%）与 `outro`（23%）一个字没改。
+- [x] `.cols{flex:0 1 auto}` 那条护栏原样保留（design §4「明确不动的」）。
 
 ## 6. 竖版
 
-- [ ] 只给竖版 `lay-code`（实测 52%）加杠杆 (a)；`.frame` 的 10u/22u/8u 与 `.caps` 16u **一律不动**。
-- [ ] 页头 `.secbar` 放 topbar 下方一条，不底部（抖音客户端的 @作者名/描述/音乐条压在下面）。
-- [ ] 验证：`npm run video:check -- f5-sem-mutex --platform douyin` 全 0 +
-      fill-probe 出竖版三 kind 的边界表；`.ticks` 在竖版仍 `display:none`，页头杠是唯一进度。
+- [x] `.frame` 的 10u/22u/8u 与 `.caps` 16u **一律没动**。
+- [x] 竖版 `padding-block:3u 6u` 试过，**已退回**：它把长代码场的字压穿地板——
+      `f2-context-switch/name-map` 19.1→13.3px、`p4-iram/hook-01` 22.9→12.7px、`s16-hardfault` 四场 14.7px，
+      `video:check` 三集红（同一命令改前 exit 0）。竖版改成只加 gap 2.4u：code 0.54、hook 0.75，三集回到全绿。
+- [x] 页头 `.secbar` 放在 topbar 下方一条（不放底部：抖音客户端的 @作者名/描述/音乐条压在那一段）。
+- [x] 竖版 `card` 不参与"面板长满"：实测它本来就有 0.85/0.67，套横版那条会变成"框里三行字"，
+      在 douyin 块里显式退回旧的 `justify-content:center` + `flex:0 1 auto`。
+- [x] 验证：`video:check` 竖版 18 集全 0 + fill-probe 出竖版三 kind 边界表；
+      `.ticks` 在竖版仍 `display:none`，页头杠是唯一进度（47 场实测每场只有一根看得见的）。
 
 ## 7. 审计扩容（cli.mjs）
 
-- [ ] `:226` 压字幕选择器与 `:239` 相叠 marks 各加 `.secchip`、`.secbar`。
-- [ ] 新增断言：横版不许同时出现按场的两根进度（`.ticks` 与页头按场杠互斥），DOM 计数判定。
-- [ ] 造一次故意的失败：给某一节塞一个 40 字标题，确认审计真的抓到（抓不到等于这条判据是假的）。
+- [x] `:226` 压字幕选择器与 `:239` 相叠 marks 各加 `.secchip`、`.secbar`。
+- [x] 新增断言：同屏只许一根**看得见的**按场进度（`display !== 'none'` 且宽高非 0），
+      两平台同一口径。故意反例（横版也渲染 `.secbar`）→ 逐场报
+      `同屏 2 根按场进度（secbar × ticks）`；正常态 694 场 0 命中。
+- [x] 故意失败测试：42 字标题塞进 `.secchip` → 竖版 12 场全部 `越出画布 span.secchip 155,228,1490,272`
+      （横版 1920 装得下，不报）。另一层：`video:check` 根本进不去——`loadEpisode` 里的
+      `SECTION_TITLE_MAX=12` 先拦（`bilibili.sections[3]: title 42 字，超过页头宽度上限 12 字`）。
+      原计划写的"审计抓到"实际是**两层各抓一半**，竖版靠几何、横版靠契约。
+- [x] **没有加**纵向填充判据：18 集实测（§七）任何 ≤0.70 的全局阈值都判红 246–377 个已发布场次，
+      而 `space-between` 证明这个数能靠挖洞刷上去。它当不了闸。
 
 ## 8. 收尾核对
 
-- [ ] `npm run video:lint` 全绿；`video:check` 对 f5-sem-mutex 两平台全绿。
-- [ ] md5 比对：`md5sum -c research/out-md5-before.txt --quiet` → `video/out/` 一个字节都没动。
-- [ ] 更新 `research/`：改后边界表 + 每种 kind 一张截图，命名 `after-*` 与 `baseline-*` 成对。
-- [ ] PRD 的 AC 按实测分档改写（`anim`/`outro` 豁免、两平台目标带分开、补页头那条），
-      这条是 PRD 缺陷回补，走 Phase 1 修订而不是就地放宽。
+- [x] `npm run video:lint` 全绿（18 条，无一条 `sections` 报错）；`video:check` f5 两平台全绿。
+- [x] `npm run video:check`（无参数，18 条 × 双平台 694 场）exit 0。
+- [x] md5 比对：`md5sum -c research/out-md5-before.txt --quiet` → exit 0，`video/out/` 一字节未动。
+- [x] `research/` 更新：`after-*` / `after-sec-*`（双平台逐 kind 截图 + 两份 json）与 `baseline-*` 成对；
+      被否的走法留 `lever-spacebetween-*.png` 两张反例；全量扫描器 `fill-sweep.mjs` 一起留档。
+- [x] PRD 的 AC 按实测分档改写（card 达标、code/hook 的 0.70 换成"不许用拆开内容换填充"、
+      `anim`/`outro` 豁免、两平台分开、页头那条补实测数），走 Phase 1 修订口径而不是就地放宽。
 
 ## 回滚点
 

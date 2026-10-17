@@ -111,9 +111,11 @@ for (const platform of ['bilibili', 'douyin']) {
       perSceneBarNodes: m.perSceneBarNodes,
       blocks: m.boxes.map((b) => b.cls),
     })
-    // 每种 kind 只留一张代表截图，全量留档会把 research 目录塞成几百 MB
-    if (platform === 'bilibili' && !shots.includes(kind)) {
-      shots.push(kind)
+    // 每种 kind 只留一张代表截图，全量留档会把 research 目录塞成几百 MB。
+    // 两平台都留：竖版这次的改动是单独一档（padding-block 3u/6u + 页头节进度杠），
+    // 只留横版截图等于竖版没有视觉证据。
+    if (!shots.includes(`${platform}-${kind}`)) {
+      shots.push(`${platform}-${kind}`)
       const png = await stage.capture(i, 0, null, 0, 1)
       writeFileSync(join(HERE, `${outPrefix}-${platform}-${kind}.png`), png)
     }

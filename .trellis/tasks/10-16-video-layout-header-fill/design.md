@@ -69,12 +69,36 @@ DOM 写入点只有一个：`MCU.setup(i)`（`:391`）里跟着 `drawTicks(i)` �
 这条杠杆**不改变任何元素的自然尺寸**，只分配空隙 → 不可能新增 fitAll 收缩、不可能引入裁切，
 这是它优先于 (b) 的理由。
 
+> **Phase 2 实测回写（2026-10-17，`research/lever-spacebetween-*.png`）**：上面这句是错的，两条都错了。
+> `space-between` 把多子元素场次**拆到带的两端**——横版 code 实测 0.74、竖版 0.90，数字全达标，
+> 截图却是标题贴页头、代码贴下沿、中间一条空洞（`lever-spacebetween-bilibili-code.png` 那帧最清楚：
+> 标题与 `semphr.h 原文行号` 之间空了 250px）。**填充比是被"挖洞"刷上去的，不是被内容填满的。**
+> 另一半也不成立：padding 确实会引入新的失败——竖版 `padding-block:3u 6u` 把
+> `f2-context-switch/name-map` 从 19.1px 压到 13.3px、`p4-iram/hook-01` 从 22.9px 压到 12.7px，
+> 三集 8 场全部撞 `MIN_FONT` 地板（`video:check` 实测红，改前同一命令全绿）。
+> 落地的走法换成**只加大 `.lay` 的 gap、保持居中**：横版 code 1.6u→4u、hook 2.4u→4u，
+> 竖版 code 1.6u→2.4u。读数横版 code 0.64（最差场 0.38）、hook 0.59、竖版 code 0.54、hook 0.75，
+> 都比 space-between 低，但截图是一组居中、间距均匀的内容（`after-bilibili-code.png`），
+> 18 集 × 双平台 694 场审计全绿。
+> **结论写死**：code/hook 的填充由**每场内容量**决定，CSS 分布杠杆只能决定"洞摆在哪"。
+> 要真填进去，得在写稿时把一场拆成两场或补足行——那是 spec 层的事，本任务不假装 CSS 能解决。
+
 **(b) 放大内部尺度**（单子元素场次）：`lay-card` 只有一个 `.cardpanel`，`space-between` 对单子元素
 等于把它顶到带上沿，视觉更坏。卡片只能靠长面板自己：`.cardpanel` 的 padding 与 `.bullets`/`.title` 字号
 按 `150…780` 目标实测反推（当前 card 内容 470px，要到 630px 是 ×1.34 量级）。
 这条杠杆有真实风险：字号上去后横向放不下时 `fitAll` 会把它压回来，
 压到 `MIN_FONT`（`cli.mjs` 的 16px 地板）就会被审计判失败——
 所以 (b) 必须和审计一起跑，改一档量一次，不许连改几档再看。
+
+> **Phase 2 实测回写（2026-10-17，`research/after-f5-sem-mutex.json`）**：上面这条 (b) 的走法被否了。
+> 面板 padding 4.2u→6.5u、内部 gap 2.2u→3.4u、`.bullets` 字号 2.15u/1.35u 三档连加，横版 card 只到
+> **0.66（最差场 0.56）**，同一套把竖版 card 从 0.85 顶到 0.95——把字吹大并不等于把空白变成排版。
+> 落地的走法换成**让面板本身长满、内容在框内居中**：`.lay-card{justify-content:stretch}`
+> + `.cardpanel{flex:1 1 auto;justify-content:center}`（`.cardpanel` 是有底色/描边/投影的**可见盒子**，
+> 拉伸它回答的是「中间一条横幅」这件事，而不是把字放大去凑面积）。
+> 实测横版 card 8 场全部 0.82（改前 0.55/0.45）；竖版 card 实测本来就 0.85/0.67、不缺填充，
+> 所以在 douyin 块里退回旧的居中摆法（`justify-content:center` + `flex:0 1 auto`）——
+> 给它套横版那条会把短卡变成框里只有三行字的巨框。`.cols{flex:0 1 auto}` 那条护栏原样没动。
 
 **明确不动的**：
 - `.cols{flex:0 1 auto}`（`:210`）保留。`:208` 那段注释立着护栏：改成 `flex:1` 就是
@@ -93,6 +117,21 @@ DOM 写入点只有一个：`MCU.setup(i)`（`:391`）里跟着 `drawTicks(i)` �
 - `:239` 兄弟相叠 marks：同上（topbar 在 `.lay` 外，与 `.title` 是否相叠正是这次要防的）。
 
 新增一条判据：**横版不许出现两根按场进度**（`.ticks` 与页头按场杠互斥），用 DOM 计数断言，不靠目测。
+
+> **Phase 2 实测回写**：判据落地成两条口径修正。
+> ① 数的是**看得见的**杠（`getComputedStyle().display !== 'none'` 且宽高非 0），不是节点数：
+>    竖版 `.ticks` 一直挂在 DOM 里只是 `display:none`，按节点数判 12 场全部误报。
+> ② 判据对两平台一视同仁（写成「同屏只许一根」），不加 `platform` 分支——
+>    误报来自口径，不来自平台，加分支就是把判据改成跟着实现走。
+>    故意造的反例（横版也渲染 `.secbar`）确实报出 `同屏 2 根按场进度（secbar × ticks）`。
+>
+> **没有加的那条**：纵向填充下限。18 集 × 双平台 694 场实测（`research/baseline-20261017.md` §七）
+> 说明它当不了闸：短内容场 legitimately 填得少——横版 code 最低 12%（`c4-struct-abi/gpiof-macro` 只有一行宏）、
+> 竖版 card 最低 31%、横版 hook 最低 24%。任何 ≤0.70 的全局阈值都会把 **246–377 个已发布场次**判成失败，
+> 而把阈值定到能放行它们的那个数字，这条判据就抓不到任何东西了。
+> 更糟的是这个数**能刷**：`space-between` 把内容拆到带的两端，读数立刻 0.55→0.74，画面却多了一条空洞
+> （`research/lever-spacebetween-bilibili-code.png`）。能被挖洞刷上去的指标不配当闸。
+> 填充的证据因此留在 `fill-probe`/`fill-sweep`（`after-*.json`），不写进审计。
 
 ## 6. 只对未发布新集生效
 

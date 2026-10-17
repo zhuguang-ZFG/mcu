@@ -223,7 +223,7 @@ async function auditLayout(stage, plan) {
 
         const hit = []
         if (capText) {
-          for (const el of document.querySelectorAll('.title,.sub,.bullets,.cols,.animbox,.note,.url,.kicker')) {
+          for (const el of document.querySelectorAll('.title,.sub,.bullets,.cols,.animbox,.note,.url,.kicker,.secchip,.secbar')) {
             const b = rect(el)
             if (!b.width || !b.height) continue
             if (b.bottom > capBox.top + 1 && b.top < capBox.bottom - 1 && b.right > capBox.left + 1 && b.left < capBox.right - 1) {
@@ -236,7 +236,7 @@ async function auditLayout(stage, plan) {
         // 但 .note 压在 .cols 上、.step 压在 .note 上这类同层相叠一个都不查。
         // 抖音版 .cols 是 column 方向，内容顶穿格子就是靠这条抓出来的。
         const clash = []
-        const marks = [...document.querySelectorAll('.title,.sub,.bullets,.cols,.col,.note,.url,.kicker,.step,.animbox,.cardpanel')]
+        const marks = [...document.querySelectorAll('.title,.sub,.bullets,.cols,.col,.note,.url,.kicker,.step,.animbox,.cardpanel,.secchip,.secbar')]
           .map((el) => ({ el, b: rect(el) }))
           .filter((m) => m.b.width > 1 && m.b.height > 1)
         for (let a = 0; a < marks.length; a++) {
@@ -265,6 +265,17 @@ async function auditLayout(stage, plan) {
             const b = rect(el)
             if (b.height && b.bottom > lb.bottom + 1) burst.push(`${name(el)} 超出 .lay 底边 ${Math.round(b.bottom - lb.bottom)}px`)
           }
+        }
+
+        // 按场的进度一根就够：横版底部有 .ticks，竖版把它 CSS 关掉、进度改走页头那根杠。
+        // 两处同时亮就是同一件事说两遍，还会互相压——判据数的是**看得见的**那几根。
+        // 不能数节点：竖版的 .ticks 一直挂在 DOM 里（只是 display:none），
+        // 按节点数判会 12 场全部误报。
+        const bars = []
+        for (const el of document.querySelectorAll('.ticks,.secbar')) {
+          if (getComputedStyle(el).display === 'none') continue
+          const b = rect(el)
+          if (b.width && b.height) bars.push(el.className.split(' ')[0] || el.tagName.toLowerCase())
         }
 
         // 孤字：大标题折行后末行只剩一两个字。S14 的金句卡就是这么碎成
@@ -323,7 +334,7 @@ async function auditLayout(stage, plan) {
             svgIssues.push(`动画溢出容器 svg=${Math.round(b.left)},${Math.round(b.top)},${Math.round(b.right)},${Math.round(b.bottom)} box=${Math.round(box.left)},${Math.round(box.top)},${Math.round(box.right)},${Math.round(box.bottom)}`)
           }
         }
-        return { overflow, clipped, hit, clash, burst, tooSmall, widows, svgIssues, minFont: minFont === Infinity ? null : minFont, minFontTag, svgNote, fonts: document.fonts.status }
+        return { overflow, clipped, hit, clash, burst, bars, tooSmall, widows, svgIssues, minFont: minFont === Infinity ? null : minFont, minFontTag, svgNote, fonts: document.fonts.status }
       },
       { index: sc.index, capText: longest.get(sc.id) || null },
     )
@@ -334,6 +345,7 @@ async function auditLayout(stage, plan) {
     for (const cl of r.clash) issues.push(`${sc.id}: 版式相叠 ${cl}`)
     for (const ts of r.tooSmall) issues.push(`${sc.id}: 字号不可读 ${ts}`)
     for (const bu of r.burst) issues.push(`${sc.id}: ${bu}`)
+    if (r.bars.length > 1) issues.push(`${sc.id}: 同屏 ${r.bars.length} 根按场进度（${r.bars.join(' × ')}），只许留一根`)
     // 判据在 13 集成片 × 双平台上跑过一轮：17 处全是真孤字，零误报，所以升成闸。
     // 修法永远是那两个：宽屏在语义接缝补 \n，竖屏把短句再砍短。
     for (const w of r.widows) issues.push(`${sc.id}: 标题${w}（在语义接缝补 \\n 或改短）`)
@@ -369,7 +381,7 @@ async function auditLayout(stage, plan) {
   }
   if (used) log(`  🔤 字幕字族：${cjk.map((f) => `${f.familyName}(${f.glyphCount})`).join(' / ')}`)
   if (issues.length) throw new Error(`排版审计未通过:\n${issues.map((e) => `  - ${e}`).join('\n')}`)
-  log(`  🔍 排版审计通过：${plan.scenes.length} 场，越界/裁切/压字幕/版式相叠/字号不可读/顶穿容器/标题孤字 0`)
+  log(`  🔍 排版审计通过：${plan.scenes.length} 场，越界/裁切/压字幕/版式相叠/字号不可读/顶穿容器/标题孤字/进度杠重复 0`)
   return rows
 }
 

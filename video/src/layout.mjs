@@ -261,7 +261,14 @@ pre.code b{color:var(--brand)}
   background:var(--anim-bg);border:1px solid var(--line);border-radius:calc(var(--u)*1.2);padding:calc(var(--u)*1.2);overflow:hidden}
 .animbox svg{display:block;flex-shrink:0;font-family:var(--font)}
 .lay-hook,.lay-card,.lay-outro{align-items:center;justify-content:center;text-align:center;gap:calc(var(--u)*2.4)}
-.lay-code{justify-content:center;gap:calc(var(--u)*1.6)}
+/* code/hook 的纵向空隙只加 gap，**justify-content 一律留 center**。
+   试过 space-between + padding-block:5u/9u：填充读数从 0.55 涨到 0.74 看着达标，
+   截图却是标题贴页头、代码贴下沿、中间空 250px——数字是被"拆开内容"刷上去的，画面更坏
+   （反例留档 .trellis/tasks/10-16-video-layout-header-fill/research/lever-spacebetween-*.png）。
+   padding 那一半还有实伤：竖版加 3u/6u
+   把长代码场挤给 fitAll，19.1px 压到 13.3px，三集 8 场撞了审计的 16px 地板。
+   只加 gap 是居中一组重新呼吸，横版 code 0.64 / hook 0.59，18 集 694 场审计零新增失败。 */
+.lay-code,.lay-hook{justify-content:center;gap:calc(var(--u)*4)}
 /* line-height 不能按拉丁文的直觉写 1.18：中文字体的行盒比 line-height 高，
    每行往下溢出 ~1.7px，四行就是 7px。fitAll 把这点溢出当成"放不下"，
    于是片头大标题从 107px 一路砍到 24px——两个平台都中招，只是抖音看着更明显。 */
@@ -271,8 +278,15 @@ pre.code b{color:var(--brand)}
   border-radius:99px;background:var(--brand);margin:0 auto calc(var(--u)*2.4)}
 .lay-hook .cols{flex:0 1 auto;min-height:calc(var(--u)*16);max-width:${platform === 'douyin' ? '92%' : '76%'}}
 /* kind=card 过去只改标题颜色，屏幕上根本没有"卡"。给它真正的面板，
-   空白从"没排版"变成"卡片四周的留白"。 */
-.lay-card .cardpanel{display:flex;flex-direction:column;align-items:center;text-align:center;
+   空白从"没排版"变成"卡片四周的留白"。
+   卡片是 .lay 的唯一子元素，"分布空隙"那条杠杆对它无效——实测把面板 padding、
+   内部 gap、列表字号连加三档也只到 0.66（最差场 0.56），短卡再怎么放大字都填不满。
+   所以改成让面板本身长满、内容在框内居中：面板是有底色描边投影的可见盒子，
+   "中间一条横幅"这件事由盒子回答，而不是靠把字吹大去凑面积。
+   这条与 design §4 的走法不同，是 Phase 2 量出来的，已回写 design。 */
+.lay-card{justify-content:stretch;padding-block:calc(var(--u)*3) calc(var(--u)*5)}
+.lay-card .cardpanel{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  flex:1 1 auto;text-align:center;
   gap:calc(var(--u)*2.2);max-width:${platform === 'douyin' ? '94%' : '78%'};
   background:linear-gradient(160deg,rgba(38,44,54,.94),rgba(20,26,36,.86));
   border:1px solid var(--line);border-left:calc(var(--u)*.75) solid var(--brand);
@@ -319,8 +333,16 @@ ${platform === 'douyin' ? `/* 竖屏安全区：抖音信息流右侧的点赞/�
 .ticks{display:none}
 .title{font-size:calc(var(--u)*2.6)}.sub{font-size:calc(var(--u)*1.9)}
 .lay-hook .title,.lay-card .title{font-size:calc(var(--u)*5.6)}
+/* 竖版 card 改版前实测就有 0.85（最差场 0.67），本来不缺填充，横版那条"面板长满"
+   给它的读数会顶到 0.95——短卡变成里面只有三行字的巨框。原样留在旧的居中摆法。 */
+.lay-card{justify-content:center;padding-block:0}
+.lay-card .cardpanel{flex:0 1 auto}
 pre.code{font-size:calc(var(--u)*1.4)}
 .cols{flex-direction:column}
+/* 竖版这一档只抬到 2.4u，不跟横版的 4u：竖版带子 1306px 里长代码场本来就把字号压到地板附近
+   （实测改前 19.1px、加到 2.4u 后 17.9px，审计地板 16px），空隙每多要一 u 都是从字号里扣。
+   填充分数也因此基本没动（code 0.52→0.54）——竖版 code 的空是内容量不够，不是间距不够。 */
+.lay-code,.lay-hook{gap:calc(var(--u)*2.4)}
 .cols.narrow{flex-direction:row;align-items:flex-start}
 .cols.narrow .col{flex:1 1 0}
 .bullets{font-size:calc(var(--u)*2.05)}

@@ -17,6 +17,13 @@
 - [ ] 编译验证跑了吗（make / idf.py build）？无板时标"待上板实测"了吗？
 - [ ] 事实与 [firmware-stm32](../firmware-stm32/index.md) / [firmware-esp32](../firmware-esp32/index.md) 的已核实清单冲突吗？
 
+### 改成片版式（video/）时
+
+- [ ] 判据是**截图**还是分数？填充比这类面积分数能靠"把内容拆开"刷高，见 [video/layout-contract.md](../video/layout-contract.md) §5。
+- [ ] 改前存了一份 `video:check` 输出、改后 `diff` 过了吗？旧集页头 DOM 必须逐字节不变。
+- [ ] 新加的审计判据，造过一次故意的失败抓到它了吗？
+- [ ] 有没有对已发布的 18 条跑 `video:build`（会重渲整集）？只有 `video:check` 是安全的。
+
 ### 改站点配置/主题时
 
 - [ ] `ignoreDeadLinks` 仍是 false 吗？

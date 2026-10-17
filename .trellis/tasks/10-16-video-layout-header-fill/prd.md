@@ -60,18 +60,28 @@
 分档目标以 `research/fill-probe.mjs` 的**逐场**读数为判据（不是目测、不是单帧代表值）。
 F5 现状：横版 code 每场填充 `0.35…0.61`、card/hook 0.55、anim 0.92、outro 0.23；竖版 code 0.52。
 
-- [ ] 任意一帧单看页头，能答出「哪一集 · 哪一节 · 全集走到第几段」。
-- [ ] 横版 `code`/`hook`/`card` **每一场**内容上下界达到内带（y 97…879）的 ≥ 0.70
-      （即上界 ≤ 210 且下界 ≥ 770 量级）；不许只用一类里的最大代表值充数。
-- [ ] 竖版 `code` 每场填充 ≥ 0.70；竖版 `hook`/`card` 保持现状不回退。
-- [ ] `anim` 不回退（基线 0.92）、`outro` 维持单行居中（不设下限、也不许为凑数吹满）。
-- [ ] 同一时刻抽帧并排对比留档（改版前后各一张，截图与 json 读数一起进 `research/`），不靠目测。
-- [ ] `npm run video:check` 对 18 条既有集全部七项判据绿，且**输出与改版前逐字节相同**
-      （没有 `sections` 的旧集页头 DOM 必须一字不变，这是兼容性证据）。
-- [ ] 已发布的 18 条成片与发布稿 md5 不变（本任务不许触碰 `video/out/` 既有产物，
-      也不许对既有 id 跑 `video:build`）。
-- [ ] 竖版短版的页头/字幕在新布局下无溢出、无压字；`.ticks` 仍 `display:none`，
-      横版任一时刻只有一条按场次的进度杠（不出现两套）。
+- [x] 任意一帧单看页头，能答出「哪一集 · 哪一节 · 全集走到第几段」。
+      实测：横版 = badge+系列名+`.secchip`「第 i/n 节 · title」+底部 `.ticks`；
+      竖版 = 同一 chip + 页头下 `.secbar`（`.ticks` 仍 `display:none`）。47 场全部有值。
+- [x] ~~横版 `code`/`hook`/`card` 每一场 ≥ 0.70~~ → **按实测分档改写**（`research/baseline-20261017.md` §六）：
+      - `card`：横版 8 场全部 **0.82**（改前 0.55/0.45），面板是有底/描边/投影的可见盒子，达标且无空洞；
+      - `code`/`hook`：**0.70 这条 CSS 达不到**。唯一能到的是 `space-between` 把内容拆到带的两端，
+        实测读数 0.74 而截图中间空 250px（`lever-spacebetween-bilibili-code.png`）——那是挖洞不是填充。
+        落地走法改成"保持居中、只加大 gap"，横版 code 0.64（最差 0.38）、hook 0.59（最差 0.51）；
+        剩下的差距归**每场内容量**（写稿层面），不归版式。
+      - 硬约束（取代阈值）：**不许用拆开内容的方式换填充**，判据是截图，不是数字。
+- [x] ~~竖版 `code` 每场 ≥ 0.70~~ → 同一回写：竖版 code 实测 0.54（改前 0.38…0.52），
+      竖版 `hook` 0.75、`card` 0.85/0.67 **均无回退**（竖版 card 不参与"面板长满"那条，理由见 design §4）。
+- [x] `anim` 不回退（实测两平台均 92%/90%，一个字没动）、`outro` 维持单行居中（23%/未设下限，未动）。
+- [x] 改版前后同帧并排留档：`baseline-{platform}-{kind}.png` ↔ `after-{platform}-{kind}.png`（双平台各一张）
+      + `baseline-f5-sem-mutex.json` ↔ `after-f5-sem-mutex.json` / `after-sec-f5-sem-mutex.json`。
+- [x] `npm run video:check` 对 18 条既有集**两平台 694 场全绿**（exit 0）。
+      「输出逐字节相同」的实测：旧集没有 `sections` ⇒ 页头 DOM 一字不变 ⇒ 35 + 12 场逐场读数 `diff` 为空；
+      唯一差异是通过行文案按惯例补了「进度杠重复」这一项（`research/baseline-20261017.md` §八）。
+- [x] `md5sum -c research/out-md5-before.txt --quiet` → exit 0，`video/out/` 全部 1220 个文件一字节未变；
+      全程未对任何既有 id 跑 `video:build`。
+- [x] 竖版页头/字幕无溢出、无压字：chip 最宽 505px（画布 46.8%）、47 场 `scrollWidth−clientWidth = 0`；
+      横版任一时刻只有一条按场进度（新判据实测 0 命中，故意反例逐场报出）。
 
 ## Notes / 依赖
 
