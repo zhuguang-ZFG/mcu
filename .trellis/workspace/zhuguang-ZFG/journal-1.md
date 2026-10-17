@@ -297,6 +297,7 @@ F5《信号量和互斥量》收进片单（no:17、next 清空），断行修�
 - `md5sum -c research/out-md5-before.txt --quiet` exit 0：`video/out/` 一字节未动，全程没对既有 18 个 id 跑 `video:build`。
 - 两个故意失败证明新判据不是死代码（bilibili 也渲染 `.secbar` → `同屏 2 根按场进度`；42 字 chip → 竖版越界 + `loadEpisode` 契约拦截）。
 - PRD 的 AC 按实测分档改写（card 达标、code/hook 的 0.70 换成「不许靠拆开内容换填充」、anim/outro 豁免、两平台分开），走 Phase 1 修订口径而非就地放宽。
+- 归档之后补的一刀：`task.py archive` 把 `research/` 往下挪三层，spec 指过去的命令、`layout.mjs` 注释里的反例截图路径、两个探针脚本自己的相对 import 一起失效，改指 `archive/2026-10/` 并把相对深度从 4 层补到 6 层（每个 specifier 用 existsSync 验过落地）。
 
 **待办**
 
@@ -314,6 +315,7 @@ F5《信号量和互斥量》收进片单（no:17、next 清空），断行修�
 | `78e67f6` | (see git log) |
 | `83a292a` | (see git log) |
 | `ce08dc7` | (see git log) |
+| `29def0a` | (see git log) |
 
 ### Testing
 
