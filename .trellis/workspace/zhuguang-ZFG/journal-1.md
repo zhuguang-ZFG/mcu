@@ -256,3 +256,73 @@ F5《信号量和互斥量》收进片单（no:17、next 清空），断行修�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 7: 视频版式改版落地：页头小节 chip + 纵向分布，填充率判据被实测否掉
+
+**Date**: 2026-10-17
+**Task**: 视频版式改版落地：页头小节 chip + 纵向分布，填充率判据被实测否掉
+**Branch**: `main`
+
+### Summary
+
+常驻页头补 sections 契约与「第 i/n 节 · title」chip（竖版另给一根 .secbar），code/hook 改成只加 gap、横版 card 让面板长满；694 场逐场实测证明纵向填充比既当不了审计闸也不能当优化目标——space-between 把读数刷到 0.74/0.90 却留 250–470px 空洞被截图否掉，竖版 padding 把 8 场压穿 16px 地板是真回退已退回。审计扩到第八项「同屏两根按场进度」，18 集 × 双平台 exit 0、无 sections 的旧集页头逐字节不变、video/out/ md5 未动。S5 第 18 集出口条件解除。
+
+### Main Changes
+
+**做了什么**
+
+会话前半先把第 18 集选题定档 S5 SysTick、backlog 补四条候选（`1fa7d1d`）、给 S5 立项 PRD 与实跑留档（`69fd32a`）、把版式任务补到可 start（`78e67f6`）；1.4 复核通过后从步骤 0 一路跑到步骤 8：常驻页头加「当前小节」，两类版式的纵向分布改掉，排版审计扩到第八项。落地分成两个 commit——`83a292a`（sections 契约 + 页头渲染）与 `ce08dc7`（纵向分布 + 审计扩容）。
+
+**关键发现**
+
+1. 纵向填充比既当不了审计闸，也不能当优化目标。18 集 × 双平台 694 场逐场实测：任何 ≤0.70 的全局阈值都判红 246–377 个已发布场次。而 `justify-content:space-between` 能把 code/hook 读数从 0.55 刷到 0.74（竖版 0.90），截图却是标题贴页头、代码贴下沿、中间空 250–470px。CSS 分布只能决定「洞摆在哪」，code/hook 的填充由每场内容量决定。
+2. `padding-block` 是实伤不是观感：竖版加 3u/6u 把长代码场挤给 fitAll，19.1px 压到 13.3px，f2/p4/s16 三集 8 场撞审计的 16px 地板（`video:check` exit 1）。控制变量用 `git checkout HEAD -- video/src/layout.mjs` 复跑，证明改前是绿的——这是真回退，不是既有欠账。
+3. 唯一能被 CSS 钉死的 kind 是 card：横版让面板长满（`justify-content:stretch` + `flex:1 1 auto`）125 场全部到 0.82；竖版原样不动，它改版前实测就有 0.85，「长满」只会把三行字的短卡吹成巨框。
+4. 进度杠判据必须数**看得见的**那几根：竖版 `.ticks` 一直挂在 DOM 里只是 `display:none`，按节点数判 12 场全部误报。
+5. 页头标题超长由两层各抓一半：竖版靠几何（42 字塞进 `.secchip` → 12 场 `越出画布`），横版靠契约（1920 装得下，`loadEpisode` 的 `SECTION_TITLE_MAX=12` 先拦）。原 design 写的「审计抓到」是只想到了一层。
+
+**改了哪些**
+
+- `video/src/spec.mjs`：`sceneSections()` 纯函数 + `SECTION_TITLE_MAX=12` + `validateSections()` 接进 `validateEpisode`（`at` 命中/严格递增/`title` 非空/`at` 不重复，四条都算 error）。
+- `video/src/layout.mjs`：页头左格收成 badge + 系列名（去掉重复的 `· F5` 尾巴），右格新增 `.secchip`「第 i/n 节 · title」，竖版另给一根 `.secbar`（它 `.ticks` 本就关掉，这是唯一按节进度载体）；`.lay-code/.lay-hook` 只加 gap（横 4u / 竖 2.4u，字号地板是竖版只抬到 2.4u 的理由）；横版 `.lay-card` 面板长满、竖版留旧摆法。页头 DOM 唯一写入点是 `MCU.setup(i)`，只随场次号变、绝不随帧时间 t 变。
+- `video/src/cli.mjs`：`hit`/`marks` 两个选择器补 `.secchip,.secbar`；新增第八项「同屏 N 根按场进度」。
+- `.trellis/spec/video/`（新层：`index.md` + `layout-contract.md` 七段契约）、`spec/index.md` 补第四层表行、`spec/guides/index.md` 补「改成片版式时」四条 checklist。
+- `research/`：`fill-probe.mjs` 扩 chip/杠读数 + 双平台截图 + 最差场列；新 `fill-sweep.mjs` 全量扫描器；`baseline-20261017.md` 补 §六–§八。`after-*`/`after-sec-*` 与 `baseline-*` 成对，被否的走法留 `lever-spacebetween-*.png` 两张反例。
+
+**验证**
+
+- 兼容性口径：无 `sections` 的旧集页头 DOM 一字不变；用 fixture 注入后 `video:check` 输出与不注入**逐位相同**，与改前基线只差两条 verdict 行。
+- `npm run video:lint` 18 条全绿；`npm run video:check`（无参数，18 集 × 双平台 694 场）exit 0——CSS 注释定稿后又单独复跑一遍 `check-all18-shipped.txt`，仍 exit 0。
+- `md5sum -c research/out-md5-before.txt --quiet` exit 0：`video/out/` 一字节未动，全程没对既有 18 个 id 跑 `video:build`。
+- 两个故意失败证明新判据不是死代码（bilibili 也渲染 `.secbar` → `同屏 2 根按场进度`；42 字 chip → 竖版越界 + `loadEpisode` 契约拦截）。
+- PRD 的 AC 按实测分档改写（card 达标、code/hook 的 0.70 换成「不许靠拆开内容换填充」、anim/outro 豁免、两平台分开），走 Phase 1 修订口径而非就地放宽。
+
+**待办**
+
+- 本任务出口条件解除：`10-17-s5-systick-episode` 可以进 Phase 2 渲帧——S5 是第一个真正带 `sections` 的集，新页头的第一个观众就是它。
+- 知乎 F5 频控窗口（10-17 21:07 之后）跑 `node .temp/f5-zh-publish.mjs`，闸门文件 `.temp/zh-run/I_HAVE_USER_OK=f5-sem-mutex` 留在原地。
+- 抖音 F5 置顶需用户在 App 内长按；E04 上板要真板（COM4/COM5 是蓝牙虚拟口）；B站合集等权益中心 Lv2。
+
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `1fa7d1d` | (see git log) |
+| `69fd32a` | (see git log) |
+| `78e67f6` | (see git log) |
+| `83a292a` | (see git log) |
+| `ce08dc7` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
