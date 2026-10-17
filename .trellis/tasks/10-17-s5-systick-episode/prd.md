@@ -34,7 +34,8 @@
      即逻辑优先级 15，正好接 S4 那套优先级账（probe [6]）。
 - 竖版短版按 F5 那条集的先例独立重排（钩子前置、每幕一句、金句收尾），不是横版缩放；
   横版图动画进竖屏前先量等比缩放后标题与字幕挤不挤得下。
-- 发布稿由产线 `writeRelease` 生成，投放走 `video-release` 技能那三条线，本任务不出投放动作。
+- 发布稿由产线 `writeRelease` 生成，投放走 `video-release` 技能那**四**条线（B站/抖音/知乎/小红书——2026-10-17 小红书开线，
+  原文写的"三条"已过期），本任务不出投放动作。
 
 ## 硬约束
 
@@ -46,21 +47,45 @@
   那两条版式改造（常驻页头带小节信息、内容块纵向铺满）只对未发布新集生效，
   S5 是第一个载体；先渲后改就等于改版再拖一轮。
   排版审计（越界/裁切/压字幕/相叠/字号/顶穿/孤字）必须在改版后的版式上跑到 0。
-- 片尾 CTA 待定：F5 把「那两个毫秒数得上板子、那张表还空着」悬给了观众（对应
-  `10-16-e04-board-measurement`）。S5 是接这一句、还是转向本集的复现路径，由用户在 1.4 复核时定；
-  无论选哪种，都不许在 CTA 里把 E04 的模型值说成已有实测。
+- 片尾 CTA（2026-10-17 复核已定）：**转本集的复现路径**——收在「本机一条命令、42/42」，
+  不接 F5 那句板子悬念（那条悬念留在平台侧的置顶评论里导流，不进成片）。
+  无论怎么措辞，都不许在 CTA 里把 E04 的模型值说成已有实测。
+- 标题体例（同次复核已定）：品牌线是 `series.json` 的 `series`＝「通往单片机之路」，系列身份由**合集**承载
+  （抖音合集名就取这个字段；小红书那条合集是「STM32 零基础自学」）。所以四平台标题**继续走句子钩子、不带编号**，
+  与已投 17 集同口径。
 
 ## Acceptance Criteria
 
-- [ ] `video/episodes/s5-systick/episode.json` 存在，`no: 18`、`badge: S5`，
-      每场 `kicker` 带小节信息（版式页头要吃这个字段）。
-- [ ] `npm run video:lint -- s5-systick` 通过；`video:check` 的排版审计全 0。
-- [ ] 两平台成片时长落在 episode.json 的 `targetSec` 区间内，h264@30 + aac 44100 立体声，
-      响度与前几集同口径（F5 实测 -15.0 / -15.1 LUFS）。
-- [ ] 屏上每个具体数都能在本次 `probe.sh` 输出里逐字找到；找不到的一律删掉或改写成「要板子」。
-- [ ] `video/series.json` 的 `episodes` 补第 18 条、`next` 清空，且既有 18 条字段不被顺手改动
-      （尤其 `series` 值本身没有尾空格，别按 `10-16-bili-season-after-unlock` 那条过期说法去「对齐」）。
-- [ ] 既有 `video/out/*` 与既有发布稿的 md5 与开工前一致。
+- [x] `video/episodes/s5-systick/episode.json` 存在，~~`no: 18`~~、`badge: S5` ✓，
+      ~~每场 `kicker` 带小节信息~~ → **这条 AC 的两处写法按实际契约改判**（2026-10-17 收口时核对产线）：
+      ① `no: 18` 归 `video/series.json` 的条目，episode.json 顶层没有这个字段（18 集实测 `no` 0 处，design §2 已钉）；
+      ② 页头的小节信息不吃"每场 kicker"，吃的是 `platforms.<平台>.sections[]` + `at` 锚点
+      （`spec.mjs:sceneSections()` 算，`layout.mjs:479` 写成 `第 i/n 节 · title`）。
+      实测：横版 6 节 / 竖版 5 节，`badge` = `S5`，`.temp/s5-header-probe.mjs` 逐场验过（见下条）。
+- [x] `npm run video:lint -- s5-systick` 通过（`✅ 通过：bilibili 28 场，douyin 12 场`），
+      且全量 19 集绿（跨集话题/首行查重只有全量才生效）；
+      `video:check` 排版审计全 0——本集两平台 `28 场 / 12 场` 各八项 0，
+      全量 37 个平台审计 `🔍 排版审计通过` 37 条、`跳过` 0 条、exit 0。
+      最小字号横版 21.1px、竖版 26.9px，都在 `MIN_FONT=16` 之上；字幕字族真解析到 Microsoft YaHei，无「字体审计降级」。
+- [x] 两平台成片时长落在 `targetSec` 区间内：bilibili **629.167s**（10:29，目标 480–720）、
+      douyin **67.933s**（01:07，目标 45–75）；两版都是 h264(High)/yuv420p/**30fps** + **aac/44100Hz/2ch**；
+      实测响度 **-15.0 / -15.0 LUFS**（真峰值 -0.9 / -1.4 dBTP），与 F5 的 -15.0/-15.1 同口径。
+      页头两条版式实测（本集是 `sections` 的首个真集）：横版 `.secchip` 逐场推进到「第 6/6 节 · Config 与优先级」、
+      `.ticks` 可见且同屏只 1 根进度杠；竖版 `.secbar` `display:flex`、段数 = 5、`cur` 跟着节走、
+      `.ticks` `display:none`；40 场 DOM 文案与 `sceneSections()` 逐场一致，0 处不符。
+- [x] 屏上每个具体数都能在本次 `probe.sh` 输出里逐字找到：`.temp/s5-numbers.mjs` 把两平台 188 个上屏字段
+      （含 douyin `pick`/`set`/`narration` 覆写）的数字 token 全量回对 `probe-20261017-1705.md`，
+      未命中 15 个逐个定性为「源码行号 / 头文件原文写法 / 同值短写法」且都带明示；
+      deny 表 15 项在终稿上以读数身份命中 **0**（`±0.1%` 那个需要板子的百分数整段不上屏，
+      由 `card-07` 明说「板子上那两个数，今天不上屏」）。结论列见 `research/whitelist-20261017.md` 第四节。
+- [x] `video/series.json` 的 `episodes` 补第 18 条（现 19 条）、`next` 清空为 `[]`、`backlog` 4 条不动；
+      `git diff` 只有「新增那 15 行」+「删掉 next 那 3 行」，既有 18 条一字段未动；
+      `series` 实测值 `"通往单片机之路"` **无尾空格**（`10-16-bili-season-after-unlock` 那条说法已过期）。
+      顺序上登记排在渲染之后：`douyin-release.mjs:69` 对没渲过的条目硬 throw，而 `video:build` 不读 `series.json`。
+- [x] 既有 `video/out/*` 与既有发布稿的 md5 与开工前一致：
+      `md5sum -c research/out-md5-20261017-1300.txt` → **exit 0**（1220 项，零失败输出）。
+      本任务全程只对 `s5-systick` 跑过 `video:build`，⛔ 那条没破。
+
 
 ## Notes
 

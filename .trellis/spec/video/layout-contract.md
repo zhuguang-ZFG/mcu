@@ -40,6 +40,12 @@ node .trellis/tasks/archive/2026-10/10-16-video-layout-header-fill/research/fill
 - 按场进度一根且只一根：**横版**底部 `.ticks` + 页头只给文字 chip；**竖版** `.ticks` 保持 `display:none`，
   页头下方 `.secbar` 是唯一进度载体（不放画面底部——抖音客户端的 @作者名/描述/音乐条压在那一段）。
 - 集号在页头只出现一次：分节时左格按 `badge` 剥掉 `cover.kicker` 的 `· F5` 尾巴，右格给小节 chip。
+- **首个真集实测（S5，2026-10-17）**：横版 6 节 / 竖版 5 节，40 场逐场 `MCU.setup(i)` 后读 DOM，
+  `.secchip.textContent` 与 `sceneSections()` 算出的 `第 i/n 节 · title` **一字不差**（0 处不符）。
+  横版最后一场读到「第 6/6 节 · Config 与优先级」、`.ticks` `display:flex` 且同屏 1 根进度杠；
+  竖版 `.secbar` `display:flex`、`childElementCount` = 5 = 节数、`.cur` 下标跟着节走、`.ticks` `display:none`。
+  片头没归进任何一节的场（S5 的 `hook-01/hook-02`）chip 必须是空串且不占宽——这是 `sceneSections()`
+  「首节之前返回 null」那条的 DOM 侧对应物，光看 node 侧返回值不算证。
 
 ## 4. Validation & Error Matrix
 
@@ -79,6 +85,12 @@ node .trellis/tasks/archive/2026-10/10-16-video-layout-header-fill/research/fill
 - 版式改动必须**看截图**，不能只看分数：`fill-probe` 的 `fill` 能被"把内容拆开"刷高（见 §5 Bad）。
 - 改完跑 `fill-sweep.mjs` 复核 18 集分布没有回退，跑 `md5sum -c research/out-md5-before.txt --quiet`
   证明没碰已发布产物（`video:check` 不写 `video/out/`；`video:build` 会，未发布集才允许跑）。
+- **给某一集写了 `sections` 就不止跑审计**：审计只查几何（越界/相叠/进度杠唯一），不查页头**说的是不是真话**；
+  而 `validateSections` 只查稿子自洽（`at` 命中该平台 `resolveScenes` 出来的真实 id、不重复、递增、title ≤12 字），
+  它查不出「node 侧算对了、DOM 画错了」。所以要逐场把 DOM 与 `sceneSections()` 对账——chip 文案、
+  竖版段数 = 节数、`.cur` 下标 = 当前节、`.ticks` 在两平台的可见性、同屏进度杠根数。
+  范本 `.temp/s5-header-probe.mjs`（读 `video/out/<id>/…/timeline.json`，只开舞台不写产物）。
+
 
 ## 7. Wrong vs Correct
 
