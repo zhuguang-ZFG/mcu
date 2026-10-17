@@ -13,7 +13,8 @@ function arg(name, dflt) {
   const a = process.argv[i]
   return a.includes('=') ? a.slice(a.indexOf('=') + 1) || dflt : process.argv[i + 1] ?? dflt
 }
-const URLS = (arg('--urls', 'https://creator.xiaohongshu.com/creator/home') + '').split(',')
+// 默认落创作者中心真首页：/creator/home 实测回「你访问的页面不见了」，/new/home 才是活着的那一个
+const URLS = (arg('--urls', 'https://creator.xiaohongshu.com/new/home') + '').split(',')
 
 const browser = await chromium.connectOverCDP('http://127.0.0.1:9223')
 const ctx = browser.contexts()[0]
@@ -150,3 +151,6 @@ if (CLICK) {
   if (fresh.length) await target.close()
 }
 await page.close()
+// 自己开的页已经关了，但 CDP 那条 websocket 还挂着会让进程永远不退（上一版就是靠 timeout 掐掉的）。
+// 这里显式退，绝不碰 browser.close()——那是把常驻窗口连同登录态一起带走。
+process.exit(0)
