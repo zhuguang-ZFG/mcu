@@ -328,3 +328,67 @@ F5《信号量和互斥量》收进片单（no:17、next 清空），断行修�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 8: 开小红书第四条投放线，F5 竖版笔记已发布
+
+**Date**: 2026-10-17
+**Task**: 开小红书第四条投放线，F5 竖版笔记已发布
+**Branch**: `main`
+
+### Summary
+
+常驻浏览器 + 分步驱动 + 台账三件套落地：字段上限、话题 chip、封面三层入口全是实测量出来的；站外地址与超限拦在 fill 里，发布那一步仍归人点。F5 2026-10-17 15:32 已发布并回笔记管理核到。
+
+### Main Changes
+
+### 会话目标
+
+新开第四条投放线：小红书竖版笔记，把 F5《信号量和互斥量》投上去。用户口径三条——只发 F5 一条试水、AI 起有头浏览器探入口、标题/正文/评论一律不出现站外地址与 GitHub 字样。
+
+### 关键决定与实测
+
+- **没有 API 通道，沿用常驻浏览器那套**：本机无任何小红书开放平台凭证，创作者后台发布接口未验过；入口实测在 `creator.xiaohongshu.com/publish/publish?target=video`，是个 SPA 表单。于是 `xhs-daemon.mjs`（复用 `.temp/douyin-profile` 与 9223 那个窗口，同一 user-data-dir 起第二个实例会被挡）+ `xhs-probe.mjs`（只读）+ `xhs-step.mjs`（分步驱动，十个 verb）。
+- **上限只能自己量**：标题 20 字、正文 1000 字，且**都不在 DOM 强制**——喂 39 字进标题框，`input.value` 仍是 39，页面只把计数器印成「39 / 20」，拦的是提交。所以断言写进 `fill`：按码点断长度，任何字段命中 `https?://` 或 `github` 直接退出码 2。
+- **话题必须是 chip**：正文里直接打 `#名字` 是黑字，不成话题；只有 `#名字` 之后弹出来的那条候选被接住才生成 `a.tiptap-topic`（带 `data-topic` 的 id 与 `xhsdiscover://topic/v2/...`）。接法用回车——上一版用 `locator('text=/^#FreeRTOS/')` 点候选，先匹配到的正是刚打进正文的那串黑字，三次"clicked"拼出「#优先 级反转斥锁RTOS」这种交错垃圾。
+- **封面入口藏三层**：点默认封面缩略图（「设置封面」那四个字只是标题，点了没反应）→「编辑封面」→ 才有 `accept="image/png, image/jpeg, image/*"` 的 file input → 裁剪/模版/贴纸/文字/滤镜/标记 → 点「完成」才落定。应用后平台自己回「封面效果评估通过，未发现封面质量问题」。
+- **发布成功的判据**：笔记管理 `/new/note-manager` 的「已发布」标签里有这条，且「审核中」「未通过」都是空的。发布后表单 URL 变 `?source=&published=true`、草稿箱归零，但那是事后信号不是回执。观众侧详情页从笔记管理点标题打不开（只选中、弹出页不导航），所以"有没有漏地址"的核对必须留在**发布前**：15:31 对编辑器正文与 `episode.json` 逐字比过，只差空行，两个外链正则双双「无」。
+
+### 改动的文件
+
+- 新增 `video/publish/xhs-daemon.mjs`、`xhs-probe.mjs`、`xhs-step.mjs`、`xhs-plan.md`（台账：实测事实表、与抖音四处口径差、闸门与工具布局、F5 已发布状态与证据）。
+- `video/episodes/f5-sem-mutex/episode.json` 补 `publish.xiaohongshu`（title/body/topics/pinned/repro/noLink）；正文那句「（6000 / 2500）」改成「6000 与 2500」，因为它会被全页正则当成计数器。
+- `.agents/skills/video-release/SKILL.md` 从三条线改成四条线：§2 新增小红书小节（入口命令 + 判据）、§3 四条失败信号、§4 导流口径、§5 运行态表行、§6 三个坑（常驻页不许关 / 全页正则读计数器 / SPA 要 settle）。
+
+### 验证
+
+- F5 那条 **2026-10-17 15:32 已发布**：笔记管理「已发布」有它（01:06，截图 `manager-已发布.png`），「审核中」「未通过」两标签空；创作者中心首页「最新笔记」也换成这条。发布键是人点的——`publish` 步查完闸门仍抛错，这一步至今没自动化，留痕 `.temp/xhs-run/f5-sem-mutex-published.txt`。
+- 计数器读法改版后做过判别验证：合成一页「正文含（6000 / 2500）+ 两个真计数器」，旧的全页正则吐三条、新的只吐 `539 /1000` 与 `18 /20`（`.temp/xhs-counter-check.mjs`）；顺带量到一条事实——没传视频时空表单上一个计数器都没有。
+- `xhs-probe.mjs` 真跑一遍：6.7 秒 exit 0。之前它收尾没有 `process.exit`，CDP 那条 websocket 挂着导致进程永不退出（上一版靠 timeout 掐掉）；探针默认 URL 也从已失效的 `/creator/home`（实测回「你访问的页面不见了」）换成活着的 `/new/home`。
+- 三个脚本 `node --check` 全过；`episode.json` JSON 解析过；新增文件里除 `noLink` 那条自述外无 http/github 字样，cookie 只报条数不报值。
+
+### 待办
+
+- 置顶导流评论：文案已在 `publish.xiaohongshu.pinned`，但小红书侧没有对应工具（抖音的 `douyin-pin.mjs` 不通用）。
+- 合集未建（要起名）、内容类型声明与原创声明都没选——这三件属人工决定。
+- 标题体例：账号既有条目是「STM32零基础自学N｜…」，F5 这条走的是「xSemaphore 一个函数都没有」，要不要统一得定。
+- 知乎 F5 频控窗口 10-17 21:07 之后重跑 `node .temp/f5-zh-publish.mjs`；抖音 F5 置顶需用户在 App 内长按；E04 上板要真板；B站合集等 Lv2。
+
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `018c542` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
