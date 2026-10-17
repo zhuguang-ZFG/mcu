@@ -556,12 +556,18 @@ comment 步补 --go（闸门另起一张 I_HAVE_USER_OK_COMMENT）并真发出 1
 
 | Hash | Message |
 |------|---------|
-| `e09345e` | (see git log) |
-| `0212cf3` | (see git log) |
+| `e09345e` | feat(publish): 小红书视频系列 17 条上传全发，合集「通往单片机之路」建成收口 |
+| `0212cf3` | docs(publish): 批次核对口径修正——43=24 章+F5/S5+17 新、抽样 3/3、核验记为整列对账 |
+| `cfbe246` | chore: record journal |
 
 ### Testing
 
-- Validation was not recorded for this session.
+- `node --check video/publish/xhs-step.mjs`：过（当晚批跑与两次发布点击都由这一版驱动完成）。
+- 17 份 episode.json 的生成守卫：按花括号配平插入 + 写回后 JSON.parse 深比对「除新块外一切不变」，全过。
+- 发布：17/17 每条日志都有 `URL 已 published=true`；批日志 16 个「完成」标记、零错误行。
+- 权威核对：笔记管理「已发布」整列 43 张卡片收齐（=24 章+F5/S5+17 新）逐条对；截图 `xhs-manager-scrolled2.png`（标签 active 已复核）。
+- 合集归属：f0/c3-volatile/f6-timers 编辑页回读合集行 3/3 =「通往单片机之路」。
+- 落盘回读：F5/S5 换集后重开编辑页那一行=合集名（含浏览器重启后新开页）。
 
 ### Status
 
