@@ -576,3 +576,54 @@ comment 步补 --go（闸门另起一张 I_HAVE_USER_OK_COMMENT）并真发出 1
 ### Next Steps
 
 - None - task complete
+
+
+## Session 11: xhs 驱动改进：虚拟列表扫卡、只读 collectioncheck、xhs-verify 整列对账与台账对齐
+
+**Date**: 2026-10-18
+**Task**: xhs 驱动改进：虚拟列表扫卡、只读 collectioncheck、xhs-verify 整列对账与台账对齐
+**Branch**: `main`
+
+### Summary
+
+把当晚靠临时探针硬啃的手法固化进驱动并清掉 6 处旧口径；最难用例与 19/19 复核全过
+
+### Main Changes
+
+- `xhs-step.mjs`：`claimEditPage` 换成**虚拟列表扫卡**——Ctrl+Minus 缩小 ×4，再用 PageDown / 滚轮 / scrollTop 三种滚动轮着来（上限 25 轮），
+  认领到编辑页后 Ctrl+0 还原缩放。背景：笔记管理是虚拟列表、只渲染可视区约 10 条，旧逻辑在"目标卡不在首屏"时直接报「没有卡片」。
+- `xhs-step.mjs`：新增只读 `collectioncheck --ep=<ep>`——认领编辑页 → **重载读服务端** → 回读合集那一行，PASS/FAIL、退出码 0/4、
+  截图 `<ep>-collectioncheck.png`；并把它并进 `NO_WORK_PAGE`（原来会顺手认领/新开一张 /publish/publish 发布页，纯只读核对不该有副作用）。
+- `xhs-step.mjs`：`comment` 步在 profile 主页找卡加**有界滚动兜底**（6 轮 × 3 种滚动），评论流不再只认第一屏。
+- 新增 `video/publish/xhs-verify.mjs`：**整列对账**替代搜索式核验——默认核所有带 `publish.xiaohongshu` 的集（可 `--eps=a,b,c`），
+  收全「已发布」列表按标题对账，落标签容器 `tab-item--active` 类名做证据，列表头总数只作动态记录、不当完整性基准，退出码 0/1/2，
+  用完还原缩放再关自己的页（缩放是 origin 级，别带进常驻页）。
+- 台账收口（6 处旧口径与实装对齐）：xhs-plan 发布步说明、comment 头注（「不给 --go」→ 默认只填/`--go` 可代发）、`NO_WORK_PAGE` 集合、
+  S5 评论状态（未填未发 → 已发）、评论一节标题、xhs-verify 条目去掉已废的「⚠」说法；SKILL 命令块与判据同步。
+- **现场事实**：核对时列表头 43→44→45 边跑边涨，是 **ops 线并发补发它审计出的 ch24/ch25**（用它自己 CDP 量的按钮坐标发的）；
+  那晚 23:3x 的账 45 = 26 章 + 19 条视频，是快照不是最终数——这也是把「总数」降级为动态记录的直接原因。
+
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `22cfba3` | feat(publish): xhs 驱动——合集只读复核 collectioncheck + 虚拟列表扫卡（缩小+三种滚动） |
+| `61942e7` | feat(publish): 小红书发布核对常设化——xhs-verify.mjs（整列对账替代搜索式核验） |
+| `bb293bf` | fix(publish): 三处自相矛盾——collectioncheck 并入 NO_WORK_PAGE、comment 头注对齐 --go、S5 评论状态改实录 |
+| `60f048c` | docs(publish): 台账三处收口——评论线标题改实际行为、核对工具条目去掉已废的⚠口径、并发数注明为当晚快照 |
+
+### Testing
+
+- `collectioncheck --ep=c3-volatile`：44 条列表里扫到第 17 位那张卡（最难用例），重载回读合集行 =「通往单片机之路」、归属 是（72.9s）。
+- `collectioncheck --ep=s14-pwr`：通过（57.4s），顺带验到「别的笔记的编辑页不碰」分支；并入 `NO_WORK_PAGE` 后复跑仍过。
+- `xhs-verify.mjs`：两跑 **19/19 全中**（含 F5/S5 回归）；标签 `tab-item--active` 类名逐跑落证；总数只作动态记录、不参与判定。
+- `node --check video/publish/xhs-step.mjs` 与 `video/publish/xhs-verify.mjs`：全过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
