@@ -74,17 +74,23 @@ node video/publish/xhs-step.mjs coverapply --ep=<ep>   # 点「完成」，封�
 node video/publish/xhs-step.mjs comment --ep=<ep>      # 网页版自家笔记页：把置顶评论填进评论框，不发
 node video/publish/xhs-step.mjs comment --ep=<ep> --go # 加 --go 且写好 I_HAVE_USER_OK_COMMENT=<ep> 才真发这条评论
 node video/publish/xhs-step.mjs collection --ep=<ep>   # 编辑页选合集，到"选中"为止，不点提交
+node video/publish/xhs-step.mjs collectioncreate --ep=<ep> --desc=<简介>   # 建合集并加入（闸门 I_HAVE_USER_OK_COLLECTION=<合集名>）
+node video/publish/xhs-step.mjs collection --ep=<ep> --go   # 换/挂合集并点提交（闸门 I_HAVE_USER_OK_SUBMIT=<ep>；坐标点击+回读落盘）
+node video/publish/xhs-step.mjs attach --ep=<ep>       # 发布表单上把合集选好——发出去时一并挂上（不点提交，不要闸门）
+node video/publish/xhs-step.mjs publish --ep=<ep> --go # 点发布（闸门 I_HAVE_USER_OK=<ep>；判据 URL published=true，权威核对在笔记管理）
+sh video/publish/xhs-batch.sh <ep> [<ep> ...]          # 逐集跑完七步表单+挂集+发布，任一步非零即停，闸门逐集检查
 ```
 
 `measure` 是量字段上限用的探针步——**别在正经稿件上跑，它会把测试字写进标题和正文**。
 
-- **这一条线的发布动作没有自动化**：`xhs-step.mjs publish` 在闸门检查之后直接抛错。草稿齐了就把窗口交回人，**第一条由人点「发布」**；要写进驱动得先有人点头、并且拿实测证据说话。
+- **发布动作已自动化，但始终逐集放行**：`publish` 要闸门 `I_HAVE_USER_OK=<ep>`（内容=对话里对这一条的点头原话）**且**加 `--go` 才点；默认（没 `--go`）只回显闸门然后退出码 3。判据是点完 URL 变 `?source=&published=true`；权威信号仍是笔记管理「已发布」——批量上传时批后统一跑一遍核对。
+- **点那颗按钮的姿势**：`<xhs-publish-btn>` 是 closed shadow 自定义元素（文本扫不到、`getByText` 点不中、`elementFromPoint` 只回宿主），但**真实鼠标在宿主 rect 内坐标点能命中内部按钮**（2026-10-17 章节批与 F5/S5 换集各验一次：rect `220,744 680x90` → 点 `(560,789)` → 回读「更新成功」）。别用 `_onPublish` 硬触发（绕过前端校验）。
 - **平台不替我们拦超限**：标题 39 字喂进去 `input.value` 还是 39，计数器只印成「39 / 20」，拦的是提交。所以断言写在本机侧——`fill` 先按码点断 标题 ≤20、正文 ≤1000，任何字段出现 `http(s)://` 或 `github` 字样就退出码 2 停手（口径见 §4）。
 - **成功只认笔记管理 `/new/note-manager` 的「已发布」标签里有这条**（「审核中」「未通过」两个标签同时应当是空的——落在审核里不等于发出去了）。发布后表单 URL 会变成 `?source=&published=true`、草稿箱归零，但那是**事后信号不是回执**，别拿它写判据。本机侧的账是 `.temp/xhs-run/<ep>-published.txt`；草稿留痕也在同一个目录，**草稿不等于已发布**。
 - **回读观众侧文案这条路暂时不可用**：笔记管理里点标题只会选中，弹出的标签页不导航到详情页。所以"有没有漏地址"要在**发布前**用编辑器正文逐字比（`.temp` 下的一次性脚本即可，别把判据留到发出去之后）。
 - **评论只在网页版发得出去，创作者中心没有评论区**（十项导航里没有任何评论项，数据看板只报「评论数」；笔记行上那个「置顶」图标置顶的是**笔记本身**不是评论）。链路是 `/explore` 顶栏的 `a[href^="/user/profile/"]` → 主页按标题找到带 `xsec_token` 的卡片 → 笔记页，**token 每次现取别抄存**；未登录 `www` 域时直连笔记页会吃 `error_code=300031`。`comment` 步默认只填不发，`--go` 走的是**另一个闸门** `I_HAVE_USER_OK_COMMENT=<ep>`——别拿发布那张闸来放评论。
 - **「置顶这条评论」在网页版做不到**：自家评论的「…」菜单里只有「删除评论」，整页扫不到「置顶」二字（2026-10-17 量完四条证据见 `xhs-plan.md`）。所以这一条线**没有 `pin` 步**，跟抖音同口径——置顶只能在 App 里长按。以后谁想补，先量到入口再写代码。
-- **合集挂载只到"选中"**：`collection` 步从笔记管理认 tooltip「编辑」进 `/publish/update`，选完把整行文本回读给你看。选中**不落盘**（重开页面回落「选择合集」），落盘要点那颗 `<xhs-publish-btn>`——它是 closed shadow 的自定义元素（文本扫不到、坐标覆盖不出左右两半、只能靠 `_onPublish` 硬触发），而且 `is-publish=true` 时点下去等于把公开笔记重新提交。这一下**归人点**。
+- **合集：选中不落盘，落盘要提交**。`collection` 步从笔记管理认 tooltip「编辑」进 `/publish/update`（**认领按标题框逐字**——开着的编辑页不一定是这一条的，实测踩过）；选中后重开页面会回落「选择合集」，要落盘得点那颗 `<xhs-publish-btn>`（`collection --go`，闸门 `I_HAVE_USER_OK_SUBMIT=<ep>`）。落盘判据=**重开编辑页那一行仍显示合集名**，不认 toast（toast 偶发读不到）。两个实测坑：入口分两态（没挂时 `.collection-plugin-button`、已挂时它消失、换 `.collection-plugin-choose`）；`is-publish=true` 的提交可能把笔记拉回审核（S5 被拉回、几分钟后回「已发布」；F5 没有——平台不保证，提交前要预期）。**新发的稿子在发布表单上就有「加入合集」**（`attach` 步），选好再发比发完回编辑页补一遍省事。
 
 ## 3. 平台的"没做成"分别长什么样
 
@@ -103,7 +109,8 @@ node video/publish/xhs-step.mjs collection --ep=<ep>   # 编辑页选合集，�
 | 小红书 正文里的 `#词` 显示成黑字 | 纯文本 `#` 不是话题，只有输入 `#名字` 后弹出来的那条候选被接住才成 chip | `topics` 步用回车接弹层；**不许用 locator 点候选**——先匹配到的正是刚打进正文的那串黑字 |
 | 小红书 封面点了没反应 | 「设置封面」那四个字只是标题，入口是默认封面缩略图本身（三层才到 file input） | 先 `cover` 量结构，再 `coverset` 喂图、`coverapply` 点完成 |
 | 小红书 点评论框报 `intercepts pointer events` | 「评论」那条占位与 `p.content-input` 是同 rect 的兄弟，占位盖在上面 | 先点 `.engage-bar .inner-when-not-active` 换到输入态，再敲字（`comment` 步已这么写） |
-| 小红书 合集选完、重开页面又变回「选择合集」 | 选中只是表单状态，不提交不落盘；且选中后 `.collection-plugin-button` 那个类会消失 | 判据读 `.collection-plugin-wrapper` 整行文本；要生效得人点 `<xhs-publish-btn>` 里的「发布」（左上角那颗「发布笔记」是导航，按"含发布"去点会点错） |
+| 小红书 合集选完、重开页面又变回「选择合集」 | 选中只是表单状态，不提交不落盘；且选中后 `.collection-plugin-button` 那个类会消失（换 `.collection-plugin-choose`） | 判据读 `.collection-plugin-wrapper` 整行文本；落盘用 `collection --go`（闸门+坐标点击+重开核对）；新发的稿子在发布表单上直接 `attach` 再发 |
+| 小红书 点发布页底栏中心没反应 | 底栏是「暂存离开 429..549｜发布 573..693」两颗按钮（flex 居中、gap 24），宿主 `<xhs-publish-btn>`（rect 221..901）的正中心 (561) 正好落在**两颗中间的空隙**上 | 用 CDP `DOM.getDocument(pierce:true)` + `DOM.getBoxModel` 量内部「发布」那颗的真实盒（驱动里的 `findPublishButtonBox`），别点宿主中心 |
 | 小红书 上一步的弹层还挂着，下一步点击超时 | 一次实验遗留的 `d-modal-mask` 在拦 pointer events | 驱动已把 `coverset` 做成幂等（见到 file input 直接喂）；手工救援前先看有没有遮罩，别急着 reload |
 
 ## 4. 字怎么出去（简介与文案）
@@ -134,6 +141,9 @@ node video/publish/xhs-step.mjs collection --ep=<ep>   # 编辑页选合集，�
 - **知乎「继续发布」横幅可能挂着别的会话的草稿**，点之前逐字比对标题前 60 字。
 - **入口 URL 不许拼**，只从页面 `<a>` 里找。知乎 `/upload-video` 一类入口会失效，重跑第一步是把入口重新点出来。
 - **共享浏览器上的标签页会被人关掉**。多集连投必须按集认领标签页身份（`douyin-step.mjs` 用 sessionStorage 盖章，B站用 `__biliEp`），别按"第一个平台页"选页——那等于给上一条稿件填下一条的字。
+  小红书编辑页同理但更土：`/publish/update` 开着的不一定是这一条（实测 F5 那步复用了 S5 留下的页、把别人的合集行当自己的读），所以 `claimEditPage` 按**标题框的值逐字**认领，不是同一个标题就另开。
+- **发布页底栏是两颗按钮，点中心无效**：`<xhs-publish-btn>` 宿主 rect 221..901 的正中心落在「暂存离开」（429..549）与「发布」（573..693）中间的空隙上——2026-10-17 首次点发布就这么白点了一次。正路是 CDP `DOM.getDocument(pierce:true)` 穿透 closed shadow、`DOM.getBoxModel` 量内部「发布」那颗的四边形（`xhs-step.mjs` 的 `findPublishButtonBox`）。
+- **SPA 带未保存改动导航会弹原生 confirm**，不接住就撞 playwright 的竞态自动处理（`ProtocolError: No dialog is showing`，2026-10-17 两次）。xhs 的编辑页与探针统一挂 `dialog` 监听、一律接受。
 - 抖音竖版/横版两张封面都得走模态流上传；`slot` 那条喂的 `input[type=file]` 左边那个是「生成参考图」，直接喂会让封面退回视频第 0 帧。
 - **常驻页一关，登录就白扫**：小红书第一版探针用 `find(p => p.url().includes('xiaohongshu'))` 选页，拿到的正是 daemon 唯一那一页，收尾 `page.close()` 把常驻页带走，node 因 unsettled top-level await 以 13 退出、窗口消失。现在的规矩：脚本自己 `ctx.newPage()`，工作页永不 close，daemon 用 `setInterval` 挂住进程。
 - **别用全页正则读计数器**：`document.body.innerText.match(/\d+\s*\/\s*\d+/)` 会把稿件正文里那句「（6000 / 2500）」当计数器读进日志——读数看着对，其实是稿件自己的字。F5 稿件已改成「6000 与 2500」，判据也只认贴着输入框那一条。

@@ -83,6 +83,21 @@
       "domain": "科学工程",
       "mark": "个人观点仅供参考",
       "original": true
+    },
+    "xiaohongshu": {
+      "title": "中断里为什么不能恋战？机器码给你答案",
+      "body": "中断只做一件事：跳到表里那个地址。三件套拆开讲，560 条断言本机全绿。\n\n复现：sh code/c/05-func-pointer/probe.sh",
+      "topics": [
+        "单片机",
+        "C语言",
+        "嵌入式"
+      ],
+      "topicsNote": "正文里直接打 #名字 只是普通文本，不成话题：要成 chip 得在 #名字 之后接住弹层（回车），所以话题单列一个字段、由 xhs-step.mjs 的 topics 步做。",
+      "pinned": "环形缓冲 A 派 7 格 B 派 8 格那笔账也在里面，560 条断言本机全绿：sh code/c/05-func-pointer/probe.sh",
+      "repro": "sh code/c/05-func-pointer/probe.sh",
+      "noLink": "按用户口径：标题、正文、评论一律不出现站外地址与 GitHub 字样（我们自己那个 github.io 地址从小红书这边看也算站外），导流只靠「全网同名：通往单片机之路」。复现命令用 sh code/... 这种纯文本形式。",
+      "collection": "通往单片机之路",
+      "collectionNote": "视频系列自己的合集（2026-10-17 用户点头新建，对齐抖音 mix 名与 series.json 的 series；章节品另有合集「STM32 零基础自学」）。发布表单上选好合集再点发布即可一并落盘；提交那颗 <xhs-publish-btn> 是 closed shadow，真实鼠标在宿主 rect 内坐标点能命中（2026-10-17 实测）。判据不认 toast 认服务端：重开编辑页那一行仍显示合集名才算数。"
     }
   },
   "platforms": {

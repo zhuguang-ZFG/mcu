@@ -33,9 +33,9 @@ const COVER = `D:/Users/mcu/video/out/${EP}/douyin-cover.png`
 
 const browser = await chromium.connectOverCDP('http://127.0.0.1:9223')
 const ctx = browser.contexts()[0]
-// comment 走的是网页版（www.xiaohongshu.com），collection 走的是编辑页（/publish/update），
-// 都不是 /publish/publish 那页草稿编辑器，所以这两步不参与工作页认领——认领错了会把没填完的草稿页当输入。
-const NO_WORK_PAGE = verb === 'comment' || verb === 'collection'
+// comment 走的是网页版（www.xiaohongshu.com），collection/collectioncreate 走的是编辑页（/publish/update），
+// 都不是 /publish/publish 那页草稿编辑器，所以这几步不参与工作页认领——认领错了会把没填完的草稿页当输入。
+const NO_WORK_PAGE = verb === 'comment' || verb === 'collection' || verb === 'collectioncreate'
 let page = null
 if (!NO_WORK_PAGE) {
   // 工作标签页按 URL 认领：已开着编辑器就回来接着用，没有就新开一页。
@@ -106,6 +106,180 @@ async function settle(ms = 45_000) {
     await page.waitForTimeout(1500)
   }
   return false
+}
+
+const TITLE_INPUT = 'input[placeholder="填写标题会有更多赞哦"]'
+
+// 合集那一行怎么读、怎么算「已挂上」：
+// 实测：没挂时这一行末尾是占位「选择合集」；写着合集名时（表单里刚选的、或服务端已挂的都一样），
+// 占位没了、整行末尾换成合集名，而且 .collection-plugin-button 这个类也会消失——所以判据只能看整行文本。
+const makeReadRow = (form, want) => () =>
+  form.evaluate((want) => {
+    const txt = (s) => (s || '').replace(/\s+/g, ' ').trim()
+    const row = txt(document.querySelector('.collection-plugin-wrapper')?.innerText)
+    return {
+      row,
+      picked: row.includes(want) && !row.includes('选择合集'),
+      url: location.href,
+    }
+  }, want)
+
+// 打开「选择合集」弹层。两种状态的入口不一样（2026-10-17 DOM 实测）：
+// 没挂/没选时是 .collection-plugin-button（文案「选择合集」）；已挂/已选时那个类会消失，
+// 那一行末尾换成 div.collection-plugin-choose（span.collection-name + span.icon-arrow 那个 ⌄）——
+// 所以按状态回退，找不到就报现状，不硬点。
+async function openCollectionPicker(form) {
+  const btn = form.locator('.collection-plugin-button').first()
+  let el = btn
+  if (!(await btn.count())) {
+    const choose = form.locator('.collection-plugin-choose').first()
+    if (!(await choose.count())) throw new Error('合集那一行没有 .collection-plugin-button 也没有 .collection-plugin-choose——入口换了样子，别硬点')
+    el = choose
+  }
+  await el.click({ timeout: 15_000 })
+  await form.waitForTimeout(4000)
+  const items = form.locator('.d-popover .item')
+  if (!(await items.count())) {
+    const state = await form.evaluate(() => {
+      const txt = (s) => (s || '').replace(/\s+/g, ' ').trim()
+      return {
+        row: txt(document.querySelector('.collection-plugin-wrapper')?.innerText),
+        popover: txt(document.querySelector('.d-popover')?.innerText).slice(0, 200),
+      }
+    })
+    throw new Error(`点了合集入口但弹层里没有 .d-popover .item——行：「${state.row}」，弹层：「${state.popover || '(没开)'}」`)
+  }
+  return items
+}
+
+// 量「发布」那颗按钮的真实盒模型：<xhs-publish-btn> 是 closed shadow，page JS 够不到里面；
+// 但 CDP 的 DOM.getDocument(pierce:true) 能穿透 shadow、DOM.getBoxModel 给出内部按钮的四边形。
+// 2026-10-17 实测：发布页底栏是「暂存离开 429..549 | 发布 573..693」两颗（flex 居中、gap 24），
+// 宿主矩形 221..901 的正中心 (561) 正好落在两颗**中间的空隙**上——点中心什么都不会发生（第一次就踩了这个）。
+async function findPublishButtonBox(page) {
+  const cdp = await page.context().newCDPSession(page)
+  try {
+    const { root } = await cdp.send('DOM.getDocument', { depth: -1, pierce: true })
+    const walk = (n, out) => {
+      out.push(n)
+      for (const c of n.children || []) walk(c, out)
+      for (const s of n.shadowRoots || []) walk(s, out)
+    }
+    const all = []
+    walk(root, all)
+    for (const host of all.filter((n) => n.nodeName === 'XHS-PUBLISH-BTN')) {
+      const sub = []
+      walk(host, sub)
+      for (const n of sub) {
+        if (n.nodeType !== 1) continue
+        const own = (n.children || []).filter((c) => c.nodeType === 3).map((c) => (c.nodeValue || '').trim()).filter(Boolean)
+        if (own.length !== 1 || own[0] !== '发布') continue
+        const box = await cdp.send('DOM.getBoxModel', { nodeId: n.nodeId })
+        const q = box.model.border
+        return {
+          cx: Math.round((q[0] + q[2] + q[4] + q[6]) / 4),
+          cy: Math.round((q[1] + q[3] + q[5] + q[7]) / 4),
+          quad: q.map(Math.round).join(','),
+        }
+      }
+    }
+    return null
+  } finally {
+    await cdp.detach().catch(() => {})
+  }
+}
+
+// 认领/新开一条笔记的编辑页（/publish/update）。开着的编辑页不等于就是这一条的：
+// 2026-10-17 实测踩到——F5 那步复用了 S5 留下的编辑页，把 S5 的合集行当 F5 的读了、截图还被覆盖成 S5 的页。
+// 所以认领按标题框逐字；别的笔记的编辑页一律不碰（可能是人正开着要交的表），走笔记管理经「编辑」tooltip 另开。
+async function claimEditPage(xsTitle) {
+  let form = ctx.pages().find((p) => p.url().includes(EDIT_HOST))
+  if (form) {
+    const openTitle = await form
+      .evaluate((sel) => document.querySelector(sel)?.value || '', TITLE_INPUT)
+      .catch(() => '')
+    if (openTitle && openTitle === xsTitle) {
+      console.log(`  编辑页已经开着，接着用它（标题框：「${openTitle}」）`)
+    } else {
+      console.log(`  开着的编辑页是别的笔记的（标题框：「${openTitle.slice(0, 30)}」，要的是「${xsTitle}」）——不碰它，走笔记管理另开这一条`)
+      form = null
+    }
+  }
+  if (!form) {
+    const nm = await ctx.newPage()
+    nm.setDefaultTimeout(60_000)
+    await nm.goto(NOTE_MANAGER_URL, { waitUntil: 'domcontentloaded' })
+    await nm.waitForTimeout(9000)
+    const card = nm.locator('.note-card__body').filter({ hasText: xsTitle }).first()
+    if (!(await card.count())) {
+      await nm.close().catch(() => {})
+      throw new Error(`笔记管理里没有标题含「${xsTitle}」的卡片——先核这条到底发出去了没，别猜`)
+    }
+    // 「编辑」是图标按钮，只能靠 hover 出来的 tooltip 认领（按下标猜会在别的集上点错）
+    const icons = card.locator('[class*="action-btn"]')
+    const n = await icons.count()
+    let idx = -1
+    for (let i = 0; i < n; i++) {
+      await icons.nth(i).hover().catch(() => {})
+      await nm.waitForTimeout(700)
+      const tips = await nm.evaluate(() => {
+        const txt = (s) => (s || '').replace(/\s+/g, ' ').trim()
+        return [...document.querySelectorAll('[class*="tooltip"],[role="tooltip"],.d-popover,[class*="popover"]')]
+          .filter((e) => e.getBoundingClientRect().width)
+          .map((e) => txt(e.innerText))
+          .filter(Boolean)
+      })
+      if (tips.some((t) => t === '编辑')) { idx = i; break }
+    }
+    if (idx < 0) {
+      await nm.close().catch(() => {})
+      throw new Error(`这张卡片上 hover 遍 ${n} 个图标都没冒出「编辑」tooltip，不敢点`)
+    }
+    const before = new Set(ctx.pages())
+    await icons.nth(idx).click({ timeout: 15_000 })
+    await nm.waitForTimeout(12_000)
+    const fresh = ctx.pages().filter((x) => !before.has(x))
+    form = fresh[0] || nm
+  }
+  await form.waitForLoadState('domcontentloaded').catch(() => {})
+  // SPA 带未保存改动时导航会弹原生 confirm（beforeunload 之类）；不接住的话 playwright 的竞态
+  // 自动处理会抛 ProtocolError: No dialog is showing（2026-10-17 实测，创建合集后重载核对时撞上）——
+  // 挂个 listener 一律接受：这条线上没有需要"取消"的原生对话。
+  form.on('dialog', (d) => d.accept().catch(() => {}))
+  await form.waitForTimeout(15_000)
+  return form
+}
+
+// 编辑页的提交（挂合集/建合集之后要落盘的那一下）：
+// 那颗 <xhs-publish-btn> 是 closed shadow——整页文本扫不到「发布」、getByText 点不中；
+// 2026-10-17 章节批与 F5/S5 实测：真实鼠标在宿主 rect 内点击能命中内部按钮。
+// 判据不认 toast 认服务端：点完把这条编辑页重新载一遍，那一行还写着合集名才算数。
+async function submitEditAndVerify(form, readRow, want) {
+  const url = form.url()
+  await form.locator('xhs-publish-btn').first().scrollIntoViewIfNeeded().catch(() => {})
+  await form.waitForTimeout(800)
+  const pt = await findPublishButtonBox(form)
+  if (!pt) throw new Error('CDP 穿透没量到「发布」那颗按钮——不猜坐标')
+  console.log(`  提交：CDP 穿透量到「发布」盒=${pt.quad} → 真实点击 (${pt.cx},${pt.cy})`)
+  await form.mouse.click(pt.cx, pt.cy)
+  await form.waitForTimeout(7000)
+  const toast = await form.evaluate(() => {
+    const m = (document.body.innerText || '').replace(/\s+/g, ' ').match(/(更新成功|保存成功|发布成功|提交成功)/)
+    return m ? m[1] : null
+  })
+  console.log(`  点完读到的提示：${toast ? `「${toast}」` : '没读到成功字样（以重开核对为准）'}`)
+  await form.goto(url, { waitUntil: 'domcontentloaded' })
+  await form.waitForTimeout(12_000)
+  const ver = await readRow()
+  console.log(`  重开编辑页核对：这一行写着「${ver.row}」`)
+  console.log(`  服务端核对：显示「${want}」：${ver.picked ? '是（已落盘）' : '否（没落上，别当成功）'}`)
+  await form.screenshot({ path: `${RUN}/${EP}-collection-submitted.png` })
+  console.log(`  截图：${RUN}/${EP}-collection-submitted.png`)
+  if (!ver.picked) {
+    process.exitCode = 4
+    throw new Error(`提交后重开编辑页，合集行没显示「${want}」——按未提交对待`)
+  }
+  return ver
 }
 
 if (verb === 'status') {
@@ -394,78 +568,22 @@ if (verb === 'status') {
     }
   }
 } else if (verb === 'collection') {
-  // 挂合集要在**已发布笔记的编辑页**做：合集名从 episode.json 来，noteId 从笔记管理点「编辑」现拿（不拼 URL，noteId 抄进代码就是埋雷）。
-  // 本步骤做到「选中合集」为止。提交那颗按钮是 <xhs-publish-btn>（closed shadow，文本扫不到），
-  // 编辑已发布笔记时它带着 is-publish=true——点下去等于把这条公开笔记重新提交一遍，归人点，脚本不代点。
+  // 挂合集在**已发布笔记的编辑页**做：合集名从 episode.json 来，noteId 从笔记管理点「编辑」现拿（不拼 URL，noteId 抄进代码就是埋雷）。
+  // 选到「这一行写着合集名」为止；--go 才点提交（闸门 I_HAVE_USER_OK_SUBMIT=<ep>，默认归人点）。
   const name = ep.publish?.xiaohongshu?.collection
   if (!name) throw new Error(`${EP} 没有 publish.xiaohongshu.collection——不替这一集猜合集名`)
   const xsTitle = ep.publish?.xiaohongshu?.title || ''
-  let form = ctx.pages().find((p) => p.url().includes(EDIT_HOST))
-  if (form) {
-    console.log('  编辑页已经开着，接着用它')
-  } else {
-    const nm = await ctx.newPage()
-    nm.setDefaultTimeout(60_000)
-    await nm.goto(NOTE_MANAGER_URL, { waitUntil: 'domcontentloaded' })
-    await nm.waitForTimeout(9000)
-    const card = nm.locator('.note-card__body').filter({ hasText: xsTitle }).first()
-    if (!(await card.count())) {
-      await nm.close().catch(() => {})
-      throw new Error(`笔记管理里没有标题含「${xsTitle}」的卡片——先核这条到底发出去了没，别猜`)
-    }
-    // 「编辑」是图标按钮，只能靠 hover 出来的 tooltip 认领（按下标猜会在别的集上点错）
-    const icons = card.locator('[class*="action-btn"]')
-    const n = await icons.count()
-    let idx = -1
-    for (let i = 0; i < n; i++) {
-      await icons.nth(i).hover().catch(() => {})
-      await nm.waitForTimeout(700)
-      const tips = await nm.evaluate(() => {
-        const txt = (s) => (s || '').replace(/\s+/g, ' ').trim()
-        return [...document.querySelectorAll('[class*="tooltip"],[role="tooltip"],.d-popover,[class*="popover"]')]
-          .filter((e) => e.getBoundingClientRect().width)
-          .map((e) => txt(e.innerText))
-          .filter(Boolean)
-      })
-      if (tips.some((t) => t === '编辑')) { idx = i; break }
-    }
-    if (idx < 0) {
-      await nm.close().catch(() => {})
-      throw new Error(`这张卡片上 hover 遍 ${n} 个图标都没冒出「编辑」tooltip，不敢点`)
-    }
-    const before = new Set(ctx.pages())
-    await icons.nth(idx).click({ timeout: 15_000 })
-    await nm.waitForTimeout(12_000)
-    const fresh = ctx.pages().filter((x) => !before.has(x))
-    form = fresh[0] || nm
-  }
-  await form.waitForLoadState('domcontentloaded').catch(() => {})
-  await form.waitForTimeout(15_000)
-  const readRow = () =>
-    form.evaluate((want) => {
-      const txt = (s) => (s || '').replace(/\s+/g, ' ').trim()
-      const row = txt(document.querySelector('.collection-plugin-wrapper')?.innerText)
-      return {
-        row,
-        // 实测：没挂时这行末尾是占位「选择合集」，点中选项后占位没了、整行末尾换成合集名，
-        // 而且 .collection-plugin-button 这个类也随之消失——所以判据只能看整行文本，不能盯按钮。
-        picked: row.includes(want) && !row.includes('选择合集'),
-        url: location.href,
-      }
-    }, name)
+  const form = await claimEditPage(xsTitle)
+  const readRow = makeReadRow(form, name)
   const pre = await readRow()
   console.log(`\n【collection】编辑页：${pre.url}`)
   console.log(`  合集那一行现在是：「${pre.row}」`)
   if (pre.picked) {
-    console.log(`  这一行已经写着「${name}」，不用再点（表单状态而已，没提交就不算挂上）`)
+    console.log(`  这一行已经写着「${name}」，不用再点`)
   } else {
-    const trig = form.locator('.collection-plugin-button').first()
-    if (!(await trig.count())) throw new Error('编辑页里没有 .collection-plugin-button——入口换了样子，别硬点')
-    await trig.click({ timeout: 15_000 })
-    await form.waitForTimeout(4000)
-    // 弹层里可选项是 div.item（逐字「STM32 零基础自学」），「创建合集」在 .popover-footer 里——
-    // 所以按整段文本全等来认，不按子串：子串会把含 footer 的容器也捞进来。
-    const cand = form.locator('.d-popover .item')
+    // 弹层里可选项是 div.item（逐字合集名），「创建合集」在 footer 里——
+    // 按整段文本全等来认，不按子串：子串会把含 footer 的容器也捞进来。
+    const cand = await openCollectionPicker(form)
     const cnt = await cand.count()
     const labels = []
     let item = null
@@ -494,22 +612,187 @@ if (verb === 'status') {
   })
   if (btn) {
     console.log(`  保存那颗按钮：<xhs-publish-btn ${btn.attrs}> rect=${btn.rect}，_onPublish 在=${btn.hasHandler}`)
-    console.log('  它是 closed shadow 的自定义元素：整页文本扫不到「发布」，坐标点又覆盖不出左右两半——所以本步骤不代点。')
+    console.log('  它是 closed shadow 的自定义元素：整页文本扫不到「发布」、getByText 点不中；真实鼠标在宿主 rect 内坐标点能命中（2026-10-17 章节批实测）。')
   }
   await form.screenshot({ path: `${RUN}/${EP}-collection.png` })
   console.log(`  截图：${RUN}/${EP}-collection.png`)
-  console.log('  到这里停手：没点提交。is-publish=true 时点下去等于把这条已发布笔记重新提交一遍（大概率再走一次审核），归人点。')
+  if (!process.argv.includes('--go')) {
+    console.log('  到这里停手：没点提交。is-publish=true 时点下去等于把这条已发布笔记重新提交一遍（大概率再走一次审核）——要脚本代点加 --go，闸门文件另写。')
+  } else {
+    const gate = `${RUN}/I_HAVE_USER_OK_SUBMIT=${EP}`
+    if (!existsSync(gate)) {
+      console.log(`  停在提交前：闸门文件不存在 ${gate}`)
+      console.log('  这个文件只能来自对话里对「提交那一下由脚本点」的点头，脚本不自己造。')
+      process.exitCode = 3
+    } else {
+      console.log(`  闸门：${gate}`)
+      console.log(`    ${readFileSync(gate, 'utf8').trim()}`)
+      await submitEditAndVerify(form, readRow, name)
+    }
+  }
+} else if (verb === 'collectioncreate') {
+  // 建合集并把当前这条「创建并加入」：链路来自 ops 线实测（D:/tmp/xhs_make_collection.py，2026-10-17 建章节合集的同一条路）——
+  // 点「选择合集」触发弹层 → footer「创建合集」→ 名称 input[placeholder*="合集名称"] / 简介 →「创建并加入」。
+  // 建合集是公开内容：闸门 I_HAVE_USER_OK_COLLECTION=<合集名> 只能来自对话里的点头，名字从 episode.json 来（不写字面量）。
+  const name = ep.publish?.xiaohongshu?.collection
+  if (!name) throw new Error(`${EP} 没有 publish.xiaohongshu.collection——不替这一集猜合集名`)
+  const desc = arg('--desc', '')
+  const gate = `${RUN}/I_HAVE_USER_OK_COLLECTION=${name}`
+  console.log(`\n【collectioncreate】要建的合集：「${name}」${desc ? `（简介：${desc}）` : ''}`)
+  if (!existsSync(gate)) {
+    console.log(`停在建合集前：闸门文件不存在 ${gate}`)
+    console.log('这个文件只能来自对话里对「建这个合集」的点头，脚本不自己造。')
+    process.exitCode = 3
+  } else {
+    console.log(`  闸门：${gate}`)
+    console.log(`    ${readFileSync(gate, 'utf8').trim()}`)
+    const xsTitle = ep.publish?.xiaohongshu?.title || ''
+    const form = await claimEditPage(xsTitle)
+    const readRow = makeReadRow(form, name)
+    const pre = await readRow()
+    console.log(`  编辑页：${pre.url}`)
+    console.log(`  合集那一行现在是：「${pre.row}」`)
+    const items = await openCollectionPicker(form)
+    const cnt = await items.count()
+    const labels = []
+    for (let i = 0; i < cnt; i++) labels.push((await items.nth(i).innerText().catch(() => '')).replace(/\s+/g, ' ').trim())
+    console.log(`  弹层里现有的可选项（${cnt}）：${labels.map((s) => `「${s}」`).join(' | ') || '无'}`)
+    if (labels.includes(name)) throw new Error(`弹层里已经有逐字等于「${name}」的项——不重复建`)
+    // footer 的「创建合集」按逐字文本点（不按子串：子串会把含 footer 的容器也捞进来）
+    const foot = form.locator('.d-popover').getByText('创建合集', { exact: true }).last()
+    if (!(await foot.count())) throw new Error('弹层里没有逐字「创建合集」的入口——不猜')
+    await foot.click({ timeout: 15_000 })
+    await form.waitForTimeout(3500)
+    const nameIn = form.locator('input[placeholder*="合集名称"]').first()
+    await nameIn.waitFor({ state: 'attached', timeout: 15_000 })
+    await nameIn.click()
+    await nameIn.fill(name)
+    await form.waitForTimeout(600)
+    const descIn = form.locator('textarea, input[placeholder*="简介"]').first()
+    if (desc && (await descIn.count())) {
+      await descIn.click()
+      await descIn.fill(desc)
+      await form.waitForTimeout(600)
+    }
+    const typed = await form.evaluate(() => {
+      const txt = (s) => (s || '').replace(/\s+/g, ' ').trim()
+      return [...document.querySelectorAll('input,textarea')]
+        .filter((e) => e.getBoundingClientRect().width)
+        .map((e) => ({ ph: e.getAttribute('placeholder') || '', v: txt(e.value).slice(0, 40) }))
+        .filter((x) => x.v)
+    })
+    console.log(`  建合集弹层里已填：${typed.map((x) => `「${x.ph || '(无placeholder)'}」=「${x.v}」`).join(' | ') || '（一个都没回读到，危险）'}`)
+    await form.screenshot({ path: `${RUN}/${EP}-collectioncreate-filled.png` })
+    const mk = form.getByText('创建并加入', { exact: true }).last()
+    if (!(await mk.count())) throw new Error('没有逐字「创建并加入」的按钮——不猜')
+    await mk.click({ timeout: 15_000 })
+    await form.waitForTimeout(7000)
+    const post = await readRow()
+    console.log(`  点完「创建并加入」：这一行写着「${post.row}」`)
+    const words = await form.evaluate(() => {
+      const m = (document.body.innerText || '').replace(/\s+/g, ' ').match(/(成功创建|创建成功|共\s*\d+\s*篇)/g)
+      return m ? [...new Set(m)].slice(0, 4) : []
+    })
+    console.log(`  页面上读到的字：${words.join(' | ') || '无「成功创建/共N篇」字样（以重开核对为准）'}`)
+    await form.screenshot({ path: `${RUN}/${EP}-collectioncreate.png` })
+    console.log(`  截图：${RUN}/${EP}-collectioncreate.png`)
+    // 服务端核对：重开这条编辑页，那一行要写着新合集名
+    const url = form.url()
+    await form.goto(url, { waitUntil: 'domcontentloaded' })
+    await form.waitForTimeout(12_000)
+    const ver = await readRow()
+    console.log(`  重开编辑页核对：这一行写着「${ver.row}」→ 显示合集名：${ver.picked ? '是' : '否'}`)
+    await form.screenshot({ path: `${RUN}/${EP}-collectioncreate-verified.png` })
+    console.log(`  截图：${RUN}/${EP}-collectioncreate-verified.png`)
+    console.log('  到这里停手：没点提交。这条要不要落盘，下一步 collection --go 决定。')
+  }
+} else if (verb === 'attach') {
+  // 在发布表单（/publish/publish）上把合集选好——点发布时合集一并落盘，省掉"发完再回编辑页补一遍"。
+  // 只改表单状态、不点任何提交，所以不要闸门；判据同 collection：读那一行整行文本。
+  const name = ep.publish?.xiaohongshu?.collection
+  if (!name) throw new Error(`${EP} 没有 publish.xiaohongshu.collection——不替这一集猜合集名`)
+  await settle()
+  const readRow = makeReadRow(page, name)
+  const pre = await readRow()
+  console.log(`\n【attach】发布表单：${pre.url}`)
+  console.log(`  合集那一行现在是：「${pre.row}」`)
+  if (pre.picked) {
+    console.log('  已经选着，不用再点')
+  } else {
+    const items = await openCollectionPicker(page)
+    const cnt = await items.count()
+    const labels = []
+    let item = null
+    for (let i = 0; i < cnt; i++) {
+      const t = (await items.nth(i).innerText().catch(() => '')).replace(/\s+/g, ' ').trim()
+      labels.push(t)
+      if (t === name) item = items.nth(i)
+    }
+    console.log(`  弹层里的可选项（${cnt}）：${labels.map((s) => `「${s}」`).join(' | ') || '无'}`)
+    if (!item) throw new Error(`弹层里没有逐字等于「${name}」的选项——不猜该点哪一条`)
+    await item.click({ timeout: 15_000 })
+    await page.waitForTimeout(4000)
+  }
+  const after = await readRow()
+  console.log(`  现在这一行写着：「${after.row}」→ 显示合集名：${after.picked ? '是' : '否'}`)
+  await page.screenshot({ path: `${RUN}/${EP}-attach.png` })
+  console.log(`  截图：${RUN}/${EP}-attach.png`)
 } else if (verb === 'publish') {
+  // 发布（不可逆）。闸门 I_HAVE_USER_OK=<ep> 只从对话里的点头来：
+  // 2026-10-17 用户授权「今晚 17 条连跑全发」，每条一文件（内容=那句原话 + 该集 id）。
+  // 点法同 collection 的提交：<xhs-publish-btn> 是 closed shadow，真实鼠标在宿主 rect 内坐标点能命中。
+  // 判据：点完 URL 要变成 published=true（事后信号，实测过）；权威核对（笔记管理「已发布」）由批后统一跑一遍。
   const gate = `${RUN}/I_HAVE_USER_OK=${EP}`
   if (!existsSync(gate)) {
     console.log(`停在发布前：闸门文件不存在 ${gate}`)
     console.log('这个文件只能来自对话里对这一条的点头，脚本不自己造。')
     process.exitCode = 3
+  } else if (!process.argv.includes('--go')) {
+    console.log(`闸门：${gate}\n  ${readFileSync(gate, 'utf8').trim()}`)
+    console.log('闸门在，但没给 --go：这一步不代点（默认归人）。要脚本点发布加 --go。')
+    process.exitCode = 3
   } else {
-    throw new Error('发布这一步还没写进本驱动：字段上限与"外链能不能挂"尚未实测完，先别把不可逆动作自动化')
+    console.log(`闸门：${gate}`)
+    console.log(`  ${readFileSync(gate, 'utf8').trim()}`)
+    await settle()
+    const btn = await page.evaluate(() => {
+      const el = document.querySelector('xhs-publish-btn')
+      if (!el) return null
+      const r = el.getBoundingClientRect()
+      return {
+        attrs: [...el.attributes].map((a) => `${a.name}=${a.value}`).join(' '),
+        rect: `${Math.round(r.x)},${Math.round(r.y)} ${Math.round(r.width)}x${Math.round(r.height)}`,
+      }
+    })
+    if (!btn) throw new Error('发布页上找不到 <xhs-publish-btn>——按钮换样子了，别硬点')
+    console.log(`  发布按钮：<xhs-publish-btn ${btn.attrs}> rect=${btn.rect}`)
+    const url0 = page.url()
+    await page.locator('xhs-publish-btn').first().scrollIntoViewIfNeeded().catch(() => {})
+    await page.waitForTimeout(800)
+    const pt = await findPublishButtonBox(page)
+    if (!pt) throw new Error('CDP 穿透没量到「发布」那颗按钮——不猜坐标')
+    console.log(`  CDP 穿透量到「发布」盒=${pt.quad} → 真实点击 (${pt.cx},${pt.cy})`)
+    await page.mouse.click(pt.cx, pt.cy)
+    let after = null
+    for (let i = 0; i < 6; i++) {
+      await page.waitForTimeout(4000)
+      after = await page.evaluate(() => {
+        const m = (document.body.innerText || '').replace(/\s+/g, ' ').match(/(发布成功|提交成功|更新成功|成功发布)/)
+        return { toast: m ? m[1] : null, url: location.href }
+      })
+      if (/published=true/.test(after.url)) break
+    }
+    console.log(`  点完：提示=${after?.toast ? `「${after.toast}」` : '(没读到)'} URL=${(after?.url || '').slice(0, 110)}`)
+    if (!/published=true/.test(after?.url || '')) {
+      await page.screenshot({ path: `${RUN}/${EP}-publish-uncertain.png` })
+      throw new Error(`点完 URL 没变成 published=true（原 ${url0.slice(0, 80)}）——按没发出去对待，截图 ${EP}-publish-uncertain.png`)
+    }
+    console.log('  URL 已 published=true；权威核对（笔记管理「已发布」）批后统一跑')
+    await page.screenshot({ path: `${RUN}/${EP}-published.png` })
+    console.log(`  截图：${RUN}/${EP}-published.png`)
   }
 } else {
-  throw new Error(`未知步骤「${verb}」，认得的是 status / open / upload / measure / fill / topics / cover / coverset / coverapply / comment / collection / publish`)
+  throw new Error(`未知步骤「${verb}」，认得的是 status / open / upload / measure / fill / topics / cover / coverset / coverapply / comment / collection / collectioncreate / attach / publish`)
 }
 
 function statSize(p) {

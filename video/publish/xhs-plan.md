@@ -12,7 +12,7 @@
 
 - 常驻进程：`video/publish/xhs-daemon.mjs`，profile 目录 `.temp/douyin-profile`（与抖音/B站/知乎共用同一个窗口），CDP 端口 **9223**
 - 探针：`video/publish/xhs-probe.mjs`（只读，导航 + 取文本 + 截图；`--click` 只点"打开编辑器"这类入口，不点任何提交按钮）
-- 驱动：`video/publish/xhs-step.mjs <verb> --ep=<id>`，步骤 `status open upload measure fill topics cover coverset coverapply publish`
+- 驱动：`video/publish/xhs-step.mjs <verb> --ep=<id>`，步骤 `status open upload measure fill topics cover coverset coverapply comment collection collectioncreate publish`（`comment`/`collection` 认 `--go`；`publish` 仍只查闸门后抛错）
 - 放行：`publish` 之前必须有 `.temp/xhs-run/I_HAVE_USER_OK=<ep>`，这个文件只能来自对话里对这一条的点头；
   **而且就算闸门在，`publish` 步也还是直接抛错**——发布这一步至今没写进驱动，F5 那条是人点的
 - 登录态：2026-10-17 用户在常驻窗口里以手机号验证码登录，账号「本机实跑」（小红书号 4947744565）；凭证不落对话、不落仓库
@@ -27,7 +27,7 @@
 | 视频 | mp4/mov 等，≤4 小时、≤20GB | 上传页文案；6.53 MB 的 `douyin.mp4` 实传成功，回「检测为高清视频」 |
 | 封面 | 可传自定义图 | 入口藏三层：点默认封面缩略图才浮出「编辑封面」→ 里面才有 `accept="image/png, image/jpeg, image/*"` 的 file input → 有 裁剪/模版/贴纸/文字/滤镜/标记 → 点「完成」才落定 |
 | 封面质检 | 平台自己会评级 | 应用后页面绿勾那句「封面效果评估通过，未发现封面质量问题」 |
-| 合集 | 有，对应抖音/B站的合集 | 「加入合集 · 创建合集」在内容设置区，**本次未创建**（要起名，属人工决定） |
+| 合集 | 有，对应抖音/B站的合集 | 「加入合集 · 创建合集」在内容设置区，**本次未创建**（要起名，属人工决定）；当天的口径演进与最终分工见「合集」一节 |
 | 可见性 | 公开可见 / 定时发布 | 更多设置区 |
 | 声明 | 原创声明 + 添加内容类型声明 | 内容设置区；**本次未选**，与抖音那条「自主声明必填」不是同一件事，别照抄 |
 
@@ -42,7 +42,7 @@
 2. **标题**：抖音作品标题框实测 30 字且静默截尾；小红书 20 字且**不截断、只标红**，
    所以 F5 用的是抖音那三条候选标题里最短的一条「xSemaphore 一个函数都没有」（18 字）。
 3. **话题**：抖音在描述里打 `#` 就成话题；小红书必须回车接弹层，纯文本的 `#` 不算。
-4. **合集**：抖音合集名沿用 `douyin-release.mjs` 的常量；小红书侧本次没建，第一条发出去再定。
+4. **合集**：章节品进 `STM32 零基础自学`（ops 线建、24 章入集）；视频系列自成一集 `通往单片机之路`（2026-10-17 本线建，F5/S5 已挂）——分工与链路见「合集」一节。
 
 ## F5 这条：已发布（2026-10-17 15:32）
 
@@ -59,7 +59,7 @@ title 18 字 / body 475 字（去空白，页面计数 539）/ topics 三个 / p
 - 观众侧详情页从笔记管理点标题打不开（只会选中，弹出的新标签不导航），本轮没能从公网侧回读；
   发布前 1 分钟对编辑器正文做过逐字比对，`http(s)://` 与 `github` 两个正则双双「无」。
 
-这条线上还欠着的：内容类型声明与原创声明（都没选，属人工决定）、合集挂载的最后一下提交（见下面两节）。
+这条线上还欠着的：内容类型声明与原创声明（都没选，属人工决定）。合集挂载已收口（建集/换集/提交与落盘核对见「合集」一节）；置顶评论已打通、S5 那条未填未发。
 置顶导流评论这条已经打通并且真发出去了，见下一节。
 
 取证截图：`f5-sem-mutex-filled.png`（填写后）、`f5-sem-mutex-topics.png`（话题成 chip）、
@@ -107,32 +107,78 @@ title 18 字 / body 475 字（去空白，页面计数 539）/ topics 三个 / p
 所以小红书这条线的口径与抖音一致：**置顶评论只能在 App 里长按做**，`xhs-step.mjs` 里不写 `pin` 步。
 没实测过的写动作不写进代码——这条就是那个规矩的一次兑现：探完发现入口不存在，那就停，不拿"大概是这样"编一个 `pin` 出来。
 
-## 合集：已建好，挂载差最后一下提交（2026-10-17 改口径）
+## 合集：两条线两个合集；视频集「通往单片机之路」已建成、S5/F5 已挂上（2026-10-17 收口）
 
-上午定的「这轮先不建」被用户改掉了：合集「STM32 零基础自学」已由人在网页端建好，现在授权把 F5 挂上去。
-合集名进事实源 `publish.xiaohongshu.collection`，脚本里不写字面量。
+小红书这边合集的分工（2026-10-17 用户拍板）：
 
-挂载链路（`xhs-step.mjs collection` 就是照这个写的，全程不拼 URL、noteId 不抄进代码）：
+| 合集 | 装什么 | 谁建的 | 状态 |
+|---|---|---|---|
+| `STM32 零基础自学` | 章节品（24 章） | ops 线当天建 + 批量入集（`D:/tmp/xhs_make_collection.py` / `xhs_join_by_id.py`） | 不动；S5/F5 已从它换出 |
+| `通往单片机之路` | 视频系列（S/F 集） | 本线 `xhs-step.mjs collectioncreate`（2026-10-17，简介「屏上每个数都是本机跑的」） | S5/F5 已挂上（重开编辑页回读）；17 条批量上传随后挂进同一个 |
 
-1. 笔记管理里按标题找到那张 `.note-card__body`，逐个 `hover()` 它的 `[class*="action-btn"]`，
-   认 tooltip 逐字等于「编辑」的那颗（按下标猜会在别的集上点错）。
-2. 点它 → **新标签**落到 `/publish/update?id=<noteId>&noteType=video`，表单回填标题/正文/话题（话题 chip 还在，538/1000）。
-3. 点 `.collection-plugin-button`（文案「选择合集」）→ 弹层 `.d-popover` 里可选项是 `div.item`，
-   逐字文本 `STM32 零基础自学`（**中间一个半角空格**），footer 是「创建合集」。按整段文本全等认领，别按子串——子串会把含 footer 的容器也捞进来。
-4. 点中之后：那一行末尾的「选择合集」换成合集名，而 `.collection-plugin-button` 这个类**消失**。
-   所以判据只能读 `.collection-plugin-wrapper` 整行文本，不能盯按钮在不在。
+名字来源：`episode.json` 的 `publish.xiaohongshu.collection`（对齐 `series.json` 的 `series` 与抖音 mix 名），脚本里不写字面量。
 
-两个关键实测结论：
+### 建合集（`collectioncreate --ep=<ep> --desc=…`）
 
-- **选中只活在表单里**。关掉编辑页重开，那行又回落到「选择合集」（本轮冷跑两次都是这个结果）——不提交就不算挂上。
-- 提交那颗按钮是 `<xhs-publish-btn is-publish=true is-save-draft=false submit-text=发布 save-text=暂存离开 submit-disabled=false submit-loading=false>`，
-  rect `220,740 680x90`，**closed shadow root**：全页 `getByText('发布', {exact:true})` 命中 0，
-  从 x=240 到 880 每隔 40px 做 `elementFromPoint` 全部命中宿主自身（覆盖不出左右两半，坐标点也点不准）。
-  实例上挂着 `_onPublish` / `_onSave` 两个函数——那是绕过前端校验直接触发提交，不做。
-  顺带一个撞名坑：左上角导航里 `div.publish-video > .btn-wrapper` 文案是「发布笔记」，按"含发布的按钮"去点会点到它。
+链路与 ops 线当天建章节合集同一条（实测）：编辑页 → 点那一行的合集入口 → 弹层 footer「创建合集」
+→ 名称 `input[placeholder*="合集名称"]` / 简介 →「创建并加入」。建完页面回显「共1篇 成功创建」，弹层可选项从 1 项变 2 项。
+闸门 `I_HAVE_USER_OK_COLLECTION=<合集名>`——建合集是公开内容，名字只从对话里的点头来。
 
-所以 `collection` 步做到"选中 + 回读 + 截图"就停手，最后那一下红色「发布」归人点（`is-publish=true` 时点下去等于把这条公开笔记重新提交，大概率再走一次审核）。
-人点完之后要补的实测：重开编辑页那行应显示合集名（或去合集页看到这条视频），那才算挂上。
+### 挂集：选中、提交、落盘（`collection` / `collection --go`）
+
+1. 笔记管理里按标题找到 `.note-card__body`，逐个 `hover()` `[class*="action-btn"]`，认 tooltip 逐字「编辑」的那颗（按下标猜会点错）。
+2. 点它 → **新标签**落 `/publish/update?id=<noteId>`（noteId 现拿不抄存）。**认领编辑页按标题框逐字**：
+   开着的 `/publish/update` 不一定是这一条的（实测踩过：F5 那步复用了 S5 留下的页，把 S5 的合集行当 F5 的读、截图还被覆盖）。
+3. 合集入口分**两态**（DOM 实测）：没挂/没选时是 `.collection-plugin-button`（文案「选择合集」）；
+   已挂/已选时这个类**消失**，那一行末尾换成 `.collection-plugin-choose`（`span.collection-name` + `span.icon-arrow` 的 ⌄）。两个都试，找不到就报现状。
+4. 弹层 `.d-popover` 里可选项是 `div.item`，按**整段文本全等**认领（子串会把含 footer 的容器也捞进来）。
+5. **选中只活在表单里**：重开页面那行回落（冷跑两次 + `collectioncreate` 崩溃后重载各测到一次）——不提交不算挂上。
+6. 提交那颗 `<xhs-publish-btn is-publish=true submit-text=发布>` 是 **closed shadow**：全页 `getByText('发布')` 命中 0、`elementFromPoint` 全命中宿主自身。
+   但**真实鼠标在宿主 rect 内坐标点能命中内部按钮**（章节批与 F5/S5 一致）：两次都是 rect `220,744 680x90` → 点 `(560,789)`
+   → 回读 toast「更新成功」（偶发读不到，以服务端核对为准）→ **重开编辑页那一行仍显示合集名 = 落盘**。
+   坐标点击要闸门 `I_HAVE_USER_OK_SUBMIT=<ep>`；默认仍是"选中为止、归人点"，`collection --go` 才代点。
+7. **落盘核对的结果（2026-10-17 21:52-21:58）**：F5、S5 重开编辑页都写着「通往单片机之路」= 已落盘；笔记管理里两条都在「已发布」。
+   **S5 换集提交实测被拉回「审核中」约几分钟后转回「已发布」**（播放数 51 不变）；F5 同批提交没有（回读「更新成功」、仍「已发布」）
+   ——`is-publish=true` 的提交何时触发复审平台不保证，提交前要预期这一条。
+
+### 编辑页/表单的两个坑（都修了）
+
+- SPA 带未保存改动时导航会弹原生 confirm（beforeunload 之类）；不接住会撞 playwright 的竞态自动处理
+  （`ProtocolError: No dialog is showing`，2026-10-17 实测两次）——编辑页与探针统一挂 `dialog` 监听、一律接受。
+- 建合集那次「创建并加入」之后立刻 `goto` 重载核对，就是撞上面那个弹窗的现场；核对因此没跑完，后来靠
+  弹层可选项变 2 项 + `collection --go` 的落盘回读补上了证据链。
+
+## 视频系列批量上传（2026-10-17 夜，17 条）
+
+小红书此前只有 F5/S5 两条视频，系列其余 17 条都没上来。2026-10-17 夜用户「视频都要上传啊」→ 选「今晚 17 条连跑全发」。做法：
+
+1. **文案块派生**（不新编一个字）：`.temp/xhs-blocks-gen.mjs` 给每集生成 `publish.xiaohongshu`——
+   标题=抖音候选里**最短的 ≤20 字**（f0/p4 两条人工指定：f0 选第一条、p4 三条候选全超 20 用修剪稿）；
+   正文=抖音 `intro` 去掉含 站内/全篇/全文/免费/仓库/通往单片机之路 的句子 + 尾巴「复现：`<repro>`」；
+   置顶=抖音 `pinned` 同规则删句；话题=`tags` 前三个；合集=「通往单片机之路」。
+   插入用**花括号配平定位 `publish` 对象**（别按文件尾锚——根键顺序不定，c4 的文件尾是 `platforms` 的收尾，
+   按尾锚会把块插进 platforms；实测踩过、被"除新块外一切不变"的守卫拦下）；文件是 CRLF，逐文件取 EOL。
+   全量留档 `.temp/xhs-run/xhs-blocks-17.md`。
+2. **逐集跑批**：`sh video/publish/xhs-batch.sh <ep> ...` =
+   `open → upload → fill → topics → coverset → coverapply → attach → publish --go`，任一步非零即停。
+   闸门逐集 `I_HAVE_USER_OK=<ep>`（内容=用户原话 + 该集 id）。`attach` 在**发布表单**上把合集选好，
+   发出去时一并落盘，省掉"发完回编辑页补一遍"。
+3. **发布点击**：`findPublishButtonBox`——CDP `DOM.getDocument(pierce:true)` 穿透 closed shadow +
+   `DOM.getBoxModel` 量内部「发布」那半颗（实测量到盒 573..693 × 769..809 → 点 `(633,789)`）。
+   宿主 rect 221..901 的正中 `(561,789)` 落在「暂存离开 429..549」与「发布 573..693」之间的**空隙**上，
+   点它什么都不会发生（第一次就这么白点过一次）。
+4. **批后核对**：`node .temp/xhs-batch-verify.mjs` 在笔记管理「已发布」里逐条检索 19 个标题
+   （17 新 + F5/S5 回归）；再抽几条跑 `collection --ep=<ep>`（不加 `--go`，只回读那一行）核合集归属。
+
+结果（2026-10-17 22:20-22:49 跑完，27 分钟）：
+
+- **17/17 全部发布成功，零失败**（c3-volatile 单独试跑 + 16 条批跑 1608s，每条日志里都有 `URL 已 published=true` 与「---- &lt;ep&gt; 完成 ----」）。
+- 权威核对：笔记管理「已发布」**整列收齐 43 张卡片**（26 旧 + 17 新），17 条新标题逐条在列（22:22-22:49）；
+  「全部 43」= 25 章 + F5/S5 + 17 新的对账口径见下注。
+- 抽样核合集：`f0-why-rtos` 编辑页回读那一行 =「通往单片机之路」✓（另抽样条见 `.temp/xhs-run/xhs-sample-*.png`）。
+- 踩到的两个核对坑：① 笔记管理的**搜索框会偶发返回空结果**（同一前缀在别的时刻能命中）——别拿它当唯一判据，
+  ② 该列表是**虚拟列表且只渲染可视区约 10 条**；`PageDown`/滚轮/scrollTop 单用都不动，
+  要 **Ctrl+Minus 缩小 + 三种滚动齐上**才收得全 43 条（`.temp/xhs-scroll-list2.mjs`）。
 
 ## 踩过的两个坑（写下来免得重来）
 

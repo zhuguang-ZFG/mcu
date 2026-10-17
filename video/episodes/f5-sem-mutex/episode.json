@@ -527,8 +527,8 @@
       "pinned": "五个 xSemaphore* 全是宏、展开后剩 0 个；一把锁 sizeof(Queue_t)=80、载荷 0；互斥量的身份 = queue.c:65 那一格指针是不是 NULL。八步一条命令，不需要开发板：sh code/rtos/05-sem-mutex/probe.sh",
       "repro": "sh code/rtos/05-sem-mutex/probe.sh",
       "noLink": "按用户口径：标题、正文、评论一律不出现站外地址与 GitHub 字样（我们自己那个 github.io 地址从小红书这边看也算站外），导流只靠「全网同名：通往单片机之路」。",
-      "collection": "STM32 零基础自学",
-      "collectionNote": "合集已在网页端建好（2026-10-17 实测「选择合集」弹层里就这一项，div.item 文本逐字是「STM32 零基础自学」，带一个半角空格）。挂上去要在编辑页选完再点底部那颗保存按钮，那一下等于把这条已发布笔记重新提交，所以本集只到「选中」为止。"
+      "collection": "通往单片机之路",
+      "collectionNote": "视频系列自己的合集（2026-10-17 用户点头新建，对齐抖音 mix 名与 series.json 的 series；章节品另有合集「STM32 零基础自学」）。链路：编辑页 → 加入合集 → 弹层 → 选中（或 footer「创建合集」新建）；要落盘得点底部那颗 <xhs-publish-btn>，它是 closed shadow（整页字符串不到「发布」），真实鼠标在宿主 rect 内坐标点能命中（2026-10-17 章节批实测）。判据不认 toast 认服务端：重开编辑页那一行仍显示合集名才算数。两种授权各一张闸门，只从对话里的点头来：建合集 I_HAVE_USER_OK_COLLECTION=<名>、提交 I_HAVE_USER_OK_SUBMIT=<ep>。"
     }
   }
 }

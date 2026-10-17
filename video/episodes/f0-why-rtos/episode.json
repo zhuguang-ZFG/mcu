@@ -86,6 +86,21 @@
       "domain": "科学工程",
       "mark": "个人观点仅供参考",
       "original": true
+    },
+    "xiaohongshu": {
+      "title": "串口没收到数据，为什么连灯也不闪了？",
+      "body": "机制示意，非实拍。裸机超级循环只有一条执行路线：uart_echo 里那句 while 在下一个字节到来之前不返回，后面的 led_tick 就不会被调用——灯停在原地，不是它坏了，是程序根本没走到那一行。改成先查状态、没数据就返回，主循环才能继续检查灯。这只避开接收这一路的死等：回显里的发送仍会等，也不保证所有任务都准时。#RTOS #嵌入式 #单片机 #STM32\n\n复现：sh code/rtos/00-why-rtos/probe.sh",
+      "topics": [
+        "RTOS",
+        "嵌入式",
+        "单片机"
+      ],
+      "topicsNote": "正文里直接打 #名字 只是普通文本，不成话题：要成 chip 得在 #名字 之后接住弹层（回车），所以话题单列一个字段、由 xhs-step.mjs 的 topics 步做。",
+      "pinned": "机制示意，非实拍。不需要开发板，一条命令自己复现：sh code/rtos/00-why-rtos/probe.sh",
+      "repro": "sh code/rtos/00-why-rtos/probe.sh",
+      "noLink": "按用户口径：标题、正文、评论一律不出现站外地址与 GitHub 字样（我们自己那个 github.io 地址从小红书这边看也算站外），导流只靠「全网同名：通往单片机之路」。复现命令用 sh code/... 这种纯文本形式。",
+      "collection": "通往单片机之路",
+      "collectionNote": "视频系列自己的合集（2026-10-17 用户点头新建，对齐抖音 mix 名与 series.json 的 series；章节品另有合集「STM32 零基础自学」）。发布表单上选好合集再点发布即可一并落盘；提交那颗 <xhs-publish-btn> 是 closed shadow，真实鼠标在宿主 rect 内坐标点能命中（2026-10-17 实测）。判据不认 toast 认服务端：重开编辑页那一行仍显示合集名才算数。"
     }
   },
   "platforms": {

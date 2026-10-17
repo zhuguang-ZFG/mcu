@@ -475,8 +475,8 @@
       "pinned": "四个寄存器在 0xE000E010；COUNTFLAG 一读就没——单读数到 5 次、先偷看再查的双读数到 0 次；忘减一重载次数一次不差、一天欠 514 毫秒；LOAD 只有 24 位，100ms 直接拒配返回 1。一条命令不要开发板：sh code/stm32/05-systick/probe.sh",
       "repro": "sh code/stm32/05-systick/probe.sh",
       "noLink": "按用户口径：标题、正文、评论一律不出现站外地址与 GitHub 字样（我们自己那个 github.io 地址从小红书这边看也算站外），导流只靠「全网同名：通往单片机之路」。复现命令用 sh code/... 这种纯文本形式。",
-      "collection": "STM32 零基础自学",
-      "collectionNote": "合集已在网页端建好（2026-10-17 实测「选择合集」弹层里就这一项，div.item 文本逐字是「STM32 零基础自学」，带一个半角空格）。选中不落盘：要生效得点底部那颗 <xhs-publish-btn> 里的「发布」，那一下在 closed shadow 里、脚本够不到，归人点。"
+      "collection": "通往单片机之路",
+      "collectionNote": "视频系列自己的合集（2026-10-17 用户点头新建，对齐抖音 mix 名与 series.json 的 series；章节品另有合集「STM32 零基础自学」，本集从它换出）。链路：编辑页 → 加入合集 → 弹层 → 选中；要落盘得点底部那颗 <xhs-publish-btn>，它是 closed shadow（整页字符串不到「发布」），真实鼠标在宿主 rect 内坐标点能命中（2026-10-17 章节批实测）。判据不认 toast 认服务端：重开编辑页那一行仍显示合集名才算数。两种授权各一张闸门，只从对话里的点头来：建合集 I_HAVE_USER_OK_COLLECTION=<名>、提交 I_HAVE_USER_OK_SUBMIT=<ep>。"
     }
   }
 }
