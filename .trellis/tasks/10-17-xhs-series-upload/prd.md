@@ -27,12 +27,13 @@
 - 逐集闸门 `I_HAVE_USER_OK=<ep>`（内容=用户原话 + 该集 id），`publish --go` 才点。
 - 任一步失败即停，不跳步、不把「看起来成功」当成功；失败集与首个失败点原样留在日志里。
 - 每集留下：`<ep>-filled/-topics/-attach/-published.png`；发布判据 URL `?source=&published=true`。
-- 批后统一核**笔记管理「已发布」**（权威信号，逐条检索命中）；抽 3 条核合集归属（编辑页回读那一行）。
+- 批后统一核**笔记管理「已发布」**（权威信号）——检索框会偶发空结果、虚拟列表只渲染可视区约 10 条，
+  **实际采用整列对账**（`Ctrl+Minus` 缩小 + `PageDown`/滚轮/scrollTop 三件套收全卡片）；抽 3 条核合集归属（编辑页回读那一行）。
 
 ## Acceptance Criteria
 
 - [x] 17 条全部发布：笔记管理「已发布」整列 43 张卡片收齐、17 条新标题逐条在列（2026-10-17 22:22–22:49）
-- [x] 抽样编辑页回读那一行 =「通往单片机之路」：f0-why-rtos ✅（其余抽样截图 `.temp/xhs-run/xhs-sample-*.png`）
+- [x] 抽样编辑页回读那一行 =「通往单片机之路」：`f0-why-rtos`、`c3-volatile`、`f6-timers` **3/3 全中**（`.temp/xhs-run/xhs-sample-*.png`）
 - [x] 失败集与原因：零失败（17/17；批跑 1608s，日志 16 个「完成」标记 + 首条单跑）
 - [x] 台账更新：`xhs-plan.md` 批量一节（含结果与两个核对坑）、`.temp/xhs-run/xhs-series-collection-20261017.txt` 收口、journal 见当天条目
 
