@@ -158,7 +158,7 @@ pre.code b{color:#8ab4ff}
 }
 
 function siteNote(size) {
-  return size[0] > size[1] ? '寄存器级 · 每句话都能复现' : '寄存器级 · 站内有全篇'
+  return size[0] > size[1] ? '寄存器级 · 每句话都能复现' : '寄存器级 · 全部可复现'
 }
 
 function esc(s) {

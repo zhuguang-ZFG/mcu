@@ -37,7 +37,7 @@
         "编译器不是老实人：它拿你的代码当定理证明",
         "老教程说 -O0 会返回 0，gcc 16 实测两档都返回 1"
       ],
-      "intro": "未定义行为最阴险的地方：看起来对、编译通过、今天能跑。这一集全部用本机实跑取证——x+1>x 在 -O0/-O2/-O2 -fwrapv 三档下的读数是 1/1/0；1u<<33 在 -O0 是 2、-O2 是 0；宿主 gcc 16.1.0 的 -O0 函数体里已经只剩一句 movl $1, %eax，-O2 的 main 连 call 都不剩，printf 直接吃立即数；arm-none-eabi-gcc 15.2.1 把整个函数折成 movs r0, #1 两行。还有严格别名的抓捕现场（-Wstrict-aliasing / -Warray-bounds / -Wuninitialized 三条警告原文）、union 与 memcpy 两种合法位读法为什么必须给出同一个 0x3F800000、嵌入式 MISRA 自用十条、三道防线的成本排序。诚实记录：本机 MinGW 没有 UBSan 运行库，probe.sh 第 4 步自动跳过。全部数字来自 cd code/c/07-ub-misra && sh probe.sh，不需要开发板。站内有全篇：通往单片机之路 C7。",
+      "intro": "未定义行为最阴险的地方：看起来对、编译通过、今天能跑。这一集全部用本机实跑取证——x+1>x 在 -O0/-O2/-O2 -fwrapv 三档下的读数是 1/1/0；1u<<33 在 -O0 是 2、-O2 是 0；宿主 gcc 16.1.0 的 -O0 函数体里已经只剩一句 movl $1, %eax，-O2 的 main 连 call 都不剩，printf 直接吃立即数；arm-none-eabi-gcc 15.2.1 把整个函数折成 movs r0, #1 两行。还有严格别名的抓捕现场（-Wstrict-aliasing / -Warray-bounds / -Wuninitialized 三条警告原文）、union 与 memcpy 两种合法位读法为什么必须给出同一个 0x3F800000、嵌入式 MISRA 自用十条、三道防线的成本排序。诚实记录：本机 MinGW 没有 UBSan 运行库，probe.sh 第 4 步自动跳过。全部数字来自 cd code/c/07-ub-misra && sh probe.sh，不需要开发板。本集本集讲全：通往单片机之路 C7。",
       "tags": [
         "单片机",
         "C语言",
@@ -60,7 +60,7 @@
         "编译器把你的代码当定理证明，不按算术",
         "UB 的题目没有标准答案，这正是要避开它的原因"
       ],
-      "intro": "x+1>x 恒真吗？编译器说恒真，因为让它不恒真的那一刻是未定义行为。三档读数 1/1/0、移位两档变脸 2/0、别名违规的警告原文，全部本机实跑。站内通往单片机之路 C7 有全篇。",
+      "intro": "x+1>x 恒真吗？编译器说恒真，因为让它不恒真的那一刻是未定义行为。三档读数 1/1/0、移位两档变脸 2/0、别名违规的警告原文，全部本机实跑。通往单片机之路 C7 本集讲全。",
       "tags": [
         "单片机",
         "C语言",
@@ -80,7 +80,7 @@
         "同一行代码，-O0 给你 2，-O2 给你 0：未定义行为现场直播",
         "老教程说 -O0 会返回 0，gcc 16 实测两档都返回 1"
       ],
-      "intro": "未定义行为最阴险的地方：看起来对、编译通过、今天能跑。这一集全部用本机实跑取证——x+1>x 在 -O0/-O2/-O2 -fwrapv 三档下的读数是 1/1/0；1u<<33 在 -O0 是 2、-O2 是 0；宿主 gcc 16.1.0 的 -O0 函数体里已经只剩一句 movl $1, %eax，-O2 的 main 连 call 都不剩，printf 直接吃立即数；arm-none-eabi-gcc 15.2.1 把整个函数折成 movs r0, #1 两行。\n还有严格别名的抓捕现场（-Wstrict-aliasing / -Warray-bounds / -Wuninitialized 三条警告原文）、union 与 memcpy 两种合法位读法为什么必须给出同一个 0x3F800000、嵌入式 MISRA 自用十条。\n诚实记录：本机 MinGW 没有 UBSan 运行库，probe.sh 第 4 步自动跳过。\n取证：cd code/c/07-ub-misra && sh probe.sh，不需要开发板。站内 C7 有全篇。",
+      "intro": "未定义行为最阴险的地方：看起来对、编译通过、今天能跑。这一集全部用本机实跑取证——x+1>x 在 -O0/-O2/-O2 -fwrapv 三档下的读数是 1/1/0；1u<<33 在 -O0 是 2、-O2 是 0；宿主 gcc 16.1.0 的 -O0 函数体里已经只剩一句 movl $1, %eax，-O2 的 main 连 call 都不剩，printf 直接吃立即数；arm-none-eabi-gcc 15.2.1 把整个函数折成 movs r0, #1 两行。\n还有严格别名的抓捕现场（-Wstrict-aliasing / -Warray-bounds / -Wuninitialized 三条警告原文）、union 与 memcpy 两种合法位读法为什么必须给出同一个 0x3F800000、嵌入式 MISRA 自用十条。\n诚实记录：本机 MinGW 没有 UBSan 运行库，probe.sh 第 4 步自动跳过。\n取证：cd code/c/07-ub-misra && sh probe.sh，不需要开发板。本集把 C7 讲全。",
       "domain": "科学工程",
       "mark": "个人观点仅供参考",
       "original": true
@@ -268,7 +268,7 @@
           "id": "safe-mask",
           "kind": "code",
           "title": "安全写法：字面量类型先行，计数必须可证",
-          "codeLabel": "站内 00-blink 的掩码纪律 + 运行期检查",
+          "codeLabel": "本集 00-blink 的掩码纪律 + 运行期检查",
           "code": "mask = 1UL << (LED_R_PIN + 16);   // 计数编译期可证 < 32\n\nif (n < 32u) {\n!   mask = 1u << n;        // 计数已证 < 位宽\n} else {\n!   return false;          // 拒绝，别让硬件替你决定\n}",
           "narration": "怎么写才安全？两条。第一，字面量类型先行，用 1UL 别用一——但注意它只防符号位那条红线，防不住计数越界。第二，计数必须可证小于位宽：常量能编译期算出来，运行期的数就先检查再移，不满足就直接拒绝，别让硬件替你决定。"
         },
@@ -402,7 +402,7 @@
           "kind": "outro",
           "title": "一条命令复现全部数字",
           "sub": "code/c/07-ub-misra · sh probe.sh · 不需要开发板",
-          "narration": "取证工程在 code/c/07-ub-misra，clone 下来 sh probe.sh，六个取证步骤一次跑完：三档读数、两把编译器的折叠现场、三条警告原文。站内通往单片机之路 C7 有全篇。"
+          "narration": "取证工程在 code/c/07-ub-misra，clone 下来 sh probe.sh，六个取证步骤一次跑完：三档读数、两把编译器的折叠现场、三条警告原文。通往单片机之路 C7 本集讲全。"
         },
         {
           "id": "teaser",
@@ -447,7 +447,7 @@
         "alias-warn": "一行谁都会写的强转，警告原文指着那次解引用。",
         "misra-philosophy": "把可以任意解释的地带，收窄成只有一种读法。",
         "punch": "UB 的题目没有标准答案，这正是要避开它的原因。",
-        "cta": "一条命令复现全部数字，站内通往单片机之路 C7 有全篇。"
+        "cta": "一条命令复现全部数字，通往单片机之路 C7 本集讲全。"
       },
       "set": {
         "hook-01": {

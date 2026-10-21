@@ -93,7 +93,7 @@
       "pinned": "完整图文在「通往单片机之路」C3《volatile：跟编译器约法三章》。六个变体、一份 -O2 反汇编，一条命令全跑出来，不需要开发板：sh code/c/03-volatile/blink-variants.sh",
       "repro": "sh code/c/03-volatile/blink-variants.sh"
     },
-    "xiaohongshu":     {
+    "xiaohongshu": {
       "title": "三十七条指令，塌成两条",
       "body": "同一份 00-blink/main.c，同一个 -O2，只把三处 volatile 拿掉，main 从 37 条指令塌成 b.n 0 加一条 nop，八次外设写一次不剩。\n屏上每条汇编都是本机 objdump 的原文：sh code/c/03-volatile/blink-variants.sh\n\n复现：sh code/c/03-volatile/blink-variants.sh",
       "topics": [
