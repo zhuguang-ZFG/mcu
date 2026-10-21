@@ -134,6 +134,77 @@ async function describe() {
   return rows
 }
 
+// ---- 封面模态的三个公共动作 ----------------------------------------------
+// 一次完整的封面设置 = 开槽位 → 选 tab 并投喂 → 点「完成」。少了最后一步，平台会退回视频首帧：
+// 2026-10-21 实测 f5/s5 只跑 cover，作品列表缩略图是首帧；改走 coverup(投喂)+coverset(完成) 才落盘。
+async function openCoverSlot(slot) {
+  const slots = page.getByText('选择封面', { exact: true })
+  const n = await slots.count()
+  if (n <= slot) throw new Error(`页上只剩 ${n} 个"选择封面"位，取不到第 ${slot + 1} 个`)
+  await slots.nth(slot).scrollIntoViewIfNeeded()
+  await slots.nth(slot).click()
+  await page.waitForTimeout(3000)
+}
+
+async function openCoverThumb(which) {
+  // 已经设过封面之后，页面上就没有「选择封面」占位了，只剩「竖封面3:4 / 横封面4:3」两张缩略图；
+  // 点缩略图本身（img 是 label 的前一个 img 兄弟）才重新开模态。
+  // 缩略图上盖着一层 hover 遮罩，普通 click 会被它拦下无限重试——人手点的也是遮罩，所以直接 force。
+  const label = which === 'v' ? '竖封面3:4' : '横封面4:3'
+  const thumb = page.locator(`xpath=//div[text()="${label}"]/preceding::img[1]`)
+  if (!(await thumb.count())) throw new Error(`找不到「${label}」缩略图，页面上封面位可能还没生成`)
+  await thumb.first().click({ force: true, timeout: 15_000 })
+  await page.waitForTimeout(3500)
+}
+
+async function pickCoverTab(which) {
+  // 「设置X封面」这五个字页面上会出现两处：编辑器顶部的 tab，和竖封面点完「完成」后叠上来的
+  // 「设置横封面获更多流量」推广模态里的按钮。文案完全相同，推广层在 DOM 里更靠后、同 z-index
+  // 盖满视口，所以 .first() 必然点到被盖住的那个，重试到超时。先把推广那层点掉，它本身就是入口。
+  const promo = page.locator('.dy-creator-content-modal-wrap', { hasText: '获更多流量' })
+  if (await promo.count()) {
+    const go = promo.getByText(which === 'v' ? '设置竖封面' : '设置横封面', { exact: true }).last()
+    if (await go.count()) {
+      await go.click({ timeout: 10000 })
+      await page.waitForTimeout(3000)
+      console.log(`推广模态「获更多流量」→ 点它的「设置${which === 'v' ? '竖' : '横'}封面」，剩 ${await page.locator('.dy-creator-content-modal-wrap').count()} 层`)
+    }
+  }
+  const tab = page.getByText(which === 'v' ? '设置竖封面' : '设置横封面', { exact: true }).first()
+  await tab.click({ timeout: 15_000 })
+  await page.waitForTimeout(2500)
+}
+
+async function feedCoverFile(which) {
+  const file = which === 'v' ? F.cover : F.hcover
+  if (!existsSync(file)) throw new Error(`封面不存在：${file}`)
+  // 模态里有两个 .semi-upload：左边那个（x≈72）是「生成参考图」，喂进去只会变成 AI 的参考图；
+  // 真正换封面的是右边带「点击上传文件…」文案的那个。上一版 .first() 就踩在这儿。
+  const up = page.locator('.dy-creator-content-modal-body .semi-upload').filter({ hasText: '点击上传文件' })
+  if (await up.count() !== 1) throw new Error(`「上传封面」拖拽区匹配到 ${await up.count()} 个，不猜`)
+  await up.locator('input[type=file]').first().setInputFiles(file)
+  await page.waitForTimeout(9000)
+  console.log(`已投喂 ${which === 'v' ? '竖' : '横'} 封面 ← ${file}`)
+}
+
+async function commitCoverModal() {
+  // 画布上选中的这张就是结果，点「完成」才落盘。AI 封面在后台跑时模态文案有「生成中」，
+  // 这时候点完成有概率把刚上传的那张冲掉（s16 实测中过一次），所以先等它跑完。
+  for (let i = 0; i < 20; i++) {
+    const busy = await page.evaluate(() => {
+      const m = document.querySelector('.dy-creator-content-modal-body')
+      return m ? /生成中/.test(String(m.innerText)) : false
+    })
+    if (!busy) break
+    await page.waitForTimeout(2000)
+  }
+  await page.getByText('完成', { exact: true }).last().click({ timeout: 15_000 })
+  await page.waitForTimeout(6000)
+  const still = await page.locator('.dy-creator-content-modal-body').count()
+  console.log(`已点完成，模态残留=${still}`)
+  return still
+}
+
 const STEPS = {
   async status() {
     console.log('URL:', page.url())
@@ -364,100 +435,55 @@ const STEPS = {
   async coverup() {
     // 模态实测结构（见 modaldump）：顶部两个 tab「设置竖封面/设置横封面」，中间一个 semi-upload
     // 拖拽区（「上传封面 / 点击上传文件或拖拽文件到这里」），右下角「封面检测 | 设置X封面 | 完成」。
-    // 上一版去找一个不存在的「上传封面」按钮文案，所以 90 s 超时。
     const which = arg('--which') === 'v' ? 'v' : 'h'
-    const file = which === 'v' ? F.cover : F.hcover
-    if (!existsSync(file)) throw new Error(`封面不存在：${file}`)
     if (!(await page.locator('.dy-creator-content-modal-body').count())) await this.coveredit()
-    // 「设置X封面」这五个字页面上会出现两处：编辑器顶部的 tab，和竖封面点完「完成」后叠上来的
-    // 「设置横封面获更多流量」推广模态里的按钮。文案完全相同，推广层在 DOM 里更靠后、同 z-index
-    // 盖满视口（实测 wrap[0]=编辑器、wrap[1]=推广，两个 tab/按钮 顶层都不是自己），
-    // 所以 .first() 必然点到被盖住的那个，重试到超时。先把推广那层点掉，它本身就是我们要去的入口。
-    const promo = page.locator('.dy-creator-content-modal-wrap', { hasText: '获更多流量' })
-    if (await promo.count()) {
-      const go = promo.getByText(which === 'v' ? '设置竖封面' : '设置横封面', { exact: true }).last()
-      if (await go.count()) {
-        await go.click({ timeout: 10000 })
-        await page.waitForTimeout(3000)
-        console.log(`推广模态「获更多流量」→ 点它的「设置${which === 'v' ? '竖' : '横'}封面」，剩 ${await page.locator('.dy-creator-content-modal-wrap').count()} 层`)
-      }
-    }
-    const tab = page.getByText(which === 'v' ? '设置竖封面' : '设置横封面', { exact: true }).first()
-    await tab.click({ timeout: 15_000 })
-    await page.waitForTimeout(2500)
-    // 模态里有两个 .semi-upload：左边那个（x≈72）是「生成参考图」，喂进去只会变成 AI 的参考图；
-    // 真正换封面的是右边带「点击上传文件…」文案的那个（x≈722）。上一版 .first() 就踩在这儿。
-    const up = page.locator('.dy-creator-content-modal-body .semi-upload').filter({ hasText: '点击上传文件' })
-    if (await up.count() !== 1) throw new Error(`「上传封面」拖拽区匹配到 ${await up.count()} 个，不猜`)
-    await up.locator('input[type=file]').first().setInputFiles(file)
-    await page.waitForTimeout(9000)
-    console.log(`已投喂 ${which === 'v' ? '竖' : '横'} 封面 ← ${file}`)
+    await pickCoverTab(which)
+    await feedCoverFile(which)
     await this.modaldump()
   },
   async coverset() {
-    // 模态右下角在「竖」tab 是「重新检测 | 取消 | 完成」，在「横」tab 多一个「设置竖封面」
-    // （那是把横图复用到竖的便捷键，不是必经步骤）。画布上选中的这张就是结果，点完成才落盘。
-    // AI 封面在后台跑时模态文案有「生成中」，这时候点完成有概率把刚上传的那张冲掉（s16 实测中过一次）。
-    for (let i = 0; i < 20; i++) {
-      const busy = await page.evaluate(() => {
-        const m = document.querySelector('.dy-creator-content-modal-body')
-        return m ? /生成中/.test(String(m.innerText)) : false
-      })
-      if (!busy) break
-      await page.waitForTimeout(2000)
-    }
-    const done = page.getByText('完成', { exact: true }).last()
-    await done.click({ timeout: 15_000 })
-    await page.waitForTimeout(6000)
-    const still = await page.locator('.dy-creator-content-modal-body').count()
-    console.log(`已点完成，模态残留=${still}`)
+    // 只做「点完成」这一件事；模态右下角在「竖」tab 是「重新检测 | 取消 | 完成」，
+    // 在「横」tab 多一个「设置竖封面」（把横图复用到竖的便捷键，不是必经步骤）。
+    await commitCoverModal()
     await describe()
     await shot(`coverdone-${arg('--which') === 'h' ? 'h' : 'v'}`)
   },
   async covermodal() {
-    // 封面不是"选个文件"就完事：点「选择封面」开的是模态，里面要先「上传封面」再「完成」。
-    // 上一版 setInputFiles 完就走，右侧快速检测一直报"横/竖双封面缺失"，就是因为没点完成。
-    const vertical = arg('--which') !== 'h'
-    const file = vertical ? F.cover : F.hcover
-    if (!existsSync(file)) throw new Error(`封面不存在：${file}`)
-    const modalOpen = await page.getByText('设置竖封面').count()
-    if (!modalOpen) {
-      const slots = page.getByText('选择封面', { exact: true })
-      if (!(await slots.count())) throw new Error('页上没有"选择封面"位，也没有开着的模态')
-      await slots.first().scrollIntoViewIfNeeded()
-      await slots.first().click()
-      await page.waitForTimeout(3000)
+    // 一次性把某一面封面设完：没有开着的模态就先点「选择封面」，再走 tab → 投喂 → 完成。
+    // 旧版按「上传封面」这个按钮文案去找，页面上根本没有这个文案（挂 90 s 超时），
+    // 现在统一走 feedCoverFile 里那个带「点击上传文件」的拖拽区。
+    const which = arg('--which') === 'h' ? 'h' : 'v'
+    if (!(await page.locator('.dy-creator-content-modal-body').count())) {
+      if (!(await page.getByText('选择封面', { exact: true }).count())) {
+        throw new Error('页上没有"选择封面"位，也没有开着的模态')
+      }
+      await openCoverSlot(0)
     }
-    await page.getByText(vertical ? '设置竖封面' : '设置横封面', { exact: true }).first().click()
-    await page.waitForTimeout(2000)
-    await page.getByText('上传封面', { exact: true }).first().click()
-    await page.waitForTimeout(2500)
-    await page.locator('input[type=file][accept*="image"]').last().setInputFiles(file)
-    await page.waitForTimeout(8000)
-    await page.getByText('完成', { exact: true }).first().click()
-    await page.waitForTimeout(4000)
-    console.log(`${vertical ? '竖' : '横'}封面已上传并点完成 ← ${file}`)
+    await pickCoverTab(which)
+    await feedCoverFile(which)
+    const still = await commitCoverModal()
+    if (still) throw new Error(`点完成后封面模态还在（${still} 层），这张封面没落盘`)
+    console.log(`${which === 'v' ? '竖' : '横'}封面已上传并点完成`)
     await describe()
-    await shot(`covermodal-${vertical ? 'v' : 'h'}`)
+    await shot(`covermodal-${which}`)
   },
   async cover() {
     // slot 0 = 竖封面 3:4（douyin-cover.png），slot 1 = 横封面 4:3（douyin-cover-1440x1080.png）。
     // 只设一个，右侧"快速检测"会一直挂着"横/竖双封面缺失"的黄字。
+    //
+    // 这一步以前只做「开模态 + 塞文件 + 点裁切框的保存」，没在模态里点「完成」——
+    // 平台就把封面退回视频首帧（2026-10-21 f5/s5 实测：作品列表缩略图是首帧，改走 coverup+coverset 才落盘）。
+    // 现在一步到位：开槽位 → 选 tab 并投喂 → 点完成，完成没让模态消失就报错，不再"看起来成功"。
     const slot = Number(arg('--slot') ?? 0)
-    const file = slot ? F.hcover : F.cover
-    if (!existsSync(file)) throw new Error(`封面不存在：${file}`)
-    const slots = page.getByText('选择封面', { exact: true })
-    const n = await slots.count()
-    if (n <= slot) throw new Error(`页上只剩 ${n} 个"选择封面"位，取不到第 ${slot + 1} 个`)
-    await slots.nth(slot).scrollIntoViewIfNeeded()
-    await slots.nth(slot).click()
-    await page.waitForTimeout(3000)
-    await page.locator('input[type=file][accept*="image"]').last().setInputFiles(file)
-    await page.waitForTimeout(7000)
-    // 传完弹的是裁切框，不点"保存"这张封面不算设置
-    const save = page.getByText('保存', { exact: true }).first()
-    if (await save.count()) { await save.click(); await page.waitForTimeout(3500); console.log('已点裁切框的保存') }
-    console.log(`封面 slot${slot} ← ${file}`)
+    const which = slot ? 'h' : 'v'
+    // 新稿有「选择封面」占位；已经设过一面之后占位就没了，退回点缩略图那条路。
+    if (await page.getByText('选择封面', { exact: true }).count() > slot) await openCoverSlot(slot)
+    else await openCoverThumb(which)
+    await pickCoverTab(which)
+    await feedCoverFile(which)
+    const still = await commitCoverModal()
+    if (still) throw new Error(`点完成后封面模态还在（${still} 层），这张封面没落盘——别往下走`)
+    console.log(`封面 slot${slot}（${which === 'v' ? '竖' : '横'}）已落盘`)
     await describe()
     await shot(`cover${slot}`)
   },
