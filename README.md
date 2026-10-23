@@ -21,7 +21,7 @@
 
 ### 备选入口
 
-🧭 [导读：这条路怎么走](docs/guide/index.md) · 🗺️ [首页学习地图](docs/index.md) · 🔧 [实物装备清单](docs/guide/hardware.md) · 📖 [手册与资料地图](docs/guide/manuals.md) · 🔤 [术语速查](docs/reference/glossary.md) · ❓ [常见问题](docs/reference/faq.md) · 📣 [更新日志](docs/reference/changelog.md) · 🤝 [关于我们与致谢](docs/reference/about.md)
+📕 [整书离线版（HTML/PDF）](mcu-book/) · 🧭 [导读：这条路怎么走](docs/guide/index.md) · 🗺️ [首页学习地图](docs/index.md) · 🔧 [实物装备清单](docs/guide/hardware.md) · 📖 [手册与资料地图](docs/guide/manuals.md) · 🔤 [术语速查](docs/reference/glossary.md) · ❓ [常见问题](docs/reference/faq.md) · 📣 [更新日志](docs/reference/changelog.md) · 🤝 [关于我们与致谢](docs/reference/about.md)
 
 💻 [示例代码目录](code/) · 🎬 [动画规范与自检](.trellis/spec/docs-site/animation.md) · ✍️ [写作结构规范](.trellis/spec/docs-site/structure.md) · 🧩 [实验报告模板](docs/lab/template.md) · 🛠️ [参与共建](CONTRIBUTING.md) · 🐛 [提 Issue](https://github.com/zhuguang-ZFG/mcu/issues)
 
@@ -113,6 +113,8 @@ code/                        与章节同构的示例工程（寄存器版，全
 ├── stm32/ esp32/ rtos/ c/ gd32/
 └── toolchain/               不需要开发板的取证工程（如 02-elf；stm32/01-arch、09-adc 也各带一个 probe.sh）
 scripts/                     gen-progress.mjs · anim-lint.mjs · links-check.mjs · anim-audit.html
+mcu-book/                    整书离线版：manifest（10 分部 / 88 章罗盘 / 60 项来源）+ 六附录 + Python 构建器 + 契约测试
+└── dist/                    产物（gitignore，CI 发布）：单文件 HTML（动画全内嵌）+ A4 PDF（书签页码）
 .trellis/spec/docs-site/     写作结构、内容风格、动画规范（条款尽量变成可执行检查）
 .github/workflows/           deploy.yml（构建并发布 Pages）· quality.yml（死链 / 动画 / 数字 / 链接四道检查）
 ```
@@ -130,6 +132,15 @@ npm run anim:lint       # 动画规范闸门：SMIL 槽位、色板映射、dur 
 npm run readme:sync     # 把扫描结果写回本页进度块
 npm run readme:check    # 数字漂移检查（CI 跑这个）
 npm run links:check     # 仓库根 README/CONTRIBUTING 的相对链接检查（CI 跑这个）
+```
+
+### 整书离线版（HTML/PDF）
+
+```bash
+pip install -r mcu-book/requirements.txt
+npm run book:check      # 临时目录验证整书契约（88 章/罗盘/测验/附录/死链零容忍）
+npm run book:html       # mcu-book/dist/mcu-deep-book.html（单文件，动画内嵌即播）
+npm run book:pdf        # 追加 A4 PDF（需本机 Chrome/Edge；CI 由 book.yml 构建并发布）
 ```
 
 ## 完整质量检查

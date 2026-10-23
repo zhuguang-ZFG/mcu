@@ -361,5 +361,5 @@ alias-violate.c:13:13: warning: dereferencing type-punned pointer will break str
 - 看老代码时眼里多了三兄弟的探测器。
 
 <div class="achievement">
-✅ C 篇收官。下一站：<a href="../build/index.md">B 篇 构建与运行</a>——把你写的 C 变成固件的全过程，一步步开盒。
+✅ C 篇收官。下一站：<a href="../build/index.html">B 篇 构建与运行</a>——把你写的 C 变成固件的全过程，一步步开盒。
 </div>

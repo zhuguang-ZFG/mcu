@@ -21,15 +21,21 @@
     "reading:check": "node scripts/reading-time.mjs --check",
     "projects:check": "node scripts/project-catalog.mjs",
     "video:lint": "node video/src/cli.mjs lint",
+    "video:test": "node --test \"video/tests/**/*.test.mjs\"",
     "video:check": "node video/src/cli.mjs check",
     "video:cover": "node video/src/cli.mjs cover",
+    "video:pack": "node video/src/cli.mjs pack",
     "video:build": "node video/src/cli.mjs build",
+    "video:numbers": "node video/src/cli.mjs numbers",
     "video:calib": "node video/src/cli.mjs calib",
     "test": "node --test tests/*.test.mjs",
     "firmware:check": "node scripts/check-firmware.mjs",
     "quality": "npm run test && npm run projects:check && npm run docs:build && npm run anim:lint && npm run readme:check && npm run reading:check && npm run links:check && npm run nav:check && npm run seo:check && npm run perf:budget && npm run a11y:check",
     "test:browser": "playwright test",
-    "site:measure": "node scripts/measure-site.mjs"
+    "site:measure": "node scripts/measure-site.mjs",
+    "book:check": "python mcu-book/build_html.py --check",
+    "book:html": "python mcu-book/build_html.py",
+    "book:pdf": "python mcu-book/build_html.py --pdf"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

@@ -3,6 +3,7 @@ import DefaultTheme from 'vitepress/theme'
 import { useData } from 'vitepress'
 import { ref, onMounted, onUnmounted } from 'vue'
 import AiNotice from './AiNotice.vue'
+import ChapterCompass from './ChapterCompass.vue'
 import McuHero from './McuHero.vue'
 import McuFeatures from './McuFeatures.vue'
 import McuCta from './McuCta.vue'
@@ -119,6 +120,9 @@ onUnmounted(() => {
     </template>
     <template #home-features-after v-if="isHome">
       <McuCta />
+    </template>
+    <template #doc-before>
+      <ChapterCompass />
     </template>
     <template #doc-after>
       <AiNotice />

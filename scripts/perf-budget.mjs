@@ -20,7 +20,12 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
 /** 预算（字节）。基线见 PRD；留出余量，只拦真实回退。 */
 export const BUDGETS = {
-  shellBr: 110 * 1024, // 外壳(app+theme+framework) + CSS 的 brotli 总量
+  // 2026-10-24 上调 110→140 KB：站点章节页新增「本章罗盘」卡片
+  // （docs/.vitepress/theme/ChapterCompass.vue），与整书 mcu-book/manifest.json
+  // 同源——88 份罗盘文本（问题/交付/边界）+ 60 项来源随外壳 chunk 全站共享，
+  // manifest 60 KB + 组件与样式，实测外壳 br 110.0 → 133.4 KB（+23.4）。
+  // 换取每个章节页顶部的罗盘卡与站点/整书单一数据源；SSR 直出无法懒加载。
+  shellBr: 140 * 1024, // 外壳(app+theme+framework) + CSS 的 brotli 总量
   cssBr: 35 * 1024, // 渲染阻塞 CSS（brotli）
   // 最大单块与搜索索引的基线在 2026-10-08 因「中文分词」上调：
   // MiniSearch 默认按空白/标点切词，整段中文被当成 1 个 token，只有段首词能被

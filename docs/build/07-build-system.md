@@ -213,5 +213,5 @@ RT-Thread 用 scons（Python 写的构建系统）+ Kconfig，与 IDF 的 CMake+
 - Makefile/CMake/IDF/scons 四种形态在你眼里是同一件衣服的四个剪裁。
 
 <div class="achievement">
-✅ B 篇收官。下一站：<a href="../stm32/index.md">S 篇 STM32 裸机</a>——地基打完，去寄存器的世界里大干一场。
+✅ B 篇收官。下一站：<a href="../stm32/index.html">S 篇 STM32 裸机</a>——地基打完，去寄存器的世界里大干一场。
 </div>

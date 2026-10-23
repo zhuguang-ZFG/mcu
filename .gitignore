@@ -54,3 +54,7 @@ video/episodes/*/*.mp3
 
 # 本地工具配置
 .qoder/
+
+# 整书构建产物（CI 构建并作为 artifact 发布）
+mcu-book/dist/
+__pycache__/

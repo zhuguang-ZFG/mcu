@@ -213,5 +213,5 @@ if( pxMutexHolderTCB->uxPriority < pxCurrentTCB->uxPriority )  /* 持锁者比�
 - 继承机制三步刻进脑子——面试白板题变成默写题。
 
 <div class="achievement">
-✅ 下一站：<a href="06-notify-event.html">F6 任务通知与事件组</a>——比队列更快的"直达电报"。
+✅ 下一站：<a href="06-notify-event-timer.html">F6 任务通知与事件组</a>——比队列更快的"直达电报"。
 </div>
