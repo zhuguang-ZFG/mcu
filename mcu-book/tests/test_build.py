@@ -117,6 +117,9 @@ class BookBuildContractTests(unittest.TestCase):
         self.assertEqual(details_open, details_close)
         self.assertIn("beforeprint", html)
         self.assertIn("IntersectionObserver", html)
+        self.assertIn('href="#appendix-exercises-answers-c03-volatile"', html)
+        self.assertIn("reading-progress", html)
+        self.assertIn("part-intro", html)
 
         fragment_links = [href[1:] for href in parsed.hrefs if href.startswith("#")]
         missing = sorted({fragment for fragment in fragment_links if fragment not in parsed.ids})
@@ -127,6 +130,35 @@ class BookBuildContractTests(unittest.TestCase):
         self.assertIn("V11.1.0", html)
         self.assertIn("v5.5.2", html)
         self.assertIn("五个契约", html)
+
+    def test_running_header_map_marks_chapters_and_appendices_only(self) -> None:
+        toc = [
+            [1, "这不是文章合集，是一本书", 2],
+            [2, "01 C0 为什么嵌入式 C 是另一种 C", 7],
+            [3, "本章精髓", 7],
+            [2, "02 C1 内存模型", 13],
+            [1, "第二部分 构建与运行全过程", 82],
+            [2, "10 B0 工具链全景", 83],
+            [1, "附录 A 工程深读", 670],
+            [2, "附录小节", 671],
+        ]
+        marks = self.builder.running_header_map(toc, "通往单片机之路")
+        self.assertEqual(
+            [
+                (2, "通往单片机之路"),
+                (7, "01 C0 为什么嵌入式 C 是另一种 C"),
+                (13, "02 C1 内存模型"),
+                (83, "10 B0 工具链全景"),
+                (670, "附录 A 工程深读"),
+            ],
+            marks,
+        )
+
+    def test_manifest_rejects_a_part_without_intro(self) -> None:
+        broken = copy.deepcopy(self.manifest)
+        broken["parts"][0].pop("intro")
+        with self.assertRaisesRegex(self.builder.BuildError, "part missing field: intro"):
+            self.builder.validate_manifest(broken)
 
     def test_container_close_without_open_is_a_build_error(self) -> None:
         with self.assertRaisesRegex(self.builder.BuildError, "unbalanced :::"):

@@ -125,7 +125,7 @@ def validate_manifest(manifest: dict) -> None:
         if not (DOCS_DIR / name).is_file():
             raise BuildError(f"chapter manuscript missing: docs/{name}")
     for part in parts:
-        for field in ("id", "title", "goal", "files"):
+        for field in ("id", "title", "goal", "intro", "files"):
             if not part.get(field):
                 raise BuildError(f"part missing field: {field}")
 
@@ -260,14 +260,14 @@ def _quiz_question_items(quiz: dict) -> list[str]:
     return items
 
 
-def quiz_html(quiz: dict) -> str:
+def quiz_html(quiz: dict, chapter_id: str) -> str:
     items = "".join(_quiz_question_items(quiz))
     return (
         f'<section class="quiz-bank" aria-label="本章自测">'
         f'<h2 class="quiz-title">🎯 {html.escape(quiz["title"])}</h2>'
         f'<ol class="quiz-questions">{items}</ol>'
-        f'<p class="quiz-note">先选完再翻：<a href="#appendix-exercises">答案与逐项解析在附录 C</a>；'
-        f'在线版可点击即时判分。</p></section>'
+        f'<p class="quiz-note">先选完再翻：<a href="#appendix-exercises-answers-{html.escape(chapter_id, quote=True)}">'
+        f'答案与逐项解析在附录 C 的本组</a>；在线版可点击即时判分。</p></section>'
     )
 
 
@@ -301,7 +301,7 @@ def substitute_components(
             raise BuildError(f"quiz data missing for <QuizBank chapter=\"{chapter}\"> in {source_label}")
         if quiz.get("title") is None or not quiz.get("questions"):
             raise BuildError(f"quiz data is empty: {chapter}")
-        return quiz_html(quiz)
+        return quiz_html(quiz, chapter)
 
     text = QUIZ_TAG.sub(quiz_repl, text)
 
@@ -864,6 +864,7 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 .part-divider .part-label { color: var(--accent); font-weight: 800; letter-spacing: .12em; }
 .part-divider h1 { font-size: clamp(1.9rem, 5vw, 3.5rem); line-height: 1.15; }
 .part-divider .part-goal { max-width: 42em; }
+.part-divider .part-intro { max-width: 44em; margin-top: 1.2rem; padding: 1rem 1.2rem; border-left: 3px solid var(--line); color: var(--muted); background: color-mix(in srgb, var(--panel) 60%, transparent); border-radius: .4rem; }
 .part-divider .part-stats { margin-top: 1.2rem; color: var(--accent-deep); font-weight: 600; letter-spacing: .06em; }
 .chapter, .appendix { padding: 4rem 6%; border-bottom: 1px solid var(--line); }
 .chapter > header, .appendix > header { margin-bottom: 2.2rem; }
@@ -942,6 +943,7 @@ p, li, dd { overflow-wrap: anywhere; }
 .source-card h2 { min-width: 0; font-size: 1.05rem; margin-top: 0; }
 .source-card dl { min-width: 0; grid-template-columns: 5rem minmax(0, 1fr); font-size: .9rem; }
 .back-to-toc, .back-to-chapter { display: inline-block; margin-top: 2rem; font-size: .92rem; }
+.reading-progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: var(--accent); z-index: 60; pointer-events: none; }
 footer.book-footer { padding: 3rem 6%; color: var(--muted); text-align: center; }
 @media (max-width: 720px) {
   .book { width: min(100% - 1rem, 1000px); }
@@ -975,6 +977,7 @@ footer.book-footer { padding: 3rem 6%; color: var(--muted); text-align: center; 
   .source-registry { grid-template-columns: 1fr; }
   a { color: inherit; text-decoration: none; }
   .back-to-toc, .back-to-chapter, .skip-link { display: none; }
+  .reading-progress { display: none; }
   details { border: 1px solid #bbb; }
   details:not([open]) > *:not(summary) { display: block; }
 }
@@ -1114,6 +1117,7 @@ def build_html(output_dir: Path | None = None, manifest_path: Path = MANIFEST_PA
   <p class="part-label">PART {html.escape(part['id'].upper())}</p>
   <h1>{html.escape(part['title'])}</h1>
   <p class="part-goal">{html.escape(part['goal'])}</p>
+  <p class="part-intro">{html.escape(part['intro'])}</p>
   <p class="part-stats">本部 {len(part['files'])} 章 · 约 {part_minutes} 分钟（{part_hours} 小时）</p>
 </section>"""
         )
@@ -1232,6 +1236,38 @@ def build_html(output_dir: Path | None = None, manifest_path: Path = MANIFEST_PA
   }}, {{ rootMargin: '200px 0px' }});
   svgs.forEach(function (s) {{ io.observe(s); }});
 }})();
+/* 顶部阅读进度条 + ←/→ 章间跳转：纯增强，无 JS 时阅读不受影响。 */
+(function () {{
+  var bar = document.createElement('div');
+  bar.className = 'reading-progress';
+  document.body.appendChild(bar);
+  var chapters = Array.prototype.slice.call(document.querySelectorAll('article.chapter, article.appendix'));
+  function onScroll() {{
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+  }}
+  window.addEventListener('scroll', onScroll, {{ passive: true }});
+  onScroll();
+  function currentIndex() {{
+    var y = window.scrollY + 120;
+    var idx = 0;
+    for (var i = 0; i < chapters.length; i++) {{
+      if (chapters[i].offsetTop <= y) idx = i;
+    }}
+    return idx;
+  }}
+  document.addEventListener('keydown', function (e) {{
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    var tag = (e.target && e.target.tagName) || '';
+    if (/INPUT|TEXTAREA|SELECT/.test(tag)) return;
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    var idx = currentIndex() + (e.key === 'ArrowRight' ? 1 : -1);
+    if (idx < 0 || idx >= chapters.length) return;
+    e.preventDefault();
+    chapters[idx].scrollIntoView({{ behavior: 'smooth', block: 'start' }});
+  }});
+}})();
 </script>
 </body>
 </html>
@@ -1349,6 +1385,28 @@ def restructured_outline(entries: list, manifest: dict, title_map: dict[str, str
     return new_toc
 
 
+def running_header_map(toc: list, book_title: str) -> list[tuple[int, str]]:
+    """[(start_page, label)] — running-head marks from the reshaped outline.
+
+    Chapter (level 2) and appendix (level 1 "附录…") entries each own their
+    pages; earlier front-matter pages fall back to the book title.
+    """
+    marks: list[tuple[int, str]] = []
+    in_appendix = False
+    for level, title, page in toc:
+        clean = title.strip()
+        if level == 1:
+            in_appendix = clean.startswith("附录")
+            if in_appendix:
+                marks.append((page, clean))
+            elif not marks:
+                marks.append((page, book_title))
+        elif level == 2 and not in_appendix:
+            # 附录内的 h2 小节不另起页眉，附录标题覆盖到附录末页。
+            marks.append((page, clean))
+    return marks
+
+
 def _stamp_page_numbers(raw_pdf: Path, output_pdf: Path, title: str) -> None:
     try:
         import fitz
@@ -1363,7 +1421,15 @@ def _stamp_page_numbers(raw_pdf: Path, output_pdf: Path, title: str) -> None:
             raw = (DOCS_DIR / name).read_text(encoding="utf-8")
             frontmatter, _ = parse_frontmatter(raw, name)
             title_map[name] = str(frontmatter.get("title", "")).strip()
-        document.set_toc(restructured_outline(document.get_toc(), manifest, title_map))
+        toc = restructured_outline(document.get_toc(), manifest, title_map)
+        document.set_toc(toc)
+        headers = running_header_map(toc, title)
+        # 扉页（封面由 range 起点跳过、前言、目录、部隔页）不画页眉。
+        skip_header = {
+            page
+            for level, text, page in toc
+            if level == 1 and not text.strip().startswith("附录")
+        }
         document.set_metadata({
             **document.metadata,
             "title": title,
@@ -1374,10 +1440,29 @@ def _stamp_page_numbers(raw_pdf: Path, output_pdf: Path, title: str) -> None:
         total = max(0, document.page_count - 1)
         for index in range(1, document.page_count):
             page = document[index]
-            label = f"{index} / {total}"
-            width = fitz.get_text_length(label, fontname="helv", fontsize=8)
+            page_number = index + 1
+            # 页眉：当前章/附录标题（中文走内置 china-s 字体），正文上边距 16mm≈45pt，画在 22pt 处不侵入。
+            if page_number not in skip_header:
+                label = title
+                for start, text in headers:
+                    if start <= page_number:
+                        label = text
+                    else:
+                        break
+                if len(label) > 48:
+                    label = label[:47] + "…"
+                page.insert_textbox(
+                    fitz.Rect(45, 16, page.rect.width - 45, 34),
+                    label,
+                    fontname="china-s",
+                    fontsize=7.5,
+                    align=fitz.TEXT_ALIGN_CENTER,
+                    color=(0.45, 0.49, 0.47),
+                )
+            label_num = f"{page_number} / {total}"
+            width = fitz.get_text_length(label_num, fontname="helv", fontsize=8)
             point = fitz.Point((page.rect.width - width) / 2, page.rect.height - 8)
-            page.insert_text(point, label, fontname="helv", fontsize=8, color=(0.38, 0.42, 0.40))
+            page.insert_text(point, label_num, fontname="helv", fontsize=8, color=(0.38, 0.42, 0.40))
         document.save(output_pdf, garbage=3, deflate=True)
     finally:
         document.close()

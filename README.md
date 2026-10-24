@@ -9,7 +9,7 @@
 [![许可：Apache-2.0](https://img.shields.io/badge/%E8%AE%B8%E5%8F%AF-Apache--2.0-blue)](#许可)
 [![最近更新](https://img.shields.io/github/last-commit/zhuguang-ZFG/mcu)](https://github.com/zhuguang-ZFG/mcu/commits/main)
 
-**在线站点：<https://zhuguang-zfg.github.io/mcu/>** —— 读书去那里。本页是**仓库地图**：内容有入口、代码在哪、规范在哪、怎么在本地跑起来。
+**在线站点：<https://zhuguang-zfg.github.io/mcu/>** —— 读书去那里。整书离线版（88 章单文件 HTML / A4 PDF，动画即播、断网可读）随站点发布在 [**/mcu/book/**](https://zhuguang-zfg.github.io/mcu/book/mcu-deep-book.html)，[入口页](docs/reference/book.md)有说明。本页是**仓库地图**：内容有入口、代码在哪、规范在哪、怎么在本地跑起来。
 
 ⚠️ **这是学习材料，不是安全或选型依据。** 引脚、阈值、时序以芯片 datasheet 为准；凡是没接仪器量过的现象，页面上一律写「待上板实测」，请不要当已验证数据引用。
 
