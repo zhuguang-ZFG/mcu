@@ -8,7 +8,7 @@ import {
   harvestEntries,
   checkSearchHits,
   plainHeading,
-  pageHrefPrefixes,
+  pageHrefPaths,
 } from '../scripts/search-check.mjs'
 import { tokenizeForSearch } from '../scripts/search-tokenize.mjs'
 
@@ -43,11 +43,28 @@ test('plainHeading 对齐渲染后词面：自定义锚点 / 链接 / 行内标�
   assert.equal(plainHeading('比较 A <B> 与 C'), '比较 A  与 C')
 })
 
-test('pageHrefPrefixes：普通页用 .html，index 页用目录式 URL', () => {
-  assert.deepEqual(pageHrefPrefixes('stm32/12-spi.md'), ['/mcu/stm32/12-spi.html'])
-  assert.deepEqual(pageHrefPrefixes('build/index.md'), ['/mcu/build/'])
-  // 根首页只认 `/mcu/#`，否则 `/mcu/` 会把全站每一条命中都算成"翻到了首页"
-  assert.deepEqual(pageHrefPrefixes('index.md'), ['/mcu/#'])
+test('pageHrefPaths：普通页用 .html，index 页用目录式 URL 与 index.html 双形态', () => {
+  assert.deepEqual(pageHrefPaths('stm32/12-spi.md'), ['/mcu/stm32/12-spi.html'])
+  assert.deepEqual(pageHrefPaths('build/index.md'), ['/mcu/build/', '/mcu/build/index.html'])
+  assert.deepEqual(pageHrefPaths('index.md'), ['/mcu/', '/mcu/index.html'])
+})
+
+test('checkSearchHits：目录页不能被同目录下的子页面冒充（全等而非前缀）', () => {
+  const index = makeIndex([
+    { id: '/mcu/build/00-toolchain.html#学习目标', title: '工具链', titles: ['学习目标'], text: '章节路线导览' },
+  ])
+  const { missing } = checkSearchHits(index, [{ term: '章节路线导览', page: 'build/index.md' }])
+  assert.equal(missing.length, 1, '命中的是 build/00-toolchain.html，不是导览页本身，必须判红')
+})
+
+test('checkSearchHits：排在很后面也算可达（本门判可达性，不判排序）', () => {
+  // 通用标题（「小节结构」这类）的目标页常常排在第 20 名之外；设截断会把它判成缺陷（实测 715/2147 噪声）
+  const docs = []
+  for (let i = 0; i < 5; i++) {
+    docs.push({ id: `/mcu/x/page${i}.html#s`, title: '共同词 目标', titles: ['共同词'], text: '共同词 共同词' })
+  }
+  const index = makeIndex(docs)
+  assert.deepEqual(checkSearchHits(index, [{ term: '共同词', page: 'x/page4.md' }]).missing, [])
 })
 
 test('harvestEntries：采 title + H2/H3，跳过围栏/四级/空子树/无 H1 的 title', () => {

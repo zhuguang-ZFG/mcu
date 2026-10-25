@@ -51,7 +51,12 @@ export function resolveHref(href, fromPage) {
   if (!p) return { target: fromPage, fragment }
   if (p === BASE.slice(0, -1)) p = '' // 裸 base（"/mcu"），按站点根处理
   else if (p.startsWith(BASE)) p = p.slice(BASE.length) // 站内绝对路径按 base 解析
-  else if (p.startsWith('/')) p = p.slice(1) // base 外的绝对路径（产物里不应出现，照查）
+  else if (p.startsWith('/')) {
+    // BASE 之外的绝对路径：产物里不该出现。站点挂在 BASE（/mcu/）下，浏览器会把这种
+    // href 解析成站外路径而 404；早期写法是去掉前导 "/" 当站内路径继续查，
+    // 只要 dist 里恰好有同名文件就会**假绿**（现存测试覆盖过这个误映射）。
+    return { outOfBase: p }
+  }
   else p = path.posix.normalize(path.posix.join(path.posix.dirname(fromPage), p))
   if (p === '') p = 'index.html'
   else if (p.endsWith('/')) p += 'index.html'
@@ -78,6 +83,12 @@ export function checkDistAnchors(distDir) {
       if (!resolved) continue
       checked++
       const line = html.slice(0, m.index).split('\n').length
+      if (resolved.outOfBase) {
+        problems.push(
+          `${page}:${line} → href "${href}" 是 BASE（${BASE}）之外的绝对路径，部署后浏览器会当站外路径解析（404）`,
+        )
+        continue
+      }
       const ids = anchors.get(resolved.target)
       if (!ids) {
         problems.push(

@@ -28,9 +28,6 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const DEFAULT_DIST = path.join(ROOT, 'docs', '.vitepress', 'dist')
 const SKIP_DIRS = new Set(['.vitepress', 'node_modules', 'public'])
 
-/** 结果里取前多少条算「翻得到」：标题通常排第一，给足余量又不至于把全站当命中。 */
-const HIT_LIMIT = 20
-
 /** 递归收集 docs 里的 .md（跳过主题/配置/静态资产目录）。 */
 function collectMarkdown(dir) {
   const out = []
@@ -61,21 +58,36 @@ export function plainHeading(text) {
 }
 
 /**
- * 把 docs 相对路径换算成产物里的页面前缀集合。
- * VitePress 的 index 页是目录式 URL：`build/index.md` → `/mcu/build/#anchor`，
- * 根 `index.md` → `/mcu/#anchor`（注意 `/mcu/` 单独一项会把全站当成命中，所以根页只认 `/mcu/#`）。
+ * 产物里属于「这一页」的 URL 形态（不含 fragment；检索结果 id 形如 `/mcu/stm32/12-spi.html#段`）。
+ *
+ * 必须**全等**比较而不是前缀：目录页 `/mcu/build/` 当前缀会把
+ * `/mcu/build/00-toolchain.html#…` 也算成"翻到了导览页"——那是这一门最容易出的伪绿，
+ * 2147 全绿不能建立在这上面。
  */
-export function pageHrefPrefixes(docsRel, base = '/mcu/') {
+export function pageHrefPaths(docsRel, base = '/mcu/') {
   const noExt = docsRel.replace(/\.md$/, '')
-  if (noExt === 'index') return [`${base}#`]
-  if (noExt.endsWith('/index')) return [`${base}${noExt.slice(0, -'index'.length)}`]
+  if (noExt === 'index') return [base, `${base}index.html`]
+  if (noExt.endsWith('/index')) {
+    const dir = `${base}${noExt.slice(0, -'index'.length)}`
+    return [dir, `${dir}index.html`]
+  }
   return [`${base}${noExt}.html`]
 }
 
+/** 结果 id → 页面路径（去掉 fragment 与 query）。 */
+function idPath(id) {
+  return String(id).split('#')[0].split('?')[0]
+}
+
 /**
- * 采集必中条目：章节 frontmatter title + H2/H3 标题（去代码块、去行内标记）。
- * 与建索引口径一致地跳过三类标题：无 H1 的页面 title、整棵子树无正文的小节、
- * 以及 frontmatter 声明 `search: false` 的页面（VitePress 不索引它们）。
+ * 采集必中条目：页面 H1 + H2/H3 标题（去代码块、去行内标记）。
+ * 与建索引口径一致地跳过三类标题：无 H1 的页面（首页/404 这类 layout:home）、
+ * 整棵子树无正文的小节，以及 frontmatter 声明 `search: false` 的页面（VitePress 不索引它们）。
+ *
+ * 页面标题采**正文的 H1 行**，不采 frontmatter title：两者经常不是一个词
+ * （`docs/stm32/index.md` 是 `title: S 篇导览`、H1 是「STM32F407 寄存器主线…」），
+ * 而索引拿到的是渲染后的正文——按 frontmatter 采必误报（实测 1 例：
+ * 搜「S 篇导览」123 条命中里没有这一页，因为它压根不在索引里）。
  * @returns {{ term: string, page: string }[]} page 为 docs 相对 posix 路径
  */
 export function harvestEntries(docsDir) {
@@ -88,7 +100,6 @@ export function harvestEntries(docsDir) {
     const page = path.relative(docsDir, file).replace(/\\/g, '/')
     const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/)
 
-    let title = null
     let bodyStart = 0
     if (lines[0] === '---') {
       const end = lines.indexOf('---', 1)
@@ -96,8 +107,6 @@ export function harvestEntries(docsDir) {
         const front = lines.slice(1, end)
         // 页面被排除出搜索时，标题查不到是正常的，不是缺陷
         if (front.some((l) => /^search:\s*false\s*$/.test(l))) continue
-        const t = front.find((l) => /^title:\s*\S/.test(l))
-        if (t) title = t.replace(/^title:\s*/, '').replace(/^['"]|['"]$/g, '').trim()
         bodyStart = end + 1
       }
     }
@@ -113,9 +122,9 @@ export function harvestEntries(docsDir) {
       if (!inCode) body.push(line)
     }
 
-    // VitePress 只索引「标题链」：frontmatter title 只有以 H1 落在正文里才会进索引；
-    // 首页（layout:home）/404 这类无 H1 页面的 title 不在索引中，采了必误报。
-    if (title && body.some((l) => /^# /.test(l))) add(title, page)
+    // 页面标题 = 正文第一条 H1（渲染后它才是被索引的那个 title 字段）
+    const h1 = body.find((l) => /^#\s+\S/.test(l))
+    if (h1) add(plainHeading(h1.replace(/^#\s+/, '')), page)
 
     for (let i = 0; i < body.length; i++) {
       const h = /^(#{2,3})\s+(.+?)\s*$/.exec(body[i])
@@ -151,16 +160,23 @@ export function loadSearchable(indexJson) {
 }
 
 /**
- * 对账：每个标题真查一次，要求结果里出现该标题所在页面。
+ * 对账：每个标题真查一次，要求结果里出现该标题所在页面（页面路径**全等**比较）。
+ *
+ * 刻意**不截断**结果，也不改 MiniSearch 的默认检索参数：
+ *   · 这一门判的是可达性——"正文里有的标题，搜得到那一页"，排序质量不是它管的事；
+ *   · 实测证据：给结果设前 20 条截断后，715/2147 判红全部来自「小节结构」「实物实验」
+ *     这类通用标题（目标页排在第 20 名之外），那是噪声而不是缺陷；
+ *   · MiniSearch 的 SearchOptions 里也**没有 limit**，传了不生效——要截断只能自己 slice，
+ *     所以这个决定必须写在这里，而不是靠一个不存在的参数默认值。
  * @returns {{ missing: {term: string, page: string, hits: number}[], checked: number }}
  */
-export function checkSearchHits(indexJson, entries, { limit = HIT_LIMIT, base = '/mcu/' } = {}) {
+export function checkSearchHits(indexJson, entries, { base = '/mcu/' } = {}) {
   const ms = loadSearchable(indexJson)
   const missing = []
   for (const { term, page } of entries) {
-    const prefixes = pageHrefPrefixes(page, base)
-    const hits = ms.search(term, { limit })
-    if (!hits.some((h) => prefixes.some((p) => String(h.id).startsWith(p)))) {
+    const paths = pageHrefPaths(page, base)
+    const hits = ms.search(term)
+    if (!hits.some((h) => paths.includes(idPath(h.id)))) {
       missing.push({ term, page, hits: hits.length })
     }
   }

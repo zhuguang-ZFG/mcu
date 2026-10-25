@@ -62,13 +62,19 @@ test('整书产物要被回收验证：构建之后必须跑 PDF 契约门与下
 
 test('部署前对 artifact 再对一次账，且在 upload-pages-artifact 之前', () => {
   const steps = deploy.jobs.deploy.steps
-  const anchor = steps.findIndex((s) => String(s.run || '').includes('pages-check.mjs --dist site'))
-  const search = steps.findIndex((s) => String(s.run || '').includes('search-check.mjs --dist site'))
-  const upload = steps.findIndex((s) => String(s.uses || '').includes('upload-pages-artifact'))
-  const install = steps.findIndex((s) => String(s.run || '').trim() === 'npm ci')
+  const at = (pred) => steps.findIndex(pred)
+  const checkout = at((s) => String(s.uses || '').includes('actions/checkout'))
+  const download = at((s) => String(s.uses || '').includes('download-artifact'))
+  const anchor = at((s) => String(s.run || '').includes('pages-check.mjs --dist site'))
+  const search = at((s) => String(s.run || '').includes('search-check.mjs --dist site'))
+  const upload = at((s) => String(s.uses || '').includes('upload-pages-artifact'))
+  const install = at((s) => String(s.run || '').trim() === 'npm ci')
   assert.ok(install >= 0 && install < anchor, '先用 npm ci 装到 minisearch 等依赖')
   assert.ok(anchor >= 0 && search >= 0, '两个 dist 侧门都要在部署流程里')
   assert.ok(anchor < upload && search < upload, '检查必须在真正上传产物之前')
+  // checkout 默认 clean=true，会 reset/clean 工作区：它排在 download-artifact 之后
+  // 就会把刚下载的 site/ 当未跟踪文件清掉，后面的 --dist site 变成查空目录。
+  assert.ok(checkout >= 0 && download > checkout, 'checkout 必须排在 download-artifact 之前，否则 site/ 会被清掉')
 })
 
 test('外链巡检：两轮制 + 月度复查，且只允许第 1 轮 continue-on-error', () => {

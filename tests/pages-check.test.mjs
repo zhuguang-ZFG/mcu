@@ -135,13 +135,16 @@ test('checkDistAnchors：锚点 id 缺失报「期望 vs 实际」', () => {
   }
 })
 
-test('checkDistAnchors：base 外的绝对路径照查不误（产物里不该出现）', () => {
+test('checkDistAnchors：base 外的绝对路径直接判错（不许映射进站内当巧合通过）', () => {
   const dir = makeDist({
     'index.html': PAGE('<a href="/other/x.html#f">x</a>'),
+    // 故意让同名文件存在：早期实现会把 "/other/x.html#f" 当站内路径查到它，从而假绿
+    'other/x.html': PAGE('<h2 id="f">f</h2>'),
   })
   try {
     const { problems } = checkDistAnchors(dir)
     assert.equal(problems.length, 1)
+    assert.match(problems[0], /BASE/)
     assert.match(problems[0], /other\/x\.html/)
   } finally {
     rm(dir)
