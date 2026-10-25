@@ -14,6 +14,9 @@
     "readme:sync": "node scripts/gen-progress.mjs --readme",
     "readme:check": "node scripts/gen-progress.mjs --readme --check",
     "links:check": "node scripts/links-check.mjs",
+    "docs:check": "node scripts/docs-check.mjs",
+    "pages:check": "node scripts/pages-check.mjs",
+    "search:check": "node scripts/search-check.mjs",
     "nav:check": "node scripts/nav-check.mjs",
     "seo:check": "node scripts/seo-check.mjs",
     "perf:budget": "node scripts/perf-budget.mjs",
@@ -30,16 +33,19 @@
     "video:calib": "node video/src/cli.mjs calib",
     "test": "node --test tests/*.test.mjs",
     "firmware:check": "node scripts/check-firmware.mjs",
-    "quality": "npm run test && npm run projects:check && npm run docs:build && npm run anim:lint && npm run readme:check && npm run reading:check && npm run links:check && npm run nav:check && npm run seo:check && npm run perf:budget && npm run a11y:check",
+    "quality": "npm run test && npm run projects:check && npm run docs:build && npm run anim:lint && npm run readme:check && npm run reading:check && npm run links:check && npm run docs:check && npm run nav:check && npm run seo:check && npm run perf:budget && npm run a11y:check && npm run pages:check && npm run search:check",
     "test:browser": "playwright test",
     "site:measure": "node scripts/measure-site.mjs",
     "book:check": "python mcu-book/build_html.py --check",
     "book:html": "python mcu-book/build_html.py",
-    "book:pdf": "python mcu-book/build_html.py --pdf"
+    "book:pdf": "python mcu-book/build_html.py --pdf",
+    "book:pdfcheck": "python mcu-book/check_pdf.py",
+    "book:pack": "python mcu-book/publish_downloads.py --out-dir .temp/book-downloads"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "ffmpeg-static": "^5.3.0",
+    "minisearch": "^7.2.0",
     "puppeteer": "^25.13.0",
     "vitepress": "^1.6.3",
     "yaml": "^2.8.3"

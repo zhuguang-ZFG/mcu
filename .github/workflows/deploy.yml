@@ -19,7 +19,7 @@ jobs:
     # 可复用工作流的所有 jobs 成功才算 quality 成功；失败/取消/跳过均不发布。
     needs: quality
     if: github.ref == 'refs/heads/main' && needs.quality.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       pages: write
@@ -32,6 +32,18 @@ jobs:
         with:
           name: docs-site
           path: site
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # 为什么在部署前再查一遍：前面 quality 的检查跑在**源文件与刚构建的 dist** 上，
+      # 而这里落地的是一路传过来的 artifact。检查对象必须是真正要上线的那一份。
+      - name: 上线物锚点对账（对 artifact，不对源文件）
+        run: node scripts/pages-check.mjs --dist site
+      - name: 上线物搜索可达性对账
+        run: node scripts/search-check.mjs --dist site
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:

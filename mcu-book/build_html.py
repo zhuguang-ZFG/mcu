@@ -316,7 +316,7 @@ def substitute_components(
         text = LAB_STATUS_TAG.sub(lab_status_html(frontmatter, source_label), text)
 
     def video_repl(match: re.Match[str]) -> str:
-        kind, video_id, title = match.group(1), match.group(2), match.group(3) or video_id
+        kind, video_id, title = match.group(1), match.group(2), match.group(3) or match.group(2)
         url = (
             f"https://www.bilibili.com/video/{video_id}"
             if kind == "bilibili"
@@ -349,7 +349,6 @@ def substitute_components(
         text = MERMAID_FENCE.sub(DECISION_TREE_HTML, text)
     else:
         def mermaid_repl(match: re.Match[str]) -> str:
-            source = match.group(0)
             return (
                 '<aside class="widget-note"><p>🧮 这一节在在线版是可交互图表；'
                 "离线书未收录其渲染，需对照在线版阅读。</p></aside>"
@@ -501,6 +500,17 @@ def cjk_slugify(value: str, separator: str) -> str:
     return re.sub(r"[\s-]+", separator, value) or "section"
 
 
+def fragment_key(fragment: str) -> str:
+    """锚点比较键：去掉连字符/下划线/空白再小写。
+
+    为什么需要它：同一个标题在三处的锚点不一样 —— 书籍构建器直接丢标点
+    （`第五步：接线（SWD 四线）` → `第五步接线swd-四线`），站点侧 VitePress 把全角标点
+    折成 `-`（→ `第五步-接线-swd-四线`），GitHub 又是另一种。源码里的链接只能写一条，
+    所以解析时按"去分隔符后比较"，两边都能落到同一个 id 上。
+    """
+    return re.sub(r"[-_\s]+", "", fragment).lower()
+
+
 def render_markdown(source: str) -> str:
     renderer = markdown.Markdown(
         extensions=["extra", "toc", "sane_lists"],
@@ -560,6 +570,7 @@ class BookContext:
                 self.section_index_anchor[hub.resolve()] = "contents"
         self.quizzes = load_quizzes()
         self.path_to_name = {info["path"].resolve(): name for name, info in self.chapter_meta.items()}
+        self._fragment_index: dict[str, dict[str, str]] = {}
         self.stats = {"figures": 0}
         self.part_minutes: dict[str, int] = {}
 
@@ -571,6 +582,43 @@ class BookContext:
         if resolved in self.section_index_anchor:
             return f"#{self.section_index_anchor[resolved]}"
         return None
+
+    def resolve_fragment(self, chapter: str | None, fragment: str) -> str | None:
+        """把源文件里的锚点解析成书内真实 id（失败返回 None，交给既有回退路径）。
+
+        源文件里的锚点可能是站点风格（VitePress 把全角标点折成 "-"），而书里的 id
+        是构建器自己 slug 出来的（直接丢标点）。两边不同源，所以按 fragment_key 比较。
+        """
+        if not chapter or not fragment:
+            return None
+        index = self._fragment_index.get(chapter)
+        if index is None:
+            index = self._build_fragment_index(chapter)
+            self._fragment_index[chapter] = index
+        return index.get(fragment_key(fragment))
+
+    def _build_fragment_index(self, chapter: str) -> dict[str, str]:
+        """渲染目标章一次，把「比较键 → 书内 id」记下来（按章缓存）。
+
+        不去自己复刻 markdown toc 的重复标题计数规则，而是直接从渲染结果里读 id，
+        与真正产出的 id 天然一致。
+        """
+        info = self.chapter_meta.get(chapter)
+        if not info or not info["path"].is_file():
+            return {}
+        rendered = render_markdown(info["path"].read_text(encoding="utf-8"))
+        index: dict[str, str] = {}
+        ambiguous: set[str] = set()
+        for match in ID_ATTR.finditer(rendered):
+            real = f"{info['anchor']}-{match.group('value')}"
+            key = fragment_key(match.group("value"))
+            if key in index and index[key] != real:
+                ambiguous.add(key)
+                continue
+            index[key] = real
+        for key in ambiguous:
+            index.pop(key, None)
+        return index
 
 
 def rewrite_local_links(rendered: str, source_file: Path, source_label: str, ctx: BookContext) -> str:
@@ -596,7 +644,13 @@ def rewrite_local_links(rendered: str, source_file: Path, source_label: str, ctx
             target = _resolve_md_target(source_file, raw_path, source_label)
             anchor = ctx.anchor_lookup(target)
             if anchor is not None:
-                value = anchor + (f"-{fragment}" if fragment else "")
+                # 先按"去分隔符比较"把站点风格锚点解析成书内 id；解析不到才退回原来的
+                # 直接拼接（那条路走不通时由 audit_html 的坏锚点检查兜住并报错）。
+                resolved = ctx.resolve_fragment(ctx.path_to_name.get(target.resolve()), fragment)
+                if resolved is not None:
+                    value = "#" + resolved
+                else:
+                    value = anchor + (f"-{fragment}" if fragment else "")
             elif target.suffix.lower() == ".md" and target.is_file() and target.resolve().is_relative_to(DOCS_DIR.resolve()):
                 page = target.resolve().relative_to(DOCS_DIR.resolve()).as_posix().removesuffix(".md")
                 value = f"{SITE_BASE}{page}.html" + (f"#{fragment}" if fragment else "")
@@ -635,7 +689,7 @@ def embed_local_images(rendered: str, source_file: Path, source_label: str) -> s
     return IMAGE_TAG.sub(replace_tag, rendered)
 
 
-def upgrade_images_to_figures(rendered: str, ctx: "BookContext | None" = None) -> str:
+def upgrade_images_to_figures(rendered: str, ctx: BookContext | None = None) -> str:
     """Give every standalone image a <figure> with its caption (alt text)."""
 
     def replace_paragraph(match: re.Match[str]) -> str:
@@ -1348,7 +1402,7 @@ def restructured_outline(entries: list, manifest: dict, title_map: dict[str, str
     first_part = find(expected[0][1], 0)
     new_toc: list[list] = []
     front_pages = {"这不是文章合集，是一本书", "目录与分部目标"}
-    for level, title, page in entries[:first_part]:
+    for _level, title, page in entries[:first_part]:
         clean = title.strip()
         if clean in front_pages:
             new_toc.append([1, clean, page])
@@ -1407,6 +1461,35 @@ def running_header_map(toc: list, book_title: str) -> list[tuple[int, str]]:
     return marks
 
 
+def header_label_for_page(headers: list[tuple[int, str]], book_title: str, page_number: int) -> str:
+    """某一页应画的页眉文字（含 >48 字截断规则）。
+
+    _stamp_page_numbers 与 check_pdf.py 共用：页眉“该是什么”只有这一处定义。
+    """
+    label = book_title
+    for start, text in headers:
+        if start <= page_number:
+            label = text
+        else:
+            break
+    if len(label) > 48:
+        label = label[:47] + "…"
+    return label
+
+
+def header_skip_pages(toc: list) -> set[int]:
+    """不画页眉的页码集合——前言、目录、分部隔页（level 1 且非附录条目）。
+
+    与 _stamp_page_numbers 单真源：check_pdf.py 用同一函数对产物做反向校验，
+    避免“画页眉的规则”和“查页眉的规则”各自维护一份而悄悄漂移。
+    """
+    return {
+        page
+        for level, text, page in toc
+        if level == 1 and not text.strip().startswith("附录")
+    }
+
+
 def _stamp_page_numbers(raw_pdf: Path, output_pdf: Path, title: str) -> None:
     try:
         import fitz
@@ -1425,11 +1508,7 @@ def _stamp_page_numbers(raw_pdf: Path, output_pdf: Path, title: str) -> None:
         document.set_toc(toc)
         headers = running_header_map(toc, title)
         # 扉页（封面由 range 起点跳过、前言、目录、部隔页）不画页眉。
-        skip_header = {
-            page
-            for level, text, page in toc
-            if level == 1 and not text.strip().startswith("附录")
-        }
+        skip_header = header_skip_pages(toc)
         document.set_metadata({
             **document.metadata,
             "title": title,
@@ -1443,14 +1522,7 @@ def _stamp_page_numbers(raw_pdf: Path, output_pdf: Path, title: str) -> None:
             page_number = index + 1
             # 页眉：当前章/附录标题（中文走内置 china-s 字体），正文上边距 16mm≈45pt，画在 22pt 处不侵入。
             if page_number not in skip_header:
-                label = title
-                for start, text in headers:
-                    if start <= page_number:
-                        label = text
-                    else:
-                        break
-                if len(label) > 48:
-                    label = label[:47] + "…"
+                label = header_label_for_page(headers, title, page_number)
                 page.insert_textbox(
                     fitz.Rect(45, 16, page.rect.width - 45, 34),
                     label,
