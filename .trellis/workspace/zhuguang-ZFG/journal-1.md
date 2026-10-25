@@ -627,3 +627,37 @@ comment 步补 --go（闸门另起一张 I_HAVE_USER_OK_COMMENT）并真发出 1
 ### Next Steps
 
 - None - task complete
+
+
+## Session 12: BMS-Z 对齐：验证纵深（门禁脚本/文档对账/PDF 契约/下载打包/dist 对账）
+
+**Date**: 2026-10-25
+**Task**: BMS-Z 对齐：验证纵深（门禁脚本/文档对账/PDF 契约/下载打包/dist 对账）
+**Branch**: `feat/video-v2-remaster`
+
+### Summary
+
+对照姊妹项目 BMS-Z 补齐验证纵深：新增 local-gates(.ps1/.sh)、docs-check、pages-check、search-check、check_pdf、publish_downloads、links.yml+.lychee.toml、ruff.toml+lint job；runner 钉 ubuntu-24.04；补 CITATION/SECURITY/CoC/根 CHANGELOG。全量本地门禁 24 pass/0 fail/0 skip。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `d87f513` | (see git log) |
+| `ca9b756` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
