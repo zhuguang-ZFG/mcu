@@ -17,6 +17,8 @@
 4. 无 <image>/<script>/<style>/外链；颜色只许 none 或 var(--cover-ink, …)。
 5. font-size ≥ 7 不变。
 6. 字节预算 ≤ 6000（预算逼着曲线复用，拒绝堆料）。
+7. 文字必须完整落在 320×88 内（基线 y+降部 ≤ 88、上升部 ≥ 0）。实测 6 枚量产题图
+   把基线写在 86..94，降部被静默裁掉——构建与印前 12 门都不报错，只有印刷尺寸可见。
 
 用法：
     python mcu-book/tools/art_guard.py 图1.svg [图2.svg …]        # 滤镜模式
@@ -73,6 +75,21 @@ def _check_yuyu(path: Path, text: str, cr_errors: list[str]) -> list[str]:
     for m in re.finditer(r'font-size="([\d.]+)"', text):
         if float(m.group(1)) < 7:
             errors.append(f"font-size {m.group(1)} < 7（印刷地板）")
+    # 文字必须完整落在 320×88 画布内：基线越界时字形上升/降部被静默裁掉，
+    # 而 get_text() 与构建都不报错。2026-10-26 实测 6 枚题图基线 y≥86 被裁。
+    # 系数取实测上界：字号 s 的字框顶 ≈ y-0.95s，底 ≈ y+0.28s。
+    for m in re.finditer(r'<text\b[^>]*>', text):
+        tag = m.group(0)
+        ym = re.search(r'\by="([\d.]+)"', tag)
+        sm = re.search(r'font-size="([\d.]+)"', tag)
+        if not (ym and sm):
+            continue
+        y, s = float(ym.group(1)), float(sm.group(1))
+        if y + 0.28 * s > 88.5:
+            errors.append(f"文字基线 y={ym.group(1)} + 降部超出画布下缘"
+                          f"（{y + 0.28 * s:.1f} > 88）")
+        if y - 0.95 * s < -0.5:
+            errors.append(f"文字基线 y={ym.group(1)} + 上升部超出画布上缘")
     return errors
 
 

@@ -1,9 +1,9 @@
-"""索引生成：从术语表抽术语，在分页后的页面树里定位出现页码，生成附录 G。
+"""索引生成：从术语表抽术语，在分页后的页面树里定位出现页码，生成附录 H。
 
 两遍法（实现在 build_print.py）：
   第一遍正常分页，然后对 .pagedjs_page 逐页扫文本，记录每个术语的命中页码
   （结构页——封面/版权/导读/目录/书尾/附录 D/G——按容器类名整页排除）；
-  第二遍把收集结果渲染成附录 G 注入 </main> 前，重新分页产出最终 PDF。
+  第二遍把收集结果渲染成附录 H 注入 </main> 前，重新分页产出最终 PDF。
   索引在书尾，不移动任何正文页码，两遍页码自洽。
 
 每条最多列 6 个页码。索引样式由 book-print.css 的 .index-entries 两栏声明控制。
@@ -36,12 +36,12 @@ def extract_terms(glossary_path: Path = GLOSSARY_PATH) -> list[str]:
     return sorted(set(terms))
 
 
-# 把术语列表渲染成附录 G 的 HTML 片段（页码由第二遍填入）
+# 把术语列表渲染成附录 H 的 HTML 片段（页码由第二遍填入）
 def render_index_html(entries: list[tuple[str, list[int]]], book_title: str = "") -> str:
     """entries: [(term, [page1, page2, ...]), ...] 已按码位序排序。"""
     import html as _html
     lines = ['<article class="appendix" id="appendix-index">',
-             f'<header><span class="book-title-marker" aria-hidden="true">{_html.escape(book_title)}</span><p class="chapter-number">附录 G</p><h1>术语索引</h1></header>',
+             f'<header><span class="book-title-marker" aria-hidden="true">{_html.escape(book_title)}</span><p class="chapter-number">附录 H</p><h1>术语索引</h1></header>',
              '<p class="part-goal">按 Unicode 码位序。仅收录在正文中出现过的术语；'
              '只在术语表定义的词请直接查附录 D。每条最多列 6 个页码。</p>',
              '<div class="index-entries">']

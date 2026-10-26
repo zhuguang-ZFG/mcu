@@ -103,6 +103,7 @@ class BookBuildContractTests(unittest.TestCase):
                 "appendix-glossary",
                 "appendix-references",
                 "appendix-faq",
+                "appendix-oss-map",
             },
             parsed.appendices,
         )
@@ -233,7 +234,7 @@ class BookBuildContractTests(unittest.TestCase):
         sections = [row for row in toc if row[0] >= 3]
         self.assertEqual(88, len(sections))  # chapter h2 only; compass and h3 dropped
         appendix_sections = [row for row in toc if row[1] == "附录小节"]
-        self.assertEqual(6, len(appendix_sections))
+        self.assertEqual(len(manifest["appendices"]), len(appendix_sections))
         self.assertTrue(all(row[0] == 2 for row in appendix_sections))
         self.assertEqual(3, max(row[0] for row in toc))  # strictly three levels
 

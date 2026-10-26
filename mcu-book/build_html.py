@@ -793,7 +793,15 @@ def chapter_art_html(name: str) -> str:
     svg_path = BOOK_DIR / "assets" / "chapter-art" / f"{slug}.svg"
     if not svg_path.is_file():
         return ""
-    return f'<div class="chapter-art">{svg_path.read_text(encoding="utf-8")}</div>'
+    svg = svg_path.read_text(encoding="utf-8")
+    # 御舆路线：题图一律纯矢量。另一条会话会写回滤镜版，而滤镜版进 HTML 后
+    # 88 枚题图的印前产物会整体降质——12 门都不会因此变红。这里就地拦下。
+    if "feTurbulence" in svg or "<filter" in svg:
+        raise BuildError(
+            f"题图不是纯矢量：{svg_path} 含滤镜。"
+            "先跑 .temp/collect-art.py --apply 收编御舆题图再构建。"
+        )
+    return f'<div class="chapter-art">{svg}</div>'
 
 
 def source_registry_html(manifest: dict) -> str:
