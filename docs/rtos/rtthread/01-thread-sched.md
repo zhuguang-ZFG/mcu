@@ -15,17 +15,8 @@ minutes: 35
 2. 二级位图：`rt_thread_ready_table[32]` 每字节管 8 个优先级，`rt_thread_ready_priority_group` 管哪字节非空：两次 CLZ/查表定位最高优先级（源码 `rt_schedule` + `_get_highest_priority_thread`）。
 3. 调度点的同与不同：同样有 tick（`rt_tick_increase`）、有抢占；不同的是 RT-Thread 把"线程延时"挂在**线程自带的定时器**上，定时器子系统是全家共享的基础设施。
 
-## 怎么读这一章
-
-- **能记住**：256 级位图选线程的两次查表，在 R1 动画里逐帧可数。
 - **能理解**：为什么二级位图能 O(1) 定位 256 级（两步查表）；为什么 `rt_thread_create` 之后还要 `rt_thread_startup`；为什么删除线程要"排队死"；优先级数值方向三家怎么背。
 - **能用**：`list_thread` 看栈水位；`rt_thread_create`/`rt_thread_init` 各建一线程并说清内存来源；用 GDB 对照 RTT 与 FreeRTOS 的就绪表内存布局。
-
-## 学习目标
-
-- 逐字段对照 rt_thread 与 tskTCB（画双列对照表）。
-- 讲清二级位图选优的过程，并指出与 FreeRTOS 单级位图的取舍（优先级数 vs 查询步数）。
-- 用 `rt_thread_create/init` 两种创建方式各建一线程，说出动态/静态创建的差异（堆 vs 自备内存）。
 
 ## 先修
 

@@ -22,17 +22,8 @@ minutes: 50
 
 </details>
 
-## 怎么读这一章
-
-- **能记住**：口诀"位图置位 CLZ 秒选，tick 三事：醒人、轮转、换片场"；`vListInsert` 按值排队、`vListInsertEnd` 队尾轮转。
 - **能理解**：为什么 tick 只查延时表**队首**（O(1) 的秘密）；为什么位图路径要求优先级 ≤32；为什么 `vTaskDelay(1)` 不能当精确 1ms 用。
 - **能用**：RunTimeStats 实测任务占比验证调度行为；按场景选 vTaskDelay / vTaskDelayUntil。
-
-## 学习目标
-
-- 画出三表迁移图（就绪/延时/阻塞），并说清每次迁移的触发源。
-- 逐行讲 `xTaskIncrementTick` 的剪枝逻辑（`xNextTaskUnblockTime`）。
-- 实测：两同优先级任务占比≈50/50；一个 +1 优先级后 100/0。
 
 ## 先修
 

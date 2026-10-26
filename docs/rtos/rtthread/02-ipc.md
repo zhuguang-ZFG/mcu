@@ -15,16 +15,8 @@ minutes: 35
 2. 五种 IPC 的分工：信号量=计数令牌、互斥量=带持有者与继承的令牌、事件集=32 位旗语、邮箱=定长消息（4 字节）池、消息队列=变长消息环形队。选型按"同步还是传信、消息多大"。
 3. 互斥量的继承与 FreeRTOS 同构：`rt_mutex` 记录 owner 与 original priority，同样是火星 bug 的解法，读 `rt_ipc.c` 对照 [F5](../freertos/05-sem-mutex.md) 最有味道。
 
-## 怎么读这一章
-
 - **能理解**：为什么五种 IPC 共用一套 `rt_ipc_list_suspend/resume`；为什么互斥量的继承和 F5 同构（owner + original priority）；为什么邮箱固定 4 字节而不是变长。
 - **能用**：用信号量+邮箱打通中断→线程、线程→线程双通信；E04 双 OS 双跑对比继承行为，两组日志并排核对。
-
-## 学习目标
-
-- 画出"通用 IPC 骨架图"并把五种 IPC 的特殊字段标注上去。
-- 用信号量+邮箱完成中断→线程、线程→线程双通信实战（finsh 观测）。
-- 复现优先级反转的 RT-Thread 版本并与 FreeRTOS 版行为对比（[E04](../../lab/e04-priority-inversion.md) 双跑）。
 
 ## 先修
 

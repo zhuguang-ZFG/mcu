@@ -15,17 +15,8 @@ minutes: 25
 2. map 文件的三板斧：Archive member 表（谁被从库里捞出来）、Memory Map（每个符号的落位）、 discarded 段（被 gc-sections 辞退的）。
 3. 优化的顺序：先看大项（库/表/缓冲区），再谈 -O 级别；方向错了 -O2 也救不了你。
 
-## 怎么读这一章
-
-- **能记住**：Flash=text+data、RAM=data+bss；"先审账再优化"。
 - **能理解**：为什么带初值的数组让 Flash 和 RAM 双涨、加 const 后 data 回落 text 涨；为什么 bin 比 text+data 大。
 - **能用**：`size`/`nm --size-sort`/`map` 三把刀完成一次"揪出大尾巴"审计。
-
-## 学习目标
-
-- 背出 Flash/RAM 占用公式并能用 size 输出心算验证。
-- 在 blink.map 里找到 main.o 的落位记录与被 discarded 的段。
-- 完成一次"揪出大尾巴"实战：找出固件里最占地方的三个符号。
 
 ## 先修
 

@@ -15,17 +15,8 @@ minutes: 30
 2. 寄存器命名大换血：STM32 的 CR1/CR2/CR3 → GD32 的 **CTL0/CTL1/CTL2**；BRR → **BAUD**；GTPR → **GP**；SR/DR → **STAT/DATA**：功能等价，名字全变。
 3. GD32 USART 有"不连续时钟"（CTL1.CLEN）与"智能卡"（CTL2.SCEN/NKEN）模式的增强（位级事实已按 `gd32f4xx_usart.h` V3.3.3 核验，见第四节）。
 
-## 怎么读这一章
-
-- **能记住**：8 个串口（0 起编号）、CTL0/1/2 替代 CR1/2/3、BAUD 替代 BRR。
 - **能理解**：为什么 GD32 从 0 起编号（与中断号对齐，USART0_IRQn=37）；为什么命名从 CR 改 CTL（GD32 库的统一风格，所有外设控制寄存器都叫 CTL）。
 - **能用**：拿到 GD32 USART 工程，把 STM32 肌肉记忆的 CR1/CR2/CR3 翻译成 CTL0/1/2，把 BRR 翻译成 BAUD。
-
-## 学习目标
-
-- 画出 GD32F4xx 8 个串口的编号/中断号/总线对照表。
-- 逐字段对照 STM32 CR1/CR2/CR3/BRR 与 GD32 CTL0/1/2/BAUD 的命名映射。
-- 指出 GD32 USART 相比 STM32F407 的已知增强点（CLEN/SCEN/NKEN/IREN，已按 V3.3.3 头文件核验）。
 
 ## 先修
 

@@ -17,13 +17,6 @@ minutes: 20
 2. `idf.py` 一条命令背后发生了什么？它是 CMake 的"翻译官"：`idf.py build` ≈ cmake + ninja，`idf.py flash` ≈ esptool 走串口协议灌固件（[P3 章](03-idf-anatomy.md)拆给你看）。
 3. 与 STM32 裸机的世界观差异：你的 `app_main` 一出生就跑在 FreeRTOS 任务里。RTOS 不是选修，是出厂配置。
 
-## 学习目标
-
-- 装好 ESP-IDF v5.5.x 并验证 `idf.py --version`。
-- 找到立创实战派 S3 板的串口号（CH340K），完成 `flash + monitor`。
-- 看到串口打印芯片信息并自动重启，说清每一行输出来自代码哪一行。
-- 能默画 ESP-IDF 工程的最小结构（顶层 CMakeLists / main 组件 / sdkconfig / build）。
-
 ## 先修
 
 - 无。唯一要求：Windows 10/11 + 立创实战派 S3 板 + 一根**带数据能力**的 Type-C 线。

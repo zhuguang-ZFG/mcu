@@ -15,17 +15,8 @@ minutes: 35
 2. **LEDC 是"8 通道 PWM 乐团"（S3 上只有低速模式）**：定时器（分辨率+频率）与通道（绑定 GPIO+占空比）两级配置。占空比渐变用硬件 `ledc_fade`（无需 CPU 逐点写）。**别套经典 ESP32 的 16 通道/高速模式**：S3 是 8 通道（`SOC_LEDC_CHANNEL_NUM=8`）、定时器位宽 14 位（`SOC_LEDC_TIMER_BIT_WIDTH=14`）、仅低速模式（soc_caps.h 核实）。
 3. **分辨率×频率是此消彼长**：`f = 时钟 / 2^位数`：位数越高，可达频率越低。舵机 50Hz 可上 14 位，音频级应用就得降位数。
 
-## 怎么读这一章
-
-- **能记住**：口诀"GPTimer 定闹钟（ISR 里快办事），LEDC 开乐团（timer 定调 channel 发声）；渐变交给硬件 fade，位数频率跷跷板。"
 - **能理解**：为什么改 duty 必须 update（双缓冲）；为什么 fade 与手动 set 不能混用；为什么 S3 不能套经典 ESP32 的结论。
 - **能用**：写出 LEDC 两级配置链；用硬件 fade 做呼吸灯；说出分辨率与频率的取舍。
-
-## 学习目标
-
-- 背出 LEDC 两级配置链：`ledc_timer_config`（频率/分辨率/速度组）→ `ledc_channel_config`（GPIO/通道/占空比）。
-- 用硬件 fade 做呼吸灯，逻辑分析仪验证占空比线性度。
-- 用 GPTimer 报警回调实现 1kHz 采样节拍，与 `vTaskDelay` 版做抖动对比。
 
 ## 先修
 

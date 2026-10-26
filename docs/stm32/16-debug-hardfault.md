@@ -15,16 +15,8 @@ minutes: 50
 2. 三份验尸报告：**CFSR**（可配置故障状态：19 个位逐位点名死因）、**BFAR**（总线故障的具体地址）、**MMFAR**（存储管理故障地址）。地址一指，凶手现形，但只有对应的 `BFARVALID` / `MMARVALID` 为 1 时才可信。
 3. 栈帧即现场：异常进入时硬件压的 8 个字里有**案发时的 PC**。从栈里挖出 PC，用 `addr2line` 反查源码行：这是"死机"和"知道死在哪一行"的区别。
 
-## 怎么读这一章
-
 - **能理解**：看 naked `HardFault_Handler` 的反汇编：`tst.w lr, #4` / `ite eq` / `mrseq r0, MSP` / `mrsne r0, PSP`。短短四条指令就解决了"案发时用的是哪个栈"。
 - **能用**：板子一死，先读 CFSR，再读栈帧 PC，`addr2line` 定位到行。所有裸机疑难，都按同一套流程破案。
-
-## 学习目标
-
-- 能手写一个打印 CFSR / HFSR / BFAR / MMFAR + 栈帧 PC / LR 的 `HardFault_Handler`。
-- 能走完"挖 PC 查行号"全流程：栈帧 → PC → `arm-none-eabi-addr2line -e fault_ctx.elf 0x0800008e`。
-- 能复现并修复五类常见死因：空指针、未对齐、除零、爆栈、优先级配置错误。
 
 ## 先修
 

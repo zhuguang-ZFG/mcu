@@ -15,17 +15,8 @@ minutes: 30
 2. **栈初始化是一场"化妆"**：`pxPortInitialiseStack`（`portable/GCC/ARM_CM4F/port.c:202`）按异常帧格式把 xPSR/PC(=任务函数)/LR/参数 r0 摆进新栈：第一次切换时，弹栈弹出来的就是"任务开始跑"。初始 xPSR = `0x01000000`（`port.c:92` 的 `portINITIAL_XPSR`，Thumb 位）。
 3. **就绪列表按优先级分数组**：`pxReadyTasksLists[prio]` 是链表数组，创建任务 = 挂进对应优先级的链表尾巴（[F3 调度器](03-scheduler.md)的货架）。
 
-## 怎么读这一章
-
-- **能记住**：口诀"TCB 是户口本，栈顶指针写第一行；新栈化个'中断妆'，一弹栈任务就出生。"
 - **能理解**：为什么 `pxTopOfStack` 必须排第一；为什么任务函数不许 return；为什么 INCLUDE_* 宏会让老工程升级后链接失败。
 - **能用**：对照源码讲出 xTaskCreate 的六步；用 GDB 指认新任务栈里的 xPSR/PC/r0。
-
-## 学习目标
-
-- 对照源码讲出 xTaskCreate 的六步：分栈 → 分 TCB → 初始化栈 → 初始化 TCB → 挂就绪表 →（必要时）触发调度。
-- 用 GDB 查看一个新任务的初始栈内容，指认 xPSR/PC/r0 的位置。
-- 估算"N 个任务"的 RAM 账单（TCB + 栈），并说出栈大小的单位是**字**不是字节。
 
 ## 先修
 

@@ -16,20 +16,8 @@ minutes: 40
 3. 选择下一个任务靠 `pxCurrentTCB` 换指针：`vTaskSwitchContext` 只是改了这个全局变量，PendSV 按新值取栈，"换魂"完成。
 4. **源码名和板子上的名字不是一回事**：内核里写的是 `xPortPendSVHandler`，`FreeRTOSConfig.h:76` 一行 `#define xPortPendSVHandler PendSV_Handler` 把它改名，启动文件向量表里躺着的才是 `PendSV_Handler`，GDB 断点要断后者，断前者什么都断不到（第五节踩过）。
 
-## 怎么读这一章
-
-- **能记住**：记忆锚点那四句（存谁、取谁、换什么指针）。
 - **能理解**：为什么硬件管一半、软件管另一半（第二节，AAPCS 的账）。
 - **能用**：在 GDB 里给 PendSV 打断点，把动画里的每一帧在真板上找到（第五节，注意断点要断改名后的符号）。
-- **能算**：一次切换压几个字（软件帧 9）、正文几条指令（27）、新任务第一帧多大（18 个字 72 字节），三个数都能在 `code/rtos/01-freertos-lab/probe.sh` 里一条命令打出来（第三、六节）。
-
-## 学习目标
-
-- 逐行讲清 port.c 的 `xPortPendSVHandler`：取栈顶/存 r4-r11/存 TCB/换指针/取新栈/弹回/异常返回，并说清它编出来是 27 条指令、90 字节正文。
-- 说清源码名与符号名的两层关系：`xPortPendSVHandler` 靠 `FreeRTOSConfig.h` 一行宏改名为 `PendSV_Handler`，断点要断后者。
-- 在 GDB 里观察 pxCurrentTCB 指针前后变化与 PSP 切换。
-- 解释为什么 PSP 指任务栈、MSP 指内核与中断栈（EXC_RETURN bit2 的作用）。
-- 讲清没跑过的任务怎么被 `pxPortInitialiseStack` 造出第一帧（第六节）。
 
 ## 先修
 

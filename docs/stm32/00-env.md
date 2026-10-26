@@ -17,13 +17,6 @@ minutes: 25
 2. 交叉编译到底"交叉"在哪？在 x86 电脑上，产出 ARM Cortex-M4 的机器码。
 3. 一个能跑的固件最少需要几个文件？四个：启动文件、链接脚本、main、Makefile。我们已经备好：[code/stm32/00-blink](https://github.com/zhuguang-ZFG/mcu/tree/main/code/stm32/00-blink)。
 
-## 学习目标
-
-- 装好四样工具并各自验证：arm-none-eabi-gcc、make、OpenOCD、ST-Link 驱动。
-- 用 `make` 构建出 elf/bin/hex/map，并说出每个产物的用途。
-- 用 `make flash` 把固件烧进霸天虎，看到 PF6 红灯以约 1Hz 闪烁。
-- （选做）用 GDB 单步到 `main`，读一次 `RCC_AHB1ENR` 寄存器。
-
 ## 先修
 
 - 无。这是起点。唯一要求：Windows 10/11 + 一块霸天虎 + 一个 ST-Link（或兼容的 J-Link/DAP）。

@@ -15,17 +15,8 @@ minutes: 30
 2. 对象模型是统一世界观：线程/信号量/互斥量/定时器/设备全部继承自 `rt_object`（名字+类型+标志），`rt_object` 就是"基类"，容器（object container）统一管理，所以 finsh 能 `list_thread`/`list_sem` 一把梭。
 3. 自动初始化有"段位"：`rt_components_board_init` → `rt_components_init` → 应用。INIT_BOARD_EXPORT/INIT_COMPONENT_EXPORT 等宏把各层初始化函数按段排好，启动时依次执行（链接脚本段机制的教科书级应用，回 [B3](../../build/03-linker-script.md)）。
 
-## 怎么读这一章
-
-- **能记住**：口诀"三层楼 + 万物对象 + 段位排队"，展开就是 RTT 三层楼、万物继承 rt_object、初始化按段自动排队。
 - **能理解**：为什么 finsh 能 `list_thread`/`list_sem`/`list_device` 一把梭；为什么 `INIT_*_EXPORT` 不用调用链就能按顺序跑；Nano 和标准版到底差在哪。
 - **能用**：对照源码指认 `rt_object`→`rt_thread` 的继承（第一个成员就是对象头）；按移植目标选 Nano 还是标准版；看懂对象容器与 INIT 段位的配合。
-
-## 学习目标
-
-- 画出 RT-Thread 三层架构图并标注每层代表文件/目录。
-- 讲清 `rt_object`→`rt_thread` 的"继承"实现（C 语言结构体嵌套，回 [C4](../../c/04-struct-abi.md)）。
-- 解释自动初始化机制：INIT_*_EXPORT 宏如何经链接段排布实现"免调用链"。
 
 ## 先修
 

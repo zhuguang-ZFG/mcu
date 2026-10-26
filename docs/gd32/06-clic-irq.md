@@ -15,19 +15,6 @@ minutes: 35
 2. **优先级变成两维**：**level（抢占级，最多 16 级，决定能否打断别人）+ priority（同级排序，最多 16 级）**，不是 ARM 那套"4 位单一优先级 + PRIGROUP 切分组 + 0x5FA 钥匙"。
 3. **"向量"换语义**：ARM 是"向量表第 N 项放 ISR 地址，硬件读表跳转"；ECLIC 是"每个中断有 shv 位，置 1 即**向量直跳**到该中断专属入口，置 0 则进公共入口再软件分发"，省了一张大表，但每个要向量的中断都得显式配入口。
 
-## 怎么读这一章
-
-- **读过 [S4 NVIC 与 EXTI](../stm32/04-nvic-exti.md)**：每节先看"与 S4 的差异表"，五处不同一次记全。
-- **没读过 S4**：先记住"中断 = 配置控制器 + 设优先级 + 写 ISR"三件事，再看 RISC-V 每件事怎么落。
-- ECLIC 寄存器精确偏移已由官方固件驱动实证（n200_eclic.h），但 nlbits 语义、shv 字段细节仍以 Bumblebee ISA 手册为准（本页标注"待 ISA 手册核验"处仅剩语义级）；中断号、level/priority 维度、向量模式都有头文件或内核手册背书。
-
-## 学习目标
-
-- 说出 ECLIC 相对 NVIC 的三处架构差异（控制器、优先级维度、向量机制）。
-- 用 `gd32vf103.h` 的 `IRQn_Type` 推出任意外设中断的 ECLIC 编号（如 `EXTI0_IRQn=25`、`USART0_IRQn=56`），并解释为什么不再"槽号 = IRQn + 16"。
-- 区分 level（抢占）与 priority（同级）的作用，知道为什么 RISC-V 不需要 ARM 的 PRIGROUP 分组钥匙。
-- 解释 MTIME 为什么不是 SysTick：内存映射、mtime/mtimecmp、mtime_toggle_a 驱动频率。
-
 ## 先修
 
 - [V0 RISC-V 工具链与启动](05-riscv-toolchain.md)（知道复位序列与启动文件）；

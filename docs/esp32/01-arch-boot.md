@@ -15,17 +15,8 @@ minutes: 35
 2. 三棒启动：ROM（固化，查 strapping 脚决定启动模式）→ 二级 bootloader（初始化 Flash/Cache、读分区表、选 app 并校验）→ app（FreeRTOS 初始化 → 创建 main task → 调你的 `app_main`）。
 3. 分区表是"地产证"：bootloader 不烧死 app 地址，而是读分区表（CSV 定义 `factory`/`ota`/`nvs`/`phy` 等）。OTA 双 app 轮换、参数存储全靠这张表。
 
-## 怎么读这一章
-
-- **能记住**：`app_main` 不是进程入口（没有 main 那套返回语义），它是 main task 里的普通函数，返回就随任务一起被回收。
 - **能理解**：为什么你的 `app_main` **不是** `main()`：它跑在一个名叫 `main` 的 FreeRTOS 任务里（`xTaskCreatePinnedToCore(main_task, "main", ...)`）。
 - **能用**：从复位到 `app_main` 的每一棒都能指到源码行号；出问题时会判断"卡在哪一棒"（ROM 打印？ bootloader 打印？ app 打印？）。
-
-## 学习目标
-
-- 说出 ESP32-S3 上电三棒各自负责什么，并能在 IDF 源码里指到证据行号。
-- 解释 `app_main` 的真实身份：它是 `main_task` 内部的一次函数调用，任务栈来自 `CONFIG_ESP_MAIN_TASK_STACK_SIZE`。
-- 读懂分区表 CSV 的三列含义（Name / Type / SubType / Size），知道 bootloader 为什么必须读它。
 
 ## 先修
 

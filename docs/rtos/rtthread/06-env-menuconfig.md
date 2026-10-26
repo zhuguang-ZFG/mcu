@@ -17,16 +17,8 @@ minutes: 25
 2. scons 管"怎么编"：SConstruct/SConscript（Python）描述源码清单与依赖，`scons -j8` 出固件；`scons --target=mdk5/iar` 还能一键导出 IDE 工程：源码是单一事实源。
 3. Env 是"开箱即用"的 Windows 环境：内置 Python/scons/gcc/menuconfig，装一个 Env，全站工具零配置（与 P0 的 IDF 安装器同思路）。
 
-## 怎么读这一章
-
 - **能理解**：为什么 `rtconfig.h` 是生成物不该手改；为什么 SConscript 用 Python 比纯 DSL 灵活；为什么"在 applications 里改驱动"换 BSP 会全丢。
 - **能用**：menuconfig 勾选组件 → `pkgs --update` 拉源码 → `scons -j8` 出固件完整跑一遍；为一个自写组件加一条 Kconfig 选项并在菜单里出现。
-
-## 学习目标
-
-- 完成一次完整流程：menuconfig 勾选软件包→pkgs --update 拉源码→scons 构建→烧录验证。
-- 读懂 BSP 目录结构：board/（板级）+ libraries/（HAL/驱动）+ applications/（应用）+ Kconfig。
-- 为一个自写组件补一个 Kconfig 选项并在 menuconfig 里出现。
 
 ## 先修
 

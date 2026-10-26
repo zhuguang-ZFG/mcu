@@ -15,17 +15,8 @@ minutes: 30
 2. CMake 不构建，它**生成**构建文件（Ninja/Makefile）：多一层抽象换来跨平台+组件化；ESP-IDF 的 `idf_component_register` 就是在这层抽象上圈地。
 3. 配置是独立一维：Kconfig 把"编不编这个组件/开不开这个功能"变成菜单（IDF 的 sdkconfig、RT-Thread 的 menuconfig 同源）：**构建系统管怎么编，Kconfig 管编什么**。
 
-## 怎么读这一章
-
-- **能记住**：Make 画图、CMake 生图、Kconfig 管编什么、构建系统管怎么编。
 - **能理解**：为什么头文件改了 Makefile 不重建是"没写依赖"；为什么 CMake 工具链文件必须在 `project()` 之前设。
 - **能用**：`make -n` 干跑看依赖图；读懂 00-blink Makefile 的每一行在画什么图。
-
-## 学习目标
-
-- 手画 00-blink 的依赖图，并用 `make -n/-d` 验证。
-- 写出一个两目录的 CMake 裸机工程骨架（顶层 + 子目录）。
-- 对照说明 ESP-IDF（CMake）与 RT-Thread（scons+Kconfig）的组件机制异同。
 
 ## 先修
 

@@ -15,20 +15,6 @@ minutes: 45
 2. **驱动链三步走，主频除以四**：mtime_toggle_a 每个边沿加 1（手册 §3.1）。GD32VF103 的 rtc_clk = core_clk_aon/4（§3.1 注记）。core_clk_aon 与 core_clk 同源同频（§2.1）。三步连起来：**mtime 自增频率 = SystemCoreClock/4**。108M 档 27MHz、1ms = 27000 tick；[V1](06-clic-irq.md) 遗留的"待核验"在此收案。
 3. **64 位是福气也是机关**：回绕要 2.2 万年，"防回绕"的担心可以退休。但 RV32 读它必须"高-低-高"循环防撕裂、写 mtimecmp 必须"先高后低"防假中断。周期 tick 没有"自动重装"：ISR 里 `mtimecmp += 周期`，忘了就只响一次。
 
-## 怎么读这一章
-
-- **读过 [S5 SysTick](../stm32/05-systick.md)**：每节先看对照表。"倒数秒表"换"顺数电表"，S5 的减一魔咒和读清魔咒在这全部消失，取而代之的是两条 64 位读写纪律。
-- **没读过 S5**：先把"查询式延时 = 读起点、算差值、无符号比较"的骨架记住，本章照此展开。
-- [V1 第六节](06-clic-irq.md)已给 MTIME 的结构速览；本章补上地址机关、延时公式与 tick 续约。RTOS 篇把 tick 落在 mtimecmp 上时，用的就是本章第五节。
-
-## 学习目标
-
-- 复述 mtime/mtimecmp 的四个"不是"：不是 CSR、不是倒数、不是 24 位、没有自动重装。
-- 引用手册三节推导 mtime 自增频率，算出 108M/72M 档的 1ms tick 数。
-- 写出防撕裂的 64 位读法与防假中断的 mtimecmp 写法，各讲出时序依据。
-- 用 64 位无符号减法写出查询式 delay_ms，并解释为什么延时常数必须跟着 SystemCoreClock 走。
-- 写出周期 tick 的 ISR 续约语句，说出它与 S5"写一次 LOAD 一劳永逸"的本质区别。
-
 ## 先修
 
 - [V0 RISC-V 工具链与启动文件](05-riscv-toolchain.md)（SystemInit 与 108M 档）；

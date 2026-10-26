@@ -15,18 +15,6 @@ minutes: 30
 2. **启动文件 `start_gd32vf103.S` 与 B4 的 `startup_stm32f407xx.s` 同构**：设 sp → 搬 .data → 清 .bss → 调 SystemInit → `call main`。**删掉的**是"开 CPACR"那一节：RV32IMAC 没有 FPU，硬浮点编译选项根本不存在。
 3. **RISC-V 复位不做"硬件两读"**：PC 由复位向量直接装入，sp 必须由启动代码显式 `la sp, __stack_top` 设好。向量表那套机制在 [V1](06-clic-irq.md) 才登场（ECLIC 的向量直跳），复位这一刻它不参与。
 
-## 怎么读这一章
-
-- **读过 [B4 启动过程](../build/04-startup.md)**：每节先看"与 B4 的差异"，再对照记，速度最快。
-- **没读过 B4**：先把"设栈 → 搬数据 → 清 bss → 进 main"这条骨架记牢，再来看 RISC-V 用什么指令写。
-- 工具链命令都能在宿主上直接敲，不用开发板。
-
-## 学习目标
-
-- 说出 `riscv-none-elf-gcc` 替代 `arm-none-eabi-gcc` 后，编译标志哪两套变了。
-- 指着 `start_gd32vf103.S` 逐段讲出与 B4 启动文件的相同工序与删除的"开 FPU"步骤。
-- 解释为什么 RISC-V 启动代码必须显式设 sp，而 Cortex-M 不用。
-
 ## 先修
 
 无（建议对照 [B0 工具链全景](../build/00-toolchain.md)、[B4 启动过程](../build/04-startup.md) 作锚点）。

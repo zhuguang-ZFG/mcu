@@ -15,17 +15,8 @@ minutes: 30
 2. Reset_Handler 的四道工序：**使能 FPU**（CPACR，硬浮点编译的生死开关）→ 搬 .data（Flash→RAM）→ 清 .bss → 跳 main：[C1](../c/01-memory-model.md) 的"三段旅程"在这里闭环。
 3. Boot 引脚决定"0 号地址是谁"：用户 Flash / 系统 Bootloader / SRAM 三种映射的区别（霸天虎正常就是从用户 Flash 启）。
 
-## 怎么读这一章
-
-- **能记住**：上电两读 + 四道工序口诀（记忆锚点那两句）。
 - **能理解**：为什么"全局变量天生有初值"是句善意的谎言（第三节的搬家现场）。
 - **能用**：打开 [startup_stm32f407xx.s](https://github.com/zhuguang-ZFG/mcu/blob/main/code/stm32/00-blink/startup_stm32f407xx.s) 逐行讲出每条指令在干什么，并在 GDB 里从复位单步验证。
-
-## 学习目标
-
-- 指着启动文件逐行讲出每条指令的作用。
-- 用 GDB 从复位开始单步，观察 sp/pc/r0-r4 在搬运循环里的变化。
-- 解释为什么向量表第一项是栈顶值而不是指令。
 
 ## 先修
 

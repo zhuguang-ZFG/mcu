@@ -15,17 +15,8 @@ minutes: 25
 2. 四件套分工：gcc（编译+链接调度）、binutils（as/ld/objcopy/objdump/nm/readelf）、gdb（调试）、newlib（给裸机用的精简 C 库）。
 3. 为什么裸机没有 glibc 可用：没有 Linux 系统调用，printf 的"输出"都不知往哪去。newlib 允许你只实现几个 `_write` 钩子就把 printf 接到串口（S7 实操）。
 
-## 怎么读这一章
-
-- **能记住**：四件套口诀"gcc 总指挥、binutils 七兵器、newlib 裸机口粮、gdb 随队医生"。
 - **能理解**：`arm-none-eabi-` 三段命名各管什么；为什么裸机不能用 glibc。
 - **能用**：`-print-search-dirs` / `-dumpspecs` 自查工具链环境，PATH 冲突能自救。
-
-## 学习目标
-
-- 说出四件套各自职责与至少一个代表工具。
-- 解释 `arm-none-eabi` 三段命名的含义（arch-vendor-os/abi）。
-- 在电脑上找出自己安装的 gcc 内建头文件/specs 的位置（`arm-none-eabi-gcc -print-search-dirs`）。
 
 ## 先修
 

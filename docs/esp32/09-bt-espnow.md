@@ -15,17 +15,8 @@ minutes: 40
 2. BLE 的主角是 GATT：服务（Service）→ 特征（Characteristic，读/写/通知三种属性）：手机"订阅通知"= 设备主动推送的通道；NimBLE vs Bluedroid 两套主机栈的取舍（体积 vs 功能全）。
 3. ESP-NOW 极简模型：无连接、配对靠 MAC、单包 250 字节、动作帧（action frame）传输：**先 esp_now_init 再 add_peer 最后 send**，回调收发送回执；与 Wi-Fi 可共存（同信道协商）。
 
-## 怎么读这一章
-
-- **能记住**：口诀"BLE 靠 GATT 立服务，ESP-NOW 认 MAC 不认网"；协议栈是预编译巨人，你调 API，跑的是几 MB 固件状态机。
 - **能理解**：为什么 S3 上 NimBLE 比 Bluedroid 更省内存；为什么 ESP-NOW 必须先 add_peer 再 send；为什么连了路由器的板子跑 ESP-NOW 会卡在信道不一致。
 - **能用**：两块板完成"按键→灯"隔空互传，看懂 send_cb 的回执计数，能用错误码分诊链路问题。
-
-## 学习目标
-
-- 说清 BLE 的 GAP（发现/连接）与 GATT（数据）两层分工。
-- 两块 S3 板（或与另一块 ESP32）完成 ESP-NOW 互传：按键→对板灯闪。
-- 解释 ESP-NOW 的"加密 peer"与广播两种模式及适用场景。
 
 ## 先修
 

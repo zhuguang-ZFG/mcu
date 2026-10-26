@@ -15,17 +15,8 @@ minutes: 45
 2. **条件写反就是没装狗**：`health_supervise` 返回 true 才 `reset_user`；返回 false 表示"该停喂了"。停止监督也不能 `delete_user`，删掉被监视的对象等于取消了超时来源。
 3. **跨核共享要真正的锁**：worker、通信、监督三个任务可能在两个核上跑。C 的 volatile 不提供互斥，也不保证一致的快照。`portMUX` 自旋锁保护 health 状态，而且要**拿到锁之后再读时间**。
 
-## 怎么读这一章
-
-- **能记住**：S3 有四种看门狗（RTC_WDT、IWDT、TWDT、XTWDT），本章只用 TWDT，IWDT 保持默认开启；TWDT 超时 2000ms、`trigger_panic=true`。
 - **能理解**：为什么注册一个 user 而不是把每个任务都 `esp_task_wdt_add`；为什么 `init` 返回 `ESP_ERR_INVALID_STATE` 时要改用 `reconfigure`；为什么用 OpenOCD 调过的板子要重新上电才能测看门狗。
 - **能用**：分别构建普通固件和故障固件；用 `fault` 命令停掉 worker 或监督，按时间预算预测复位时刻，用默认控制台的复位日志核对。
-
-## 学习目标
-
-- 能说出 TWDT 和 IWDT 各自用哪个定时器组、由什么喂、超时后的默认动作。
-- 能逐行讲清 supervise 循环里锁内做了什么、锁外做了什么，以及为什么 `reset_user` 放在锁外。
-- 能画出 `fault 1` 从命令到复位的时间线，并解释 500ms 期限和 2000ms TWDT 超时怎么叠加。
 
 ## 先修
 
@@ -73,6 +64,7 @@ worker 上报进展、supervisor 巡检确认、reset_user 喂狗、TWDT 两秒�
 | 五、故障注入与时间预算 | 两种故障、两条时间线 | 代码分析 |
 | 六、复位原因与 RTC 记录 | `esp_reset_reason` + `RTC_NOINIT_ATTR` | 代码分析 |
 | 七、OpenOCD 与看门狗 | 断点会关掉看门狗，而且不再打开 | 引脚 |
+
 ## 一、S3 的四种看门狗
 
 | 看门狗 | 监督什么 | 谁喂 | 本例 |
@@ -102,6 +94,7 @@ TWDT 有两种订阅方式：
 那监督任务自己卡死了怎么办？它不再调 `reset_user`，health user 的超时照样到期。所以必须**单独注册一个由监督任务负责的 user**：主管自己出问题时，也要有一个没人刷新的超时来源。
 
 停止监督的故障（`fault 2`）也不能写成 `esp_task_wdt_delete_user`。删掉 user，TWDT 就不再等它，超时来源没了，系统反而不会复位。正确的表现是：user 保持注册，但没人再 reset 它。
+
 ## 三、跨核共享：锁内读时间，锁外喂狗
 
 三个任务都用 `xTaskCreate` 创建，没有绑核，调度器可能把它们放到两个核上同时跑。共享的东西有 `health`、`supervisor`、`service` 和几个故障标志，全部用一个 `portMUX_TYPE` 保护：

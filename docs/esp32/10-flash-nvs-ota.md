@@ -17,17 +17,8 @@ minutes: 45
 
 回滚选项默认未启用；先配置 bootloader，再验证 NEW → PENDING_VERIFY → VALID/ABORTED 状态。不能将不开回滚时的行为套入此流程。
 
-## 怎么读这一章
-
-- **能记住**：分区表 CSV 六个字段 name/type/subtype/offset/size/flags，常见分区户口 factory/ota_0/ota_1/nvs/phy_init/spiffs/fatfs；NVS 是"追加写 + CRC + 页整理"的键值库；OTA 是双槽轮流坐庄 + otadata 记票，回滚状态机 NEW → PENDING_VERIFY → VALID/ABORTED。
 - **能理解**：为什么 app 分区 offset 要 0x10000 对齐而 size 只需 4KB 对齐；为什么"追加写"一个动作同时买到磨损均衡、掉电安全、页满整理；回滚选项为什么默认不开：不开时 NEW/PENDING_VERIFY 状态根本不会被使用，不能把默认行为套进回滚流程。
 - **能用**：改 partitions.csv 并用 `idf.py partition-table` 验证；写出 boot_count 掉电持久化最小例；走通"写入另一槽 → set_boot_partition → 重启 → 自检 → mark valid"全流程，并亲手演示一次 PENDING_VERIFY 自动回滚。
-
-## 学习目标
-
-- 读懂并修改 partitions.csv：为项目重划 app/nvs/存储区大小，`idf.py partition-table` 验证。
-- 用 NVS 实现"断电记住运行次数"，并解释页满后的自动整理行为。
-- 走通本地 OTA 流程：改版本号→新 bin→写入 ota 槽→切换→回滚演示（故意让新固件不 mark valid）。
 
 ## 先修
 
@@ -190,7 +181,7 @@ void app_main(void)
 
 - **首次启动**：第 ③ 步 NOT_FOUND，count 保持初值 0，打印 1："读不到旧值"被翻译成"第一次"，不需要额外的标志位。
 - **重启不等于丢数据**：断电、按 EN 复位、monitor 里 Ctrl-T Ctrl-R 热复位，三种方式对 NVS 毫无区别，重启后读到的都是上次 commit 落盘的那个值。掉电安全不靠运气，靠的是第二节"半条目 CRC 不过被当不存在"的机制。
-- **第 ④ 步在 Flash 里发生了什么**：set 没有碰旧条目，而是在活动页追加了一个新条目（同 key 以最新为准）；重启几十次后活动页写满，库自动做 Erasing 整理：学习目标里那句"页满后的自动整理行为"，你一行代码都不用写。
+- **第 ④ 步在 Flash 里发生了什么**：set 没有碰旧条目，而是在活动页追加了一个新条目（同 key 以最新为准）；重启几十次后活动页写满，库自动做 Erasing 整理（页满后的自动整理行为），你一行代码都不用写。
 
 举一反三：把"每次启动 +1"换成"上次连的 Wi-Fi""累计运行秒数""报警次数"：所有"断电要记住的事"都是这一个模式的变体。
 

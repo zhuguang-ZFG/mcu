@@ -15,17 +15,8 @@ minutes: 35
 2. Kconfig 三段论：组件自带的 `Kconfig` 文件描述选项 → `menuconfig` 写 `sdkconfig`（文本） → 构建生成 `sdkconfig.h`（宏）。归拢成一句：**菜单 → 文本 → 宏**，代码里 `#if CONFIG_XXX` 应声生效。
 3. `idf.py` 是司令不是士兵：`idf.py build` = cmake 配置 + 构建器干活；`flash` 要调 esptool；`menuconfig` 要调 kconfig 工具，它是调度层，不是编译器。
 
-## 怎么读这一章
-
-- **能记住**：**组件自报家门，Kconfig 三段变身，idf.py 只当司令。**
 - **能理解**：你那个只有三行的顶层 `CMakeLists.txt` 为什么就够了：`include($ENV{IDF_PATH}/tools/cmake/project.cmake)` 一行把整套规则拉进了你的工程。
 - **能用**：新建一个自己的组件（哪怕只是把 LED 驱动从 `main` 里拆出去），知道该写哪几行；出构建错误时知道去翻 `sdkconfig` 还是 `CMakeLists.txt`。
-
-## 学习目标
-
-- 说清 `idf_component_register` 各参数的含义，并能指出 `main` 组件"特殊"在哪里。
-- 走通 Kconfig 三段论：在源码里找到 Kconfig 选项、在 `sdkconfig` 里找到它被固化成什么、在代码里看到 `CONFIG_*` 被使用。
-- 知道 `idf.py` 的子命令分别调用了什么（构建系统 / esptool / kconfig 工具）。
 
 ## 先修
 

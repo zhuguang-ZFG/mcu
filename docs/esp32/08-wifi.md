@@ -15,16 +15,8 @@ minutes: 50
 2. 连接状态机就六个状态：init→config→start→connect→(SCAN_DONE/AUTH/DISASSOC 中间态)→GOT_IP。`WIFI_EVENT_STA_DISCONNECTED` 必须处理**重连策略**，否则路由器一重启设备就永远离线。
 3. LwIP 在幕后：拿到 IP 后才有 socket：`IP_EVENT_STA_GOT_IP` 是"网络可用"的唯一合法起点，之前调 connect() 都是空气。
 
-## 怎么读这一章
-
 - **能理解**：为什么 handler 运行在事件任务上下文、不能阻塞；为什么断线重连要用任务/定时器外置而不是在 handler 里 sleep。
 - **能用**：写出"教科书骨架"六步初始化 + 带指数退避的重连，看懂 `idf.py flash monitor` 日志里的状态迁移。
-
-## 学习目标
-
-- 写出"教科书骨架"：nvs_init→netif_init→event_loop→wifi_init→注册回调→start→connect，并说出每步失败后果。
-- 实现带指数退避的重连（断线后 1s/2s4s…上限 60s），并用路由器重启实测。
-- 解释 handler 运行在事件任务上下文，为什么不能阻塞（与守护任务纪律同构）。
 
 ## 先修
 

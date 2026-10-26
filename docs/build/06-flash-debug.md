@@ -15,17 +15,8 @@ minutes: 30
 2. 烧录=主机帮你执行擦写：OpenOCD 把一小段"擦写算法"灌进 RAM，让它替自己干活（所以 program 命令要选对 target 配置）。
 3. 断点有两副面孔：硬件断点（FPB 比较器，数量有限，Flash 里也能下）vs 软件断点（改写成 BKPT 指令，RAM 才行，数量不限）；GDB 的 `hbreak` 与 `break` 由此分家。
 
-## 怎么读这一章
-
-- **能记住**：SWD 三根线通天；断点分软硬：Flash 用硬，RAM 随意。
 - **能理解**：为什么烧录要把"擦写算法"灌进 RAM 代劳；为什么 Flash 里的代码用 `break` 有时失败而 `hbreak` 总能成。
 - **能用**：OpenOCD 常驻 + GDB 连上，完成 halt/load/读写内存/单步/断点一整套调试流。
-
-## 学习目标
-
-- 画出"PC→OpenOCD→ST-Link→SWD→DP/AP→总线"的链路，并指出 program 命令在每一环干什么。
-- 完成一次 GDB 实战：halt、读写内存、单步、软硬断点各一次。
-- 解释为什么 Flash 里的代码用 `break` 有时失败而 `hbreak` 总能成。
 
 ## 先修
 

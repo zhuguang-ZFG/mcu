@@ -15,18 +15,8 @@ minutes: 40
 2. 中断分配器是"总机"：S3 有 **99 个中断源编号**（实测 `ETS_MAX_INTR_SOURCE = 99`，编号 0–98），经中断矩阵分配到两个核的 **7 级**中断，`esp_intr_alloc` 把外设源、优先级、所属核绑在一起。
 3. 双核 SMP 的共享规矩：FreeRTOS 在 S3 上是 SMP 单实例（任务可跑任意核，也可 `xTaskCreatePinnedToCore` 钉核），核间共享数据用自旋锁/`portMUX`，**中断与任务、核与核之间 `volatile` 完全不够**（回 [C3](../c/03-volatile.md) 的边界清单）。
 
-## 怎么读这一章
-
-- **能记住**：**Flash 里的代码在 Cache 关闭时等于不存在；ISR 要么搬进 IRAM，要么接受被推迟。**
 - **能理解**：`IRAM_ATTR` 只是往链接器段里一塞（`".iram1"`），真正保证"能在关 Cache 时跑"的是**整条调用链**都在 IRAM，包括它读的常量。
 - **能用**：给一个外设挂中断时，能正确选 `ESP_INTR_FLAG_LEVELx` 与 `ESP_INTR_FLAG_IRAM`，并知道什么时候必须用 `portMUX` 而不是 `volatile`。
-
-## 学习目标
-
-- 说清 Cache 禁用窗口下"代码必须可达"的约束，并指出 `IRAM_ATTR` 与 `ESP_INTR_FLAG_IRAM` 在源码里的定义位置。
-- 能解释 `esp_intr_alloc` 的五个参数，特别是 `source`（中断源）与 `flags`（优先级/IRAM/边沿）如何决定绑到哪个核。
-- 能在双核场景下给出正确的共享数据方案：`portMUX_TYPE` 自旋锁 / 队列 / 任务通知，并说清为什么 `volatile` 不够。
-- 与 [S4 NVIC](../stm32/04-nvic-exti.md) 对照，说清单核 NVIC 与 ESP32 中断矩阵的差异。
 
 ## 先修
 

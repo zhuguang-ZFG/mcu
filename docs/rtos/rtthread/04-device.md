@@ -15,17 +15,8 @@ minutes: 55
 2. 注册与查找两分离：驱动 `rt_device_register(dev, "uart1")` 挂进对象容器；应用 `rt_device_find("uart1")` 按名取柄：**名字是接口，实现可替换**。
 3. 框架之上的"设备类型"再封装：PIN（GPIO）、UART（串口带缓冲/回调）、I2C/SPI bus，越往上层，应用越无感；finsh 的 `list_device` 一屏看全家。
 
-## 怎么读这一章
-
-- **能记住**：口诀"驱动填表、应用喊名；register 挂容器、find 取柄；ops 一脉 Linux，PIN 是便捷壳、UART 走回调"。
 - **能理解**：为什么 register 和 find 要两分离而不是"创建即用"；为什么 PIN 不直接用 `rt_device_read/write` 而单独一套 `rt_pin_*`；为什么 UART 的 `rx_indicate` 在中断上下文而不是线程。
 - **能用**：PIN 三行点灯、UART 中断接收回显、把蜂鸣器封成一个能被 `list_device` 看见的 `rt_device`。
-
-## 学习目标
-
-- 画出"应用→rt_device API→ops 表→驱动→寄存器"的调用链，并标注每层归属（框架/驱动/BSP）。
-- 用 PIN 设备点灯：rt_pin_mode/rt_pin_write，对照 [S3](../../stm32/03-gpio.md) 的手写版谈封装得失。
-- 用 UART 设备（中断接收+回调）实现串口回显，与 S7 手写版/F4 队列版三方对照。
 
 ## 先修
 

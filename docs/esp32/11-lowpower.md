@@ -15,17 +15,8 @@ minutes: 35
 2. 唤醒源全家桶：定时器（esp_sleep_enable_timer_wakeup）、GPIO/EXT0/EXT1、触摸、UART、ULP：唤醒源决定系统怎么设计（定时上报选定时器，按键唤醒选 EXT）。
 3. ULP 协处理器是"守夜人"：主核睡死时，这颗超低功耗小核可跑简单程序（读 ADC/I2C、数脉冲）：达到阈值才唤醒主核，电池产品的终极杀器（FSM/RISC-V 两代 ULP 简介）。
 
-## 怎么读这一章
-
-- **能记住**：Light 眯一会有记忆、Deep 睡死靠 RTC 留遗言、ULP 守夜：唤醒即复位，状态藏 RTC。
 - **能理解**：为什么 Deep sleep 唤醒=复位重启（数字域断电，CPU/RAM 全没）；为什么 EXT0/EXT1 只能用 RTC GPIO（普通 GPIO 在数字域，断电就废）；为什么 Wi-Fi 没关就睡电流下不来（射频/协议栈还在跑）。
 - **能用**：写出周期上报器六步骨架（醒来→采→连→发→关 Wi-Fi→睡），用 RTC_DATA_ATTR 跨复位保存计数，用 esp_sleep_get_wakeup_cause 分诊唤醒原因。
-
-## 学习目标
-
-- 背出 Light/Deep 在"RAM/外设/唤醒方式/唤醒后状态"四列的差异。
-- 实现 Deep sleep + 定时唤醒的周期上报器，并用 RTC 内存（RTC_DATA_ATTR）跨复位保存计数。
-- 电流实测：活跃/Light/Deep 三档记录（[E06](../lab/e06-lowpower-current.md) S3 版）。
 
 ## 先修
 
