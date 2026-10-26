@@ -50,12 +50,26 @@ def _chip(x: float, y: float, w: float, h: float, label: str = "", texts: list[s
     return "".join(parts)
 
 
-def _hw_part(pid: str, items: list[str], label: str, view: str) -> str:
-    """分部隔页：御舆纯矢量习语（路线 B，零滤镜零 id，印前保持矢量可搜索）。
+def _hw_filter(fid: str, scale: float = 3.2, seed: int = 7) -> str:
+    """手绘抖动滤镜（与 88 枚章首题图同一冻结参数）。
 
-    手绘感=笔压分层双描（淡影 1.4 @ .35 + 主线 2，与封面同款）。
-    分支形状自带 fill={SOFT}——淡影层 suppress fill，否则只是白付一遍填充字节。
-    文字直接叠最上层，保持清晰与可搜索。
+    feTurbulence baseFrequency 0.013（低频大幅读作"手画的线"）+ feDisplacementMap。
+    fid 逐图唯一——封面、10 张分部图、88 张题图内联进同一 HTML，重名会互相顶掉。
+    实证：滤镜在本书印前管线（Chromium 打印）不触发光栅化，全书位图仍只有 6 张实物照片。
+    """
+    return (
+        f'<filter id="{fid}" x="-5%" y="-5%" width="110%" height="110%">'
+        f'<feTurbulence type="fractalNoise" baseFrequency="0.013" numOctaves="2" seed="{seed}" result="n"/>'
+        f'<feDisplacementMap in="SourceGraphic" in2="n" scale="{scale}"/></filter>'
+    )
+
+
+def _hw_part(pid: str, items: list[str], label: str, view: str) -> str:
+    """分部隔页：与章首题图同一习语（抖动滤镜 + 双描笔压分层）。
+
+    分部隔页不走滤镜（实测：封面/隔页级大图带滤镜会在印前光栅化成位图，
+    章首小图不会；大图用双描笔压分层表达手绘感）。分支形状自带 fill={SOFT}——
+    淡影层 suppress fill，否则只是白付一遍填充字节。文字直接叠最上层。
     """
     shapes = "".join(i for i in items if not i.startswith("<text"))
     texts = "".join(i for i in items if i.startswith("<text"))
@@ -73,7 +87,7 @@ COVER_INK = "var(--cover-ink, #123b33)"
 def cover_art() -> str:
     """封面主视觉：手绘开发板俯视（Blue Pill 风格长条板）。
 
-    习语与章首题图一致：御舆纯矢量双描笔压分层（主线 2 + 淡影
+    习语与章首题图一致：抖动滤镜 + 双描笔压分层（主线 2 + 淡影
     1.4 opacity .35）+ 整板微倾 -1°。QFP 主芯片+四边引脚、上下排针焊盘、USB、
     晶振+负载电容、复位键、LED+限流电阻、BOOT 跳线、SWD 四针、45° 走线与过孔、
     四角固定孔。stroke 走 --cover-ink（站点亮/暗双态、打印墨绿）。丝印文字在
@@ -145,7 +159,8 @@ def cover_art() -> str:
         p.append(f'<circle cx="{cx}" cy="{cy}" r="1.7" stroke-width="1.1"/>')
     lines = "".join(p)
     body = (
-        # 整板微倾 -1°：破掉"绝对水平"的机器感；纯矢量双描（主线 + 0.35 淡影补笔）
+        # 整板微倾 -1°：破掉"绝对水平"的机器感；双描笔压（主线 + 0.35 淡影补笔）。
+        # 封面不走滤镜：实测大图带滤镜会光栅化（题图小图不会）。
         f'<g transform="rotate(-1 160 95)" fill="none" stroke="{c}" '
         f'stroke-linecap="round" stroke-linejoin="round">'
         f'<g stroke-width="1.4" opacity="0.35">{lines}</g>'
