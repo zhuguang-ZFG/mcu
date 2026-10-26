@@ -27,6 +27,12 @@ from pathlib import Path
 
 import fitz  # PyMuPDF
 
+# Windows 控制台默认 GBK：模块导入即切 UTF-8，避免子进程/提前打印把 ✓ 炸成
+# UnicodeEncodeError（三次踩坑后钉死在导入期）。StringIO 场景无 reconfigure，跳过。
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+
 BOOK_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(BOOK_DIR))
 from build_html import load_manifest  # noqa: E402
@@ -564,6 +570,45 @@ def check_min_font(document: fitz.Document) -> list[str]:
     return []
 
 
+RASTER_BUDGET = 20
+
+
+def check_raster_budget(document: fitz.Document) -> list[str]:
+    """光栅预算：全书位图不得超过真实照片的数量级。
+
+    题图/封面/分部图都是纯矢量（御舆路线）；一旦哪次构建把滤镜版题图排进去，
+    每枚题图都会变成一张位图，总数会从个位数跳到上百，而版面密度门看不出来。
+    这里只设一个宽松上限（真实硬件照片 6 张），超过即视为题图被栅格化。
+    """
+    pages = [(i + 1, len(document[i].get_images())) for i in range(document.page_count)]
+    total = sum(n for _, n in pages)
+    if total > RASTER_BUDGET:
+        top = "、".join(f"p{p}×{n}" for p, n in pages if n)[:120]
+        return [f"光栅图 {total} 张 > 预算 {RASTER_BUDGET}（题图可能被滤镜版栅格化）：{top}"]
+    return []
+
+
+def body_volume_line(document: fitz.Document, manifest: dict) -> str:
+    """体量对账（信息项，不做门禁）：页码之外再给一个人能读的规模数字。
+
+    2026-10-26 有过一次 1064→1046 页的漂移，12 门全绿却谁也说不清为什么——
+    后来查明是另一条会话在 80 章里删了 749 行。删改本身是正常编辑，不该拦；
+    但「页数变了、体量变了」应该在每次检查的输出里看得见，而不是靠猜。
+    """
+    chars = 0
+    for part in manifest["parts"]:
+        for name in part.get("files", []):
+            path = BOOK_DIR.parent / "docs" / name
+            if path.is_file():
+                text = re.sub(r"\s+", "", path.read_text(encoding="utf-8"))
+                chars += len(text)
+    pdf_chars = sum(len(re.sub(r"\s+", "", document[i].get_text()))
+                    for i in range(document.page_count))
+    ratio = pdf_chars / chars if chars else 0
+    return (f"体量：源文 {chars:,} 字 / PDF {pdf_chars:,} 字（×{ratio:.2f}）"
+            f"，{document.page_count} 页")
+
+
 def main(argv: list[str] | None = None) -> int:
     # 同 build_print：Windows GBK 控制台会在 ✓/✗ 输出时炸 UnicodeEncodeError。
     # 守卫 hasattr：测试用 redirect_stdout(StringIO) 时 StringIO 没有 reconfigure。
@@ -594,11 +639,13 @@ def main(argv: list[str] | None = None) -> int:
         ("最小字号", lambda: check_min_font(document)),
         ("纸边裁字", lambda: check_text_bounds(document)),
         ("大纲与元数据", lambda: check_outline_and_metadata(document, manifest)),
+        ("光栅预算", lambda: check_raster_budget(document)),
     ):
         problems = check()
         status = "✓" if not problems else "✗"
         print(f"{status} {name}")
         failures.extend(problems)
+    summary = body_volume_line(document, manifest)
     document.close()
     for problem in failures[:MAX_REPORTED]:
         print(f"  - {problem}", file=sys.stderr)
@@ -606,6 +653,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"✗ 印前契约未通过：{len(failures)} 项问题", file=sys.stderr)
         return 1
     print("印前契约：全部通过")
+    print(summary)
     return 0
 
 

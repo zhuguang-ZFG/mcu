@@ -171,11 +171,61 @@ def compare(orig_path: Path, new_path: Path) -> list[str]:
     return errors
 
 
+
+def _subseq(small: list[str], big: list[str]) -> bool:
+    it = iter(big)
+    return all(x in it for x in small)
+
+
+def compare_additive(orig_path: Path, new_path: Path) -> list[str]:
+    """内容增补轮的判据（解释性增写，不是逐字润色）。
+
+    与 compare() 的区别：允许**新增**散文与行内代码（讲解新概念时必然要引新符号），
+    但仍禁止改/删既有受保护内容、禁止发明新事实值：
+
+    1. 围栏代码块：与原文逐字节一致
+    2. 表格行 / 链接目标 / 标题：原文序列必须**保序出现在新文件里**（不许改写/删除）
+    3. 行内代码：原文序列保序出现（新增允许）
+    4. 事实 token：新出现的 token 必须已存在于原文**全文**（含表格/代码）——
+       即可以"把表里的数字讲进正文"，不许出现原文没有的数值
+    5. 散文破折号：仍受每章 ≤2 限制
+    """
+    errors: list[str] = []
+    orig_bytes, new_bytes = orig_path.read_bytes(), new_path.read_bytes()
+    if b"\r" in new_bytes:
+        errors.append("精修稿含 CR（必须纯 LF）")
+    orig, new = orig_bytes.decode("utf-8"), new_bytes.decode("utf-8")
+    po, pn = extract_protected(orig), extract_protected(new)
+    if po.fenced_code != pn.fenced_code:
+        errors.append("围栏代码块被改动")
+    for name, a, b in (
+        ("表格行", po.tables, pn.tables),
+        ("链接目标", po.link_targets, pn.link_targets),
+        ("标题", po.headings, pn.headings),
+        ("行内代码（原文保序）", po.inline_code, pn.inline_code),
+    ):
+        if not _subseq(a, b):
+            errors.append(f"{name}：原文序列未能保序保留（被改写或删除）")
+    if po.frontmatter != pn.frontmatter:
+        errors.append("frontmatter 不一致")
+    full = fact_tokens(orig)
+    invented = fact_tokens(prose_surface(new)) - full
+    if invented:
+        errors.append(f"出现原文没有的事实值：{dict(invented.most_common(5))}")
+    pd = prose_surface(new).count("——")
+    if pd > 2:
+        errors.append(f"散文面破折号 {pd} 处（上限 2）")
+    return errors
+
 def main() -> int:
     argv = sys.argv[1:]
     if not argv:
         print(__doc__)
         return 2
+    additive = False
+    if argv and argv[0] == "--additions":
+        additive = True
+        argv = argv[1:]
     pairs: list[tuple[Path, Path]] = []
     if argv[0] == "--batch":
         for line in Path(argv[1]).read_text(encoding="utf-8").splitlines():
@@ -189,7 +239,7 @@ def main() -> int:
     total_errors = 0
     print(f"{'文件':<46} {'——散文':>10} {'——保护':>10} {'一句话':>8} {'记住：':>8} {'下一站':>8}")
     for orig_path, new_path in pairs:
-        errors = compare(orig_path, new_path)
+        errors = compare_additive(orig_path, new_path) if additive else compare(orig_path, new_path)
         total_errors += len(errors)
         co = count_markers(orig_path.read_text(encoding="utf-8"))
         cn = count_markers(new_path.read_text(encoding="utf-8"))

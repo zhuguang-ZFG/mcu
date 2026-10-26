@@ -29,6 +29,12 @@ import tempfile
 import time
 from pathlib import Path
 
+# Windows 控制台默认 GBK：模块导入即切 UTF-8，避免子进程/提前打印把 ✓ 炸成
+# UnicodeEncodeError（三次踩坑后钉死在导入期）。StringIO 场景无 reconfigure，跳过。
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+
 BOOK_DIR = Path(__file__).resolve().parent
 REPO_ROOT = BOOK_DIR.parent
 sys.path.insert(0, str(BOOK_DIR))
@@ -268,7 +274,7 @@ def render_pdf(page_path: Path, pdf_path: Path, bleed_mm: float, browser_overrid
   for (const t of Object.keys(aliasMap)) index[t] = [];
   pages.forEach((pg, i) => {{
     // 结构性页面不算"出现"：封面/版权/导读/目录/书尾页，以及术语表
-    // （附录 D）与索引（附录 G）自身——否则每个词都先指向附录/目录
+    // （附录 D）与索引（附录 H）自身——否则每个词都先指向附录/目录
     // 而不是正文（实测 ABI 首次命中 1080 = 附录 D 续页；IDF 命中目录）。
     // paged.js 克隆时分页盒保留祖先链，id 转为 data-id。
     if (pg.querySelector('.cover,.copyright,.contents,.part-divider,[data-id="how-to-read"],'
@@ -512,6 +518,23 @@ def report(pdf_path: Path, bleed_mm: float) -> int:
     return 0 if ok_size and not type3 else 1
 
 
+def assert_vector_art(html: str) -> None:
+    """印前硬门：题图必须全是御舆纯矢量，否则拒绝排版。
+
+    由来（2026-10-26）：另一条会话会直接把滤镜版题图写回 chapter-art，写作与
+    构建并发时 HTML 里就可能夹着 feTurbulence——滤镜会把 88 枚题图全部栅格化，
+    印前 PDF 多出上百张位图，而 12 门里没有任何一项因此变红（版面利用率只看
+    单页密度，不看图片数量）。这里在排版前按快照断言，把「静默降质」变成硬失败。
+    """
+    if "feTurbulence" in html:
+        raise SystemExit(
+            "✗ 印前中止：HTML 里含 feTurbulence（题图被回退成滤镜版）。"
+            "先跑 .temp/collect-art.py --apply 收编纯矢量题图，再重新 build_html。"
+        )
+    if "<filter" in html:
+        raise SystemExit("✗ 印前中止：HTML 里含 <filter>，题图不是纯矢量版本。")
+
+
 def main(argv: list[str] | None = None) -> int:
     # Windows 控制台默认 GBK，报告里的 ✓/✗/中文会在收尾打印时炸
     # UnicodeEncodeError；入口即切 UTF-8（对已是 UTF-8 的环境是无操作）。
@@ -541,6 +564,7 @@ def main(argv: list[str] | None = None) -> int:
     if options.sample:
         html = slice_sample(html, options.sample)
     manifest = build_html.load_manifest()
+    assert_vector_art(html)
     html, svg_count = inline_svg_images(html)
     if svg_count:
         print(f"印前排版：内联 {svg_count} 张 SVG 图（父文档字体进入图内文字）")
@@ -570,7 +594,7 @@ def main(argv: list[str] | None = None) -> int:
         index_html = idx_mod.render_index_html(entries, manifest["title"])
         # 目录/索引/页脚页码同源：前置页 --pagedjs-page-counter-increment: 0，
         # 引擎的 target-counter 与 counter(page) 都从 1 起，无需字面注入。
-        toc_entry = '<li><a href="#appendix-index">附录 G 术语索引</a></li>'
+        toc_entry = '<li><a href="#appendix-index">附录 H 术语索引</a></li>'
         # 目录里每个分部都以 </ol></section> 收尾，索引要进最后的附录区
         tail_marker = "</ol></section>"
         tail_at = html.rfind(tail_marker)

@@ -210,6 +210,11 @@
       "id": "appendix-faq",
       "title": "附录 F 常见问题 FAQ",
       "file": "F-常见问题.md"
+    },
+    {
+      "id": "appendix-oss-map",
+      "title": "附录 G 开源项目与社区地图",
+      "file": "G-开源地图.md"
     }
   ],
   "sources": {
