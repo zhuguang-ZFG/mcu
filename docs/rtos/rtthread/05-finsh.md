@@ -189,7 +189,7 @@ finsh 不是免费的，上板前要算账：
 ## 短自测
 
 1. MSH_CMD_EXPORT 的宏展开做了什么？为什么用链接段而不是运行时注册表？
-<details><summary>参考答案</summary>宏定义一个 {名字, 描述, 函数指针} 结构体，用 SECTION 把它放进 FSymTab 段、用 used 防止编译器删除。用链接段而不是运行时注册表的好处：编译期就把所有命令收齐，启动即可用、无需额外 init 代码；省掉运行时注册的 RAM 开销和时序问题；与 R0 自动初始化段是同一手法。</details>
+<details><summary>参考答案</summary>宏定义一个 {名字， 描述， 函数指针} 结构体，用 SECTION 把它放进 FSymTab 段、用 used 防止编译器删除。用链接段而不是运行时注册表的好处：编译期就把所有命令收齐，启动即可用、无需额外 init 代码；省掉运行时注册的 RAM 开销和时序问题；与 R0 自动初始化段是同一手法。</details>
 
 2. 命令函数为什么必须是 int func(int argc, char **argv) 签名？签名不符会怎样？
 <details><summary>参考答案</summary>解析器四步最后一步按 (int argc, char** argv) 这个原型把切好的参数压栈调用，签名是解析器和命令之间的 ABI。写成 void func(void) 或多带参数，栈布局对不上：argv 指针被当成你的"参数"、argc 落到野地址，一调就 HardFault。这是 finsh 崩溃的头号原因。</details>

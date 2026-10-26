@@ -177,16 +177,16 @@ if( pxMutexHolderTCB->uxPriority < pxCurrentTCB->uxPriority )  /* 持锁者比�
 ## 短自测
 
 1. `xSemaphoreGive` 为什么不阻塞？从宏展开回答。
-<details><summary>参考答案</summary>它展开为 xQueueGenericSend(队列, NULL, semGIVE_BLOCK_TIME, queueSEND_TO_BACK),而 semGIVE_BLOCK_TIME=0,等待时间为零,满了立刻返回错误,不存在挂起。</details>
+<details><summary>参考答案</summary>它展开为 xQueueGenericSend(队列， NULL, semGIVE_BLOCK_TIME, queueSEND_TO_BACK),而 semGIVE_BLOCK_TIME=0,等待时间为零，满了立刻返回错误，不存在挂起。</details>
 
 2. 互斥锁创建时为什么要调一次 xQueueGenericSend？
-<details><summary>参考答案</summary>让计数初始为1="钥匙挂在门上",第一个 take 者直接拿到。二值信号量不送(初始0=事件未发生),计数信号量送满 N 次,初始计数区分三种选型。</details>
+<details><summary>参考答案</summary>让计数初始为 1="钥匙挂在门上",第一个 take 者直接拿到。二值信号量不送(初始 0=事件未发生),计数信号量送满 N 次，初始计数区分三种选型。</details>
 
 3. `xTaskPriorityInherit` 的三步是什么？为什么必须"搬表"？
-<details><summary>参考答案</summary>判(持锁者更低)→改(uxPriority=等待者优先级)→搬(从旧就绪链表摘除、portRESET 记账、挂进新链表)。不搬表则调度器仍在旧链表/旧位图位里找它,改了优先级也轮不到它跑,继承失效。</details>
+<details><summary>参考答案</summary>判(持锁者更低)→改(uxPriority=等待者优先级)→搬(从旧就绪链表摘除、portRESET 记账、挂进新链表)。不搬表则调度器仍在旧链表/旧位图位里找它，改了优先级也轮不到它跑，继承失效。</details>
 
 4. 为什么二值信号量不能替代互斥锁保护共享数据？
-<details><summary>参考答案</summary>二值信号量没有持有者与继承逻辑(xTaskPriorityInherit 只在互斥锁 take 失败路径被调用)。用它护数据时,H 等、L 持、M 插队,反转完整上演,`DEMO_SCENE=6` 那出不带 `USE_MUTEX=1` 的剧本就是演这件事的。</details>
+<details><summary>参考答案</summary>二值信号量没有持有者与继承逻辑(xTaskPriorityInherit 只在互斥锁 take 失败路径被调用)。用它护数据时，H 等、L 持、M 插队，反转完整上演，`DEMO_SCENE=6` 那出不带 `USE_MUTEX=1` 的剧本就是演这件事的。</details>
 
 ## 对照表：本章概念 → 源码落点
 

@@ -50,17 +50,12 @@ def _chip(x: float, y: float, w: float, h: float, label: str = "", texts: list[s
     return "".join(parts)
 
 
-# 手绘风=笔压分级 + 曲线（2026-10-26 路线 B 拍板）：feTurbulence/feDisplacementMap
-# 已全线退役——印前引擎会把滤镜子树光栅化，纯矢量才可搜索。
-
-
 def _hw_part(pid: str, items: list[str], label: str, view: str) -> str:
-    """分部隔页：御舆纯矢量习语（2026-10-26 路线 B 拍板）。
+    """分部隔页：御舆纯矢量习语（路线 B，零滤镜零 id，印前保持矢量可搜索）。
 
-    零滤镜/零 id（同页多图零撞车，印前不 rasterise）；手绘感=笔压分层双描
-    （淡影 1.4 @ .35 + 主线 2，与封面同款）+ 各分支自带曲线/圆角。
-    分支形状自带 fill={SOFT}——淡影层必须 suppress fill，否则只是白付
-    一遍填充字节（fill 已把 stroke 盖住，影子层看不见）。文字直接叠最上层。
+    手绘感=笔压分层双描（淡影 1.4 @ .35 + 主线 2，与封面同款）。
+    分支形状自带 fill={SOFT}——淡影层 suppress fill，否则只是白付一遍填充字节。
+    文字直接叠最上层，保持清晰与可搜索。
     """
     shapes = "".join(i for i in items if not i.startswith("<text"))
     texts = "".join(i for i in items if i.startswith("<text"))
@@ -76,12 +71,13 @@ COVER_INK = "var(--cover-ink, #123b33)"
 
 
 def cover_art() -> str:
-    """封面主视觉：御舆式纯矢量手绘开发板俯视（Blue Pill 风格长条板）。
+    """封面主视觉：手绘开发板俯视（Blue Pill 风格长条板）。
 
-    路线 B（2026-10-26 拍板）：零滤镜。手绘感=双描笔压分层（主线 2 + 淡影
-    1.4 opacity .35，取代滤镜的"墨水重描"）+ 整板微倾。QFP 主芯片+四边引脚、
-    上下排针焊盘、USB、晶振+负载电容、复位键、LED+限流电阻、BOOT 跳线、
-    SWD 四针、45° 走线与过孔、四角固定孔。stroke 走 --cover-ink。
+    习语与章首题图一致：御舆纯矢量双描笔压分层（主线 2 + 淡影
+    1.4 opacity .35）+ 整板微倾 -1°。QFP 主芯片+四边引脚、上下排针焊盘、USB、
+    晶振+负载电容、复位键、LED+限流电阻、BOOT 跳线、SWD 四针、45° 走线与过孔、
+    四角固定孔。stroke 走 --cover-ink（站点亮/暗双态、打印墨绿）。丝印文字在
+    滤镜组外，保持清晰且可搜索。
     """
     c = COVER_INK
     p: list[str] = []  # 板子线稿
@@ -149,8 +145,9 @@ def cover_art() -> str:
         p.append(f'<circle cx="{cx}" cy="{cy}" r="1.7" stroke-width="1.1"/>')
     lines = "".join(p)
     body = (
-        # 整板微倾 -1°：破掉"绝对水平"的机器感；双描=主线 + 0.35 淡影补笔
-        f'<g transform="rotate(-1 160 95)" fill="none" stroke="{c}" stroke-linecap="round" stroke-linejoin="round">'
+        # 整板微倾 -1°：破掉"绝对水平"的机器感；纯矢量双描（主线 + 0.35 淡影补笔）
+        f'<g transform="rotate(-1 160 95)" fill="none" stroke="{c}" '
+        f'stroke-linecap="round" stroke-linejoin="round">'
         f'<g stroke-width="1.4" opacity="0.35">{lines}</g>'
         f'<g stroke-width="2">{lines}</g></g>'
         + "".join(t)

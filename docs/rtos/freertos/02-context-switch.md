@@ -98,7 +98,7 @@ portNVIC_SHPR3_REG |= portNVIC_SYSTICK_PRI;   /* port.c:67 → portMIN_INTERRUPT
 > | `( configMAX_SYSCALL_INTERRUPT_PRIORITY & ~ucMaxPriorityValue ) == 0` | `port.c:383` | 写了超出硬件优先级位宽的数 → 低位被吃掉，语义漂移 |
 > | `( configMAX_SYSCALL_INTERRUPT_PRIORITY & 0x1U ) == 0` | `port.c:413` | 填奇数 → 某些芯片上会漏掉一批本该被屏蔽的中断（注释举例：设成 5 时 4 和 5 的行为反直觉） |
 >
-> 换句话说：**开机就断言炸，比"一周崩一次"好得多**。老说法里那个"偶发灵异 bug"，今天的形态是启动即死，除非你把 `configASSERT` 定义成空，那它才会退化成人格分裂式的偶发崩溃。常见坑一节还会点名。
+> **开机就断言炸，比"一周崩一次"好得多**。老说法里那个"偶发灵异 bug"，今天的形态是启动即死，除非你把 `configASSERT` 定义成空，那它才会退化成人格分裂式的偶发崩溃。常见坑一节还会点名。
 
 ## 二、软硬分工：硬件管一半，软件管另一半
 

@@ -80,7 +80,7 @@ typedef struct QueueDefinition
 } xQUEUE;
 ```
 
-读三遍那个 `union`：**队列和信号量共享同一个结构体**，信号量就是 `uxItemSize=0` 的队列（没有数据只有计数），互斥锁再多带一个持有者指针。这就是为什么 F5 的信号量 API 全是 `xQueueGenericSend/Receive` 的马甲。`uxItemSize=0` 这个分支马上在下一节现身。
+读三遍那个 `union`：**队列和信号量共享同一个结构体**，信号量就是 `uxItemSize=0` 的队列（没有数据只有计数），互斥锁再多带一个持有者指针。所以 F5 的信号量 API 全是 `xQueueGenericSend/Receive` 的马甲。`uxItemSize=0` 这个分支马上在下一节现身。
 
 ## 二、拷贝入队：memcpy + 指针回绕
 
@@ -207,16 +207,16 @@ void EXTI0_IRQHandler( void )
 ## 短自测
 
 1. 为什么说"信号量就是队列"？源码依据是什么？
-<details><summary>参考答案</summary>QueueDefinition 里用 union 复用存储:uxItemSize=0 时 prvCopyDataToQueue 不做 memcpy 只维护计数/持有者:信号量=无数据的队列,互斥锁再带持有者指针和继承逻辑。F5 会看到 xSemaphoreGive 直接展开成 xQueueGenericSend。</details>
+<details><summary>参考答案</summary>QueueDefinition 里用 union 复用存储：uxItemSize=0 时 prvCopyDataToQueue 不做 memcpy 只维护计数/持有者：信号量=无数据的队列，互斥锁再带持有者指针和继承逻辑。F5 会看到 xSemaphoreGive 直接展开成 xQueueGenericSend。</details>
 
 2. `xQueueOverwrite` 和普通发送在"队列满"时行为有何不同？各自适合什么场景？
-<details><summary>参考答案</summary>普通发送:满了→调用者阻塞挂 xTasksWaitingToSend;Overwrite:直接覆盖队首旧值永远成功。长度1+Overwrite 适合"只要最新值"(心跳/状态广播),普通阻塞适合"一个都不能丢"(命令/数据流)。</details>
+<details><summary>参考答案</summary>普通发送：满了→调用者阻塞挂 xTasksWaitingToSend;Overwrite:直接覆盖队首旧值永远成功。长度 1+Overwrite 适合"只要最新值"(心跳/状态广播),普通阻塞适合"一个都不能丢"(命令/数据流)。</details>
 
 3. FromISR 版本为什么不能阻塞？`pxHigherPriorityTaskWoken` 解决了什么？
-<details><summary>参考答案</summary>中断上下文没有"任务"可挂起,也不能在中断中途切换上下文。pxHigherPriorityTaskWoken 把"是否需要切换"作为输出参数带回,由代码在中断末尾调 portYIELD_FROM_ISR 统一结算,让出时机合法且只切一次。</details>
+<details><summary>参考答案</summary>中断上下文没有"任务"可挂起，也不能在中断中途切换上下文。pxHigherPriorityTaskWoken 把"是否需要切换"作为输出参数带回，由代码在中断末尾调 portYIELD_FROM_ISR 统一结算，让出时机合法且只切一次。</details>
 
 4. 发送方拷贝完数据后，为什么可能立刻 YIELD？依据什么判断？
-<details><summary>参考答案</summary>若 xTasksWaitingToReceive 非空,xTaskRemoveFromEventList 叫醒等待者;该函数在被叫醒者优先级高于当前任务时返回 pdTRUE,于是 queueYIELD_IF_USING_PREEMPTION 当场让出,数据一到,最高优先级的消费者立刻接手。</details>
+<details><summary>参考答案</summary>若 xTasksWaitingToReceive 非空，xTaskRemoveFromEventList 叫醒等待者；该函数在被叫醒者优先级高于当前任务时返回 pdTRUE,于是 queueYIELD_IF_USING_PREEMPTION 当场让出，数据一到，最高优先级的消费者立刻接手。</details>
 
 <QuizBank chapter="f4-queue" />
 

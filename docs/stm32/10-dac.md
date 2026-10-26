@@ -185,7 +185,7 @@ int main(void) {
 
 三者的关系只有一条：
 
-$$f_{\text{波形}} = \frac{f_{\text{样本}}}{N} = \frac{f_{\text{TIM6更新}}}{N} = \frac{f_{\text{TIM6时钟}}}{(PSC+1)(ARR+1) \cdot N}$$
+$$f_{\text{波形}} = \frac{f_{\text{样本}}}{N} = \frac{f_{\text{TIM6 更新}}}{N} = \frac{f_{\text{TIM6 时钟}}}{(PSC+1)(ARR+1) \cdot N}$$
 
 霸天虎标准时钟树下 TIM6 时钟 = APB1 ×2 = 84MHz（[S2](02-rcc-clock.md)：APB1=42MHz，定时器时钟加倍）。要 1kHz、64 点：
 

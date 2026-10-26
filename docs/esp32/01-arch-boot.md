@@ -19,7 +19,7 @@ minutes: 35
 
 - **能记住**：**上电三棒：ROM 认路、bootloader 验货、app 开工；`app_main` 只是 main task 的一个函数调用。**
 - **能理解**：为什么你的 `app_main` **不是** `main()`：它跑在一个名叫 `main` 的 FreeRTOS 任务里（`xTaskCreatePinnedToCore(main_task, "main", ...)`）。
-- **能用**：从复位到 `app_main` 的每一棒都能指到源码行号；出问题时会判断"卡在哪一棒"（ROM 打印? bootloader 打印? app 打印?）。
+- **能用**：从复位到 `app_main` 的每一棒都能指到源码行号；出问题时会判断"卡在哪一棒"（ROM 打印？ bootloader 打印？ app 打印？）。
 
 ## 学习目标
 
@@ -101,7 +101,7 @@ ESP32-S3 是**双核**：
 
 ROM 引导是**固化在芯片里**的（不是你能改的代码），上电后第一段执行的就是它。它做三件事：
 
-1. **读 strapping 脚**，决定启动模式。这就是为什么"按住 BOOT 键再复位"能进下载模式。
+1. **读 strapping 脚**，决定启动模式。"按住 BOOT 键再复位"能进下载模式，就是因为这一步。
 2. 做最早期的基础初始化（时钟、基础外设）。
 3. 找到并跳转到**二级 bootloader**。
 

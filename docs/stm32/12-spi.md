@@ -152,7 +152,7 @@ static uint8_t w25q_read_status(void)
 }
 ```
 
-读 JEDEC ID 是**链路自检**的标准第一步：0xEF 40 xx 三字节一出来，物理层、模式、片选、时序全部OK，烧到板子后第一条要跑的就是它。**页写**多三样规矩：
+读 JEDEC ID 是**链路自检**的标准第一步：0xEF 40 xx 三字节一出来，物理层、模式、片选、时序全部 OK，烧到板子后第一条要跑的就是它。**页写**多三样规矩：
 
 ```c
 static void w25q_wait_idle(void)

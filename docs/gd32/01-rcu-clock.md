@@ -88,7 +88,7 @@ GD32 把"能不能上 200MHz"拆成三次握手，每一步都有硬件回执（
 
 ## 四、Flash 等待：官方不管，你来管
 
-`system_gd32f4xx.c` 全文件**没有任何 FMC 等待周期设置**；对官方库**全量 Examples（3295 个文件，浅克隆逐目录检索）**搜 `fmc_wscnt_set` / `FMC_WS`，**零命中**。也就是说官方示例从不设 Flash 等待。而 FMC 的等待档位实际有 **0~15 共 16 档**，WSCNT 是 4 位域（`FMC_WC_WSCNT = BITS(0,3)`，gd32f4xx_fmc.h:65），头文件给出 WS_WSCNT_0 ~ WS_WSCNT_15 全部宏（:149-165），比 STM32F407 的 0~7（3 位）宽一倍。另外 GD32 还有一枚 STM32 没有的 **FMC_WSEN@0xFC** 等待使能寄存器（`FMC_WSEN_WSEN` bit0，:117-118）。两件套都要自己管。
+`system_gd32f4xx.c` 全文件**没有任何 FMC 等待周期设置**；对官方库**全量 Examples（3295 个文件，浅克隆逐目录检索）**搜 `fmc_wscnt_set` / `FMC_WS`，**零命中**。官方示例从不设 Flash 等待。而 FMC 的等待档位实际有 **0~15 共 16 档**，WSCNT 是 4 位域（`FMC_WC_WSCNT = BITS(0,3)`，gd32f4xx_fmc.h:65），头文件给出 WS_WSCNT_0 ~ WS_WSCNT_15 全部宏（:149-165），比 STM32F407 的 0~7（3 位）宽一倍。另外 GD32 还有一枚 STM32 没有的 **FMC_WSEN@0xFC** 等待使能寄存器（`FMC_WSEN_WSEN` bit0，:117-118）。两件套都要自己管。
 
 > ✅ **这个坑已经填了**：官方示例不设等待却跑高频，答案在 datasheet 第一页：GD32F407xx 的 Cortex-M4 "operating at 168 MHz frequency with **Flash accesses zero wait states**"（GD32F407xx Datasheet Rev2.7 §1）。GD32 的 Flash 取指路径按零等待设计，所以官方 system 文件不写 FMC_WS 也能跑满 168MHz。那 WSCNT 存在的意义是什么？UM §2.4.1 的一句话给了线索（"The WSCNT valid when **WSEN** bit in FMC_WSEN is set"）：**等待周期默认整条路关着**，要用得先开 FMC_WSEN@0xFC，这是给特殊电压/温度条件或更高主频档留的余量，不是常规必配项。
 >

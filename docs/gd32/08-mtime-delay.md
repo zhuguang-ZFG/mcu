@@ -11,9 +11,9 @@ minutes: 45
 
 ## 本章精髓
 
-1. **mtime/mtimecmp 是内存映射，不是 CSR**（Bumblebee 手册 §2.13 原文明说）：64 位顺数、mtime 不小于 mtimecmp 即产生定时器中断（ECLIC 编号 `CLIC_INT_TMR = 7`，gd32vf103.h:102）。SysTick 的四件套（CTRL/LOAD/VAL/CALIB）在这换成"两张内存表 + 一个比较"。
-2. **驱动链三步走，主频除以四**：mtime_toggle_a 每个边沿加 1（手册 §3.1）；GD32VF103 的 rtc_clk = core_clk_aon/4（§3.1 注记）；core_clk_aon 与 core_clk 同源同频（§2.1）。三步连起来：**mtime 自增频率 = SystemCoreClock/4**。108M 档 27MHz、1ms = 27000 tick；[V1](06-clic-irq.md) 遗留的"待核验"在此收案。
-3. **64 位是福气也是机关**：回绕要 2.2 万年，"防回绕"的担心可以退休；但 RV32 读它必须"高-低-高"循环防撕裂、写 mtimecmp 必须"先高后低"防假中断；周期 tick 没有"自动重装"：ISR 里 `mtimecmp += 周期`，忘了就只响一次。
+1. **mtime/mtimecmp 是内存映射，不是 CSR**（Bumblebee 手册 §2.13 原文明说）：64 位顺数，mtime 不小于 mtimecmp 即产生定时器中断。ECLIC 编号 `CLIC_INT_TMR = 7`（gd32vf103.h:102）。SysTick 的四件套（CTRL/LOAD/VAL/CALIB）在这换成"两张内存表 + 一个比较"。
+2. **驱动链三步走，主频除以四**：mtime_toggle_a 每个边沿加 1（手册 §3.1）。GD32VF103 的 rtc_clk = core_clk_aon/4（§3.1 注记）。core_clk_aon 与 core_clk 同源同频（§2.1）。三步连起来：**mtime 自增频率 = SystemCoreClock/4**。108M 档 27MHz、1ms = 27000 tick；[V1](06-clic-irq.md) 遗留的"待核验"在此收案。
+3. **64 位是福气也是机关**：回绕要 2.2 万年，"防回绕"的担心可以退休。但 RV32 读它必须"高-低-高"循环防撕裂、写 mtimecmp 必须"先高后低"防假中断。周期 tick 没有"自动重装"：ISR 里 `mtimecmp += 周期`，忘了就只响一次。
 
 ## 怎么读这一章
 
@@ -88,7 +88,7 @@ RV32 读 64 位 mtime 走"高-低-高"循环防撕裂，写 mtimecmp 必须"先�
 
 最后一行值得停一拍：**mtime 连"开关"都没有**。上电就顺数，能停它的只有 CSR `mcountinhibit`（手册 §2.13.2，位定义待 ISA 手册核验）；但"不产生中断"你说了算：mtimecmp 挂得足够高，MTIP 永远安静。
 
-地址机关：RISC-V 架构不定义 mtime/mtimecmp 的地址（手册 §2.13 明说"由实现定义"），它们在 GD32VF103 上落在内核私有 **TIMER 单元**，官方固件库驱动 `n200_timer.h` 给出实证：`TIMER_CTRL_ADDR = 0xD1000000`，mtime 偏移 +0x0、mtimecmp 偏移 +0x8（64 位各占 8 字节，n200_timer.h:24-30；n200_func.c:61-69 的 `mtime_lo()/mtime_hi()` 直接按此地址读写）。注意这不是 RISC-V 规范里 QEMU 惯例的 0x0200_0000 布局，**以本芯片官方库为准**。工程里自己写宏：
+地址机关：RISC-V 架构不定义 mtime/mtimecmp 的地址（手册 §2.13 明说"由实现定义"）。在 GD32VF103 上它们落在内核私有 **TIMER 单元**，官方固件库驱动 `n200_timer.h` 给出实证：`TIMER_CTRL_ADDR = 0xD1000000`，mtime 偏移 +0x0、mtimecmp 偏移 +0x8（64 位各占 8 字节，n200_timer.h:24-30）。`n200_func.c:61-69` 的 `mtime_lo()/mtime_hi()` 直接按此地址读写。注意这不是 RISC-V 规范里 QEMU 惯例的 0x0200_0000 布局，**以本芯片官方库为准**。工程里自己写宏：
 
 ```c
 #define CLINT_BASE      0xD1000000UL             /* GD32VF103 TIMER 域（官方库 n200_timer.h 实证） */
@@ -105,7 +105,7 @@ RV32 读 64 位 mtime 走"高-低-高"循环防撕裂，写 mtimecmp 必须"先�
 mtime 不是拿内核时钟直接数的。手册给了一条三步链条，每步都有原文背书：
 
 1. **mtime_toggle_a 双边沿触发**：TIMER 单元由 SoC 送来的脉冲信号驱动，"上升沿和下降沿都采样，检测到任何边沿就触发 mtime 加 1"（手册 §3.1 表 3-1）；
-2. **GD32VF103 的 rtc_clk**：手册 §3.1 注记写明，"GD32VF103 中 rtc_clk 的频率是 core_clk_aon 的四分之一"，因此 mtime 自增频率 = core_clk_aon/4；
+2. **GD32VF103 的 rtc_clk**：手册 §3.1 注记写明，rtc_clk 的频率是 core_clk_aon 的四分之一，因此 mtime 自增频率 = core_clk_aon/4；
 3. **core_clk_aon 就是内核时钟**：手册 §2.1 说，"core_clk 与 core_clk_aon 频率相同、相位相同、来自同一时钟源"，后者只是"常开"分支（睡着了表也走）。
 
 三步连乘：**mtime 自增频率 = core_clk/4 = SystemCoreClock/4**。108M 档 = 27MHz，一个 tick 约 37ns；72M 档 = 18MHz。[V1](06-clic-irq.md) 第六节留的"core_clk_aon 与核心时钟关系待 UM 核验"到此收案，答案在手册 §2.1 的第一句。
@@ -227,7 +227,7 @@ void mtime_isr(void)                   /* MTIP → ECLIC 编号 7 分发 */
 
 <details><summary>看答案</summary>
 
-mtime 自增频率 = SystemCoreClock/4（驱动链：mtime_toggle_a 双边沿触发、GD32VF103 的 rtc_clk = core_clk_aon/4、core_clk_aon 与 core_clk 同源同频，见手册 §3.1 与 §2.1）。108M 档：108000000/4/1000 = 27000；72M 档：18000。没有"减一"，比较语义没有 off-by-one，算出多少就是多少。
+mtime 自增频率 = SystemCoreClock/4。驱动链三步：mtime_toggle_a 双边沿触发；GD32VF103 的 rtc_clk = core_clk_aon/4；core_clk_aon 与 core_clk 同源同频（见手册 §3.1 与 §2.1）。108M 档：108000000/4/1000 = 27000；72M 档：18000。没有"减一"，比较语义没有 off-by-one，算出多少就是多少。
 
 </details>
 
@@ -259,7 +259,7 @@ mtime_lo 进位回 0 的那一拍，mtime_hi 加 1。RV32 一次访存只有 32 
 
 <details><summary>看答案</summary>
 
-三步：① mtime_toggle_a 上升、下降沿都触发 mtime 加 1（手册 §3.1 表 3-1）；② GD32VF103 的 rtc_clk = core_clk_aon/4，故自增频率 = core_clk_aon/4（§3.1 注记）；③ core_clk_aon 与 core_clk 同源同频（§2.1）。第 ③ 步收了 V1 的案：V1 曾标注"core_clk_aon 与核心时钟的精确关系待 UM 核验"，手册 §2.1 一句"same frequency and phases... same clock source"给出答案。
+三步：① mtime_toggle_a 上升、下降沿都触发 mtime 加 1（手册 §3.1 表 3-1）。② GD32VF103 的 rtc_clk = core_clk_aon/4，故自增频率 = core_clk_aon/4（§3.1 注记）。③ core_clk_aon 与 core_clk 同源同频（§2.1）。第 ③ 步收了 V1 的案：V1 曾标注"core_clk_aon 与核心时钟的精确关系待 UM 核验"，答案就在手册 §2.1："same frequency and phases... same clock source"。
 
 </details>
 
@@ -284,7 +284,7 @@ mtime_lo 进位回 0 的那一拍，mtime_hi 加 1。RV32 一次访存只有 32 
 
 64 位电表的架构定义：
 
-- **[\[C8\]](../reference/bibliography.md#toolchain)** RISC-V Privileged 20211203 "Machine Timer Registers"一节：mtime/mtimecmp 64 位、从不回绕、"比较到了就置 MTIP"；时钟源不归 ISA 管，所以 1/4 主频那笔账要看 **[\[A14\]](../reference/bibliography.md#chips)** Bumblebee Core Datasheet。
+- **[\[C8\]](../reference/bibliography.md#toolchain)** RISC-V Privileged 20211203 "Machine Timer Registers"一节。要点：mtime/mtimecmp 64 位、从不回绕、"比较到了就置 MTIP"。时钟源不归 ISA 管，所以 1/4 主频那笔账要看 **[\[A14\]](../reference/bibliography.md#chips)** Bumblebee Core Datasheet。
 
 ## 你做到了
 

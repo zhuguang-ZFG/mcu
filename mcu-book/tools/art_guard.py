@@ -9,20 +9,20 @@
 4. 颜色不写死：fill=/stroke= 只许 "none" 或 var(--cover-ink, …)（暗色主题靠变量）
 5. font-size ≥ 7（96mm 宽下 7 单位 ≈ 6pt，印刷地板）
 
-御舆模式（--yuyu，2026-10-26 用户拍板的手绘路线）：
-手绘感来自曲线本身，不靠滤镜——印前保持纯矢量可搜索。
-1. viewBox="0 0 320 88" 不变；viewBox 内比例自由。
-2. 禁 filter/url()/id=/href/src（御舆书 art.py 的 _BANNED 同款准入：88 枚同页内联，
-   无 id 即零撞车；无滤镜即印前零光栅化）。
-3. 手绘感断言：至少 2 条 C/Q/A 曲线命令；同图内 stroke-width 至少 2 档（笔压分级）。
+御舆模式（--yuyu，2026-10-26 用户拍板的手绘路线 B）：
+手绘感来自笔压与曲线，不靠滤镜——印前保持纯矢量可搜索。
+1. viewBox="0 0 320 88" 不变。
+2. 禁 filter/id=/href/src/url()（88 枚同页内联，无 id 即零撞车；无滤镜即印前零光栅化）。
+3. 手绘感硬门：stroke-width ≥2 档（笔压分级）；曲线命令 C/Q/A ≥2 条为提示项（不阻塞）。
 4. 无 <image>/<script>/<style>/外链；颜色只许 none 或 var(--cover-ink, …)。
 5. font-size ≥ 7 不变。
-6. 字节预算 ≤ 6000（御舆 MAX_BYTES 同值：预算逼着曲线复用，拒绝堆料）。
+6. 字节预算 ≤ 6000（预算逼着曲线复用，拒绝堆料）。
 
 用法：
     python mcu-book/tools/art_guard.py 图1.svg [图2.svg …]        # 滤镜模式
     python mcu-book/tools/art_guard.py --yuyu 图1.svg …           # 御舆模式
     python mcu-book/tools/art_guard.py --dir mcu-book/book/assets/chapter-art
+    python mcu-book/tools/art_guard.py --yuyu --dir .temp/art
 退出码：0 全过；1 有违规。
 """
 
@@ -37,7 +37,7 @@ YUYU_MAX_BYTES = 6000
 
 
 def _check_yuyu(path: Path, text: str, cr_errors: list[str]) -> list[str]:
-    """御舆准入：无滤镜/id/引用，曲线手绘感，字节预算。"""
+    """御舆准入：无滤镜/id/引用，笔压分级，字节预算。"""
     errors = list(cr_errors)
     if EXPECTED_VIEWBOX not in text:
         m = re.search(r'viewBox="([^"]+)"', text)
@@ -57,14 +57,10 @@ def _check_yuyu(path: Path, text: str, cr_errors: list[str]) -> list[str]:
     size = len(text.encode("utf-8"))
     if size > YUYU_MAX_BYTES:
         errors.append(f"{size} 字节超御舆预算 {YUYU_MAX_BYTES}")
-    # 手绘感：笔压分级是硬信号；曲线命令仅提示（御舆原作 5 枚里 3 枚曲线数不足 2，
-    # 直线+圆也是合法习语——不许这条把量产逼成"为过门而画"）
+    # 笔压分级是硬信号（御舆原作 5 枚里 3 枚曲线数 <2，直线+圆也是合法习语，
+    # 所以曲线命令只作提示，不许把量产逼成"为过门而画"）
     d_attrs = re.findall(r'\bd="([^"]+)"', text)
-    curves = sum(
-        1
-        for d in d_attrs
-        for _ in re.findall(r"[CcQqAa]", d)
-    )
+    curves = sum(1 for d in d_attrs for _ in re.findall(r"[CcQqAa]", d))
     if curves < 2:
         print(f"  ⚠ {path.name}: 曲线命令 {curves} 条（<2，提示：可加曲线增强手绘感，不强制）")
     widths = {float(w) for w in re.findall(r'stroke-width="([\d.]+)"', text)}
@@ -129,7 +125,7 @@ def check_svg(path: Path, yuyu: bool = False) -> list[str]:
     for m in re.finditer(r'(?:fill|stroke)="([^"]+)"', text):
         v = m.group(1)
         if v != "none" and not v.startswith("var(--cover-ink"):
-            errors.append(f'颜色写死 {v!r}（只许 none 或 var(--cover-ink, …)）')
+            errors.append(f"颜色写死 {v!r}（只许 none 或 var(--cover-ink, …)）")
 
     for m in re.finditer(r'font-size="([\d.]+)"', text):
         if float(m.group(1)) < 7:
@@ -146,7 +142,7 @@ def main() -> int:
     if argv[0] == "--yuyu":
         yuyu = True
         argv = argv[1:]
-    if argv[0] == "--dir":
+    if argv and argv[0] == "--dir":
         files = sorted(Path(argv[1]).glob("*.svg"))
     else:
         files = [Path(a) for a in argv]

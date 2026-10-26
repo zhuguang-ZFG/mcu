@@ -223,7 +223,7 @@ esp_restart();
 
 两处设计值得品味：
 
-- `esp_ota_get_next_update_partition()` 从当前运行槽出发轮转找下一个，你不用算"现在在 0 号所以写 1 号"。
+- `esp_ota_get_next_update_partition()` 从当前运行槽出发轮转找下一个，你不用算"现在 0 号所以写 1 号"。
 - `esp_ota_end()` 是校验闸门：刚写完的镜像不是合法 app（或开了安全启动后签名不过），直接返回 ESP_ERR_OTA_VALIDATE_FAILED，坏 bin 在这被拦下，而不是变砖后才发现。
 
 **然后是本章最重要的一段事实**：上面五步只是"换庄"。防变砖的"自证清白"状态机，**只在 CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE 打开后才存在（默认未启用）**。官方文档的 App OTA State 全图：

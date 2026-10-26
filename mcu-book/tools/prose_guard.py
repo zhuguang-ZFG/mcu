@@ -55,9 +55,23 @@ def prose_surface(text: str) -> str:
 
 
 def fact_tokens(text: str) -> Counter[str]:
+    """事实 token 多重集。token 内空白一律折叠——"64 字节"与"64字节"同义
+    （排版空格增删不算事实变化，数字/单位本身的变化仍逃不掉）。"""
+    # 排版空格（中文↔拉丁/数字）在 token 化前折叠：判等的对象是"事实"，
+    # 不是空格策略。否则 "16槽"→"16 槽" 这类纯排版改动会伪造 bare 数字 token。
+    text = re.sub(r"(?<=[\u4e00-\u9fff])\s+(?=[A-Za-z0-9])", "", text)
+    text = re.sub(r"(?<=[A-Za-z0-9])\s+(?=[\u4e00-\u9fff])", "", text)
     c: Counter[str] = Counter()
-    for pat in FACT_TOKEN_PATTERNS:
-        c.update(m.group(0).strip() for m in re.finditer(pat, text))
+    spans: list[tuple[int, int]] = []
+    # 前几类是"带语义的完整 token"；裸数是兜底，必须跳过已被完整 token 覆盖的数字
+    for pat in FACT_TOKEN_PATTERNS[:-1]:
+        for m in re.finditer(pat, text):
+            spans.append((m.start(), m.end()))
+            c[re.sub(r"\s+", "", m.group(0))] += 1
+    for m in re.finditer(FACT_TOKEN_PATTERNS[-1], text):
+        if any(s <= m.start() and m.end() <= e for s, e in spans):
+            continue
+        c[re.sub(r"\s+", "", m.group(0))] += 1
     return c
 
 

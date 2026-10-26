@@ -148,7 +148,7 @@ $ arm-none-eabi-readelf -W -l build/mem_probe.elf | sed -n '/Program Header/,/Se
 | FileSiz | `0x0000c` | 文件里真有 12 字节 |
 | MemSiz | `0x0002c` | RAM 里要 44 字节（`.data` 12 + `.bss` 32） |
 
-也就是说：烧进 Flash 的固件里，`0x080002a0` 处躺着 12 个字节，它们是 `.data` 段的"初值备份"。把这份备份单独抠出来看（`objcopy -j .data -O binary`，或直接 `objdump -s -j .data`）：
+烧进 Flash 的固件里，`0x080002a0` 处躺着 12 个字节，它们是 `.data` 段的"初值备份"。把这份备份单独抠出来看（`objcopy -j .data -O binary`，或直接 `objdump -s -j .data`）：
 
 ```console
 Contents of section .data:
