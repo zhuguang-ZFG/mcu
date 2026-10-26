@@ -518,21 +518,16 @@ def report(pdf_path: Path, bleed_mm: float) -> int:
     return 0 if ok_size and not type3 else 1
 
 
-def assert_vector_art(html: str) -> None:
-    """印前硬门：题图必须全是御舆纯矢量，否则拒绝排版。
 
-    由来（2026-10-26）：另一条会话会直接把滤镜版题图写回 chapter-art，写作与
-    构建并发时 HTML 里就可能夹着 feTurbulence——滤镜会把 88 枚题图全部栅格化，
-    印前 PDF 多出上百张位图，而 12 门里没有任何一项因此变红（版面利用率只看
-    单页密度，不看图片数量）。这里在排版前按快照断言，把「静默降质」变成硬失败。
+def assert_vector_art(html: str) -> None:
+    """印前硬门：题图必须纯矢量。
+
+    实测（book-final12，2026-10-26）：滤镜题图（feTurbulence）内联进印前 HTML
+    会被 Chromium 整块光栅化，全书位图从 6 涨到 100（光栅预算门捕获）。
+    这里在排版前按快照断言，把「静默降质」变成硬失败。
     """
-    if "feTurbulence" in html:
-        raise SystemExit(
-            "✗ 印前中止：HTML 里含 feTurbulence（题图被回退成滤镜版）。"
-            "先跑 .temp/collect-art.py --apply 收编纯矢量题图，再重新 build_html。"
-        )
-    if "<filter" in html:
-        raise SystemExit("✗ 印前中止：HTML 里含 <filter>，题图不是纯矢量版本。")
+    if "feTurbulence" in html or "<filter" in html:
+        raise SystemExit("✗ 印前中止：HTML 里含 feTurbulence/<filter>（题图滤镜会光栅化），必须纯矢量。")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -561,10 +556,10 @@ def main(argv: list[str] | None = None) -> int:
         else:
             built = build_html.build_html(output_dir=Path(tmp))
             html = built.read_text(encoding="utf-8")
+            assert_vector_art(html)
     if options.sample:
         html = slice_sample(html, options.sample)
     manifest = build_html.load_manifest()
-    assert_vector_art(html)
     html, svg_count = inline_svg_images(html)
     if svg_count:
         print(f"印前排版：内联 {svg_count} 张 SVG 图（父文档字体进入图内文字）")

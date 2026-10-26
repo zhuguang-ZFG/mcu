@@ -794,13 +794,11 @@ def chapter_art_html(name: str) -> str:
     if not svg_path.is_file():
         return ""
     svg = svg_path.read_text(encoding="utf-8")
-    # 御舆路线：题图一律纯矢量。另一条会话会写回滤镜版，而滤镜版进 HTML 后
-    # 88 枚题图的印前产物会整体降质——12 门都不会因此变红。这里就地拦下。
+    # 题图必须纯矢量：带 feTurbulence/<filter> 的题图内联进印前 HTML 后，
+    # Chromium 会把它们整块光栅化（实测：滤镜版全书多 94 张位图）。
+    # 该门在装配期就拦，把"静默降质"变成硬失败。
     if "feTurbulence" in svg or "<filter" in svg:
-        raise BuildError(
-            f"题图不是纯矢量：{svg_path} 含滤镜。"
-            "先跑 .temp/collect-art.py --apply 收编御舆题图再构建。"
-        )
+        raise BuildError(f"题图必须纯矢量（含滤镜会光栅化）：{svg_path}")
     return f'<div class="chapter-art">{svg}</div>'
 
 
