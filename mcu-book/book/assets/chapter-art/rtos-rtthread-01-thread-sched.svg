@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 88" role="img" aria-label="二级位图 32×8 选优线程" fill="none" stroke="var(--cover-ink, #123b33)" stroke-linecap="round" stroke-linejoin="round"><defs><filter id="hw-rtos-rtthread-01-thread-sched" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.013" numOctaves="2" seed="34" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3.2"/></filter></defs><g filter="url(#hw-rtos-rtthread-01-thread-sched)">
+
+<g stroke-width="2.2">
+<rect x="32" y="22" width="44" height="14" rx="2"/>
+<rect x="80" y="22" width="44" height="14" rx="2"/>
+<rect x="128" y="22" width="44" height="14" rx="2"/>
+<rect x="176" y="22" width="44" height="14" rx="2"/>
+</g>
+<g stroke-width="1.1">
+<path d="M37.5 22 L37.5 36"/>
+<path d="M43 22 L43 36"/>
+<path d="M48.5 22 L48.5 36"/>
+<path d="M54 22 L54 36"/>
+<path d="M59.5 22 L59.5 36"/>
+<path d="M65 22 L65 36"/>
+<path d="M70.5 22 L70.5 36"/>
+<path d="M85.5 22 L85.5 36"/>
+<path d="M91 22 L91 36"/>
+<path d="M96.5 22 L96.5 36"/>
+<path d="M102 22 L102 36"/>
+<path d="M107.5 22 L107.5 36"/>
+<path d="M113 22 L113 36"/>
+<path d="M118.5 22 L118.5 36"/>
+<path d="M133.5 22 L133.5 36"/>
+<path d="M139 22 L139 36"/>
+<path d="M144.5 22 L144.5 36"/>
+<path d="M150 22 L150 36"/>
+<path d="M155.5 22 L155.5 36"/>
+<path d="M161 22 L161 36"/>
+<path d="M166.5 22 L166.5 36"/>
+<path d="M181.5 22 L181.5 36"/>
+<path d="M187 22 L187 36"/>
+<path d="M192.5 22 L192.5 36"/>
+<path d="M198 22 L198 36"/>
+<path d="M203.5 22 L203.5 36"/>
+<path d="M209 22 L209 36"/>
+<path d="M214.5 22 L214.5 36"/>
+</g>
+<rect x="139" y="24" width="5" height="10" fill="var(--cover-ink, #123b33)" stroke="none"/>
+<rect x="248" y="54" width="56" height="20" rx="4" stroke-width="2.2"/>
+<path d="M144 40 C 172 58, 208 66, 242 63" stroke-width="2.2"/>
+<path d="M242 63 C 238 60, 235.5 58.5, 232 58 C 235.5 59.5, 238 61.5, 240 65.5" stroke-width="2.2"/>
+
+</g><text x="126" y="15" font-size="9" font-family="sans-serif" fill="var(--cover-ink, #123b33)" stroke="none" text-anchor="middle">二级位图 32×8</text><text x="276" y="68" font-size="10" font-family="sans-serif" fill="var(--cover-ink, #123b33)" stroke="none" text-anchor="middle">线程</text></svg>

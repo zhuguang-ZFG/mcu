@@ -319,5 +319,5 @@ HardFault 里同样不能"打印一下、喂一下狗"。栈可能已经坏了�
 - 复位后能说清"是谁、因为哪个任务、在什么时候"让它复位的。
 
 <div class="achievement">
-✅ 下一站：<a href="../esp32/13-watchdog-health.html">P13 健康监督</a>——同一份 health 模块搬到 S3，看 TWDT 怎么替你管"谁该喂"。
+✅ 下一站：<a href="../esp32/13-watchdog-health.html">P13 健康监督</a>：同一份 health 模块搬到 S3，看 TWDT 怎么替你管"谁该喂"。
 </div>

@@ -38,6 +38,8 @@ PUBLIC_DIR = DOCS_DIR / "public"
 BOOK_DIR = ROOT / "book"
 QUIZ_DIR = DOCS_DIR / ".vitepress" / "data" / "quizzes"
 PROJECTS_JSON = REPO_ROOT / "code" / "projects.json"
+sys.path.insert(0, str(ROOT / "print"))
+import art  # noqa: E402 — 自绘主题插图（书稿工艺层）
 DIST_DIR = ROOT / "dist"
 MANIFEST_PATH = ROOT / "manifest.json"
 OUTPUT_NAME = "mcu-deep-book.html"
@@ -763,7 +765,7 @@ def compass_html(guide: dict) -> str:
 </aside>"""
 
 
-def chapter_header_html(chapter_number: int, title: str, frontmatter: dict) -> str:
+def chapter_header_html(chapter_number: int, title: str, frontmatter: dict, book_title: str = "") -> str:
     meta_bits: list[str] = []
     stars = _stars(frontmatter.get("difficulty"))
     if stars:
@@ -772,10 +774,26 @@ def chapter_header_html(chapter_number: int, title: str, frontmatter: dict) -> s
     if minutes:
         meta_bits.append(f"约 {html.escape(str(minutes))} 分钟")
     meta = f'<p class="chapter-meta">{" · ".join(meta_bits)}</p>' if meta_bits else ""
+    # 书名号元素：印刷版用它做 string-set 的 content() 源（paged.js 只支持
+    # content()/attr()，不支持字符串字面量）。零字号不占版面。
+    marker = f'<span class="book-title-marker" aria-hidden="true">{html.escape(book_title)}</span>'
     return (
-        f'<header><span class="chapter-number">第 {chapter_number:02d} 章</span>'
+        f'<header>{marker}<span class="chapter-number">第 {chapter_number:02d} 章</span>'
         f"<h1>{html.escape(title)}</h1>{meta}</header>"
     )
+
+
+def chapter_art_html(name: str) -> str:
+    """章首手绘题图：assets/chapter-art/<分部>-<章>.svg 存在即内联，缺失静默跳过。
+
+    题图是纯装饰题花（机制图解由正文 109 张插图承担），缺图不许阻塞构建。
+    每枚 SVG 自带唯一的 hw-<章id> 滤镜 id（88 枚同文档内联，重名会撞车）。
+    """
+    slug = name.replace("/", "-").removesuffix(".md")
+    svg_path = BOOK_DIR / "assets" / "chapter-art" / f"{slug}.svg"
+    if not svg_path.is_file():
+        return ""
+    return f'<div class="chapter-art">{svg_path.read_text(encoding="utf-8")}</div>'
 
 
 def source_registry_html(manifest: dict) -> str:
@@ -848,6 +866,32 @@ def toc_html(manifest: dict, ctx: BookContext) -> str:
     return "".join(sections) + f'<section><h2>附录</h2><ol class="toc-chapters">{appendices}</ol></section>'
 
 
+COPYRIGHT_HTML = """
+<section class="frontmatter copyright" id="copyright">
+  <h1>版权与版本</h1>
+  <dl class="copyright-fields">
+    <dt>书名</dt><dd>__TITLE__</dd>
+    <dt>版本</dt><dd>v__VERSION__ · __DATE__</dd>
+    <dt>作者</dt><dd>__AUTHOR__</dd>
+    <dt>许可</dt><dd>正文与图片 __L_PROSE__ · 代码 __L_CODE__（仓库 LICENSE）</dd>
+    <dt>来源</dt><dd>__REPO__/ · 在线阅读 __SITE__</dd>
+    <dt>证据冻结点</dt><dd>__SOURCES__ 项来源注册（附录 E）；被引用的上游代码冻结到 tag/commit；未上板实测的现象一律标「待上板实测」。</dd>
+    <dt>构建</dt><dd>由 <code>mcu-book/build_html.py</code> + <code>build_print.py</code> 从仓库 88 章源文档一键构建；同一输入两次构建的页数与开本一致（构建信息含时间戳除外）。</dd>
+    <dt>书号</dt><dd>自制版本页，未申请 ISBN/CIP；发行渠道另行决定。</dd>
+  </dl>
+</section>
+"""
+
+COLOPHON_HTML = """
+<section class="frontmatter colophon" id="colophon">
+  <h1>勘误与贡献</h1>
+  <p><strong>发现错误？</strong>到仓库提 Issue：<a href="__REPO__/issues">__REPO__/issues</a>。请带上章节号（如 S7）、原文一句、以及你认为正确的说法与出处——「证据驱动」对勘误同样适用。</p>
+  <p><strong>想参与？</strong>校对、翻译、新章节与实验复现都欢迎；入口见仓库 <code>CONTRIBUTING.md</code>，排版与书稿工艺的讨论见 <code>docs/reference/book.md</code>。</p>
+  <p><strong>贡献者</strong>：__AUTHOR__；完整名单见 <a href="__REPO__/graphs/contributors">GitHub Contributors</a>。</p>
+  <p><strong>全书规模</strong>：__STATS__</p>
+</section>
+"""
+
 FRONTMATTER_HTML = """
 <section class="frontmatter" id="how-to-read">
   <h1>这不是文章合集，是一本书</h1>
@@ -885,6 +929,7 @@ CSS = r"""
   --warn-soft: #fdf3e3;
   --code: #101a17;
   --code-ink: #eaf5f1;
+  --cover-ink: #123b33;
   font-family: "Noto Sans CJK SC", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
 }
 * { box-sizing: border-box; }
@@ -900,10 +945,6 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 .cover h1 { font-size: clamp(2.6rem, 8vw, 5.6rem); line-height: 1.06; margin: .25em 0; max-width: 14ch; }
 .cover .subtitle { font-size: clamp(1.1rem, 3vw, 1.65rem); max-width: 32em; }
 .cover .edition { color: var(--muted); margin-top: 3rem; }
-.cover-stats { display: flex; flex-wrap: wrap; gap: 1rem 2.2rem; margin-top: 2.8rem; padding: 1.2rem 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.cover-stats .stat { min-width: 6.5rem; border-left: 3px solid var(--accent); padding-left: .8rem; }
-.cover-stats .stat b { display: block; font-size: 1.45rem; line-height: 1.25; color: var(--accent-deep); }
-.cover-stats .stat span { font-size: .82rem; color: var(--muted); }
 .frontmatter, .contents { padding: 4rem 6%; }
 .frontmatter { border-bottom: 1px solid var(--line); }
 .frontmatter .routes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin: 1.6rem 0; }
@@ -920,6 +961,16 @@ a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 .part-divider .part-goal { max-width: 42em; }
 .part-divider .part-intro { max-width: 44em; margin-top: 1.2rem; padding: 1rem 1.2rem; border-left: 3px solid var(--line); color: var(--muted); background: color-mix(in srgb, var(--panel) 60%, transparent); border-radius: .4rem; }
 .part-divider .part-stats { margin-top: 1.2rem; color: var(--accent-deep); font-weight: 600; letter-spacing: .06em; }
+.part-divider .part-art { text-align: right; margin-bottom: 1rem; }
+.part-divider .part-art svg { display: inline-block; height: 110px; width: auto; max-width: 100%; }
+.part-divider .part-toc { columns: 2; column-gap: 2.4rem; margin-top: 1.6rem; padding: 1.1rem 0 0; border-top: 1px solid var(--line); list-style: none; font-size: .94rem; }
+.part-divider .part-toc li { break-inside: avoid; margin: .22rem 0; }
+.part-divider .part-toc a { color: inherit; text-decoration: none; border-bottom: 1px solid transparent; }
+.part-divider .part-toc a:hover { border-bottom-color: var(--accent); }
+.cover-art { width: min(340px, 72%); margin: 2rem 0 0; }
+.chapter-art { width: min(400px, 84%); margin: 1.4rem auto 0.6rem; }
+.chapter-art svg { display: block; width: 100%; height: auto; }
+.cover-art svg { display: block; width: 100%; height: auto; }
 .chapter, .appendix { padding: 4rem 6%; border-bottom: 1px solid var(--line); }
 .chapter > header, .appendix > header { margin-bottom: 2.2rem; }
 .chapter > header h1, .appendix > header h1 { font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.18; margin: .2em 0; }
@@ -1010,7 +1061,7 @@ footer.book-footer { padding: 3rem 6%; color: var(--muted); text-align: center; 
   .dt-label { min-width: 0; }
 }
 @media (prefers-color-scheme: dark) {
-  :root { --paper: #101816; --ink: #e8efec; --muted: #a9b6b1; --line: #39463f; --panel: #1a2420; --accent: #6fc6ae; --accent-deep: #8fd6c2; --accent-soft: #173129; --warn: #e0a35c; --warn-soft: #2e2415; --code: #0a100e; --code-ink: #ebf5f1; }
+  :root { --paper: #101816; --ink: #e8efec; --muted: #a9b6b1; --line: #39463f; --panel: #1a2420; --accent: #6fc6ae; --accent-deep: #8fd6c2; --accent-soft: #173129; --warn: #e0a35c; --warn-soft: #2e2415; --code: #0a100e; --code-ink: #ebf5f1; --cover-ink: #8fd6c2; }
   .anim-figure { background: #ffffff; }
 }
 @media print {
@@ -1156,23 +1207,44 @@ def build_html(output_dir: Path | None = None, manifest_path: Path = MANIFEST_PA
 
     body_parts: list[str | None] = [None]  # cover slot, filled after stats are known
     license_note = manifest["license"]
+    copyright_page = (
+        COPYRIGHT_HTML.replace("__TITLE__", html.escape(manifest["title"]))
+        .replace("__VERSION__", html.escape(manifest["version"]))
+        .replace("__DATE__", html.escape(manifest["date"]))
+        .replace("__AUTHOR__", html.escape(manifest["author"]))
+        .replace("__L_PROSE__", html.escape(license_note["prose_and_images"]))
+        .replace("__L_CODE__", html.escape(license_note["code"]))
+        .replace("__REPO__", REPO_BASE)
+        .replace("__SITE__", SITE_BASE)
+        .replace("__SOURCES__", str(len(manifest["sources"])))
+    )
     body_parts.append(
         f"""
+{copyright_page}
 {FRONTMATTER_HTML}
 <section class="contents" id="contents"><h1>目录与分部目标</h1>{toc_html(manifest, ctx)}</section>"""
     )
 
+    art_inlined = 0
     for part in manifest["parts"]:
         part_minutes = ctx.part_minutes.get(part["id"], 0)
         part_hours = round(part_minutes / 60, 1)
+        part_toc = "".join(
+            f'<li><a href="#ch{ctx.chapter_meta[name]["number"]:02d}">'
+            f"{ctx.chapter_meta[name]['number']:02d}．"
+            f"{html.escape(ctx.chapter_meta[name]['title'])}</a></li>"
+            for name in part["files"]
+        )
         body_parts.append(
             f"""
 <section class="part-divider" id="part-{html.escape(part['id'])}">
+  <div class="part-art">{art.part_art(part['id'])}</div>
   <p class="part-label">PART {html.escape(part['id'].upper())}</p>
   <h1>{html.escape(part['title'])}</h1>
   <p class="part-goal">{html.escape(part['goal'])}</p>
   <p class="part-intro">{html.escape(part['intro'])}</p>
   <p class="part-stats">本部 {len(part['files'])} 章 · 约 {part_minutes} 分钟（{part_hours} 小时）</p>
+  <ol class="toc-chapters part-toc">{part_toc}</ol>
 </section>"""
         )
         for name in part["files"]:
@@ -1186,10 +1258,13 @@ def build_html(output_dir: Path | None = None, manifest_path: Path = MANIFEST_PA
             prepared = strip_h1(prepared)
             rendered = render_document(prepared, source_file, name, f"ch{number:02d}", ctx)
             guide = manifest["chapter_guides"][name]
+            art_html = chapter_art_html(name)
+            art_inlined += bool(art_html)
             body_parts.append(
                 f"""
 <article class="chapter" id="ch{number:02d}" data-chapter="{number:02d}">
-  {chapter_header_html(number, info['frontmatter'].get('title', name), info['frontmatter'])}
+  {chapter_header_html(number, info['frontmatter'].get('title', name), info['frontmatter'], manifest['title'])}
+  {art_html}
   {compass_html(guide)}
   {rendered}
   <a class="back-to-toc" href="#contents">返回目录 ↑</a>
@@ -1215,7 +1290,7 @@ def build_html(output_dir: Path | None = None, manifest_path: Path = MANIFEST_PA
         body_parts.append(
             f"""
 <article class="appendix" id="{html.escape(appendix['id'])}">
-  <header><span class="chapter-number">APPENDIX</span><h1>{html.escape(title)}</h1></header>
+  <header><span class="book-title-marker" aria-hidden="true">{html.escape(manifest['title'])}</span><span class="chapter-number">APPENDIX</span><h1>{html.escape(title)}</h1></header>
   {rendered}
   {registry}
   <a class="back-to-toc" href="#contents">返回目录 ↑</a>
@@ -1223,19 +1298,23 @@ def build_html(output_dir: Path | None = None, manifest_path: Path = MANIFEST_PA
         )
 
     reading_hours = round(total_minutes / 60)
+    body_parts.append(
+        COLOPHON_HTML.replace("__REPO__", REPO_BASE)
+        .replace("__AUTHOR__", html.escape(manifest["author"]))
+        .replace(
+            "__STATS__",
+            f"{EXPECTED_CHAPTERS} 章正文（10 部），约 {reading_hours} 小时通读，"
+            f"{ctx.stats['figures']} 张机制动画与插图，{projects_count} 个配套工程（附录 B），"
+            f"{quiz_questions} 道自测题（附录 C），{len(manifest['sources'])} 个冻结来源（附录 E）。",
+        )
+    )
+
     body_parts[0] = f"""
 <section class="cover" id="cover">
-  <p class="eyebrow">通往单片机之路 · OFFLINE BOOK</p>
+  <p class="eyebrow">通往单片机之路</p>
   <h1>{html.escape(manifest['title'])}</h1>
   <p class="subtitle">{html.escape(manifest['subtitle'])}</p>
-  <div class="cover-stats" role="list" aria-label="全书规模">
-    <div class="stat" role="listitem"><b>{EXPECTED_CHAPTERS}</b><span>章正文（10 部）</span></div>
-    <div class="stat" role="listitem"><b>约 {reading_hours} 小时</b><span>通读时长（{total_minutes} 分钟）</span></div>
-    <div class="stat" role="listitem"><b>{ctx.stats['figures']}</b><span>内嵌机制动画与插图</span></div>
-    <div class="stat" role="listitem"><b>{projects_count}</b><span>配套工程（附录 B）</span></div>
-    <div class="stat" role="listitem"><b>{quiz_questions}</b><span>自测题（附录 C）</span></div>
-    <div class="stat" role="listitem"><b>{len(manifest['sources'])}</b><span>冻结来源（附录 E）</span></div>
-  </div>
+  <div class="cover-art">{art.cover_art()}</div>
   <p class="edition">v{html.escape(manifest['version'])} · {html.escape(manifest['date'])}<br>
   {html.escape(manifest['author'])}<br>
   正文与图片 {html.escape(license_note['prose_and_images'])} · 代码 {html.escape(license_note['code'])}</p>
@@ -1329,7 +1408,7 @@ def build_html(output_dir: Path | None = None, manifest_path: Path = MANIFEST_PA
     audit_html(document, ctx)
     output = destination / OUTPUT_NAME
     output.write_text(document, encoding="utf-8", newline="\n")
-    print(f"html  {output} ({output.stat().st_size} bytes, {EXPECTED_CHAPTERS} chapters)")
+    print(f"html  {output} ({output.stat().st_size} bytes, {EXPECTED_CHAPTERS} chapters, 题图 {art_inlined}/{EXPECTED_CHAPTERS})")
     return output
 
 

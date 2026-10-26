@@ -48,7 +48,7 @@ self-test passed: codec vectors + session matching + sync/retry + C cross-valida
 ```
 ## 动画：逐字节解析状态机
 
-字节流如何变成可恢复的消息——EMPTY → COLLECT → 验证 → DISCARD 的每一步：游标沿字节流连续前进、状态随之切换，坏帧路径与重新同步一图看完。
+字节流如何变成可恢复的消息：EMPTY → COLLECT → 验证 → DISCARD 的每一步，游标沿字节流连续前进、状态随之切换，坏帧路径与重新同步一图看完。
 
 ![C8 帧协议：逐字节解析状态机与重新同步](/anim/c08-frame-parse.svg)
 
@@ -389,5 +389,5 @@ python3 scripts/device-console.py status --port COMx
 - [S17 看门狗](../stm32/17-watchdog-reset.md)、[P13 健康监督](../esp32/13-watchdog-health.md) 和两个记录器项目用的都是这一份 codec，STATUS 是它们共同的观察窗口。
 
 <div class="achievement">
-✅ 下一站：<a href="../stm32/17-watchdog-reset.html">S17 看门狗</a>——协议能告诉你"出了什么错"，看门狗负责"卡住了就重来"。
+✅ 下一站：<a href="../stm32/17-watchdog-reset.html">S17 看门狗</a>：协议负责说清"出了什么错"，看门狗负责"卡住就重来"。
 </div>

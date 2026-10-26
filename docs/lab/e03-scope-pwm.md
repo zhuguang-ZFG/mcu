@@ -45,7 +45,7 @@ projects: ["stm32-02-tim-pwm", "esp32-03-ledc-fade"]
 
 ## 原理一句话
 
-PWM=周期内高电平时间占比；占空比=CCR/(ARR+1)（STM32）或 duty/2^bits（LEDC）——波形的每个参数都能从寄存器值算出来。
+PWM=周期内高电平时间占比；占空比=CCR/(ARR+1)（STM32）或 duty/2^bits（LEDC）：波形的每个参数都能从寄存器值算出来。
 
 ## 接线
 

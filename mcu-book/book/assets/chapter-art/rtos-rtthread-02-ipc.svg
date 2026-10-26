@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 88" role="img" aria-label="五种 IPC 收敛到一条挂起列表" fill="none" stroke="var(--cover-ink, #123b33)" stroke-linecap="round" stroke-linejoin="round"><defs><filter id="hw-rtos-rtthread-02-ipc" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.013" numOctaves="2" seed="26" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3.2"/></filter></defs><g filter="url(#hw-rtos-rtthread-02-ipc)">
+
+<g stroke-width="2.2">
+<rect x="30" y="14" width="30" height="14" rx="4"/>
+<rect x="76" y="14" width="30" height="14" rx="4"/>
+<rect x="122" y="14" width="30" height="14" rx="4"/>
+<rect x="168" y="14" width="30" height="14" rx="4"/>
+<rect x="214" y="14" width="30" height="14" rx="4"/>
+</g>
+<g stroke-width="1.1">
+<circle cx="45" cy="21" r="3"/>
+<path d="M91 21 L91 21.01" stroke-linecap="round"/>
+<path d="M137 18 L137 24"/>
+<path d="M133 21 L141 21"/>
+<path d="M176 18 L182 24"/>
+<path d="M182 18 L176 24"/>
+<path d="M222 18 L228 24"/>
+<path d="M228 18 L222 24"/>
+</g>
+<g stroke-width="2.2">
+<rect x="95" y="42" width="80" height="12" rx="3"/>
+<rect x="95" y="58" width="80" height="12" rx="3"/>
+<rect x="95" y="74" width="80" height="12" rx="3"/>
+<path d="M135 54 L135 58"/>
+<path d="M135 70 L135 74"/>
+</g>
+<g stroke-width="1.4">
+<path d="M45 30 C 60 38, 88 40, 108 42"/>
+<path d="M137 30 C 137 34, 136 38, 135 41"/>
+<path d="M229 30 C 214 38, 184 40, 162 42"/>
+<path d="M108 42 C 104 40, 101.5 39.5, 98 40 C 101.5 40, 104 41, 106 43.5"/>
+<path d="M135 41 C 133 39, 132 38, 131 37.5 C 132.5 38.5, 133.5 40, 134 42"/>
+<path d="M162 42 C 166 40, 168.5 39.5, 172 40 C 168.5 40, 166 41, 164 43.5"/>
+</g>
+
+</g><text x="137" y="10" font-size="9" font-family="sans-serif" fill="var(--cover-ink, #123b33)" stroke="none" text-anchor="middle">五种 IPC</text><text x="190" y="69" font-size="9" font-family="sans-serif" fill="var(--cover-ink, #123b33)" stroke="none" text-anchor="start">挂起列表</text></svg>

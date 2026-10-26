@@ -1,0 +1,197 @@
+"""prose_guard：文字精修的不可动清单校验 + 口癖计数。
+
+精修只许动散文。本工具对「原文 vs 精修稿」逐章断言以下内容字节级一致：
+代码围栏块、行内代码、表格行、标题行、链接/图片目标、frontmatter。
+另输出 AI 口癖前后计数（破折号、一句话、记住、下一站），供批次报告。
+
+用法：
+    python mcu-book/tools/prose_guard.py 原文.md 精修稿.md
+    python mcu-book/tools/prose_guard.py --batch 对照清单.tsv   # 每行: 原文<TAB>精修稿
+退出码：0 全过；1 有违规。
+"""
+
+from __future__ import annotations
+
+import re
+import sys
+from collections import Counter
+from dataclasses import dataclass, field
+from pathlib import Path
+
+MARKERS = {
+    "破折号——": "——",
+    "一句话": "一句话",
+    "记住：": "记住：",
+    "下一站": "下一站",
+}
+
+# 散文事实 token：改写代理最容易"润色"坏的数字类事实。
+# 从剥离代码/表格/标题/frontmatter 后的散文面提取，多重集合必须一致。
+FACT_TOKEN_PATTERNS = [
+    r"0x[0-9A-Fa-f]+",                                        # 十六进制地址/值
+    r"§\s?\d+(?:\.\d+)*",                                     # 手册引用 §2.13
+    r"第\s?\d+(?:\.\d+)*\s?[章节部篇]",                        # 文内交叉引用 第3章
+    r"\d+(?:\.\d+)?\s?(?:MHz|kHz|GHz|KiB|MiB|GiB|Mbps|kbps"
+    r"|KB|MB|GB|kB|Hz|ms|μs|us|ns|mA|mV|V"
+    r"|字节|比特|位|万|亿|行|页|天|年|秒|分钟|小时|次|个|条|章|节"
+    r"|格|档|步|种|层|路|级)",                             # 带单位数字
+    r"\b\d+\.\d+(?:\.\d+)*\b",                                # 版本号/小数 3.3.3
+    r"\b\d{2,}\b",                                            # 裸数兜底（≥2 位）
+]
+
+
+def prose_surface(text: str) -> str:
+    """剥离全部受保护区，返回纯散文面。"""
+    text = re.sub(r"\A---\n.*?\n---\n", "", text, flags=re.S)
+    text = re.sub(r"^```[^\n]*\n.*?^```\s*$", "", text, flags=re.S | re.M)
+    lines = [
+        ln
+        for ln in text.splitlines()
+        if not ln.lstrip().startswith("|") and not re.match(r"^#{1,6}\s", ln)
+    ]
+    text = "\n".join(lines)
+    text = re.sub(r"`[^`\n]+`", " ", text)
+    return re.sub(r"!?\[([^\]]*)\]\([^)]+\)", r"\1", text)
+
+
+def fact_tokens(text: str) -> Counter[str]:
+    c: Counter[str] = Counter()
+    for pat in FACT_TOKEN_PATTERNS:
+        c.update(m.group(0).strip() for m in re.finditer(pat, text))
+    return c
+
+
+@dataclass
+class ProtectedSet:
+    """一章里不许动的字节段。"""
+
+    fenced_code: list[str] = field(default_factory=list)
+    inline_code: list[str] = field(default_factory=list)
+    tables: list[str] = field(default_factory=list)
+    headings: list[str] = field(default_factory=list)
+    link_targets: list[str] = field(default_factory=list)
+    frontmatter: str = ""
+
+
+def extract_protected(text: str) -> ProtectedSet:
+    ps = ProtectedSet()
+    # frontmatter（--- 包裹的头部）
+    fm = re.match(r"\A---\n.*?\n---\n", text, re.S)
+    if fm:
+        ps.frontmatter = fm.group(0)
+    # 代码围栏块（含语言标记与全部内容）
+    ps.fenced_code = re.findall(r"^```[^\n]*\n.*?^```\s*$", text, re.S | re.M)
+    # 表格行（连续的 | 开头行逐行记录）
+    ps.tables = [ln for ln in text.splitlines() if ln.lstrip().startswith("|")]
+    # 标题行
+    ps.headings = [ln for ln in text.splitlines() if re.match(r"^#{1,6}\s", ln)]
+    # 链接与图片目标
+    ps.link_targets = re.findall(r"\[[^\]]*\]\(([^)]+)\)", text)
+    ps.link_targets += re.findall(r'href="([^"]+)"', text)
+    ps.link_targets += re.findall(r'src="([^"]+)"', text)
+    # 行内代码：去掉围栏块后再提取，避免误吞块内反引号
+    no_fence = re.sub(r"^```[^\n]*\n.*?^```\s*$", "", text, flags=re.S | re.M)
+    ps.inline_code = re.findall(r"`([^`\n]+)`", no_fence)
+    return ps
+
+
+def count_markers(text: str) -> dict[str, int]:
+    """口癖计数分两层：散文面（阈值考核对象）+ 受保护区（表格/代码，不修只记录）。"""
+    prose = prose_surface(text)
+    protected_total = {
+        name: text.count(pat) - prose.count(pat) for name, pat in MARKERS.items()
+    }
+    return {
+        name: text.count(pat) for name, pat in MARKERS.items()
+    } | {f"{name}·散文": prose.count(pat) for name, pat in MARKERS.items()} | {
+        f"{name}·保护": protected_total[name] for name in MARKERS
+    }
+
+
+def compare(orig_path: Path, new_path: Path) -> list[str]:
+    """返回违规清单；空 = 全过。"""
+    orig_bytes = orig_path.read_bytes()
+    new_bytes = new_path.read_bytes()
+    errors: list[str] = []
+    # LF 纪律：read_text 的 universal newlines 会掩盖 CRLF，字节层判
+    if b"\r" in new_bytes:
+        errors.append("精修稿含 CR（必须纯 LF；B3 事故就有代理写 CRLF 落地）")
+    orig = orig_bytes.decode("utf-8")
+    new = new_bytes.decode("utf-8")
+    po, pn = extract_protected(orig), extract_protected(new)
+
+    def check(name: str, a: list[str], b: list[str]) -> None:
+        if a == b:
+            return
+        errors.append(f"{name} 不一致：原文 {len(a)} 段 vs 精修 {len(b)} 段")
+        for i, (x, y) in enumerate(zip(a, b, strict=False)):
+            if x != y:
+                errors.append(
+                    f"  第 {i + 1} 段首处差异：\n    原: {x[:90]!r}\n    新: {y[:90]!r}"
+                )
+                break
+        if len(a) != len(b):
+            errors.append(f"  数量也变了：{len(a)} → {len(b)}")
+
+    check("代码围栏块", po.fenced_code, pn.fenced_code)
+    check("行内代码", po.inline_code, pn.inline_code)
+    check("表格行", po.tables, pn.tables)
+    check("标题行", po.headings, pn.headings)
+    check("链接/图片目标", po.link_targets, pn.link_targets)
+    if po.frontmatter != pn.frontmatter:
+        errors.append("frontmatter 不一致")
+
+    co = fact_tokens(prose_surface(orig))
+    cn = fact_tokens(prose_surface(new))
+    if co != cn:
+        errors.append(
+            "散文事实 token 不一致："
+            f"原文独有 {dict((co - cn).most_common(8))}；"
+            f"精修独有 {dict((cn - co).most_common(8))}"
+        )
+
+    # 阈值硬门（用户批的决定 3）：散文面 —— 每章 ≤ 2，超了算违规
+    prose_dashes = prose_surface(new).count("——")
+    if prose_dashes > 2:
+        errors.append(f"散文面破折号超标：{prose_dashes} 处（阈值 ≤ 2）")
+    return errors
+
+
+def main() -> int:
+    argv = sys.argv[1:]
+    if not argv:
+        print(__doc__)
+        return 2
+    pairs: list[tuple[Path, Path]] = []
+    if argv[0] == "--batch":
+        for line in Path(argv[1]).read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            a, b = line.split("\t")
+            pairs.append((Path(a), Path(b)))
+    else:
+        pairs.append((Path(argv[0]), Path(argv[1])))
+
+    total_errors = 0
+    print(f"{'文件':<46} {'——散文':>10} {'——保护':>10} {'一句话':>8} {'记住：':>8} {'下一站':>8}")
+    for orig_path, new_path in pairs:
+        errors = compare(orig_path, new_path)
+        total_errors += len(errors)
+        co = count_markers(orig_path.read_text(encoding="utf-8"))
+        cn = count_markers(new_path.read_text(encoding="utf-8"))
+        name = f"{orig_path.name}"
+        cols = ["破折号——·散文", "破折号——·保护", "一句话", "记住：", "下一站"]
+        delta = "  ".join(f"{co[k]:>3}→{cn[k]:<3}" for k in cols)
+        status = "✓" if not errors else f"✗ {len(errors)} 违规"
+        print(f"{name:<46} {delta} {status}")
+        for e in errors:
+            print(f"  {e}")
+    if total_errors:
+        print(f"\n不可动清单违规 {total_errors} 处")
+        return 1
+    print("\n不可动清单：全部一致")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

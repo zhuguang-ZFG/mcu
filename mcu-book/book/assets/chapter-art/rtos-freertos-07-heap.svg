@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 88" role="img" aria-label="堆碎片：相邻空闲块缝合合并" fill="none" stroke="var(--cover-ink, #123b33)" stroke-linecap="round" stroke-linejoin="round"><defs><filter id="hw-rtos-freertos-07-heap" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.013" numOctaves="2" seed="49" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3.2"/></filter></defs><g filter="url(#hw-rtos-freertos-07-heap)">
+<g stroke-width="2.2">
+<rect x="36" y="34" width="48" height="24" rx="3"/>
+<rect x="88" y="34" width="48" height="24" rx="3"/>
+<rect x="140" y="34" width="48" height="24" rx="3"/>
+<rect x="192" y="34" width="48" height="24" rx="3"/>
+<rect x="244" y="34" width="48" height="24" rx="3"/>
+</g>
+<g stroke-width="1.1">
+<path d="M148 53 C 158 49, 168 44, 178 40"/>
+<path d="M158 56 C 166 53, 174 49, 182 45"/>
+<path d="M200 53 C 210 49, 220 44, 230 40"/>
+<path d="M210 56 C 218 53, 226 49, 234 45"/>
+</g>
+<path d="M160 31 C 172 16, 210 16, 221 31" stroke-width="2.2"/>
+<path d="M221 31 C 218 26.5, 215.5 24.5, 212 23.5 C 215.5 25, 218 27.5, 219.5 32" stroke-width="2.2"/>
+
+
+</g><text x="191" y="14" font-size="9" font-family="sans-serif" fill="var(--cover-ink, #123b33)" stroke="none" text-anchor="middle">合并</text><text x="192" y="74" font-size="10" font-family="sans-serif" fill="var(--cover-ink, #123b33)" stroke="none" text-anchor="middle">free</text></svg>
