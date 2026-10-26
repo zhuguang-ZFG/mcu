@@ -17,7 +17,6 @@ minutes: 50
 
 ## 怎么读这一章
 
-- **能记住**：**先看 CFSR 定罪名，再查 BFAR 指现场，栈里挖 PC 对行号；死因五虎：空针、错位、除零、爆栈、优先级。**
 - **能理解**：看 naked `HardFault_Handler` 的反汇编：`tst.w lr, #4` / `ite eq` / `mrseq r0, MSP` / `mrsne r0, PSP`。短短四条指令就解决了"案发时用的是哪个栈"。
 - **能用**：板子一死，先读 CFSR，再读栈帧 PC，`addr2line` 定位到行。所有裸机疑难，都按同一套流程破案。
 

@@ -17,7 +17,7 @@ minutes: 35
 
 ## 怎么读这一章
 
-- **能记住**：**上电三棒：ROM 认路、bootloader 验货、app 开工；`app_main` 只是 main task 的一个函数调用。**
+- **能记住**：`app_main` 不是进程入口（没有 main 那套返回语义），它是 main task 里的普通函数，返回就随任务一起被回收。
 - **能理解**：为什么你的 `app_main` **不是** `main()`：它跑在一个名叫 `main` 的 FreeRTOS 任务里（`xTaskCreatePinnedToCore(main_task, "main", ...)`）。
 - **能用**：从复位到 `app_main` 的每一棒都能指到源码行号；出问题时会判断"卡在哪一棒"（ROM 打印？ bootloader 打印？ app 打印？）。
 

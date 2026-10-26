@@ -17,7 +17,6 @@ minutes: 40
 
 ## 怎么读这一章
 
-- **能记住**：先 SYSCFG 选门，再 EXTI 设沿，后 NVIC 放行，ISR 进门先清挂起。
 - **能理解**：IRQn 6（EXTI0）是怎么变成向量槽 22、ISER[0] bit 6、IP 字节地址 0xE000E406 的，三条公式各推一遍。
 - **能用**：照第六节清单给任意一个引脚配通外部中断，并能用 NVIC_SetPriorityGrouping 说清自己的工程用的是哪把"尺子"。
 

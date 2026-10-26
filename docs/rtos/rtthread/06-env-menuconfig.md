@@ -19,7 +19,6 @@ minutes: 25
 
 ## 怎么读这一章
 
-- **能记住**：menuconfig 点单、pkgs 取货、scons 下厨；Kconfig 管编什么、scons 管怎么编：点外卖式做固件。
 - **能理解**：为什么 `rtconfig.h` 是生成物不该手改；为什么 SConscript 用 Python 比纯 DSL 灵活；为什么"在 applications 里改驱动"换 BSP 会全丢。
 - **能用**：menuconfig 勾选组件 → `pkgs --update` 拉源码 → `scons -j8` 出固件完整跑一遍；为一个自写组件加一条 Kconfig 选项并在菜单里出现。
 
