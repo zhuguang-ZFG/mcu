@@ -1295,10 +1295,12 @@ def build_html(output_dir: Path | None = None, manifest_path: Path = MANIFEST_PA
         registry = (
             source_registry_html(manifest) if appendix["id"] == "appendix-references" else ""
         )
+        art_html = chapter_art_html(appendix["file"])
         body_parts.append(
             f"""
 <article class="appendix" id="{html.escape(appendix['id'])}">
   <header><span class="book-title-marker" aria-hidden="true">{html.escape(manifest['title'])}</span><span class="chapter-number">APPENDIX</span><h1>{html.escape(title)}</h1></header>
+  {art_html}
   {rendered}
   {registry}
   <a class="back-to-toc" href="#contents">返回目录 ↑</a>

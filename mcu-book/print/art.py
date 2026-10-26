@@ -50,22 +50,13 @@ def _chip(x: float, y: float, w: float, h: float, label: str = "", texts: list[s
     return "".join(parts)
 
 
-def _hw_filter(fid: str, scale: float = 3.2, seed: int = 7) -> str:
-    """手绘抖动滤镜（与 88 枚章首题图同一冻结参数）。
-
-    feTurbulence baseFrequency 0.013（低频大幅读作"手画的线"）+ feDisplacementMap。
-    fid 逐图唯一——封面、10 张分部图、88 张题图内联进同一 HTML，重名会互相顶掉。
-    实证：滤镜在本书印前管线（Chromium 打印）不触发光栅化，全书位图仍只有 6 张实物照片。
-    """
-    return (
-        f'<filter id="{fid}" x="-5%" y="-5%" width="110%" height="110%">'
-        f'<feTurbulence type="fractalNoise" baseFrequency="0.013" numOctaves="2" seed="{seed}" result="n"/>'
-        f'<feDisplacementMap in="SourceGraphic" in2="n" scale="{scale}"/></filter>'
-    )
-
 
 def _hw_part(pid: str, items: list[str], label: str, view: str) -> str:
-    """分部隔页：与章首题图同一习语（抖动滤镜 + 双描笔压分层）。
+    """分部隔页：双描笔压分层（无滤镜）。
+
+    实测（2026-10-26）：滤镜习语在两条路径上结果不同——直接内联进 HTML 的
+    章首题图带滤镜不落位图；走 <img> 内联的封面/隔页大图带滤镜会被 Chromium
+    光栅化（p1 + 10 张隔页各多出 1 张位图）。故大图统一双描纯矢量。
 
     分部隔页不走滤镜（实测：封面/隔页级大图带滤镜会在印前光栅化成位图，
     章首小图不会；大图用双描笔压分层表达手绘感）。分支形状自带 fill={SOFT}——
