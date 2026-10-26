@@ -27,11 +27,23 @@ DIRS = ["docs/c", "docs/build", "docs/stm32", "docs/gd32", "docs/esp32",
         "docs/lab", "docs/projects"]
 
 PROTECT = re.compile(r"^```.*?^```\s*$", re.S | re.M)
+# 教学脚手架区（自测答案、英文摘要）不参与"长句/重复句"判据：
+# 答案区复述正文是刻意设计；英文摘要不是中文散文。
+DETAILS = re.compile(r"<details>.*?</details>", re.S)
+CITATION_LINE = re.compile(r"^\s*[-*]\s*\*\*\[", re.M)
+
+
+def narrative(text: str) -> str:
+    """只保留正文叙事：去围栏、自测答案块、参考文献链接行。"""
+    text = PROTECT.sub("", text)
+    text = DETAILS.sub("", text)
+    return CITATION_LINE.sub("", text)
 
 
 def prose_lines(text: str):
     """去围栏、表格、标题后的散文行 → (行号, 内容)。"""
-    no_fence = PROTECT.sub(lambda m: "\n" * m.group(0).count("\n"), text)
+    no_fence = narrative(text)
+    no_fence = re.sub(r"[^\n]", lambda m: m.group(0), no_fence)
     for i, ln in enumerate(no_fence.split("\n"), 1):
         s = ln.strip()
         if not s or s.startswith("|") or s.startswith("#") or s.startswith(":::"):
@@ -47,7 +59,7 @@ def audit(path: Path) -> dict[str, list[str]]:
         "重复句", "叠标点", "中英粘连", "半角标点", "空括号", "超长句", "套话", "重复词")}
 
     # 1) 重复句（≥12 字的完全相同句子）
-    sents = re.findall(r"[^。！？\n]{12,}?[。！？]", PROTECT.sub("", text))
+    sents = re.findall(r"[^。！？\n]{12,}?[。！？]", narrative(text))
     dup = [s for s, n in Counter(sents).items() if n >= 2]
     for s in dup[:5]:
         out["重复句"].append(f"{path.name}: {s[:50]}")
