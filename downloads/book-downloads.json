@@ -1,0 +1,31 @@
+{
+  "title": "通往单片机之路",
+  "version": "1.0.0",
+  "date": "2026-10-23",
+  "files": [
+    {
+      "name": "mcu-deep-book.html",
+      "bytes": 10803795,
+      "sha256": "6ce7e4d9fc76a12ee6285e231db597661885c84920502d7edf9171a1ffc8632c"
+    },
+    {
+      "name": "mcu-deep-book.pdf",
+      "bytes": 33355599,
+      "sha256": "563cfd383e5085ca8e9d13926f18835849deccbc8ddbe1cd5175ffa409a7a4c0"
+    },
+    {
+      "name": "mcu-deep-book-v1.0.0.html",
+      "bytes": 10803795,
+      "sha256": "6ce7e4d9fc76a12ee6285e231db597661885c84920502d7edf9171a1ffc8632c"
+    },
+    {
+      "name": "mcu-deep-book-v1.0.0.pdf",
+      "bytes": 33355599,
+      "sha256": "563cfd383e5085ca8e9d13926f18835849deccbc8ddbe1cd5175ffa409a7a4c0"
+    }
+  ],
+  "generatedFrom": {
+    "html": "/home/runner/work/STM32/STM32/mcu/mcu-book/dist/mcu-deep-book.html",
+    "pdf": "/home/runner/work/STM32/STM32/mcu/mcu-book/dist/mcu-deep-book.pdf"
+  }
+}
